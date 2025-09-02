@@ -218,20 +218,23 @@ async function initAuth() {
 
 function renderAuthUI() {
   const authSection = $("#auth");
+  const heroSection = $("#hero");
   const btnSignIn = $("#btnSignIn");
   const btnSignOut = $("#btnSignOut");
   const userName = $("#userName");
   
   if (state.session) {
-    // User is signed in
-    authSection.style.display = "none";
+    // User is signed in: Hide auth, show hero
+    if (authSection) authSection.style.display = "none";
+    if (heroSection) heroSection.style.display = "block";
     btnSignIn.style.display = "none";
     btnSignOut.style.display = "inline-block";
     userName.style.display = "inline";
     userName.textContent = state.profile?.full_name ? `@${state.profile.full_name}` : "";
   } else {
-    // User is not signed in
-    authSection.style.display = "none"; // Hidden by default, shown when clicking Sign In
+    // User is not signed in: Show auth, hide hero
+    if (authSection) authSection.style.display = "block";
+    if (heroSection) heroSection.style.display = "none";
     btnSignIn.style.display = "inline-block";
     btnSignOut.style.display = "none";
     userName.style.display = "none";
@@ -821,17 +824,6 @@ function wireUI() {
   const btnSignIn = $("#btnSignIn");
   const btnSignOut = $("#btnSignOut");
   const authSection = $("#auth");
-  
-  if (btnSignIn) {
-    btnSignIn.addEventListener("click", () => {
-      console.log("Sign in button clicked");
-      if (authSection) {
-        authSection.style.display = authSection.style.display === "block" ? "none" : "block";
-        const emailInput = $("#email");
-        if (emailInput) emailInput.focus();
-      }
-    });
-  }
   
   if (btnSignOut) {
     btnSignOut.addEventListener("click", async () => {
