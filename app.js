@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
 
-const REDIRECT_TO = window.location.origin + (window.location.pathname.endsWith("/") ? window.location.pathname : window.location.pathname + "/");
+const REDIRECT_TO = window.location.origin + window.location.pathname;
 /* ============================================ */
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -113,8 +113,9 @@ function tr(key, fallback="") {
 /* ============== UI helpers ============== */
 const $ = sel => document.querySelector(sel);
 
-function setFlash(msg, timeout = 2400) {
+function setFlash(msg, timeout = 3000) {
   const el = $("#flash");
+  if (!el) return;
   el.textContent = msg;
   el.style.display = "block";
   clearTimeout(setFlash._t);
@@ -149,12 +150,10 @@ function applyI18n() {
   });
 }
 
-// Helper: safely convert <input type="datetime-local"> to ISO
+// Helper: safely convert datetime-local to ISO
 function toIsoOrNull(v) {
   if (!v) return null;
   try {
-    // datetime-local format is "YYYY-MM-DDTHH:mm"
-    // We need to ensure it's properly converted to ISO with timezone
     const localDate = new Date(v);
     if (isNaN(localDate.getTime())) return null;
     return localDate.toISOString();
@@ -164,88 +163,129 @@ function toIsoOrNull(v) {
   }
 }
 
+function escapeHtml(s="") {
+  return s.replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m]));
+}
+
 /* ============= Auth ============= */
 async function initAuth() {
-  const { data: { session } } = await supabase.auth.getSession();
-  state.session = session || null;
-  if (state.session) {
-    await ensureProfile();
+  console.log("Initializing auth...");
+  
+  // Check for existing session
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    console.log("Session check:", session ? "Found" : "None", error);
+    
+    if (session) {
+      state.session = session;
+      await ensureProfile();
+      renderAuthUI();
+    } else {
+      state.session = null;
+      state.profile = null;
+      renderAuthUI();
+    }
+  } catch (err) {
+    console.error("Session check error:", err);
+    renderAuthUI();
   }
 
-  supabase.auth.onAuthStateChange(async (_event, session) => {
-    state.session = session || null;
+  // Listen for auth changes
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log("Auth state change:", event, session ? "Session exists" : "No session");
+    
+    state.session = session;
+    
     if (session) {
       await ensureProfile();
       setFlash(state.language === "es" ? "Sesión iniciada" : "Signed in");
-      $("#auth").style.display = "none";
     } else {
       state.profile = null;
       setFlash(state.language === "es" ? "Sesión cerrada" : "Signed out");
-      $("#auth").style.display = "block";
     }
+    
+    renderAuthUI();
     renderHeader();
     await loadEvents();
-    showView("schedule");
   });
-
-  $("#emailForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = $("#email").value.trim();
-    if (!email) return;
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: REDIRECT_TO },
-    });
-    if (error) setFlash(error.message);
-    else setFlash(state.language === "es" ? "Enlace enviado" : "Magic link sent");
-  });
-
-  $("#btnGitHub").addEventListener("click", () => oauth("github"));
-  $("#btnGoogle").addEventListener("click", () => oauth("google"));
-
-  $("#btnSignIn").addEventListener("click", () => {
-    $("#auth").style.display = "block";
-    document.getElementById("email").focus();
-  });
-
-  $("#btnSignOut").addEventListener("click", async () => {
-    await supabase.auth.signOut();
-  });
-
-  $("#year").textContent = new Date().getFullYear();
 }
 
-async function oauth(provider) {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider,
-    options: {
-      redirectTo: REDIRECT_TO,
-      skipBrowserRedirect: false,
-    }
-  });
-  if (error) setFlash(error.message);
+function renderAuthUI() {
+  const authSection = $("#auth");
+  const btnSignIn = $("#btnSignIn");
+  const btnSignOut = $("#btnSignOut");
+  const userName = $("#userName");
+  
+  if (state.session) {
+    // User is signed in
+    authSection.style.display = "none";
+    btnSignIn.style.display = "none";
+    btnSignOut.style.display = "inline-block";
+    userName.style.display = "inline";
+    userName.textContent = state.profile?.full_name ? `@${state.profile.full_name}` : "";
+  } else {
+    // User is not signed in
+    authSection.style.display = "none"; // Hidden by default, shown when clicking Sign In
+    btnSignIn.style.display = "inline-block";
+    btnSignOut.style.display = "none";
+    userName.style.display = "none";
+  }
 }
 
 async function ensureProfile() {
   const uid = state.session?.user?.id;
   if (!uid) return;
   
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", uid).single();
-  if (error) {
-    console.error("Profile fetch error:", error);
-    return;
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", uid)
+      .single();
+    
+    if (error) {
+      console.error("Profile fetch error:", error);
+      // If profile doesn't exist, it will be created by the trigger
+      return;
+    }
+    
+    state.profile = data;
+    console.log("Profile loaded:", data);
+    console.log("User role:", data?.role);
+  } catch (err) {
+    console.error("Profile error:", err);
   }
+}
+
+async function sendMagicLink(email) {
+  console.log("Sending magic link to:", email);
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { 
+      emailRedirectTo: REDIRECT_TO 
+    },
+  });
   
-  state.profile = data;
-  console.log("User profile loaded:", data); // Debug log
-  console.log("User role:", data?.role); // Debug log
-  
-  $("#userName").textContent = data.full_name ? `@${data.full_name}` : "";
-  $("#btnSignIn").style.display = "none";
-  $("#btnSignOut").style.display = "inline-block";
-  $("#auth").style.display = "none";
-  
-  renderHeader(); // Update header to show/hide admin button
+  if (error) {
+    console.error("Magic link error:", error);
+    setFlash(`Error: ${error.message}`);
+  } else {
+    setFlash(state.language === "es" ? "Enlace enviado. Revisa tu correo." : "Magic link sent. Check your email.");
+  }
+}
+
+async function oauth(provider) {
+  console.log("OAuth login with:", provider);
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: REDIRECT_TO,
+    }
+  });
+  if (error) {
+    console.error("OAuth error:", error);
+    setFlash(`Error: ${error.message}`);
+  }
 }
 
 /* ============= Data ============= */
@@ -255,15 +295,18 @@ async function loadEvents() {
     $("#emptyEvents").style.display = "block";
     return;
   }
+  
   const { data, error } = await supabase
     .from("events")
     .select("*")
     .order("start_time", { ascending: true });
+    
   if (error) {
     console.error("Load events error:", error);
     setFlash("Error loading events");
     return;
   }
+  
   state.events = data || [];
   renderEventsList();
 }
@@ -271,9 +314,10 @@ async function loadEvents() {
 function renderEventsList() {
   const list = $("#eventsList");
   const empty = $("#emptyEvents");
+  if (!list || !empty) return;
+  
   list.innerHTML = "";
-
-  const term = ($("#search").value || "").toLowerCase().trim();
+  const term = ($("#search")?.value || "").toLowerCase().trim();
 
   const filtered = state.events.filter(e => {
     if (!term) return true;
@@ -312,10 +356,8 @@ async function openEvent(eventId) {
   if (!ev) return;
   state.selectedEvent = ev;
   renderEventHeader();
-
   await loadThreads(ev.id);
   await loadFiles(ev.id);
-
   showView("event");
 }
 
@@ -323,19 +365,28 @@ function renderEventHeader() {
   const ev = state.selectedEvent;
   const title = state.language === "es" ? (ev.title_es || ev.title_en) : (ev.title_en || ev.title_es);
   const desc = state.language === "es" ? (ev.description_es || ev.description_en) : (ev.description_en || ev.description_es);
-  $("#eventHeader").innerHTML = `
-    <div class="event-title">${title}</div>
-    <div class="event-attrs">
-      <span>${fmtDateTime(ev.start_time)}${ev.end_time ? " – " + fmtDateTime(ev.end_time) : ""}</span>
-      ${ev.host_org ? `<span>• ${ev.host_org}</span>` : ""}
-      <span>• ${ev.language?.toUpperCase?.()}</span>
-      ${ev.zoom_url ? `<span>• 🔒 Zoom</span>` : ""}
-    </div>
-  `;
-  $("#eventAbout").innerHTML = `
-    <p>${desc ? desc.replace(/\n/g, "<br/>") : ""}</p>
-    ${ev.zoom_url ? `<p><strong>Zoom:</strong> <a href="${ev.zoom_url}" target="_blank" rel="noopener">Join link</a> (members only)</p>` : ""}
-  `;
+  
+  const header = $("#eventHeader");
+  const about = $("#eventAbout");
+  
+  if (header) {
+    header.innerHTML = `
+      <div class="event-title">${title}</div>
+      <div class="event-attrs">
+        <span>${fmtDateTime(ev.start_time)}${ev.end_time ? " – " + fmtDateTime(ev.end_time) : ""}</span>
+        ${ev.host_org ? `<span>• ${ev.host_org}</span>` : ""}
+        <span>• ${ev.language?.toUpperCase?.()}</span>
+        ${ev.zoom_url ? `<span>• 🔒 Zoom</span>` : ""}
+      </div>
+    `;
+  }
+  
+  if (about) {
+    about.innerHTML = `
+      <p>${desc ? desc.replace(/\n/g, "<br/>") : ""}</p>
+      ${ev.zoom_url ? `<p><strong>Zoom:</strong> <a href="${ev.zoom_url}" target="_blank" rel="noopener">Join link</a> (members only)</p>` : ""}
+    `;
+  }
 }
 
 /* Threads and comments */
@@ -347,13 +398,16 @@ async function loadThreads(eventId) {
     .order("created_at", { ascending: true });
   if (error) { console.error(error); setFlash("Error loading topics"); return; }
   state.threads = data || [];
-  $("#emptyThreads").style.display = state.threads.length ? "none" : "block";
+  const empty = $("#emptyThreads");
+  if (empty) empty.style.display = state.threads.length ? "none" : "block";
   renderThreads();
 }
 
 function renderThreads() {
   const list = $("#threadsList");
+  if (!list) return;
   list.innerHTML = "";
+  
   for (const th of state.threads) {
     const wrap = document.createElement("div");
     wrap.className = "thread";
@@ -499,7 +553,7 @@ async function deleteComment(commentId, threadId) {
   else await loadComments(threadId);
 }
 
-/* Files (Storage + attachments table) */
+/* Files */
 async function loadFiles(eventId) {
   const { data, error } = await supabase
     .from("attachments")
@@ -514,7 +568,7 @@ async function loadFiles(eventId) {
 async function uploadFile(file) {
   if (!file || !state.selectedEvent) return;
   const eventId = state.selectedEvent.id;
-  const uniqueName = `${crypto.randomUUID?.() || Date.now()}-${file.name}`;
+  const uniqueName = `${Date.now()}-${file.name}`;
   const object_path = `events/${eventId}/${uniqueName}`;
 
   const { error: upErr } = await supabase.storage
@@ -551,6 +605,8 @@ async function getSignedUrl(path) {
 function renderFiles() {
   const grid = $("#filesList");
   const empty = $("#emptyFiles");
+  if (!grid || !empty) return;
+  
   grid.innerHTML = "";
   empty.style.display = state.files.length ? "none" : "block";
 
@@ -593,12 +649,12 @@ async function deleteFile(f) {
 /* ============= Admin ============= */
 function isOrganizer() {
   const hasRole = ["organizer","admin"].includes(state.profile?.role);
-  console.log("isOrganizer check:", state.profile?.role, "->", hasRole); // Debug log
+  console.log("Role check:", state.profile?.role, "->", hasRole);
   return hasRole;
 }
 
 async function createEvent(payload) {
-  console.log("Creating event with payload:", payload); // Debug log
+  console.log("Creating event:", payload);
   
   const { data, error } = await supabase.from("events").insert({
     title_en: payload.title_en,
@@ -620,7 +676,7 @@ async function createEvent(payload) {
     return;
   }
   
-  console.log("Event created successfully:", data);
+  console.log("Event created:", data);
   setFlash(state.language === "es" ? "Evento creado" : "Event created");
   await loadEvents();
   showView("schedule");
@@ -628,62 +684,116 @@ async function createEvent(payload) {
 
 /* ============= Views ============= */
 function renderHeader() {
-  $("#btnSignIn").style.display = state.session ? "none" : "inline-block";
-  $("#btnSignOut").style.display = state.session ? "inline-block" : "none";
-  $("#btnAdmin").style.display = state.session && isOrganizer() ? "inline-block" : "none";
-  $("#userName").style.display = state.session ? "inline" : "none";
+  const btnSignIn = $("#btnSignIn");
+  const btnSignOut = $("#btnSignOut");
+  const btnAdmin = $("#btnAdmin");
+  const userName = $("#userName");
+  
+  if (btnSignIn) btnSignIn.style.display = state.session ? "none" : "inline-block";
+  if (btnSignOut) btnSignOut.style.display = state.session ? "inline-block" : "none";
+  if (btnAdmin) btnAdmin.style.display = state.session && isOrganizer() ? "inline-block" : "none";
+  if (userName) userName.style.display = state.session ? "inline" : "none";
 }
 
 function showView(which) {
+  const schedule = $("#schedule");
+  const eventDetail = $("#eventDetail");
+  const admin = $("#admin");
+  const hero = $("#hero");
+  const auth = $("#auth");
+  
   if (which === "schedule") {
-    $("#schedule").style.display = "block";
-    $("#eventDetail").style.display = "none";
-    $("#admin").style.display = "none";
-    $("#hero").style.display = "block";
+    if (schedule) schedule.style.display = "block";
+    if (eventDetail) eventDetail.style.display = "none";
+    if (admin) admin.style.display = "none";
+    if (hero) hero.style.display = "block";
+    if (auth && !state.session) auth.style.display = "none";
   } else if (which === "event") {
-    $("#schedule").style.display = "none";
-    $("#eventDetail").style.display = "block";
-    $("#admin").style.display = "none";
-    $("#hero").style.display = "none";
+    if (schedule) schedule.style.display = "none";
+    if (eventDetail) eventDetail.style.display = "block";
+    if (admin) admin.style.display = "none";
+    if (hero) hero.style.display = "none";
+    if (auth) auth.style.display = "none";
   } else if (which === "admin") {
     if (!isOrganizer()) {
       setFlash("Access denied. You need organizer or admin privileges.");
       showView("schedule");
       return;
     }
-    $("#schedule").style.display = "none";
-    $("#eventDetail").style.display = "none";
-    $("#admin").style.display = "block";
-    $("#hero").style.display = "none";
+    if (schedule) schedule.style.display = "none";
+    if (eventDetail) eventDetail.style.display = "none";
+    if (admin) admin.style.display = "block";
+    if (hero) hero.style.display = "none";
+    if (auth) auth.style.display = "none";
   }
-}
-
-function escapeHtml(s="") {
-  return s.replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m]));
 }
 
 /* ============= Wire-up ============= */
 function wireUI() {
-  // nav
-  $("#btnSchedule").addEventListener("click", () => showView("schedule"));
-  $("#btnCommunity").addEventListener("click", () => {
-    showView("schedule");
-  });
-  $("#btnAdmin").addEventListener("click", () => showView("admin"));
-  $("#backToSchedule").addEventListener("click", () => showView("schedule"));
+  // Sign in/out buttons
+  const btnSignIn = $("#btnSignIn");
+  const btnSignOut = $("#btnSignOut");
+  const authSection = $("#auth");
+  
+  if (btnSignIn) {
+    btnSignIn.addEventListener("click", () => {
+      console.log("Sign in button clicked");
+      if (authSection) {
+        authSection.style.display = authSection.style.display === "block" ? "none" : "block";
+        const emailInput = $("#email");
+        if (emailInput) emailInput.focus();
+      }
+    });
+  }
+  
+  if (btnSignOut) {
+    btnSignOut.addEventListener("click", async () => {
+      console.log("Sign out button clicked");
+      await supabase.auth.signOut();
+    });
+  }
 
-  // tabs
+  // Email form
+  const emailForm = $("#emailForm");
+  if (emailForm) {
+    emailForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = $("#email")?.value.trim();
+      if (!email) return;
+      await sendMagicLink(email);
+    });
+  }
+
+  // OAuth buttons
+  const btnGitHub = $("#btnGitHub");
+  const btnGoogle = $("#btnGoogle");
+  if (btnGitHub) btnGitHub.addEventListener("click", () => oauth("github"));
+  if (btnGoogle) btnGoogle.addEventListener("click", () => oauth("google"));
+
+  // Navigation
+  const btnSchedule = $("#btnSchedule");
+  const btnCommunity = $("#btnCommunity");
+  const btnAdmin = $("#btnAdmin");
+  const backToSchedule = $("#backToSchedule");
+  
+  if (btnSchedule) btnSchedule.addEventListener("click", () => showView("schedule"));
+  if (btnCommunity) btnCommunity.addEventListener("click", () => showView("schedule"));
+  if (btnAdmin) btnAdmin.addEventListener("click", () => showView("admin"));
+  if (backToSchedule) backToSchedule.addEventListener("click", () => showView("schedule"));
+
+  // Tabs
   document.querySelectorAll(".tab").forEach(tab => {
     tab.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
       tab.classList.add("active");
       const tabId = tab.dataset.tab;
       document.querySelectorAll(".tab-panel").forEach(p => p.style.display = "none");
-      $("#tab_" + tabId).style.display = "block";
+      const panel = $("#tab_" + tabId);
+      if (panel) panel.style.display = "block";
     });
   });
 
-  // language
+  // Language switcher
   document.querySelectorAll(".lang-switch .chip").forEach(btn => {
     btn.addEventListener("click", () => {
       state.language = btn.dataset.lang;
@@ -696,100 +806,116 @@ function wireUI() {
     });
   });
 
-  // search
-  $("#search").addEventListener("input", renderEventsList);
+  // Search
+  const searchInput = $("#search");
+  if (searchInput) searchInput.addEventListener("input", renderEventsList);
 
-  // new thread
-  $("#newThreadForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const title = $("#threadTitle").value.trim();
-    if (!title) return;
-    await createThread(title);
-    $("#threadTitle").value = "";
-  });
+  // New thread form
+  const newThreadForm = $("#newThreadForm");
+  if (newThreadForm) {
+    newThreadForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = $("#threadTitle")?.value.trim();
+      if (!title) return;
+      await createThread(title);
+      $("#threadTitle").value = "";
+    });
+  }
 
-  // upload
-  $("#uploadForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const f = $("#fileInput").files[0];
-    if (!f) return;
-    await uploadFile(f);
-    $("#fileInput").value = "";
-  });
+  // Upload form
+  const uploadForm = $("#uploadForm");
+  if (uploadForm) {
+    uploadForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fileInput = $("#fileInput");
+      const f = fileInput?.files[0];
+      if (!f) return;
+      await uploadFile(f);
+      fileInput.value = "";
+    });
+  }
 
-  // create event (admin) - FIXED VERSION
-  $("#createEventForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    
-    console.log("Event form submitted"); // Debug log
-    
-    const form = e.currentTarget;
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    try {
-      const titleEn = $("#titleEn").value.trim();
-      const startTime = $("#startTime").value;
-      const endTime = $("#endTime").value;
-
-      console.log("Form values:", { titleEn, startTime, endTime }); // Debug log
-
-      if (!titleEn) {
-        setFlash("Title (EN) is required");
-        $("#titleEn").focus();
-        return;
-      }
-
-      if (!startTime) {
-        setFlash("Start time is required");
-        $("#startTime").focus();
-        return;
-      }
-
-      const startIso = toIsoOrNull(startTime);
-      const endIso = toIsoOrNull(endTime);
-
-      console.log("Converted dates:", { startIso, endIso }); // Debug log
-
-      if (!startIso) {
-        setFlash("Invalid start time format");
-        $("#startTime").focus();
-        return;
-      }
-
-      const payload = {
-        title_en: titleEn,
-        title_es: $("#titleEs").value.trim() || null,
-        description_en: $("#descEn").value.trim() || null,
-        description_es: $("#descEs").value.trim() || null,
-        start_time: startIso,
-        end_time: endIso,
-        language: $("#eventLang").value,
-        host_org: $("#hostOrg").value.trim() || null,
-        zoom_url: $("#zoomUrl").value.trim() || null,
-      };
-
-      console.log("Submitting payload:", payload); // Debug log
+  // Create event form
+  const createEventForm = $("#createEventForm");
+  if (createEventForm) {
+    createEventForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      console.log("Create event form submitted");
       
-      await createEvent(payload);
-      form.reset();
-    } catch (err) {
-      console.error("Form submission error:", err);
-      setFlash(err?.message || "Could not create event");
-    }
-  });
+      const form = e.currentTarget;
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      try {
+        const titleEn = $("#titleEn")?.value.trim();
+        const startTime = $("#startTime")?.value;
+        const endTime = $("#endTime")?.value;
+
+        if (!titleEn) {
+          setFlash("Title (EN) is required");
+          return;
+        }
+
+        if (!startTime) {
+          setFlash("Start time is required");
+          return;
+        }
+
+        const startIso = toIsoOrNull(startTime);
+        const endIso = toIsoOrNull(endTime);
+
+        if (!startIso) {
+          setFlash("Invalid start time");
+          return;
+        }
+
+        const payload = {
+          title_en: titleEn,
+          title_es: $("#titleEs")?.value.trim() || null,
+          description_en: $("#descEn")?.value.trim() || null,
+          description_es: $("#descEs")?.value.trim() || null,
+          start_time: startIso,
+          end_time: endIso,
+          language: $("#eventLang")?.value || "bi",
+          host_org: $("#hostOrg")?.value.trim() || null,
+          zoom_url: $("#zoomUrl")?.value.trim() || null,
+        };
+
+        await createEvent(payload);
+        form.reset();
+      } catch (err) {
+        console.error("Form error:", err);
+        setFlash(err?.message || "Could not create event");
+      }
+    });
+  }
+
+  // Year in footer
+  const yearEl = $("#year");
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
 }
 
 /* ============= Bootstrap ============= */
 (async function main() {
-  console.log("App initializing..."); // Debug log
+  console.log("App starting...");
+  
+  // Apply initial translations
   applyI18n();
+  
+  // Wire up UI events
   wireUI();
-  renderHeader();
+  
+  // Initialize auth
   await initAuth();
+  
+  // Render initial UI state
+  renderHeader();
+  renderAuthUI();
+  
+  // Load initial data
   await loadEvents();
-  $("#auth").style.display = state.session ? "none" : "block";
-  console.log("App initialized. Session:", !!state.session, "Profile:", state.profile); // Debug log
+  
+  console.log("App ready");
 })();
