@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Almuerzo Agrivoltaico • Seminar Platform</title>
+  <meta name="description" content="An informal seminar series to share advances in agrivoltaics in Latin America (EN/ES)." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preconnect" href="https://esm.sh" crossorigin />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-grid">
+      <div class="brand">
+        <div class="logo-circle">A</div>
+        <div class="brand-text">
+          <div class="title">Almuerzo Agrivoltaico</div>
+          <div class="subtitle" data-i18n="tagline">An informal seminar series to share advances in agrivoltaics in Latin America</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button id="btnSchedule" class="link" data-i18n="nav.schedule">Schedule</button>
+        <button id="btnCommunity" class="link" data-i18n="nav.community">Community</button>
+        <button id="btnAdmin" class="link" data-i18n="nav.admin">Admin</button>
+        <div class="divider"></div>
+        <div class="lang-switch">
+          <button class="chip" data-lang="en">EN</button>
+          <button class="chip" data-lang="es">ES</button>
+        </div>
+        <div class="auth-area">
+          <span id="userName"></span>
+          <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
+          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display:none;">Sign out</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div id="flash" class="flash" role="status" aria-live="polite"></div>
+
+  <main class="container">
+    <!-- Hero -->
+    <section id="hero" class="card hero">
+      <h1>Almuerzo Agrivoltaico</h1>
+      <p data-i18n="intro">
+        Agrivoltaics (agrivoltaics) is an emerging field that integrates solar energy with crop/livestock production.
+        This bilingual seminar focuses on Latin America. Hosted by UNAM and University of Arizona.
+      </p>
+      <div class="meta">
+        <span class="meta-item" data-i18n="format">Online • Monthly • 1 hour (30 min talk + 30 min discussion)</span>
+        <span class="meta-item" data-i18n="hosted">Hosted by UNAM & University of Arizona</span>
+      </div>
+    </section>
+
+    <!-- Auth -->
+    <section id="auth" class="card" aria-labelledby="authTitle" style="display:none;">
+      <h2 id="authTitle" data-i18n="auth.title">Sign in to participate</h2>
+      <div class="auth-grid">
+        <form id="emailForm" class="auth-form">
+          <label for="email" data-i18n="auth.email">Email</label>
+          <input id="email" type="email" placeholder="you@example.com" required />
+          <button class="btn-primary" type="submit" data-i18n="auth.magic">Send magic link</button>
+          <div class="hint" data-i18n="auth.magic_hint">
+            We’ll email you a sign-in link. Check your inbox.
+          </div>
+        </form>
+        <div class="oauth">
+          <div class="or" data-i18n="auth.or">or</div>
+          <button id="btnGitHub" class="btn-secondary">GitHub</button>
+          <button id="btnGoogle" class="btn-secondary">Google</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Schedule -->
+    <section id="schedule" class="card" aria-labelledby="scheduleTitle">
+      <div class="section-header">
+        <h2 id="scheduleTitle" data-i18n="schedule.title">Upcoming Talks</h2>
+        <div class="search-bar">
+          <input id="search" type="search" placeholder="Search..." data-i18n-placeholder="search.placeholder" />
+        </div>
+      </div>
+      <div id="eventsList" class="events-grid"></div>
+      <div id="emptyEvents" class="empty" style="display:none;" data-i18n="schedule.empty">
+        No events yet. Check back soon.
+      </div>
+    </section>
+
+    <!-- Event Detail -->
+    <section id="eventDetail" class="card" style="display:none;">
+      <button class="btn-ghost" id="backToSchedule">← <span data-i18n="back.schedule">Back to schedule</span></button>
+      <div id="eventHeader" class="event-header"></div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
+        <button class="tab" data-tab="files" data-i18n="tabs.files">Files</button>
+        <button class="tab" data-tab="about" data-i18n="tabs.about">About</button>
+      </div>
+
+      <div id="tab_discussion" class="tab-panel">
+        <form id="newThreadForm" class="inline-form">
+          <input id="threadTitle" type="text" placeholder="New topic title…" data-i18n-placeholder="thread.placeholder" />
+          <button class="btn-primary" type="submit" data-i18n="thread.create">Create Topic</button>
+        </form>
+        <div id="threadsList" class="threads"></div>
+        <div id="emptyThreads" class="empty" style="display:none;" data-i18n="thread.empty">
+          No topics yet. Start the discussion!
+        </div>
+      </div>
+
+      <div id="tab_files" class="tab-panel" style="display:none;">
+        <form id="uploadForm" class="inline-form">
+          <input id="fileInput" type="file" />
+          <button class="btn-primary" type="submit" data-i18n="files.upload">Upload</button>
+        </form>
+        <div id="filesList" class="files"></div>
+        <div id="emptyFiles" class="empty" style="display:none;" data-i18n="files.empty">No files yet.</div>
+      </div>
+
+      <div id="tab_about" class="tab-panel" style="display:none;">
+        <div id="eventAbout" class="event-about"></div>
+      </div>
+    </section>
+
+    <!-- Admin (organizers only) -->
+    <section id="admin" class="card" style="display:none;">
+      <h2 data-i18n="admin.title">Organizer Tools</h2>
+      <form id="createEventForm" class="grid-form">
+        <div>
+          <label data-i18n="event.title_en">Title (EN)</label>
+          <input id="titleEn" required />
+        </div>
+        <div>
+          <label data-i18n="event.title_es">Title (ES)</label>
+          <input id="titleEs" />
+        </div>
+        <div class="col-span-2">
+          <label data-i18n="event.desc_en">Description (EN)</label>
+          <textarea id="descEn"></textarea>
+        </div>
+        <div class="col-span-2">
+          <label data-i18n="event.desc_es">Description (ES)</label>
+          <textarea id="descEs"></textarea>
+        </div>
+        <div>
+          <label data-i18n="event.start">Start time</label>
+          <input id="startTime" type="datetime-local" required />
+        </div>
+        <div>
+          <label data-i18n="event.end">End time</label>
+          <input id="endTime" type="datetime-local" />
+        </div>
+        <div>
+          <label data-i18n="event.lang">Language</label>
+          <select id="eventLang">
+            <option value="bi">Bilingual</option>
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
+        <div>
+          <label data-i18n="event.host">Host org</label>
+          <input id="hostOrg" placeholder="UNAM, University of Arizona…" />
+        </div>
+        <div class="col-span-2">
+          <label data-i18n="event.zoom">Zoom URL (members only)</label>
+          <input id="zoomUrl" type="url" />
+        </div>
+        <div class="col-span-2">
+          <button class="btn-primary" type="submit" data-i18n="event.create">Create Event</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>
+        © <span id="year"></span> Almuerzo Agrivoltaico • <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
+      </small>
+    </div>
+  </footer>
+
+  <!-- Supabase JS via ESM CDN -->
+  <script type="module" src="https://esm.sh/@supabase/supabase-js@2"></script>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
