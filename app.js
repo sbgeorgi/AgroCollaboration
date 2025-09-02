@@ -7,12 +7,15 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const REDIRECT_TO = window.location.origin + window.location.pathname;
 /* ============================================ */
 
+// V V V THIS IS THE FIX V V V
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true, // This is crucial for magic links
   },
 });
+// ^ ^ ^ THIS IS THE FIX ^ ^ ^
 
 let isCreatingEvent = false;
 
