@@ -698,22 +698,47 @@ function wireUI() {
   });
 
   // create event (admin)
-  $("#createEventForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+  // Helper: safely convert <input type="datetime-local"> to ISO
+function toIsoOrNull(v) {
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+$("#createEventForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.currentTarget;
+
+  // Trigger HTML5 validation UI (since we preventDefault)
+  if (!form.reportValidity()) return;
+
+  try {
+    const titleEn = $("#titleEn").value.trim();
+    const startIso = toIsoOrNull($("#startTime").value);
+    const endIso = toIsoOrNull($("#endTime").value);
+
+    if (!titleEn) { setFlash("Title (EN) is required"); $("#titleEn").focus(); return; }
+    if (!startIso) { setFlash("Please provide a valid Start time"); $("#startTime").focus(); return; }
+
     const payload = {
-      title_en: $("#titleEn").value.trim(),
+      title_en: titleEn,
       title_es: $("#titleEs").value.trim() || null,
       description_en: $("#descEn").value.trim() || null,
       description_es: $("#descEs").value.trim() || null,
-      start_time: new Date($("#startTime").value).toISOString(),
-      end_time: $("#endTime").value ? new Date($("#endTime").value).toISOString() : null,
+      start_time: startIso,
+      end_time: endIso,
       language: $("#eventLang").value,
       host_org: $("#hostOrg").value.trim() || null,
       zoom_url: $("#zoomUrl").value.trim() || null,
     };
+
     await createEvent(payload);
-    e.target.reset();
-  });
+    form.reset();
+  } catch (err) {
+    console.error(err);
+    setFlash(err?.message || "Could not create event");
+  }
+});
 }
 
 /* ============= Bootstrap ============= */
