@@ -4,7 +4,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
 
-// For OAuth/magic links, this will auto-use your current GitHub Pages URL
 const REDIRECT_TO = window.location.origin + (window.location.pathname.endsWith("/") ? window.location.pathname : window.location.pathname + "/");
 /* ============================================ */
 
@@ -22,9 +21,9 @@ const state = {
   events: [],
   selectedEvent: null,
   threads: [],
-  commentsByThread: new Map(), // thread_id -> comments[]
-  profileCache: new Map(),     // user_id -> profile
-  files: [],                   // { object_path, file_name, size, signedUrl? }
+  commentsByThread: new Map(),
+  profileCache: new Map(),
+  files: [],
 };
 
 // Basic i18n
@@ -41,7 +40,7 @@ const t = {
       signout: "Sign out",
       email: "Email",
       magic: "Send magic link",
-      magic_hint: "We’ll email you a sign-in link. Check your inbox.",
+      magic_hint: "We'll email you a sign-in link. Check your inbox.",
       or: "or",
     },
     schedule: { title: "Upcoming Talks", empty: "No events yet. Check back soon." },
@@ -145,15 +144,28 @@ function applyI18n() {
   document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
     el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder);
   });
-  // Toggle language chip active
   document.querySelectorAll('.lang-switch .chip').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === state.language);
   });
 }
 
+// Helper: safely convert <input type="datetime-local"> to ISO
+function toIsoOrNull(v) {
+  if (!v) return null;
+  try {
+    // datetime-local format is "YYYY-MM-DDTHH:mm"
+    // We need to ensure it's properly converted to ISO with timezone
+    const localDate = new Date(v);
+    if (isNaN(localDate.getTime())) return null;
+    return localDate.toISOString();
+  } catch(e) {
+    console.error("Date conversion error:", e);
+    return null;
+  }
+}
+
 /* ============= Auth ============= */
 async function initAuth() {
-  // Session
   const { data: { session } } = await supabase.auth.getSession();
   state.session = session || null;
   if (state.session) {
@@ -176,7 +188,6 @@ async function initAuth() {
     showView("schedule");
   });
 
-  // UI wire-up
   $("#emailForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = $("#email").value.trim();
@@ -218,17 +229,23 @@ async function oauth(provider) {
 async function ensureProfile() {
   const uid = state.session?.user?.id;
   if (!uid) return;
-  // The SQL trigger creates a profile row; fetch it
+  
   const { data, error } = await supabase.from("profiles").select("*").eq("id", uid).single();
   if (error) {
-    console.error(error);
+    console.error("Profile fetch error:", error);
     return;
   }
+  
   state.profile = data;
+  console.log("User profile loaded:", data); // Debug log
+  console.log("User role:", data?.role); // Debug log
+  
   $("#userName").textContent = data.full_name ? `@${data.full_name}` : "";
   $("#btnSignIn").style.display = "none";
   $("#btnSignOut").style.display = "inline-block";
   $("#auth").style.display = "none";
+  
+  renderHeader(); // Update header to show/hide admin button
 }
 
 /* ============= Data ============= */
@@ -243,7 +260,7 @@ async function loadEvents() {
     .select("*")
     .order("start_time", { ascending: true });
   if (error) {
-    console.error(error);
+    console.error("Load events error:", error);
     setFlash("Error loading events");
     return;
   }
@@ -296,9 +313,7 @@ async function openEvent(eventId) {
   state.selectedEvent = ev;
   renderEventHeader();
 
-  // Load threads
   await loadThreads(ev.id);
-  // Load files
   await loadFiles(ev.id);
 
   showView("event");
@@ -380,7 +395,6 @@ function renderComments(threadId) {
   container.innerHTML = "";
   const comments = state.commentsByThread.get(threadId) || [];
 
-  // Build a simple 2-level tree
   const byParent = new Map();
   comments.forEach(c => {
     const pid = c.parent_id || "_root";
@@ -429,7 +443,6 @@ function renderComment(comment, byParent, level) {
     });
   });
 
-  // children
   (byParent.get(comment.id) || []).forEach(child => {
     el.appendChild(renderComment(child, byParent, level + 1));
   });
@@ -442,12 +455,10 @@ function resolveProfileName(uid) {
     const p = state.profileCache.get(uid);
     return p.full_name || p.username || "User";
   }
-  // fetch and cache asynchronously
   supabase.from("profiles").select("id,full_name,username").eq("id", uid).single()
     .then(({ data }) => {
       if (data) {
         state.profileCache.set(uid, data);
-        // Could re-render but keep simple
       }
     });
   return "User";
@@ -457,7 +468,6 @@ function canEditComment(c) {
   const uid = state.session?.user?.id;
   if (!uid) return false;
   if (c.created_by === uid) return true;
-  // organizer/admin check: rely on profile role
   return ["organizer", "admin"].includes(state.profile?.role);
 }
 
@@ -491,7 +501,6 @@ async function deleteComment(commentId, threadId) {
 
 /* Files (Storage + attachments table) */
 async function loadFiles(eventId) {
-  // List from attachments table (so we have metadata and owner IDs)
   const { data, error } = await supabase
     .from("attachments")
     .select("*")
@@ -508,13 +517,11 @@ async function uploadFile(file) {
   const uniqueName = `${crypto.randomUUID?.() || Date.now()}-${file.name}`;
   const object_path = `events/${eventId}/${uniqueName}`;
 
-  // 1) upload to storage
   const { error: upErr } = await supabase.storage
     .from("attachments")
     .upload(object_path, file, { upsert: false });
   if (upErr) { setFlash(upErr.message); return; }
 
-  // 2) record in attachments table
   const { error: dbErr } = await supabase.from("attachments").insert({
     event_id: eventId,
     bucket_id: "attachments",
@@ -536,7 +543,7 @@ async function getSignedUrl(path) {
   const { data, error } = await supabase
     .storage
     .from("attachments")
-    .createSignedUrl(path, 60 * 60); // 1h
+    .createSignedUrl(path, 60 * 60);
   if (error) return null;
   return data.signedUrl;
 }
@@ -575,10 +582,8 @@ function canDeleteFile(f) {
 }
 
 async function deleteFile(f) {
-  // 1) delete storage
   const { error: sErr } = await supabase.storage.from("attachments").remove([f.object_path]);
   if (sErr) { setFlash(sErr.message); return; }
-  // 2) delete DB record
   const { error: dErr } = await supabase.from("attachments").delete().eq("bucket_id","attachments").eq("object_path", f.object_path);
   if (dErr) { setFlash(dErr.message); return; }
   setFlash(state.language === "es" ? "Archivo eliminado" : "File deleted");
@@ -587,11 +592,15 @@ async function deleteFile(f) {
 
 /* ============= Admin ============= */
 function isOrganizer() {
-  return ["organizer","admin"].includes(state.profile?.role);
+  const hasRole = ["organizer","admin"].includes(state.profile?.role);
+  console.log("isOrganizer check:", state.profile?.role, "->", hasRole); // Debug log
+  return hasRole;
 }
 
 async function createEvent(payload) {
-  const { error } = await supabase.from("events").insert({
+  console.log("Creating event with payload:", payload); // Debug log
+  
+  const { data, error } = await supabase.from("events").insert({
     title_en: payload.title_en,
     title_es: payload.title_es,
     description_en: payload.description_en,
@@ -604,7 +613,14 @@ async function createEvent(payload) {
     status: "scheduled",
     created_by: state.session.user.id,
   });
-  if (error) { setFlash(error.message); return; }
+  
+  if (error) {
+    console.error("Event creation error:", error);
+    setFlash(`Error: ${error.message}`);
+    return;
+  }
+  
+  console.log("Event created successfully:", data);
   setFlash(state.language === "es" ? "Evento creado" : "Event created");
   await loadEvents();
   showView("schedule");
@@ -630,6 +646,11 @@ function showView(which) {
     $("#admin").style.display = "none";
     $("#hero").style.display = "none";
   } else if (which === "admin") {
+    if (!isOrganizer()) {
+      setFlash("Access denied. You need organizer or admin privileges.");
+      showView("schedule");
+      return;
+    }
     $("#schedule").style.display = "none";
     $("#eventDetail").style.display = "none";
     $("#admin").style.display = "block";
@@ -647,7 +668,6 @@ function wireUI() {
   $("#btnSchedule").addEventListener("click", () => showView("schedule"));
   $("#btnCommunity").addEventListener("click", () => {
     showView("schedule");
-    // tip: could switch to a "community" view later. For now, event discussions live in each event.
   });
   $("#btnAdmin").addEventListener("click", () => showView("admin"));
   $("#backToSchedule").addEventListener("click", () => showView("schedule"));
@@ -697,58 +717,79 @@ function wireUI() {
     $("#fileInput").value = "";
   });
 
-  // create event (admin)
-  // Helper: safely convert <input type="datetime-local"> to ISO
-function toIsoOrNull(v) {
-  if (!v) return null;
-  const d = new Date(v);
-  return isNaN(d.getTime()) ? null : d.toISOString();
-}
+  // create event (admin) - FIXED VERSION
+  $("#createEventForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    console.log("Event form submitted"); // Debug log
+    
+    const form = e.currentTarget;
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
 
-$("#createEventForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const form = e.currentTarget;
+    try {
+      const titleEn = $("#titleEn").value.trim();
+      const startTime = $("#startTime").value;
+      const endTime = $("#endTime").value;
 
-  // Trigger HTML5 validation UI (since we preventDefault)
-  if (!form.reportValidity()) return;
+      console.log("Form values:", { titleEn, startTime, endTime }); // Debug log
 
-  try {
-    const titleEn = $("#titleEn").value.trim();
-    const startIso = toIsoOrNull($("#startTime").value);
-    const endIso = toIsoOrNull($("#endTime").value);
+      if (!titleEn) {
+        setFlash("Title (EN) is required");
+        $("#titleEn").focus();
+        return;
+      }
 
-    if (!titleEn) { setFlash("Title (EN) is required"); $("#titleEn").focus(); return; }
-    if (!startIso) { setFlash("Please provide a valid Start time"); $("#startTime").focus(); return; }
+      if (!startTime) {
+        setFlash("Start time is required");
+        $("#startTime").focus();
+        return;
+      }
 
-    const payload = {
-      title_en: titleEn,
-      title_es: $("#titleEs").value.trim() || null,
-      description_en: $("#descEn").value.trim() || null,
-      description_es: $("#descEs").value.trim() || null,
-      start_time: startIso,
-      end_time: endIso,
-      language: $("#eventLang").value,
-      host_org: $("#hostOrg").value.trim() || null,
-      zoom_url: $("#zoomUrl").value.trim() || null,
-    };
+      const startIso = toIsoOrNull(startTime);
+      const endIso = toIsoOrNull(endTime);
 
-    await createEvent(payload);
-    form.reset();
-  } catch (err) {
-    console.error(err);
-    setFlash(err?.message || "Could not create event");
-  }
-});
+      console.log("Converted dates:", { startIso, endIso }); // Debug log
+
+      if (!startIso) {
+        setFlash("Invalid start time format");
+        $("#startTime").focus();
+        return;
+      }
+
+      const payload = {
+        title_en: titleEn,
+        title_es: $("#titleEs").value.trim() || null,
+        description_en: $("#descEn").value.trim() || null,
+        description_es: $("#descEs").value.trim() || null,
+        start_time: startIso,
+        end_time: endIso,
+        language: $("#eventLang").value,
+        host_org: $("#hostOrg").value.trim() || null,
+        zoom_url: $("#zoomUrl").value.trim() || null,
+      };
+
+      console.log("Submitting payload:", payload); // Debug log
+      
+      await createEvent(payload);
+      form.reset();
+    } catch (err) {
+      console.error("Form submission error:", err);
+      setFlash(err?.message || "Could not create event");
+    }
+  });
 }
 
 /* ============= Bootstrap ============= */
 (async function main() {
+  console.log("App initializing..."); // Debug log
   applyI18n();
   wireUI();
   renderHeader();
   await initAuth();
   await loadEvents();
-
-  // Show auth box if not signed in
   $("#auth").style.display = state.session ? "none" : "block";
+  console.log("App initialized. Session:", !!state.session, "Profile:", state.profile); // Debug log
 })();
