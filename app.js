@@ -654,16 +654,27 @@ function isOrganizer() {
 }
 
 async function createEvent(payload) {
+  if (isCreatingEvent) {
+    console.log("Already creating an event, please wait...");
+    return false;
+  }
+  
+  isCreatingEvent = true;
   console.log("Creating event:", payload);
   
   try {
-    const { data, error } = await supabase
+    // Add timeout to prevent infinite hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000)
+    );
+    
+    const insertPromise = supabase
       .from("events")
-      .insert([{  // Note: wrap in array
+      .insert([{
         title_en: payload.title_en,
-        title_es: payload.title_es,
-        description_en: payload.description_en,
-        description_es: payload.description_es,
+        title_es: payload.title_es || null,
+        description_en: payload.description_en || null,
+        description_es: payload.description_es || null,
         start_time: payload.start_time,
         end_time: payload.end_time || null,
         language: payload.language || "bi",
@@ -672,26 +683,72 @@ async function createEvent(payload) {
         status: "scheduled",
         created_by: state.session.user.id,
       }])
-      .select(); // Add select() to return the created record
+      .select()
+      .single();
+    
+    // Race between the insert and timeout
+    const result = await Promise.race([insertPromise, timeoutPromise]);
+    
+    const { data, error } = result;
     
     if (error) {
       console.error("Event creation error:", error);
-      setFlash(`Error: ${error.message}`);
+      
+      // More specific error messages
+      if (error.code === '42501') {
+        setFlash("Permission denied. Check RLS policies.");
+      } else if (error.code === '23505') {
+        setFlash("Duplicate event.");
+      } else if (error.message?.includes('policies')) {
+        setFlash("RLS policy error. Admin access may be needed.");
+      } else {
+        setFlash(`Error: ${error.message || 'Unknown error'}`);
+      }
       return false;
     }
     
     console.log("Event created successfully:", data);
-    setFlash(state.language === "es" ? "Evento creado exitosamente" : "Event created successfully");
+    setFlash("Event created successfully!");
     
-    // Reload events and switch view
+    // Clear form
+    const form = $("#createEventForm");
+    if (form) form.reset();
+    
+    // Reload and switch view
     await loadEvents();
-    showView("schedule");
+    setTimeout(() => showView("schedule"), 100);
+    
     return true;
     
   } catch (err) {
-    console.error("Unexpected error creating event:", err);
-    setFlash(`Unexpected error: ${err.message}`);
+    console.error("Unexpected error:", err);
+    
+    if (err.message === 'Request timeout after 10 seconds') {
+      setFlash("Request timed out. Check database policies.");
+      
+      // Log diagnostic info
+      console.log("Timeout occurred. Checking connection...");
+      
+      // Test if we can read from the database
+      const { error: testError } = await supabase
+        .from("events")
+        .select("id")
+        .limit(1);
+      
+      if (testError) {
+        console.error("Can't even read events:", testError);
+        setFlash("Database connection issue detected.");
+      } else {
+        console.log("Can read but not write - likely RLS issue");
+        setFlash("Can read but not write - check RLS policies.");
+      }
+    } else {
+      setFlash(`Error: ${err.message}`);
+    }
+    
     return false;
+  } finally {
+    isCreatingEvent = false;
   }
 }
 
