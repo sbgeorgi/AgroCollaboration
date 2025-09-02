@@ -285,24 +285,30 @@ async function initAuth() {
     console.error("Session check error:", err);
   }
 
-  supabase.auth.onAuthStateChange(async (_event, session) => {
-    state.session = session;
-    if (session) {
-      await ensureProfile();
-      await loadFollows();
-      await loadMyRsvps();
+  supabase.auth.onAuthStateChange(async (event, session) => {
+  state.session = session;
+  if (session) {
+    await ensureProfile();
+    await loadFollows();
+    await loadMyRsvps();
+    // Only show flash on explicit sign-in
+    if (event === 'SIGNED_IN') {
       setFlash(state.language === "es" ? "Sesión iniciada" : "Signed in");
-    } else {
-      state.profile = null;
-      state.followedEventIds.clear();
-      state.rsvpsByEvent.clear();
+    }
+  } else {
+    state.profile = null;
+    state.followedEventIds.clear();
+    state.rsvpsByEvent.clear();
+    // Only show flash on explicit sign-out
+    if (event === 'SIGNED_OUT') {
       setFlash(state.language === "es" ? "Sesión cerrada" : "Signed out");
     }
-    renderHeader();
-    renderAuthUI();
-    renderEventsList();
-    if (state.selectedEvent) renderEventHeader();
-  });
+  }
+  renderHeader();
+  renderAuthUI();
+  renderEventsList();
+  if (state.selectedEvent) renderEventHeader();
+});
 }
 
 function renderAuthUI() {
@@ -312,8 +318,8 @@ function renderAuthUI() {
   const btnSignOut = $("#btnSignOut");
   const userName = $("#userName");
 
-  // Show hero always, show auth if not signed in
   if (state.session) {
+    // User is signed in: Hide auth section, show hero section
     if (authSection) authSection.style.display = "none";
     if (heroSection) heroSection.style.display = "block";
     btnSignIn.style.display = "none";
@@ -321,8 +327,9 @@ function renderAuthUI() {
     userName.style.display = "inline";
     userName.textContent = state.profile?.full_name ? `@${state.profile.full_name}` : "";
   } else {
+    // User is not signed in: Show auth section, HIDE hero section
     if (authSection) authSection.style.display = "block";
-    if (heroSection) heroSection.style.display = "block";
+    if (heroSection) heroSection.style.display = "none"; // <-- THE FIX
     btnSignIn.style.display = "inline-block";
     btnSignOut.style.display = "none";
     userName.style.display = "none";
