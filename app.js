@@ -427,14 +427,25 @@ function renderThreads() {
     `;
     list.appendChild(wrap);
     loadComments(th.id);
-    wrap.querySelector("form.reply-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const content = e.currentTarget.querySelector("textarea").value.trim();
-      if (!content) return;
-      await createComment(th.id, null, content);
-      e.currentTarget.reset();
-      loadComments(th.id);
-    });
+
+    // V V V THIS IS THE FIX V V V
+    const replyForm = wrap.querySelector("form.reply-form");
+    if (replyForm) {
+      replyForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        // Use the stable 'replyForm' variable instead of e.currentTarget
+        const content = replyForm.querySelector("textarea").value.trim();
+        if (!content) return;
+
+        await createComment(th.id, null, content);
+        
+        replyForm.reset(); // This is now safe
+        
+        // Await the reload for consistency
+        await loadComments(th.id); 
+      });
+    }
+    // ^ ^ ^ THIS IS THE FIX ^ ^ ^
   }
 }
 
@@ -841,9 +852,7 @@ function wireUI() {
   }
 
   // OAuth buttons
-  const btnGitHub = $("#btnGitHub");
   const btnGoogle = $("#btnGoogle");
-  if (btnGitHub) btnGitHub.addEventListener("click", () => oauth("github"));
   if (btnGoogle) btnGoogle.addEventListener("click", () => oauth("google"));
 
   // Navigation
