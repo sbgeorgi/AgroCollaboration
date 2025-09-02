@@ -848,85 +848,98 @@ function wireUI() {
     });
   }
 
-  // Create event form
+  // Create event form - COMPLETELY FIXED VERSION
   const createEventForm = $("#createEventForm");
-if (createEventForm) {
-  // Remove any existing listeners first
-  createEventForm.replaceWith(createEventForm.cloneNode(true));
-  const newForm = $("#createEventForm");
-  
-  newForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    e.stopPropagation(); // Prevent bubbling
-    
-    // Disable the submit button to prevent multiple submissions
-    const submitBtn = newForm.querySelector('button[type="submit"]');
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Creating...";
-    }
-    
-    console.log("Create event form submitted");
-    
-    try {
-      const titleEn = $("#titleEn")?.value.trim();
-      const startTime = $("#startTime")?.value;
-      const endTime = $("#endTime")?.value;
-
-      console.log("Form values:", { titleEn, startTime, endTime });
-
-      if (!titleEn) {
-        setFlash("Title (EN) is required");
+  if (createEventForm) {
+    // Use a named function so we can ensure single attachment
+    const handleEventSubmit = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Check if already submitting
+      if (isCreatingEvent) {
+        console.log("Already processing, please wait...");
         return;
       }
-
-      if (!startTime) {
-        setFlash("Start time is required");
-        return;
-      }
-
-      const startIso = toIsoOrNull(startTime);
-      const endIso = toIsoOrNull(endTime);
-
-      console.log("Converted dates:", { startIso, endIso });
-
-      if (!startIso) {
-        setFlash("Invalid start time");
-        return;
-      }
-
-      const payload = {
-        title_en: titleEn,
-        title_es: $("#titleEs")?.value.trim() || null,
-        description_en: $("#descEn")?.value.trim() || null,
-        description_es: $("#descEs")?.value.trim() || null,
-        start_time: startIso,
-        end_time: endIso,
-        language: $("#eventLang")?.value || "bi",
-        host_org: $("#hostOrg")?.value.trim() || null,
-        zoom_url: $("#zoomUrl")?.value.trim() || null,
-      };
-
-      console.log("Submitting payload:", payload);
       
-      const success = await createEvent(payload);
+      console.log("Create event form submitted");
       
-      if (success) {
-        newForm.reset();
-      }
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn?.textContent;
       
-    } catch (err) {
-      console.error("Form submission error:", err);
-      setFlash(err?.message || "Could not create event");
-    } finally {
-      // Re-enable the submit button
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = tr("event.create", "Create Event");
+      try {
+        // Disable button
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Creating...";
+        }
+        
+        const titleEn = $("#titleEn")?.value.trim();
+        const startTime = $("#startTime")?.value;
+        const endTime = $("#endTime")?.value;
+
+        console.log("Form values:", { titleEn, startTime, endTime });
+
+        // Validation
+        if (!titleEn) {
+          setFlash("Title (EN) is required");
+          $("#titleEn")?.focus();
+          return;
+        }
+
+        if (!startTime) {
+          setFlash("Start time is required");
+          $("#startTime")?.focus();
+          return;
+        }
+
+        const startIso = toIsoOrNull(startTime);
+        const endIso = endTime ? toIsoOrNull(endTime) : null;
+
+        console.log("Converted dates:", { startIso, endIso });
+
+        if (!startIso) {
+          setFlash("Invalid start time format");
+          $("#startTime")?.focus();
+          return;
+        }
+
+        const payload = {
+          title_en: titleEn,
+          title_es: $("#titleEs")?.value.trim() || null,
+          description_en: $("#descEn")?.value.trim() || null,
+          description_es: $("#descEs")?.value.trim() || null,
+          start_time: startIso,
+          end_time: endIso,
+          language: $("#eventLang")?.value || "bi",
+          host_org: $("#hostOrg")?.value.trim() || null,
+          zoom_url: $("#zoomUrl")?.value.trim() || null,
+        };
+
+        console.log("Submitting payload:", payload);
+        
+        const success = await createEvent(payload);
+        
+        if (success) {
+          console.log("Event created, form will be reset");
+        }
+        
+      } catch (err) {
+        console.error("Form submission error:", err);
+        setFlash(err?.message || "Could not create event");
+      } finally {
+        // Re-enable button
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText || tr("event.create", "Create Event");
+        }
       }
-    }
-  }, { once: true }); // Ensure listener only fires once
-}
+    };
+    
+    // Remove all existing listeners and add new one
+    createEventForm.removeEventListener("submit", handleEventSubmit);
+    createEventForm.addEventListener("submit", handleEventSubmit);
+  }
 
   // Year in footer
   const yearEl = $("#year");
