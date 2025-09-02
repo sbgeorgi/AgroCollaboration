@@ -14,6 +14,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   },
 });
 
+let isCreatingEvent = false;
+
+
 const state = {
   session: null,
   profile: null,
