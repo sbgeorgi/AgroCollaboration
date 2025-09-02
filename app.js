@@ -656,30 +656,43 @@ function isOrganizer() {
 async function createEvent(payload) {
   console.log("Creating event:", payload);
   
-  const { data, error } = await supabase.from("events").insert({
-    title_en: payload.title_en,
-    title_es: payload.title_es,
-    description_en: payload.description_en,
-    description_es: payload.description_es,
-    start_time: payload.start_time,
-    end_time: payload.end_time || null,
-    language: payload.language || "bi",
-    host_org: payload.host_org || null,
-    zoom_url: payload.zoom_url || null,
-    status: "scheduled",
-    created_by: state.session.user.id,
-  });
-  
-  if (error) {
-    console.error("Event creation error:", error);
-    setFlash(`Error: ${error.message}`);
-    return;
+  try {
+    const { data, error } = await supabase
+      .from("events")
+      .insert([{  // Note: wrap in array
+        title_en: payload.title_en,
+        title_es: payload.title_es,
+        description_en: payload.description_en,
+        description_es: payload.description_es,
+        start_time: payload.start_time,
+        end_time: payload.end_time || null,
+        language: payload.language || "bi",
+        host_org: payload.host_org || null,
+        zoom_url: payload.zoom_url || null,
+        status: "scheduled",
+        created_by: state.session.user.id,
+      }])
+      .select(); // Add select() to return the created record
+    
+    if (error) {
+      console.error("Event creation error:", error);
+      setFlash(`Error: ${error.message}`);
+      return false;
+    }
+    
+    console.log("Event created successfully:", data);
+    setFlash(state.language === "es" ? "Evento creado exitosamente" : "Event created successfully");
+    
+    // Reload events and switch view
+    await loadEvents();
+    showView("schedule");
+    return true;
+    
+  } catch (err) {
+    console.error("Unexpected error creating event:", err);
+    setFlash(`Unexpected error: ${err.message}`);
+    return false;
   }
-  
-  console.log("Event created:", data);
-  setFlash(state.language === "es" ? "Evento creado" : "Event created");
-  await loadEvents();
-  showView("schedule");
 }
 
 /* ============= Views ============= */
@@ -837,60 +850,83 @@ function wireUI() {
 
   // Create event form
   const createEventForm = $("#createEventForm");
-  if (createEventForm) {
-    createEventForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      console.log("Create event form submitted");
-      
-      const form = e.currentTarget;
-      if (!form.checkValidity()) {
-        form.reportValidity();
+if (createEventForm) {
+  // Remove any existing listeners first
+  createEventForm.replaceWith(createEventForm.cloneNode(true));
+  const newForm = $("#createEventForm");
+  
+  newForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent bubbling
+    
+    // Disable the submit button to prevent multiple submissions
+    const submitBtn = newForm.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating...";
+    }
+    
+    console.log("Create event form submitted");
+    
+    try {
+      const titleEn = $("#titleEn")?.value.trim();
+      const startTime = $("#startTime")?.value;
+      const endTime = $("#endTime")?.value;
+
+      console.log("Form values:", { titleEn, startTime, endTime });
+
+      if (!titleEn) {
+        setFlash("Title (EN) is required");
         return;
       }
 
-      try {
-        const titleEn = $("#titleEn")?.value.trim();
-        const startTime = $("#startTime")?.value;
-        const endTime = $("#endTime")?.value;
-
-        if (!titleEn) {
-          setFlash("Title (EN) is required");
-          return;
-        }
-
-        if (!startTime) {
-          setFlash("Start time is required");
-          return;
-        }
-
-        const startIso = toIsoOrNull(startTime);
-        const endIso = toIsoOrNull(endTime);
-
-        if (!startIso) {
-          setFlash("Invalid start time");
-          return;
-        }
-
-        const payload = {
-          title_en: titleEn,
-          title_es: $("#titleEs")?.value.trim() || null,
-          description_en: $("#descEn")?.value.trim() || null,
-          description_es: $("#descEs")?.value.trim() || null,
-          start_time: startIso,
-          end_time: endIso,
-          language: $("#eventLang")?.value || "bi",
-          host_org: $("#hostOrg")?.value.trim() || null,
-          zoom_url: $("#zoomUrl")?.value.trim() || null,
-        };
-
-        await createEvent(payload);
-        form.reset();
-      } catch (err) {
-        console.error("Form error:", err);
-        setFlash(err?.message || "Could not create event");
+      if (!startTime) {
+        setFlash("Start time is required");
+        return;
       }
-    });
-  }
+
+      const startIso = toIsoOrNull(startTime);
+      const endIso = toIsoOrNull(endTime);
+
+      console.log("Converted dates:", { startIso, endIso });
+
+      if (!startIso) {
+        setFlash("Invalid start time");
+        return;
+      }
+
+      const payload = {
+        title_en: titleEn,
+        title_es: $("#titleEs")?.value.trim() || null,
+        description_en: $("#descEn")?.value.trim() || null,
+        description_es: $("#descEs")?.value.trim() || null,
+        start_time: startIso,
+        end_time: endIso,
+        language: $("#eventLang")?.value || "bi",
+        host_org: $("#hostOrg")?.value.trim() || null,
+        zoom_url: $("#zoomUrl")?.value.trim() || null,
+      };
+
+      console.log("Submitting payload:", payload);
+      
+      const success = await createEvent(payload);
+      
+      if (success) {
+        newForm.reset();
+      }
+      
+    } catch (err) {
+      console.error("Form submission error:", err);
+      setFlash(err?.message || "Could not create event");
+    } finally {
+      // Re-enable the submit button
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = tr("event.create", "Create Event");
+      }
+    }
+  }, { once: true }); // Ensure listener only fires once
+}
 
   // Year in footer
   const yearEl = $("#year");
