@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Almuerzo Agrivoltaico • Seminar Platform</title>
   <meta name="description" content="An informal seminar series to share advances in agrivoltaics in Latin America (EN/ES)." />
-  <meta property="og:title" content="Almuerzo Agrivoltaico • Seminar Platform" />
-  <meta property="og:description" content="Bilingual seminar series on agrivoltaics in Latin America." />
-  <meta property="og:type" content="website" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="preconnect" href="https://esm.sh" crossorigin />
@@ -16,7 +13,7 @@
   <header class="site-header">
     <div class="container header-grid">
       <div class="brand">
-        <div class="logo-circle">A</div>
+        <a href="#" class="logo-circle">A</a>
         <div class="brand-text">
           <div class="title">Almuerzo Agrivoltaico</div>
           <div class="subtitle" data-i18n="tagline">An informal seminar series to share advances in agrivoltaics in Latin America</div>
@@ -24,8 +21,9 @@
       </div>
       <nav class="nav">
         <button id="btnSchedule" class="link" data-i18n="nav.schedule">Schedule</button>
-        <button id="btnCommunity" class="link" data-i18n="nav.community">Community</button>
-        <button id="btnAdmin" class="link" data-i18n="nav.admin">Admin</button>
+        <!-- Community button can be re-enabled later if a dedicated community page is built -->
+        <!-- <button id="btnCommunity" class="link" data-i18n="nav.community">Community</button> -->
+        <button id="btnAdmin" class="link" data-i18n="nav.admin" style="display:none;">Admin</button>
         <div class="divider"></div>
         <div class="lang-switch">
           <button class="chip" data-lang="en">EN</button>
@@ -43,7 +41,7 @@
   <div id="flash" class="flash" role="status" aria-live="polite"></div>
 
   <main class="container">
-    <!-- Hero -->
+    <!-- Hero (shown to logged-out users on the main page) -->
     <section id="hero" class="card hero">
       <h1>Almuerzo Agrivoltaico</h1>
       <p data-i18n="intro">
@@ -56,10 +54,11 @@
       </div>
     </section>
 
-    <!-- Auth -->
-    <section id="auth" class="card" aria-labelledby="authTitle">
+    <!-- Auth (shown when sign-in is required) -->
+    <section id="auth" class="card" aria-labelledby="authTitle" style="display:none;">
       <div class="auth-centered">
         <h2 id="authTitle" data-i18n="auth.title">Sign in to participate</h2>
+        <p data-i18n="auth.reason">You'll need an account to RSVP, follow events, and join the discussion.</p>
 
         <button id="btnGoogle" class="btn-social btn-google">
           <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
@@ -83,29 +82,32 @@
     </section>
 
     <!-- Schedule -->
-    <section id="schedule" class="card" aria-labelledby="scheduleTitle">
+    <section id="schedule" class="card" aria-labelledby="scheduleTitle" style="display:none;">
       <div class="section-header">
-        <h2 id="scheduleTitle" data-i18n="schedule.title">Upcoming Talks</h2>
-        <div class="toolbar">
-          <div class="segmented">
-            <button class="chip" data-filter="upcoming" id="filterUpcoming" aria-pressed="true" data-i18n="filters.upcoming">Upcoming</button>
-            <button class="chip" data-filter="past" id="filterPast" aria-pressed="false" data-i18n="filters.past">Past</button>
-            <button class="chip" data-filter="all" id="filterAll" aria-pressed="false" data-i18n="filters.all">All</button>
+        <h2 id="scheduleTitle" data-i18n="schedule.title">Event Schedule</h2>
+        <div class="event-filters">
+          <div class="filter-group" id="eventTimeFilter">
+            <button class="chip active" data-filter="upcoming" data-i18n="filter.upcoming">Upcoming</button>
+            <button class="chip" data-filter="past" data-i18n="filter.past">Past</button>
+            <button class="chip" data-filter="all" data-i18n="filter.all">All</button>
           </div>
-          <div class="segmented">
-            <button class="chip" data-langfilter="all" id="fltLangAll" aria-pressed="true" data-i18n="filters.lang_all">All languages</button>
-            <button class="chip" data-langfilter="en" id="fltLangEn" aria-pressed="false">EN</button>
-            <button class="chip" data-langfilter="es" id="fltLangEs" aria-pressed="false">ES</button>
-            <button class="chip" data-langfilter="bi" id="fltLangBi" aria-pressed="false">BI</button>
+          <div class="filter-group">
+            <label for="langFilter" class="sr-only" data-i18n="filter.language">Language</label>
+            <select id="langFilter">
+              <option value="all" data-i18n="lang.all">All Languages</option>
+              <option value="en" data-i18n="lang.en">English</option>
+              <option value="es" data-i18n="lang.es">Español</option>
+              <option value="bi" data-i18n="lang.bi">Bilingual</option>
+            </select>
           </div>
           <div class="search-bar">
-            <input id="search" type="search" placeholder="Search..." data-i18n-placeholder="search.placeholder" />
+            <input id="search" type="search" placeholder="Search events..." data-i18n-placeholder="search.placeholder" />
           </div>
         </div>
       </div>
       <div id="eventsList" class="events-grid"></div>
       <div id="emptyEvents" class="empty" style="display:none;" data-i18n="schedule.empty">
-        No events yet. Check back soon.
+        No events match your filters. Check back soon.
       </div>
     </section>
 
@@ -113,26 +115,7 @@
     <section id="eventDetail" class="card" style="display:none;">
       <button class="btn-ghost" id="backToSchedule">← <span data-i18n="back.schedule">Back to schedule</span></button>
       <div id="eventHeader" class="event-header"></div>
-
-      <div class="header-actions">
-        <div class="action-group">
-          <button id="btnFollowEvent" class="chip">☆ <span data-i18n="actions.follow">Follow</span></button>
-          <select id="rsvpSelect" class="chip">
-            <option value="" data-i18n="rsvp.none">RSVP</option>
-            <option value="going" data-i18n="rsvp.going">Going</option>
-            <option value="interested" data-i18n="rsvp.interested">Interested</option>
-            <option value="not_going" data-i18n="rsvp.not_going">Not going</option>
-          </select>
-          <div class="dropdown">
-            <button id="btnAddToCal" class="chip">📅 <span data-i18n="actions.add_to_cal">Add to calendar</span></button>
-            <div class="dropdown-menu" id="calMenu" style="display:none;">
-              <button class="dropdown-item" id="calGoogle" data-i18n="actions.google_cal">Google Calendar</button>
-              <button class="dropdown-item" id="calIcs" data-i18n="actions.download_ics">Download .ics</button>
-            </div>
-          </div>
-          <button id="btnShare" class="chip">🔗 <span data-i18n="actions.share">Share</span></button>
-        </div>
-      </div>
+      <div id="eventActions" class="event-actions"></div>
 
       <div class="tabs">
         <button class="tab active" data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
@@ -141,8 +124,8 @@
       </div>
 
       <div id="tab_discussion" class="tab-panel">
-        <form id="newThreadForm" class="inline-form">
-          <input id="threadTitle" type="text" placeholder="New topic title…" data-i18n-placeholder="thread.placeholder" />
+        <form id="newThreadForm" class="inline-form" style="display:none;">
+          <input id="threadTitle" type="text" placeholder="New discussion topic…" data-i18n-placeholder="thread.placeholder" />
           <button class="btn-primary" type="submit" data-i18n="thread.create">Create Topic</button>
         </form>
         <div id="threadsList" class="threads"></div>
@@ -152,8 +135,10 @@
       </div>
 
       <div id="tab_files" class="tab-panel" style="display:none;">
-        <form id="uploadForm" class="inline-form">
-          <input id="fileInput" type="file" />
+        <form id="uploadForm" class="inline-form" style="display:none;">
+          <label for="fileInput" class="btn-secondary" data-i18n="files.choose">Choose File</label>
+          <input id="fileInput" type="file" style="display:none;" />
+          <span id="fileName"></span>
           <button class="btn-primary" type="submit" data-i18n="files.upload">Upload</button>
         </form>
         <div id="filesList" class="files"></div>
@@ -170,7 +155,7 @@
       <h2 data-i18n="admin.title">Organizer Tools</h2>
       <form id="createEventForm" class="grid-form">
         <div>
-          <label data-i18n="event.title_en">Title (EN)</label>
+          <label data-i18n="event.title_en">Title (EN)*</label>
           <input id="titleEn" required />
         </div>
         <div>
@@ -179,14 +164,14 @@
         </div>
         <div class="col-span-2">
           <label data-i18n="event.desc_en">Description (EN)</label>
-          <textarea id="descEn"></textarea>
+          <textarea id="descEn" rows="4"></textarea>
         </div>
         <div class="col-span-2">
           <label data-i18n="event.desc_es">Description (ES)</label>
-          <textarea id="descEs"></textarea>
+          <textarea id="descEs" rows="4"></textarea>
         </div>
         <div>
-          <label data-i18n="event.start">Start time</label>
+          <label data-i18n="event.start">Start time*</label>
           <input id="startTime" type="datetime-local" required />
         </div>
         <div>
@@ -207,23 +192,23 @@
         </div>
         <div class="col-span-2">
           <label data-i18n="event.zoom">Zoom URL (members only)</label>
-          <input id="zoomUrl" type="url" />
+          <input id="zoomUrl" type="url" placeholder="https://zoom.us/j/..." />
+        </div>
+         <div>
+            <label data-i18n="event.reg_url">Registration URL</label>
+            <input id="registrationUrl" type="url" />
         </div>
         <div>
-          <label data-i18n="event.registration">Registration URL</label>
-          <input id="registrationUrl" type="url" />
+            <label data-i18n="event.live_url">Livestream URL</label>
+            <input id="livestreamUrl" type="url" />
         </div>
         <div>
-          <label data-i18n="event.livestream">Livestream URL</label>
-          <input id="livestreamUrl" type="url" />
+            <label data-i18n="event.rec_url">Recording URL</label>
+            <input id="recordingUrl" type="url" />
         </div>
         <div>
-          <label data-i18n="event.recording">Recording URL</label>
-          <input id="recordingUrl" type="url" />
-        </div>
-        <div class="col-span-2">
-          <label data-i18n="event.tags">Tags (comma separated)</label>
-          <input id="tags" placeholder="agrivoltaics, PV, crops…" />
+            <label data-i18n="event.tags">Tags (comma-separated)</label>
+            <input id="topicTags" placeholder="agrivoltaics, policy, solar" />
         </div>
         <div class="col-span-2">
           <button class="btn-primary" type="submit" data-i18n="event.create">Create Event</button>
