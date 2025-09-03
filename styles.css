@@ -71,9 +71,10 @@ a:hover {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1680px; /* Increased from 1200px for a wider layout */
+  width: 100%;      /* Ensures it takes full width up to the max-width */
   margin: 0 auto;
-  padding: var(--space-4);
+  padding: 0 var(--space-4); /* Use horizontal padding only */
 }
 
 /* Header */
@@ -125,7 +126,8 @@ a:hover {
   gap: var(--space-2);
   flex-wrap: wrap;
 }
-.link {
+.link,
+a.link {
   background: none;
   border: 1px solid transparent;
   color: var(--text);
@@ -133,12 +135,17 @@ a:hover {
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  font-family: inherit;
+  font-size: inherit;
 }
-.link:hover {
+.link:hover,
+a.link:hover {
   color: var(--brand);
   background: color-mix(in oklab, var(--bg) 80%, transparent);
+  text-decoration: none;
 }
-.link:focus-visible {
+.link:focus-visible,
+a.link:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ring);
 }
@@ -318,7 +325,8 @@ button[disabled],
   border-radius: var(--radius);
   padding: var(--space-4);
   box-shadow: var(--shadow);
-  margin: var(--space-4) 0;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 .hero {
   background: radial-gradient(
@@ -468,6 +476,7 @@ button[disabled],
   justify-content: space-between;
   gap: var(--space-3);
   flex-wrap: wrap;
+  margin-bottom: var(--space-3);
 }
 .search-bar input {
   width: clamp(220px, 28vw, 280px);
@@ -1016,6 +1025,87 @@ input[type='search'] {
   background: #0b1016;
 }
 
+/* --- Styles for about.html --- */
+main.section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    box-shadow: var(--shadow);
+    margin: var(--space-4) auto;
+}
+#map {
+    height: 500px;
+    border-radius: var(--radius-sm);
+    background-color: var(--card-2);
+    border: 1px solid var(--border);
+    margin-bottom: var(--space-6);
+}
+/* Leaflet dark theme overrides */
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background: var(--card-2);
+    color: var(--text);
+    box-shadow: var(--shadow-lg);
+}
+.leaflet-popup-content b { color: var(--brand); }
+.leaflet-container a.leaflet-popup-close-button { color: var(--muted); }
+.leaflet-container a.leaflet-popup-close-button:hover { color: var(--text); }
+.leaflet-control-attribution, .leaflet-control-attribution a { color: var(--muted-2) !important; }
+.leaflet-legend {
+    padding: 1rem;
+    background: color-mix(in oklab, var(--card) 90%, transparent);
+    backdrop-filter: blur(5px);
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    line-height: 1.8;
+    color: var(--text);
+}
+.leaflet-legend strong {
+    display: block; margin-bottom: 0.5rem; font-size: 1rem; color: var(--text);
+}
+.leaflet-legend div { display: flex; align-items: center; gap: 0.5rem; }
+
+#detailed-sites-wrapper .detailed-content-section {
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--border);
+}
+#detailed-sites-wrapper .detailed-content-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+.alternating-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+    align-items: center;
+    margin-top: var(--space-4);
+}
+.alternating-item:nth-child(even) .alternating-item__text {
+    order: 2;
+}
+.alternating-item__image img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+.alternating-item__text h3 {
+    margin-top: 0;
+}
+.alternating-item__text p {
+    color: var(--muted);
+}
+.citation-link {
+    font-size: 0.8em;
+    vertical-align: super;
+    margin: 0 2px;
+}
+
+
 /* Responsive tweaks */
 @media (max-width: 1024px) {
   .admin-layout {
@@ -1025,11 +1115,14 @@ input[type='search'] {
 }
 
 @media (max-width: 840px) {
-  .container {
-    padding: var(--space-3);
-  }
   .events-grid {
     grid-template-columns: 1fr;
+  }
+  .alternating-item {
+      grid-template-columns: 1fr;
+  }
+  .alternating-item:nth-child(even) .alternating-item__text {
+      order: 0;
   }
 }
 @media (max-width: 680px) {

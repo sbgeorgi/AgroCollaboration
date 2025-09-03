@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>About • Almuerzo Agrivoltaico</title>
+    <meta name="description"
+        content="Learn about the global collaboration and living labs advancing agrivoltaics research." />
+    <link rel="stylesheet" href="styles.css" />
+    <!-- Leaflet CSS for map display -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        /* Apply card styling consistent with admin.html */
+        main.container .content-card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: var(--space-4);
+            margin-top: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        /* Adjust map height and styling within the card */
+        #map {
+            height: 450px;
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-5);
+            border: 1px solid var(--border);
+        }
+
+        /* Adjust section header alignment inside the card */
+        .content-card .section-header {
+            text-align: left;
+            margin-bottom: var(--space-3);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container header-grid">
+            <div class="brand">
+                <a href="index.html" style="display: contents; text-decoration: none;">
+                    <div class="logo-circle">A</div>
+                    <div class="brand-text">
+                        <div class="title">Almuerzo Agrivoltaico</div>
+                        <div class="subtitle" data-i18n="tagline">
+                            An informal seminar series to share advances in agrivoltaics in Latin America
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+                <a href="about.html" class="link" data-i18n="nav.about">About</a>
+                <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+                <div class="divider"></div>
+                <div id="langSwitch" class="lang-switch-slider" data-lang="en">
+                    <span>EN</span>
+                    <span>ES</span>
+                </div>
+                <div class="auth-area">
+                    <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
+                        <span id="userInitial"></span>
+                    </button>
+                    <span id="userName"></span>
+                    <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
+                    <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+                        Sign out
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div id="flash" class="flash" role="status" aria-live="polite"></div>
+
+    <main class="container">
+        <div class="content-card">
+            <div class="section-header">
+                <h2>Global Agrivoltaic Learning Labs</h2>
+                <p class="subtitle">Interactive map showcasing key research and collaboration sites for
+                    agrivoltaics across the globe.</p>
+            </div>
+            <div id="map"></div>
+    
+            <!-- Detailed Site Sections -->
+            <div id="detailed-sites-wrapper">
+                <section class="detailed-content-section" id="arizona-sites-detailed">
+                    <div class="section-header">
+                        <h2>Arizona (USA) Research Sites</h2>
+                    </div>
+                    <!-- Biosphere 2 -->
+                    <div class="alternating-item">
+                        <div class="alternating-item__text">
+                            <h3>Biosphere 2 Agrivoltaics Research Laboratory</h3>
+                            <p>Biosphere 2 hosts our Agrivoltaic Learning Lab -- a 30 kW array 3 m (≈9 ft) above test
+                                plots. Established in 2017, this was the first U.S. dryland agrivoltaics experimental
+                                sites.<sup class='citation-link'><a
+                                        href='https://biosphere2.org/research/research-initiatives/agrivoltaics'
+                                        target='_blank' rel='noopener'>[Biosphere 2]</a></sup><sup class='citation-link'><a
+                                        href='https://www.agrisolarclearinghouse.org/biosphere-2-agrivoltaic-learning-lab/'
+                                        target='_blank' rel='noopener'>[AgriSolar]</a></sup></p>
+                        </div>
+                        <div class="alternating-item__image">
+                            <img src="static/b2agrivoltaics.jpg" alt="Agrivoltaics Research at Biosphere 2">
+                        </div>
+                    </div>
+                    <!-- AES Utility-Scale Site -->
+                    <div class="alternating-item">
+                        <div class="alternating-item__text">
+                            <h3>AZ Utility-scale Agrivoltaics Learning Lab</h3>
+                            <p>Building on the Biosphere 2 success, the team responded to a call for proposals from the
+                                US Dept of Energy asking for Foundational Agrivoltaic Research at the Megawatt Scale
+                                (FARMS). They secured a $1.2 million award in 2023 to retrofit a 10 MW section of a
+                                functional PV facility in central Arizona—one of only six projects funded nationwide.<sup
+                                    class='citation-link'><a
+                                        href='https://news.arizona.edu/news/uarizona-researchers-awarded-12m-explore-farming-existing-solar-power-sites'
+                                        target='_blank' rel='noopener'>[UA Grant]</a></sup><sup class='citation-link'><a
+                                        href='https://www.energy.gov/eere/solar/foundational-agrivoltaic-research-megawatt-scale-farms-funding-program'
+                                        target='_blank' rel='noopener'>[DOE FARMS]</a></sup></p>
+                        </div>
+                        <div class="alternating-item__image">
+                            <img src="static/aesagriv.jpg" alt="AES Utility-Scale Agrivoltaics Site">
+                        </div>
+                    </div>
+                </section>
+    
+                <section class="detailed-content-section" id="colorado-site-detailed">
+                    <div class="section-header">
+                        <h2>Colorado (USA) Agrivoltaics Collaboration</h2>
+                    </div>
+                    <div class="alternating-item">
+                        <div class="alternating-item__text">
+                            <h3>Jack’s Solar Garden &amp; NREL InSPIRE Program</h3>
+                            <p>In Colorado, agrivoltaics research is carried out via a multi-institution consortium,
+                                primarily with Colorado State University (CSU) and the National Renewable Energy
+                                Laboratory (NREL).<sup class='citation-link'><a
+                                        href='https://www.nrel.gov/news/detail/program/2021/future-of-agriculture-combined-with-renewable-energy-finds-success-at-jacks-solar-garden'
+                                        target='_blank' rel='noopener'>[NREL]</a></sup> Jack’s Solar Garden is a
+                                1.2&nbsp;MW community solar farm that serves as a nationally recognized agrivoltaics
+                                showcase.<sup class='citation-link'><a
+                                        href='https://www.agrisolarclearinghouse.org/case-study-jacks-solar-garden/'
+                                        target='_blank' rel='noopener'>[AgriSolar]</a></sup> Sprout City Farms supports
+                                farming activities at the site enabling the team to study 30+ crop types and
+                                varieties every growing season!<sup class='citation-link'><a
+                                        href='https://www.lhvc.com/story/2024/05/22/news/sprout-city-farms-farms-with-jacks-solar-garden/9200.html'
+                                        target='_blank' rel='noopener'>[Sprout City Farms]</a></sup></p>
+                        </div>
+                        <div class="alternating-item__image"><img src="static/jacksagriv.jpg"
+                                alt="Agrivoltaics research at Jack's Solar Garden, Colorado"></div>
+                    </div>
+                </section>
+    
+                <section class="detailed-content-section" id="kenya-site-detailed">
+                     <div class="section-header">
+                        <h2>Kenya Community Agrivoltaics</h2>
+                    </div>
+                    <div class="alternating-item">
+                        <div class="alternating-item__text">
+                            <h3>Makueni Community Agrivoltaics Learning Lab</h3>
+                            <p>Launched in July 2023, our site is the first in Kenya built within a community to be operated by and provide food for the community. The elevated PV canopy drives a solar-pump and micro-grid that supplies irrigation water, classroom lighting and refrigeration for the local school. Shade from the panels lowers canopy temperatures and halves evapotranspiration, boosting yields in this semi-arid climate.</p>
+                        </div>
+                        <div class="alternating-item__image"><img src="static/kenyaagriv.jpg"
+                                alt="Community agrivoltaics project in Makueni County, Kenya"></div>
+                    </div>
+                </section>
+    
+                <section class="detailed-content-section" id="israel-site-detailed">
+                    <div class="section-header">
+                        <h2>Israel Agrivoltaics Research</h2>
+                    </div>
+                    <div class="alternating-item">
+                        <div class="alternating-item__text">
+                            <h3>Arava Desert Initiatives</h3>
+                            <p>In Israel’s southern Arava Valley, our partners pioneer agrivoltaic systems for extreme desert farming. Pilot plots at Kibbutz Ketura’s solar park combine PV canopies over vegetables and forage, recording up to 50% cuts in irrigation demand and cooler leaf temperatures without yield loss. These findings highlight agrivoltaics’ promise for hyper-arid regions.</p>
+                        </div>
+                        <div class="alternating-item__image"><img src="static/aravaagriv.jpg"
+                                alt="Agrivoltaics research in the Arava Desert, Israel"></div>
+                    </div>
+                </section>
+    
+                <section class="detailed-content-section" id="morocco-collaboration-detailed">
+                    <div class="section-header">
+                        <h2>Morocco Agrivoltaics Collaboration</h2>
+                    </div>
+                    <div class="alternating-item">
+                        <div class="alternating-item__text">
+                            <h3>Green Energy Park and North African Initiatives</h3>
+                            <p>We partner with the Green Energy Park in Ben Guerir to build the first replicated agrivoltaics platform in North Africa. A fixed-tilt chess-board canopy was installed on an experimental farm in 2023 to test cereals and vegetables. Early monitoring shows 30% irrigation savings and up to a 5% PV efficiency gain from evaporative cooling.</p>
+                        </div>
+                        <div class="alternating-item__image"><img src="static/um6pagriv.jpeg"
+                                alt="Green Energy Park in Morocco for agrivoltaics research"></div>
+                    </div>
+                </section>
+    
+                <section class="detailed-content-section" id="mexico-collaboration-detailed">
+                     <div class="section-header">
+                        <h2>Mexico Agrivoltaics Initiatives</h2>
+                    </div>
+                    <div class="alternating-item">
+                        <div class="alternating-item__text">
+                            <h3>PASE Project and Northern Mexico Research</h3>
+                            <p>Mexico’s first full agrivoltaics pilot was inaugurated in 2022 near Mexico City. The 72-panel array powers a rain-harvest system and has cut irrigation water by up to 80% while maintaining crop yields. Climate Scorecard highlights this project as a model for land-use efficiency, citing potential 60% gains when food and energy are co-produced.</p>
+                        </div>
+                        <div class="alternating-item__image"><img src="static/paseagriv.jpg"
+                                alt="PASE Agrivoltaics project in Mexico City"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>
+                © <span id="year"></span> Almuerzo Agrivoltaico •
+                <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin
+                    America.</span>
+            </small>
+        </div>
+    </footer>
+
+    <!-- JS Logic embedded in HTML -->
+    <script type="module">
+        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+        /* ================== CONFIG ================== */
+        const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
+        const SUPABASE_ANON_KEY =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
+        /* ============================================ */
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true,
+            },
+        });
+
+        const state = {
+            session: null,
+            profile: null,
+            language: localStorage.getItem("lang") || "en",
+        };
+
+        const t = {
+            en: {
+                tagline: "An informal seminar series to share advances in agrivoltaics in Latin America",
+                nav: { schedule: "Schedule", about: "About", admin: "Admin" },
+                auth: { signin: "Sign in", signout: "Sign out" },
+                footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
+            },
+            es: {
+                tagline: "Serie de seminarios informales para compartir avances en agrofotovoltaica en América Latina",
+                nav: { schedule: "Calendario", about: "Acerca de", admin: "Admin" },
+                auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
+                footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
+            },
+        };
+
+        function tr(key, fallback = "") {
+            const lang = state.language;
+            const parts = key.split(".");
+            let obj = t[lang];
+            for (const p of parts) obj = obj?.[p];
+            return obj ?? fallback;
+        }
+        
+        const $ = (sel) => document.querySelector(sel);
+
+        function applyI18n() {
+            document.querySelectorAll("[data-i18n]").forEach((el) => {
+                el.textContent = tr(el.dataset.i18n, el.textContent);
+            });
+            const langSwitch = document.getElementById('langSwitch');
+            if (langSwitch) {
+                langSwitch.dataset.lang = state.language;
+            }
+        }
+
+        function isOrganizer() {
+            return ["organizer", "admin"].includes(state.profile?.role);
+        }
+
+        async function initAuth() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                state.session = session;
+                if (session) await ensureProfile();
+                renderHeader();
+            } catch (err) {
+                console.error("Session check error:", err);
+                renderHeader();
+            }
+
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                state.session = session;
+                if (session) await ensureProfile();
+                else state.profile = null;
+                renderHeader();
+            });
+        }
+
+        async function ensureProfile() {
+            const uid = state.session?.user?.id;
+            if (!uid) return;
+            const { data } = await supabase.from("profiles").select("*").eq("id", uid).single();
+            state.profile = data;
+        }
+        
+        function renderHeader() {
+            const btnSignIn = $("#btnSignIn"); const btnSignOut = $("#btnSignOut");
+            const btnAdmin = $("#btnAdmin"); const userName = $("#userName");
+            const btnProfile = $("#btnProfile");
+
+            if (state.session) {
+                btnSignIn.style.display = "none"; btnSignOut.style.display = "inline-block";
+                btnProfile.style.display = "grid"; userName.style.display = "inline";
+                userName.textContent = state.profile?.full_name || state.profile?.username || "";
+                $("#userInitial").textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
+                if (btnAdmin) btnAdmin.style.display = isOrganizer() ? "inline-block" : "none";
+            } else {
+                btnSignIn.style.display = "inline-block"; btnSignOut.style.display = "none";
+                btnProfile.style.display = "none"; userName.style.display = "none";
+                if (btnAdmin) btnAdmin.style.display = "none";
+            }
+        }
+
+        function wireUI() {
+            $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
+            $("#btnSignIn")?.addEventListener("click", () => window.location.href = 'index.html');
+            $("#btnProfile")?.addEventListener("click", () => window.location.href = 'index.html#profile');
+            
+            const langSwitch = document.getElementById('langSwitch');
+            if (langSwitch) {
+                langSwitch.addEventListener('click', () => {
+                    state.language = state.language === 'en' ? 'es' : 'en';
+                    localStorage.setItem("lang", state.language);
+                    applyI18n();
+                });
+            }
+            $("#year").textContent = new Date().getFullYear();
+        }
+
+        function initMap() {
+            const map = L.map('map').setView([20, 0], 1.5);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(map);
+
+            function createRegionIcon(color, initial) {
+                return L.divIcon({
+                    html: `<span style="background-color:${color};width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid #fff;color:white;font-weight:bold;font-size:12px;">${initial}</span>`,
+                    className: '', iconSize: [24, 24], iconAnchor: [12, 12]
+                });
+            }
+
+            const projectLocations = [
+                { name: "Biosphere 2 & AES Site", anchor: "#arizona-sites-detailed", coords: [32.5786, -110.8539], type: "USA" },
+                { name: "Jack’s Solar Garden", anchor: "#colorado-site-detailed", coords: [40.1748, -105.1000], type: "USA" },
+                { name: "Makueni County Site", anchor: "#kenya-site-detailed", coords: [-2.2833, 37.7333], type: "Africa" },
+                { name: "Arava Desert Initiatives", anchor: "#israel-site-detailed", coords: [29.9000, 35.0000], type: "Middle East" },
+                { name: "Green Energy Park", anchor: "#morocco-collaboration-detailed", coords: [32.2345, -7.9448], type: "Africa" },
+                { name: "PASE Project", anchor: "#mexico-collaboration-detailed", coords: [19.3327, -99.1840], type: "Latin America" }
+            ];
+
+            const icons = {
+                'USA': createRegionIcon('var(--brand-2)', 'US'),
+                'Africa': createRegionIcon('#2E8B57', 'AF'),
+                'Middle East': createRegionIcon('#4682B4', 'ME'),
+                'Latin America': createRegionIcon('#DAA520', 'LA')
+            };
+
+            projectLocations.forEach(loc => {
+                const popupContent = `<b>${loc.name}</b><br><a href="${loc.anchor}" style="color: var(--brand); text-decoration: underline;">View Details</a>`;
+                L.marker(loc.coords, { icon: icons[loc.type] })
+                    .addTo(map)
+                    .bindPopup(popupContent);
+            });
+
+            const legend = L.control({ position: 'bottomright' });
+            legend.onAdd = function (map) {
+                const div = L.DomUtil.create('div', 'leaflet-legend');
+                div.innerHTML = `
+                    <strong>Key Regions</strong>
+                    <div><span style="background-color:var(--brand-2);width:18px;height:18px;border-radius:50%;display:inline-block;"></span> USA Sites</div>
+                    <div><span style="background-color:#2E8B57;width:18px;height:18px;border-radius:50%;display:inline-block;"></span> Africa Sites</div>
+                    <div><span style="background-color:#4682B4;width:18px;height:18px;border-radius:50%;display:inline-block;"></span> Middle East</div>
+                    <div><span style="background-color:#DAA520;width:18px;height:18px;border-radius:50%;display:inline-block;"></span> Latin America</div>
+                `;
+                return div;
+            };
+            legend.addTo(map);
+        }
+
+        /* ============= Bootstrap ============= */
+        (async function main() {
+            applyI18n();
+            wireUI();
+            await initAuth();
+            initMap();
+        })();
+    </script>
+</body>
+
+</html>

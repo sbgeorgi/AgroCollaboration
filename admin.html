@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin • Almuerzo Agrivoltaico</title>
+  <meta name="description" content="Organizer tools for managing the Almuerzo Agrivoltaico seminar series." />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- FullCalendar (global build + locales) -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales-all.global.min.js"></script>
+
+  <style>
+    /* --- Vertical Fit & Layout Adjustments --- */
+    html, body {
+      height: 100%;
+      overflow: hidden; /* Prevent body scroll */
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    main.container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0; /* Necessary for flex children */
+      padding-bottom: var(--space-3);
+    }
+    #admin.card {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-3);
+    }
+    .admin-layout-inner {
+      flex-grow: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-3);
+      align-items: stretch;
+      min-height: 0;
+    }
+    .admin-side {
+      display: flex;
+      flex-direction: column;
+    }
+    #calendar {
+      flex-grow: 1;
+      min-height: 400px; /* Prevent calendar from collapsing too much on small screens */
+    }
+    .organizer-form-container h2,
+    .admin-side h2 {
+      margin-bottom: var(--space-2);
+      margin-top: 0;
+    }
+    .grid-form {
+      gap: var(--space-2);
+    }
+    .grid-form h3 {
+      margin-block: 0 var(--space-1);
+    }
+    .grid-form textarea {
+      height: 80px;
+      resize: vertical;
+      min-height: 60px;
+    }
+    p.muted {
+      margin-top: 0;
+      margin-bottom: var(--space-2);
+    }
+
+    /* --- FullCalendar Dark Theme Overrides --- */
+    #calendar {
+      --fc-bg-color: var(--card-2);
+      --fc-border-color: var(--border);
+      --fc-text-color: var(--text);
+      --fc-neutral-bg-color: rgba(255, 255, 255, 0.05);
+      --fc-today-bg-color: rgba(91, 214, 160, 0.1);
+      --fc-event-bg-color: var(--brand-2);
+      --fc-event-border-color: var(--brand-2);
+      --fc-event-text-color: #000;
+      --fc-button-bg-color: var(--card-2);
+      --fc-button-border-color: var(--border);
+      --fc-button-text-color: var(--text);
+      --fc-button-active-bg-color: var(--brand-2);
+      --fc-button-active-border-color: var(--brand-2);
+      --fc-button-hover-bg-color: var(--border);
+    }
+
+    .fc .fc-col-header-cell-cushion {
+      text-decoration: none;
+      color: var(--muted);
+    }
+    .fc .fc-daygrid-day-number {
+      text-decoration: none;
+    }
+    .fc .fc-event-main {
+      padding: 4px 6px;
+      font-weight: 600;
+    }
+
+    /* --- Edit Modal Styling --- */
+    #edit-event-modal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      box-shadow: var(--shadow-lg);
+      width: 90%;
+      max-width: 600px;
+      padding: var(--space-4);
+    }
+    #edit-event-modal::backdrop {
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+    }
+    #edit-event-modal .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-3);
+    }
+    #edit-event-modal h2 {
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-grid">
+      <div class="brand">
+        <a href="index.html" style="display: contents; text-decoration: none;">
+          <div class="logo-circle">A</div>
+          <div class="brand-text">
+            <div class="title">Almuerzo Agrivoltaico</div>
+            <div class="subtitle" data-i18n="tagline">
+              An informal seminar series to share advances in agrivoltaics in Latin America
+            </div>
+          </div>
+        </a>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+        <a href="about.html" class="link" data-i18n="nav.about">About</a>
+        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+        <div class="divider"></div>
+        <div id="langSwitch" class="lang-switch-slider" data-lang="en">
+          <span>EN</span>
+          <span>ES</span>
+        </div>
+        <div class="auth-area">
+          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
+            <span id="userInitial"></span>
+          </button>
+          <span id="userName"></span>
+          <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
+          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">Sign out</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div id="flash" class="flash" role="status" aria-live="polite"></div>
+
+  <main class="container">
+    <section id="admin" class="card" style="display: none;">
+      <div class="admin-layout-inner">
+        <!-- Left Side: Create Form -->
+        <div class="organizer-form-container">
+          <h2 data-i18n="admin.title">Organizer Tools</h2>
+          <form id="createEventForm" class="grid-form">
+            <h3 class="subheading col-span-2">Create New Event</h3>
+            <div><label data-i18n="event.title_en">Title (EN)</label><input id="titleEn" required /></div>
+            <div><label data-i18n="event.title_es">Title (ES)</label><input id="titleEs" /></div>
+            <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea id="descEn"></textarea></div>
+            <div class="col-span-2"><label data-i18n="event.desc_es">Description (ES)</label><textarea id="descEs"></textarea></div>
+            <div><label data-i18n="event.start">Start time</label><input id="startTime" type="text" placeholder="mm/dd/yyyy --:-- --" required /></div>
+            <div><label data-i18n="event.end">End time</label><input id="endTime" type="text" placeholder="mm/dd/yyyy --:-- --" /></div>
+            <div><label data-i18n="event.lang">Language</label>
+              <select id="eventLang">
+                <option value="bi">Bilingual</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+              </select>
+            </div>
+            <div><label data-i18n="event.host">Host org</label><input id="hostOrg" placeholder="UNAM, University of Arizona…" /></div>
+            <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="zoomUrl" type="url" /></div>
+            <div class="col-span-2">
+              <button class="btn-primary" type="submit" data-i18n="event.create">Create Event</button>
+            </div>
+          </form>
+          <div id="slotConflicts" class="slot-conflicts" style="margin-top: 1rem;"></div>
+        </div>
+
+        <!-- Right Side: Interactive Calendar -->
+        <div class="admin-side">
+          <h2 data-i18n="calendar.title">Event Calendar</h2>
+          <p class="muted" style="font-size: 0.9rem;">Drag, resize, or click events to edit. Click-and-drag an empty slot to create.</p>
+          <div id="calendar"></div>
+        </div>
+      </div>
+    </section>
+
+    <div id="accessDenied" class="card" style="display: none; text-align: center;">
+      <h2>Access Denied</h2>
+      <p>You must be an organizer to view this page. Please sign in with an authorized account.</p>
+      <a href="index.html" class="btn-secondary">Back to Schedule</a>
+    </div>
+  </main>
+
+  <!-- Modal for Editing Events -->
+  <dialog id="edit-event-modal">
+    <div class="modal-header">
+      <h2 data-i18n="event.edit_title">Edit Event</h2>
+      <button id="close-modal-btn" class="btn-ghost" style="padding: 4px 8px;" aria-label="Close">✕</button>
+    </div>
+    <form id="editEventForm" class="grid-form">
+      <input type="hidden" id="editEventId">
+      <div><label data-i18n="event.title_en">Title (EN)</label><input id="editTitleEn" required /></div>
+      <div><label data-i18n="event.title_es">Title (ES)</label><input id="editTitleEs" /></div>
+      <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea id="editDescEn"></textarea></div>
+      <div class="col-span-2"><label data-i18n="event.desc_es">Description (ES)</label><textarea id="editDescEs"></textarea></div>
+      <div><label data-i18n="event.start">Start time</label><input id="editStartTime" type="datetime-local" required disabled /></div>
+      <div><label data-i18n="event.end">End time</label><input id="editEndTime" type="datetime-local" disabled /></div>
+      <div><label data-i18n="event.lang">Language</label>
+        <select id="editEventLang">
+          <option value="bi">Bilingual</option>
+          <option value="en">English</option>
+          <option value="es">Español</option>
+        </select>
+      </div>
+      <div><label data-i18n="event.host">Host org</label><input id="editHostOrg" /></div>
+      <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="editZoomUrl" type="url" /></div>
+      <div class="col-span-2" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+        <button class="btn-primary" type="submit" data-i18n="save">Save Changes</button>
+        <button id="btnDeleteEvent" class="btn-danger" type="button" data-i18n="event.delete">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- JS Logic -->
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    /* ================== CONFIG ================== */
+    const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
+    /* ============================================ */
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+    });
+
+    let calendar = null;
+
+    const state = {
+      session: null,
+      profile: null,
+      language: localStorage.getItem("lang") || "en",
+      events: [],
+    };
+
+    // Basic i18n
+    const t = {
+      en: {
+        tagline: "An informal seminar series to share advances in agrivoltaics in Latin America",
+        nav: { schedule: "Schedule", about: "About", admin: "Admin" },
+        auth: { signin: "Sign in", signout: "Sign out" },
+        admin: { title: "Organizer Tools" },
+        calendar: { title: "Event Calendar" },
+        event: {
+          title_en: "Title (EN)", title_es: "Title (ES)", desc_en: "Description (EN)", desc_es: "Description (ES)",
+          start: "Start time", end: "End time", host: "Host org", zoom: "Zoom URL (members only)", lang: "Language",
+          create: "Create Event", edit_title: "Edit Event", delete: "Delete"
+        },
+        slots: { blocked: "Blocked/conflicting times" },
+        save: "Save Changes",
+        errors: {
+          overlap: "Selected time overlaps an existing event.",
+          create_event: "Could not create event",
+          update_event: "Could not update event",
+          delete_event: "Could not delete event"
+        },
+      },
+      es: {
+        tagline: "Serie de seminarios informales para compartir avances en agrofotovoltaica en América Latina",
+        nav: { schedule: "Calendario", about: "Acerca de", admin: "Admin" },
+        auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
+        admin: { title: "Herramientas para organizadores" },
+        calendar: { title: "Calendario de Eventos" },
+        event: {
+          title_en: "Título (EN)", title_es: "Título (ES)", desc_en: "Descripción (EN)", desc_es: "Descripción (ES)",
+          start: "Inicio", end: "Fin", host: "Institución anfitriona", zoom: "Enlace de Zoom (solo miembros)",
+          lang: "Idioma", create: "Crear evento", edit_title: "Editar Evento", delete: "Eliminar"
+        },
+        slots: { blocked: "Horarios bloqueados/en conflicto" },
+        save: "Guardar Cambios",
+        errors: {
+          overlap: "El horario seleccionado se cruza con otro evento.",
+          create_event: "No se pudo crear el evento",
+          update_event: "No se pudo actualizar el evento",
+          delete_event: "No se pudo eliminar el evento"
+        },
+      },
+    };
+
+    /* ============== Utility Helpers ============== */
+    const $ = (sel) => document.querySelector(sel);
+    const tr = (key, fallback = "") => { const parts = key.split("."); let obj = t[state.language]; for (const p of parts) obj = obj?.[p]; return obj ?? fallback; };
+    const setFlash = (msg, isError = false) => {
+      const el = $("#flash"); if (!el) return;
+      el.textContent = msg;
+      el.style.backgroundColor = isError ? 'var(--danger)' : '';
+      el.style.color = isError ? 'white' : '';
+      el.style.display = "block";
+      clearTimeout(setFlash._t);
+      setFlash._t = setTimeout(() => { el.style.display = "none"; el.style.backgroundColor = ''; el.style.color = ''; }, 4000);
+    };
+    const toIsoOrNull = (v) => { if (!v) return null; const d = new Date(v); return isNaN(d.getTime()) ? null : d.toISOString(); };
+    const toLocalInputValue = (d) => { if (!d) return ""; d = new Date(d); const p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+    const overlaps = (aStart, aEnd, bStart, bEnd) => {
+      if (!aStart) return false;
+      const aS = new Date(aStart).getTime();
+      const aE = aEnd ? new Date(aEnd).getTime() : aS + 3600000;
+      const bS = new Date(bStart).getTime();
+      const bE = bEnd ? new Date(bEnd).getTime() : bS + 3600000;
+      return Math.max(aS, bS) < Math.min(aE, bE);
+    };
+    const isOrganizer = () => ["organizer", "admin"].includes(state.profile?.role);
+
+    const applyI18n = () => {
+      document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = tr(e.dataset.i18n, e.textContent));
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(e => e.placeholder = tr(e.dataset.i18nPlaceholder, e.placeholder));
+      const langSwitch = $("#langSwitch");
+      if (langSwitch) langSwitch.dataset.lang = state.language;
+      if (calendar) calendar.setOption('locale', state.language === 'es' ? 'es' : 'en');
+    };
+
+    /* ============= Auth + Header ============= */
+    const renderHeader = () => {
+      const loggedIn = !!state.session;
+      $("#btnSignIn")?.style && ($("#btnSignIn").style.display = loggedIn ? "none" : "inline-block");
+      $("#btnSignOut")?.style && ($("#btnSignOut").style.display = loggedIn ? "inline-block" : "none");
+      $("#btnProfile")?.style && ($("#btnProfile").style.display = loggedIn ? "grid" : "none");
+      $("#userName")?.style && ($("#userName").style.display = loggedIn ? "inline" : "none");
+      if (loggedIn) {
+        $("#userName").textContent = state.profile?.full_name || state.profile?.username || "";
+        $("#userInitial").textContent = (state.profile?.full_name || state.profile?.username || "U").charAt(0).toUpperCase();
+      }
+      const btnAdmin = $("#btnAdmin");
+      if (btnAdmin) btnAdmin.style.display = isOrganizer() ? "inline-block" : "none";
+    };
+
+    const checkAccess = () => {
+      if (isOrganizer()) {
+        $("#admin").style.display = 'flex';
+        $("#accessDenied").style.display = 'none';
+        if (!calendar) initializeCalendar();
+        loadEvents();
+      } else {
+        $("#admin").style.display = 'none';
+        $("#accessDenied").style.display = 'block';
+      }
+    };
+
+    const ensureProfile = async (session) => {
+      if (!session?.user?.id) return null;
+      const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
+      return data || null;
+    };
+
+    const initAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      state.session = session;
+      state.profile = session ? await ensureProfile(session) : null;
+      renderHeader();
+      checkAccess();
+
+      supabase.auth.onAuthStateChange(async (_event, sess) => {
+        state.session = sess;
+        state.profile = sess ? await ensureProfile(sess) : null;
+        renderHeader();
+        checkAccess();
+      });
+    };
+
+    /* ============= Events: Load / Map ============= */
+    const languageColors = {
+      en: '#3a86ff', // Blue
+      es: '#ffbe0b', // Yellow/Orange
+      bi: 'var(--brand-2)', // Default brand color
+    };
+
+    const loadEvents = async () => {
+      const { data, error } = await supabase.from("events").select("*").order("start_time");
+      if (error) {
+        console.error(error);
+        return;
+      }
+      state.events = data || [];
+      if (calendar) calendar.refetchEvents();
+    };
+
+    const formatEventsForCalendar = () =>
+      state.events.map(ev => {
+        const eventColor = ev.status === 'canceled' ? '#555' : (languageColors[ev.language] || languageColors.bi);
+        return {
+          id: ev.id,
+          title: state.language === 'es' ? (ev.title_es || ev.title_en) : (ev.title_en || ev.title_es),
+          start: ev.start_time,
+          end: ev.end_time,
+          backgroundColor: eventColor,
+          borderColor: eventColor,
+          textColor: ev.language === 'es' || ev.language === 'bi' ? '#000' : '#fff', // Ensure contrast
+          extendedProps: ev
+        }
+      });
+
+    /* ============= Calendar ============= */
+    const handleEventClick = ({ event }) => {
+      const ev = event.extendedProps;
+      $("#editEventId").value = ev.id;
+      $("#editTitleEn").value = ev.title_en || "";
+      $("#editTitleEs").value = ev.title_es || "";
+      $("#editDescEn").value = ev.description_en || "";
+      $("#editDescEs").value = ev.description_es || "";
+      $("#editStartTime").value = toLocalInputValue(ev.start_time);
+      $("#editEndTime").value = toLocalInputValue(ev.end_time);
+      $("#editEventLang").value = ev.language || "bi";
+      $("#editHostOrg").value = ev.host_org || "";
+      $("#editZoomUrl").value = ev.zoom_url || "";
+      $("#edit-event-modal").showModal();
+    };
+
+    const handleTimeSelect = ({ start, end }) => {
+      $("#startTime").value = toLocalInputValue(start);
+      $('#startTime').type = 'datetime-local';
+      $("#endTime").value = toLocalInputValue(end);
+      $('#endTime').type = 'datetime-local';
+      calendar.unselect();
+      checkCreateFormConflicts();
+    };
+
+    const handleEventMove = async ({ event, revert }) => {
+      const conflicts = state.events.filter(
+        ev => ev.id !== event.id && ev.status !== 'canceled' &&
+          overlaps(event.start.toISOString(), event.end?.toISOString(), ev.start_time, ev.end_time)
+      );
+      if (conflicts.length > 0) {
+        setFlash(tr('errors.overlap'), true);
+        revert();
+        return;
+      }
+      if (!confirm(`Are you sure you want to move "${event.title}"?`)) { revert(); return; }
+      const { error } = await supabase.from("events")
+        .update({ start_time: event.start.toISOString(), end_time: event.end ? event.end.toISOString() : null })
+        .eq("id", event.id);
+      if (error) { setFlash(tr('errors.update_event'), true); revert(); }
+      else { setFlash("Event time updated!"); await loadEvents(); }
+    };
+
+    const initializeCalendar = () => {
+      const mountEl = $('#calendar');
+      if (!mountEl || !window.FullCalendar) {
+        console.error("Calendar mount el or FullCalendar missing.");
+        return;
+      }
+      calendar = new FullCalendar.Calendar(mountEl, {
+        initialView: 'timeGridWeek',
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
+        editable: true,
+        selectable: true,
+        selectMirror: true,
+        slotMinTime: '08:00:00',
+        slotMaxTime: '20:00:00',
+        height: '100%',
+        eventClick: handleEventClick,
+        select: handleTimeSelect,
+        eventDrop: handleEventMove,
+        eventResize: handleEventMove,
+        events: (fetchInfo, success, _failure) => success(formatEventsForCalendar()),
+        eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
+        locale: state.language === 'es' ? 'es' : 'en',
+      });
+      calendar.render();
+    };
+
+    /* ============= Create / Update / Delete ============= */
+    const checkCreateFormConflicts = () => {
+      const startIso = toIsoOrNull($("#startTime").value);
+      const endIso = toIsoOrNull($("#endTime").value);
+      const conflicts = state.events.filter(
+        ev => ev.status !== 'canceled' && overlaps(startIso, endIso, ev.start_time, ev.end_time)
+      );
+      $("#slotConflicts").innerHTML = conflicts.length
+        ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${(ev.title_en || ev.title_es || '').replace(/</g,'&lt;')}</div>`).join("")
+        : '';
+      return conflicts.length > 0;
+    };
+
+    const createEvent = async (payload) => {
+      if (!payload.title_en || !payload.start_time) {
+        setFlash("Title (EN) and Start Time are required.", true);
+        return;
+      }
+      if (checkCreateFormConflicts()) { setFlash(tr('errors.overlap'), true); return; }
+      const { error } = await supabase.from("events").insert([{
+        ...payload, status: "scheduled", created_by: state.session.user.id
+      }]);
+      if (error) { setFlash(tr("errors.create_event"), true); console.error(error); }
+      else { setFlash("Event created successfully!"); $("#createEventForm").reset(); $('#startTime').type = 'text'; $('#endTime').type = 'text'; await loadEvents(); }
+    };
+
+    const updateEvent = async (id, payload) => {
+      const { error } = await supabase.from("events").update(payload).eq("id", id);
+      if (error) { setFlash(tr('errors.update_event'), true); console.error(error); }
+      else { setFlash("Event details saved!"); await loadEvents(); $("#edit-event-modal").close(); }
+    };
+
+    const deleteEvent = async (id) => {
+        if (!confirm("Are you sure you want to permanently delete this event and all related data (speakers, RSVPs, discussions etc.)? This action cannot be undone.")) return;
+        try {
+            await supabase.from('attachments').delete().eq('event_id', id);
+            await supabase.from('comments').delete().eq('event_id', id);
+            await supabase.from('threads').delete().eq('event_id', id);
+            await supabase.from('event_speakers').delete().eq('event_id', id);
+            await supabase.from('event_rsvps').delete().eq('event_id', id);
+            await supabase.from('event_follows').delete().eq('event_id', id);
+
+            const { error: eventError } = await supabase.from("events").delete().eq("id", id);
+            if (eventError) throw eventError;
+
+            setFlash("Event deleted.");
+            await loadEvents();
+            $("#edit-event-modal").close();
+        } catch (error) {
+            setFlash(tr('errors.delete_event') + ' (Check console for details)', true);
+            console.error("Failed to delete event and its dependencies:", error);
+        }
+    };
+
+    /* ============= Wire UI ============= */
+    const wireUI = () => {
+      $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
+      $("#btnSignIn")?.addEventListener("click", () => window.location.href = 'index.html');
+      $("#btnProfile")?.addEventListener("click", () => window.location.href = 'index.html#profile');
+
+      $("#langSwitch")?.addEventListener('click', () => {
+        state.language = state.language === 'en' ? 'es' : 'en';
+        localStorage.setItem("lang", state.language);
+        applyI18n();
+        if (calendar) calendar.render();
+      });
+
+      const setupDateTimePlaceholders = (startEl, endEl) => {
+        const handleFocus = (el) => { el.type = 'datetime-local'; };
+        const handleBlur = (el) => { if (!el.value) el.type = 'text'; };
+        
+        startEl.addEventListener('focus', () => handleFocus(startEl));
+        startEl.addEventListener('blur', () => handleBlur(startEl));
+        if (!startEl.value) startEl.type = 'text';
+
+        if(endEl) {
+          endEl.addEventListener('focus', () => handleFocus(endEl));
+          endEl.addEventListener('blur', () => handleBlur(endEl));
+          if (!endEl.value) endEl.type = 'text';
+        }
+      };
+      setupDateTimePlaceholders($('#startTime'), $('#endTime'));
+
+      const createEventForm = $("#createEventForm");
+      if (createEventForm) {
+        createEventForm.addEventListener("input", checkCreateFormConflicts);
+        createEventForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const payload = {
+            title_en: $("#titleEn")?.value.trim(),
+            title_es: $("#titleEs")?.value.trim() || null,
+            description_en: $("#descEn")?.value.trim() || null,
+            description_es: $("#descEs")?.value.trim() || null,
+            start_time: toIsoOrNull($("#startTime")?.value),
+            end_time: toIsoOrNull($("#endTime")?.value),
+            language: $("#eventLang")?.value || "bi",
+            host_org: $("#hostOrg")?.value.trim() || null,
+            zoom_url: $("#zoomUrl")?.value.trim() || null,
+          };
+          await createEvent(payload);
+        });
+      }
+
+      $("#close-modal-btn")?.addEventListener("click", () => $("#edit-event-modal").close());
+      $("#editEventForm")?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const id = $("#editEventId").value;
+        const payload = {
+          title_en: $("#editTitleEn").value,
+          title_es: $("#editTitleEs").value || null,
+          description_en: $("#editDescEn").value || null,
+          description_es: $("#editDescEs").value || null,
+          language: $("#editEventLang").value,
+          host_org: $("#editHostOrg").value || null,
+          zoom_url: $("#editZoomUrl").value || null,
+        };
+        await updateEvent(id, payload);
+      });
+      $("#btnDeleteEvent")?.addEventListener("click", () => deleteEvent($("#editEventId").value));
+    };
+
+    /* ============= Bootstrap ============= */
+    (async function main() {
+      applyI18n();
+      wireUI();
+      await initAuth();
+    })();
+  </script>
+</body>
+
+</html>

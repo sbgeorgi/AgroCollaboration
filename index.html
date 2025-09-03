@@ -8,26 +8,263 @@
     <meta name="description"
         content="An informal seminar series to share advances in agrivoltaics in Latin America (EN/ES)." />
     <link rel="stylesheet" href="styles.css" />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <link rel="preconnect" href="https://esm.sh" crossorigin />
+    <style>
+        /* --- Vertical Fit & Layout Fixes for index.html --- */
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            /* Prevent body from scrolling */
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        main.container {
+            flex-grow: 1;
+            /* Allow main to fill space between header and footer */
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            /* Critical for flex children to shrink/grow properly */
+            padding-top: var(--space-3);
+            padding-bottom: var(--space-3);
+            gap: var(--space-3);
+            /* Replaces margins for spacing between cards */
+        }
+
+        /* Override default card margins for this flex layout */
+        main.container>.card {
+            margin: 0;
+        }
+
+        /* Make static sections shrinkable, but not growable */
+        #hero,
+        #auth,
+        #profile {
+            flex-shrink: 0;
+        }
+
+        .hero {
+            padding: var(--space-3) var(--space-4) !important;
+        }
+
+        #schedule,
+        #eventDetail {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        #eventsList,
+        #calendar {
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        #eventsList {
+            overflow-y: auto;
+        }
+
+        #calendar {
+            display: none;
+            /* Initially hidden */
+            flex-direction: column;
+        }
+
+        #calendarGrid {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .hero {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-4);
+        }
+
+        .hero-main {
+            flex: 1 1 60%;
+            min-width: 350px;
+        }
+
+        .hero-main>h1 {
+            margin-top: 0;
+            margin-bottom: var(--space-2);
+        }
+
+        .hero-main>p {
+            margin: 0;
+        }
+
+        .hero .meta {
+            flex: 0 1 auto;
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+
+        /* --- CALENDAR & SCHEDULE HEADER REWORK --- */
+        #schedule .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+            margin-bottom: var(--space-3);
+        }
+        .section-header .calendar-header {
+            display: none; 
+            align-items: center;
+            gap: var(--space-2);
+            flex-grow: 1;
+            justify-content: center;
+        }
+        #schedule.calendar-view .section-header .calendar-header {
+            display: flex;
+        }
+        #schedule .calendar-header-standalone {
+            display: none;
+        }
+
+        .section-title-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+        }
+
+        #schedule .section-header h2 {
+            margin: 0;
+        }
+        
+
+        /* --- GURU-MODE REDDIT-STYLE FORUM UI --- */
+        .tab-panel {
+            flex-grow: 1; min-height: 0; display: flex; flex-direction: column;
+        }
+        
+        #discussion-layout {
+            display: grid; grid-template-columns: 320px 1fr; gap: var(--space-4);
+            flex-grow: 1; min-height: 0; padding-top: var(--space-3);
+        }
+
+        .sidebar-container {
+            background-color: var(--color-surface); border-radius: var(--radius-3);
+            padding: var(--space-3); display: flex; flex-direction: column; min-height: 0;
+        }
+
+        #threadsList {
+            overflow-y: auto; flex-grow: 1; margin-top: var(--space-3);
+        }
+
+        .thread-list-item {
+            display: grid; grid-template-columns: auto 1fr; gap: var(--space-3);
+            padding: var(--space-3); border-radius: var(--radius-2); cursor: pointer;
+            transition: background-color 0.2s ease; border-bottom: 1px solid var(--color-surface-strong);
+        }
+        .thread-list-item:last-child { border-bottom: none; }
+        .thread-list-item:hover { background-color: var(--color-surface-hover); }
+        .thread-list-item.active { background-color: var(--color-primary-muted); }
+        .thread-list-item .title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .thread-list-item .meta { font-size: 0.8rem; color: var(--color-text-muted); }
+
+        .avatar-circle {
+            width: 32px; height: 32px; border-radius: 50%;
+            background-color: var(--color-surface-strong);
+            display: grid; place-content: center; font-weight: 600; font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        #discussion-main {
+            display: flex; flex-direction: column; min-height: 0;
+            background-color: var(--color-surface); border-radius: var(--radius-3);
+        }
+        
+        #thread-welcome {
+            flex-grow: 1; display: grid; place-content: center;
+            color: var(--color-text-muted); text-align: center; padding: var(--space-4);
+        }
+
+        #threadDetailView {
+            flex-grow: 1; min-height: 0; display: flex; flex-direction: column;
+            padding: var(--space-3);
+        }
+        
+        #commentsList {
+            flex-grow: 1; overflow-y: auto; padding: var(--space-2);
+        }
+        
+        /* The core of the Reddit-style nesting */
+        .comment-node {
+            display: flex; gap: var(--space-3);
+        }
+        .comment-threadline {
+            width: 2px; background-color: var(--color-border); flex-shrink: 0;
+            cursor: pointer;
+        }
+        .comment-threadline:hover {
+            background-color: var(--color-primary);
+        }
+
+        .comment-main {
+             width: 100%;
+        }
+
+        .comment-author {
+            display: flex; align-items: center; gap: var(--space-2); font-size: 0.85rem;
+        }
+        .comment-author strong { font-weight: 600; }
+        .comment-author .timestamp { color: var(--color-text-muted); }
+
+        .comment-text {
+            margin: var(--space-1) 0; line-height: 1.6;
+        }
+        .comment-actions {
+            display: flex; align-items: center; gap: var(--space-3);
+        }
+        .comment-actions .btn-ghost {
+            font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted); padding: var(--space-1);
+        }
+        .comment-replies {
+            margin-top: var(--space-3);
+            display: flex; flex-direction: column; gap: var(--space-3);
+        }
+        .inline-reply-form { margin-top: var(--space-2); }
+
+
+        #replyToThreadForm {
+            padding-top: var(--space-3); border-top: 1px solid var(--color-border);
+            display: flex; gap: var(--space-2); align-items: center;
+        }
+        #replyToThreadForm textarea { flex-grow: 1; resize: none; }
+    </style>
 </head>
 
 <body>
     <header class="site-header">
         <div class="container header-grid">
             <div class="brand">
-                <div class="logo-circle">A</div>
-                <div class="brand-text">
-                    <div class="title">Almuerzo Agrivoltaico</div>
-                    <div class="subtitle" data-i18n="tagline">
-                        An informal seminar series to share advances in agrivoltaics in Latin America
+                <a href="index.html" style="display: contents; text-decoration: none;">
+                    <div class="logo-circle">A</div>
+                    <div class="brand-text">
+                        <div class="title">Almuerzo Agrivoltaico</div>
+                        <div class="subtitle" data-i18n="tagline">
+                            An informal seminar series to share advances in agrivoltaics in Latin America
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <nav class="nav">
-                <button id="btnSchedule" class="link" data-i18n="nav.schedule">Schedule</button>
-                <button id="btnCommunity" class="link" data-i18n="nav.community">Community</button>
-                <button id="btnAdmin" class="link" data-i18n="nav.admin">Admin</button>
+                <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+                <a href="about.html" class="link" data-i18n="nav.about">About</a>
+                <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
                 <div class="divider"></div>
                 <div id="langSwitch" class="lang-switch-slider" data-lang="en">
                     <span>EN</span>
@@ -52,12 +289,14 @@
     <main class="container">
         <!-- Hero -->
         <section id="hero" class="card hero">
-            <h1>Almuerzo Agrivoltaico</h1>
-            <p data-i18n="intro">
-                Agrivoltaics (agrivoltaics) is an emerging field that integrates solar energy with
-                crop/livestock production. This bilingual seminar focuses on Latin America. Hosted by
-                UNAM and University of Arizona.
-            </p>
+            <div class="hero-main">
+                <h1>Almuerzo Agrivoltaico</h1>
+                <p data-i18n="intro">
+                    Agrivoltaics (agrivoltaics) is an emerging field that integrates solar energy with
+                    crop/livestock production. This bilingual seminar focuses on Latin America. Hosted by
+                    UNAM and University of Arizona.
+                </p>
+            </div>
             <div class="meta">
                 <span class="meta-item" data-i18n="format">Online • Monthly • 1 hour (30 min talk + 30 min
                     discussion)</span>
@@ -129,33 +368,30 @@
             </form>
         </section>
 
-        <!-- Schedule / Community -->
+        <!-- Schedule -->
         <section id="schedule" class="card" aria-labelledby="scheduleTitle">
             <div class="section-header">
-                <h2 id="scheduleTitle" data-i18n="schedule.title">Upcoming Talks</h2>
+                <div class="section-title-group">
+                    <h2 id="scheduleTitle" data-i18n="schedule.title">Upcoming Talks</h2>
+                    <div class="view-switch">
+                        <button id="viewList" class="chip chip-toggle active" data-i18n="schedule.list">List</button>
+                        <button id="viewCalendar" class="chip chip-toggle" data-i18n="schedule.calendar">Calendar</button>
+                    </div>
+                </div>
+                 <div class="calendar-header">
+                    <button id="calPrev" class="btn-ghost" aria-label="Previous month">◀</button>
+                    <div id="calLabel" class="cal-label">Month</div>
+                    <button id="calNext" class="btn-ghost" aria-label="Next month">▶</button>
+                </div>
                 <div class="search-bar">
                     <input id="search" type="search" placeholder="Search..."
                         data-i18n-placeholder="search.placeholder" />
                 </div>
             </div>
 
-            <div class="view-switch">
-                <button id="viewList" class="chip chip-toggle active" data-i18n="schedule.list">
-                    List
-                </button>
-                <button id="viewCalendar" class="chip chip-toggle" data-i18n="schedule.calendar">
-                    Calendar
-                </button>
-            </div>
-
             <div id="eventsList" class="events-grid"></div>
 
-            <div id="calendar" class="calendar" style="display: none">
-                <div class="calendar-header">
-                    <button id="calPrev" class="btn-ghost" aria-label="Previous month">◀</button>
-                    <div id="calLabel" class="cal-label">Month</div>
-                    <button id="calNext" class="btn-ghost" aria-label="Next month">▶</button>
-                </div>
+            <div id="calendar" class="calendar">
                 <div class="calendar-grid" id="calendarGrid"></div>
                 <div class="calendar-legend">
                     <span class="legend scheduled" data-i18n="legend.scheduled">Scheduled</span>
@@ -208,16 +444,29 @@
             </div>
 
             <div id="tab_discussion" class="tab-panel">
-                <form id="newThreadForm" class="inline-form">
-                    <input id="threadTitle" type="text" placeholder="New topic title…"
-                        data-i18n-placeholder="thread.placeholder" />
-                    <button class="btn-primary" type="submit" data-i18n="thread.create">
-                        Create Topic
-                    </button>
-                </form>
-                <div id="threadsList" class="threads"></div>
-                <div id="emptyThreads" class="empty" style="display: none" data-i18n="thread.empty">
-                    No topics yet. Start the discussion!
+                <div id="discussion-layout">
+                    <div class="sidebar-container">
+                         <form id="newThreadForm" class="inline-form">
+                            <input id="threadTitle" type="text" placeholder="Start a new topic..." required />
+                            <button class="btn-primary" type="submit">Create</button>
+                        </form>
+                        <div id="threadsList"></div>
+                    </div>
+                    <div id="discussion-main">
+                        <div id="thread-welcome">
+                            <div>
+                                <h3>Welcome to the discussion!</h3>
+                                <p>Select a topic from the left to view the conversation, or start a new one.</p>
+                            </div>
+                        </div>
+                        <div id="threadDetailView" style="display: none;">
+                            <div id="commentsList"></div>
+                            <form id="replyToThreadForm">
+                                <textarea placeholder="Write a comment..." required></textarea>
+                                <button class="btn-primary" type="submit">Send</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -304,80 +553,6 @@
                 </div>
             </div>
         </section>
-
-        <!-- Admin (organizers only) -->
-        <section id="admin" class="card" style="display: none">
-            <h2 data-i18n="admin.title">Organizer Tools</h2>
-            <div class="admin-layout">
-                <form id="createEventForm" class="grid-form">
-                    <div>
-                        <label data-i18n="event.title_en">Title (EN)</label>
-                        <input id="titleEn" required />
-                    </div>
-                    <div>
-                        <label data-i18n="event.title_es">Title (ES)</label>
-                        <input id="titleEs" />
-                    </div>
-                    <div class="col-span-2">
-                        <label data-i18n="event.desc_en">Description (EN)</label>
-                        <textarea id="descEn"></textarea>
-                    </div>
-                    <div class="col-span-2">
-                        <label data-i18n="event.desc_es">Description (ES)</label>
-                        <textarea id="descEs"></textarea>
-                    </div>
-                    <div>
-                        <label data-i18n="event.start">Start time</label>
-                        <input id="startTime" type="datetime-local" required />
-                    </div>
-                    <div>
-                        <label data-i18n="event.end">End time</label>
-                        <input id="endTime" type="datetime-local" />
-                    </div>
-                    <div>
-                        <label data-i18n="event.lang">Language</label>
-                        <select id="eventLang">
-                            <option value="bi">Bilingual</option>
-                            <option value="en">English</option>
-                            <option value="es">Español</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label data-i18n="event.host">Host org</label>
-                        <input id="hostOrg" placeholder="UNAM, University of Arizona…" />
-                    </div>
-                    <div class="col-span-2">
-                        <label data-i18n="event.zoom">Zoom URL (members only)</label>
-                        <input id="zoomUrl" type="url" />
-                    </div>
-
-                    <div class="col-span-2">
-                        <button class="btn-primary" type="submit" data-i18n="event.create">
-                            Create Event
-                        </button>
-                    </div>
-                </form>
-
-                <div class="admin-side">
-                    <h3 class="subheading" data-i18n="slots.title">Existing time slots</h3>
-                    <div id="slotList" class="slot-list"></div>
-
-                    <h3 class="subheading" data-i18n="slots.blocked">Blocked/conflicting times</h3>
-                    <div id="slotConflicts" class="slot-conflicts"></div>
-
-                    <h3 class="subheading" data-i18n="calendar.preview">Calendar preview</h3>
-                    <div class="calendar mini">
-                        <div class="calendar-header">
-                            <div class="cal-label" id="adminCalLabel"></div>
-                        </div>
-                        <div class="calendar-grid" id="adminCalendarGrid"></div>
-                    </div>
-
-                    <h3 class="subheading" data-i18n="slots.suggestions">Suggested open 1-hr slots</h3>
-                    <div id="slotSuggestions" class="slot-suggestions"></div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <footer class="site-footer">
@@ -390,9 +565,647 @@
         </div>
     </footer>
 
-    <!-- Supabase JS via ESM CDN -->
-    <script type="module" src="https://esm.sh/@supabase/supabase-js@2"></script>
-    <script src="app.js" type="module"></script>
+    <!-- JS Logic embedded in HTML -->
+    <script type="module">
+        import {
+            createClient
+        } from "https://esm.sh/@supabase/supabase-js@2";
+
+        /* ================== CONFIG ================== */
+        const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
+        const SUPABASE_ANON_KEY =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
+
+        const REDIRECT_TO = window.location.origin + window.location.pathname;
+        /* ============================================ */
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true,
+            },
+        });
+
+        let isUpdatingEvent = false;
+
+        const state = {
+            session: null,
+            profile: null,
+            language: localStorage.getItem("lang") || "en",
+            events: [],
+            selectedEvent: null,
+            threads: [],
+            selectedThreadId: null, // Track the active thread view
+            comments: [],
+            profileCache: new Map(),
+            files: [],
+            rsvpStatus: null,
+            isFollowing: false,
+            speakers: [],
+            counts: {
+                followers: 0,
+                going: 0,
+                interested: 0
+            },
+            calendarMonth: new Date(),
+        };
+
+        // Basic i18n
+        const t = {
+            en: {
+                tagline: "An informal seminar series to share advances in agrivoltaics in Latin America",
+                intro: "Agrivoltaics (agrivoltaics) is an emerging field that integrates solar energy with crop/livestock production. This bilingual seminar focuses on Latin America. Hosted by UNAM and University of Arizona.",
+                format: "Online • Monthly • 1 hour (30 min talk + 30 min discussion)",
+                hosted: "Hosted by UNAM & University of Arizona",
+                nav: { schedule: "Schedule", about: "About", admin: "Admin" },
+                auth: {
+                    title: "Sign in to participate", signin: "Sign in", signout: "Sign out",
+                    email: "Email", magic: "Send magic link", magic_hint: "We'll email you a sign-in link. Check your inbox.", or: "or",
+                },
+                profile: {
+                    title: "Your profile", full_name: "Full name", username: "Username",
+                    affiliation: "Affiliation", save: "Save profile", saved: "Profile updated",
+                },
+                schedule: { title: "Upcoming Talks", empty: "No events yet. Check back soon.", list: "List", calendar: "Calendar" },
+                search: { placeholder: "Search..." },
+                back: { schedule: "Back to schedule" },
+                tabs: { discussion: "Discussion", files: "Files", about: "About" },
+                thread: { placeholder: "New topic title…", create: "Create", empty: "No topics yet. Start the discussion!" },
+                files: { upload: "Upload", empty: "No files yet." },
+                event: { edit: "Edit", delete: "Delete", edit_title: "Edit event", title_en: "Title (EN)", title_es: "Title (ES)", desc_en: "Description (EN)", desc_es: "Description (ES)", start: "Start time", end: "End time", host: "Host org", zoom: "Zoom URL (members only)", lang: "Language" },
+                footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
+                rsvp: { going: "Going", interested: "Interested", notgoing: "Not going", saved: "RSVP updated" },
+                follow: "Follow",
+                legend: { scheduled: "Scheduled", completed: "Completed", canceled: "Canceled" },
+                speakers: { title: "Speakers", link_me: "Link to my profile", add: "Add speaker", remove: "Remove", added: "Speaker added", removed: "Speaker removed" },
+                save: "Save", cancel: "Cancel",
+                errors: { update_event: "Could not update event", delete_event: "Could not delete event", upload: "Upload failed" },
+                labels: { followers: "followers", going: "going", interested: "interested" },
+                open: "Open", join_zoom: "Join link", members_only: "members only",
+            },
+            es: {
+                tagline: "Serie de seminarios informales para compartir avances en agrofotovoltaica en América Latina",
+                intro: "La agrofotovoltaica integra energía solar con producción agrícola/ganadera. Este seminario bilingüe se enfoca en América Latina. Organizado por UNAM y University of Arizona.",
+                format: "En línea • Mensual • 1 hora (30 min charla + 30 min discusión)",
+                hosted: "Organizado por UNAM y University of Arizona",
+                nav: { schedule: "Calendario", about: "Acerca de", admin: "Admin" },
+                auth: {
+                    title: "Inicia sesión para participar", signin: "Iniciar sesión", signout: "Cerrar sesión",
+                    email: "Correo", magic: "Enviar enlace mágico", magic_hint: "Te enviaremos un enlace de acceso. Revisa tu bandeja.", or: "o",
+                },
+                profile: { title: "Tu perfil", full_name: "Nombre completo", username: "Usuario", affiliation: "Afiliación", save: "Guardar perfil", saved: "Perfil actualizado" },
+                schedule: { title: "Próximas charlas", empty: "Aún no hay eventos. Vuelve pronto.", list: "Lista", calendar: "Calendario" },
+                search: { placeholder: "Buscar..." },
+                back: { schedule: "Volver al calendario" },
+                tabs: { discussion: "Discusión", files: "Archivos", about: "Acerca de" },
+                thread: { placeholder: "Título del nuevo tema…", create: "Crear", empty: "Aún no hay temas. ¡Comienza la discusión!" },
+                files: { upload: "Subir", empty: "No hay archivos." },
+                event: { edit: "Editar", delete: "Eliminar", edit_title: "Editar evento", title_en: "Título (EN)", title_es: "Título (ES)", desc_en: "Descripción (EN)", desc_es: "Descripción (ES)", start: "Inicio", end: "Fin", host: "Institución anfitriona", zoom: "Enlace de Zoom (solo miembros)", lang: "Idioma" },
+                footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
+                rsvp: { going: "Asistiré", interested: "Interesado/a", notgoing: "No asistiré", saved: "Asistencia actualizada" },
+                follow: "Seguir",
+                legend: { scheduled: "Programado", completed: "Completado", canceled: "Cancelado" },
+                speakers: { title: "Ponentes", link_me: "Vincular a mi perfil", add: "Agregar ponente", remove: "Quitar", added: "Ponente agregado", removed: "Ponente eliminado" },
+                save: "Guardar", cancel: "Cancelar",
+                errors: { update_event: "No se pudo actualizar el evento", delete_event: "No se pudo eliminar el evento", upload: "Fallo al subir" },
+                labels: { followers: "seguidores", going: "asisten", interested: "interesados" },
+                open: "Abrir", join_zoom: "Enlace", members_only: "solo miembros",
+            },
+        };
+
+        function tr(key, fallback = "") {
+            const lang = state.language;
+            const parts = key.split(".");
+            let obj = t[lang];
+            for (const p of parts) obj = obj?.[p];
+            return obj ?? fallback;
+        }
+
+        /* ============== UI helpers ============== */
+        const $ = (sel) => document.querySelector(sel);
+
+        function setFlash(msg, timeout = 3000) {
+            const el = $("#flash");
+            if (!el) return;
+            el.textContent = msg;
+            el.style.display = "block";
+            clearTimeout(setFlash._t);
+            setFlash._t = setTimeout(() => (el.style.display = "none"), timeout);
+        }
+
+        function fmtDateTime(iso) {
+            try {
+                return new Intl.DateTimeFormat(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "short"
+                }).format(new Date(iso));
+            } catch (_) {
+                return iso;
+            }
+        }
+
+        function bytesToSize(bytes = 0) {
+            if (bytes === 0) return "0 B";
+            const k = 1024,
+                sizes = ["B", "KB", "MB", "GB", "TB"],
+                i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+        }
+
+        function escapeHtml(s = "") {
+            return s.replace(/[&<>"']/g, (m) => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            } [m]));
+        }
+
+        function toIsoOrNull(v) {
+            if (!v) return null;
+            const d = new Date(v);
+            return isNaN(d.getTime()) ? null : d.toISOString();
+        }
+
+        function toLocalInputValue(iso) {
+            if (!iso) return "";
+            const d = new Date(iso);
+            const p = (n) => String(n).padStart(2, "0");
+            return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+        }
+
+        function applyI18n() {
+            document.querySelectorAll("[data-i18n]").forEach((el) => {
+                el.textContent = tr(el.dataset.i18n, el.textContent);
+            });
+            document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+                el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder);
+            });
+            const langSwitch = document.getElementById('langSwitch');
+            if (langSwitch) langSwitch.dataset.lang = state.language;
+        }
+
+        /* ============= Views ============= */
+        function showView(which) {
+            $("#schedule").style.display = "none";
+            $("#eventDetail").style.display = "none";
+            $("#hero").style.display = "none";
+            $("#auth").style.display = "none";
+            $("#profile").style.display = "none";
+
+            if (which === "schedule") {
+                $("#hero").style.display = "flex";
+                $("#schedule").style.display = "flex";
+                if (!state.session) $("#auth").style.display = "block";
+            } else if (which === "event") {
+                $("#eventDetail").style.display = "flex";
+            } else if (which === "profile") {
+                $("#profile").style.display = "block";
+            }
+        }
+
+        /* ============= Auth ============= */
+        async function initAuth() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                state.session = session;
+                if (session) await ensureProfile();
+                renderAuthUI();
+                renderHeader();
+            } catch (err) { console.error("Session check error:", err); renderAuthUI(); renderHeader(); }
+
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                state.session = session;
+                if (session) {
+                    await ensureProfile();
+                    setFlash(tr("auth.magic_hint"));
+                } else {
+                    state.profile = null;
+                    setFlash(tr("auth.signout"));
+                }
+                renderAuthUI();
+                renderHeader();
+                await loadEvents();
+            });
+        }
+
+        function renderAuthUI() {
+            if (state.session) {
+                $("#auth").style.display = "none";
+                $("#profile").style.display = "none";
+                $("#fullName").value = state.profile?.full_name || "";
+                $("#username").value = state.profile?.username || "";
+                $("#affiliation").value = state.profile?.affiliation || "";
+            } else {
+                $("#auth").style.display = "block";
+                $("#profile").style.display = "none";
+            }
+        }
+
+        async function fetchProfile(uid) {
+             if (!uid) return null;
+             if (state.profileCache.has(uid)) return state.profileCache.get(uid);
+             const { data } = await supabase.from("profiles").select("*").eq("id", uid).single();
+             if (data) state.profileCache.set(uid, data);
+             return data;
+        }
+
+        async function ensureProfile() {
+            const uid = state.session?.user?.id;
+            if (!uid) return;
+            const profile = await fetchProfile(uid);
+            state.profile = profile;
+        }
+
+        async function sendMagicLink(email) {
+            const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: REDIRECT_TO } });
+            if (error) setFlash(`Error: ${error.message}`);
+            else setFlash(tr("auth.magic_hint"));
+        }
+
+        async function oauth(provider) {
+            await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: REDIRECT_TO } });
+        }
+        
+        function renderHeader() {
+            const btnSignIn = $("#btnSignIn"); const btnSignOut = $("#btnSignOut");
+            const btnAdmin = $("#btnAdmin"); const userName = $("#userName");
+            const btnProfile = $("#btnProfile");
+
+            if (state.session) {
+                btnSignIn.style.display = "none"; btnSignOut.style.display = "inline-block";
+                btnProfile.style.display = "grid"; userName.style.display = "inline";
+                userName.textContent = state.profile?.full_name || state.profile?.username || "";
+                $("#userInitial").textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
+                if (btnAdmin) btnAdmin.style.display = isOrganizer() ? "inline-block" : "none";
+            } else {
+                btnSignIn.style.display = "inline-block"; btnSignOut.style.display = "none";
+                btnProfile.style.display = "none"; userName.style.display = "none";
+                if (btnAdmin) btnAdmin.style.display = "none";
+            }
+        }
+        
+        /* ============= Data: Events & Schedule ============= */
+        async function loadEvents() {
+            if (!state.session) {
+                $("#eventsList").innerHTML = ""; $("#emptyEvents").style.display = "block";
+                $("#calendar").style.display = "none"; return;
+            }
+            const { data } = await supabase.from("events").select("*").order("start_time", { ascending: true });
+            state.events = data || [];
+            renderEventsList();
+            renderScheduleCalendar();
+        }
+
+        function renderEventsList() {
+            const list = $("#eventsList"); const empty = $("#emptyEvents");
+            if (!list || !empty) return;
+            list.innerHTML = "";
+            const term = ($("#search")?.value || "").toLowerCase().trim();
+            const filtered = state.events.filter((e) => !term || [e.title_en, e.title_es, e.description_en, e.description_es, e.host_org].filter(Boolean).some((v) => v.toLowerCase().includes(term)));
+            empty.style.display = filtered.length ? "none" : "block";
+
+            for (const ev of filtered) {
+                const card = document.createElement("div"); card.className = "event-card";
+                const title = state.language === "es" ? ev.title_es || ev.title_en : ev.title_en || ev.title_es;
+                const desc = state.language === "es" ? ev.description_es || ev.description_en : ev.description_en || ev.description_es;
+                card.innerHTML = `<div class="when">${fmtDateTime(ev.start_time)}</div><div class="event-title">${escapeHtml(title || "")}</div>${desc ? `<div class="event-desc">${escapeHtml(desc).substring(0, 140)}…</div>` : ""}<div class="tags"><span class="tag">${ev.language?.toUpperCase()||"BI"}</span><span class="tag status-${ev.status||"scheduled"}">${ev.status||"scheduled"}</span>${ev.host_org ? `<span class="tag">${escapeHtml(ev.host_org)}</span>` : ""}</div><div class="actions"><button class="btn-secondary" data-open="${ev.id}">${tr("open","Open")}</button></div>`;
+                card.querySelector(`[data-open="${ev.id}"]`).addEventListener("click", () => openEvent(ev.id));
+                list.appendChild(card);
+            }
+        }
+        
+        async function openEvent(eventId) {
+            const ev = state.events.find((e) => e.id === eventId);
+            if (!ev) return;
+            state.selectedEvent = ev;
+            state.selectedThreadId = null; 
+            showDiscussionView('welcome');
+            renderEventHeader();
+            await Promise.all([loadThreads(ev.id), loadFiles(ev.id), loadSpeakers(ev.id), loadRSVPFollow(ev.id)]);
+            showView("event");
+        }
+
+        function renderEventHeader() {
+            const ev = state.selectedEvent; if (!ev) return;
+            const title = state.language === "es" ? ev.title_es || ev.title_en : ev.title_en || ev.title_es;
+            const desc = state.language === "es" ? ev.description_es || ev.description_en : ev.description_en || ev.description_es;
+            $("#eventHeader").innerHTML = `<div class="event-title">${escapeHtml(title||"")}</div><div class="event-attrs"><span>${fmtDateTime(ev.start_time)}</span>${ev.host_org ? `<span>• ${escapeHtml(ev.host_org)}</span>` : ""}<span>• ${ev.language?.toUpperCase()||"BI"}</span>${ev.zoom_url ? `<span>• 🔒 Zoom</span>`:""}</div>`;
+            $("#eventAbout").innerHTML = `${desc ? `<p>${escapeHtml(desc).replace(/\n/g,"<br/>")}</p>` : ""}${ev.zoom_url ? `<p><strong>Zoom:</strong> <a href="${ev.zoom_url}" target="_blank" rel="noopener">${tr("join_zoom")}</a> (${tr("members_only")})</p>` : ""}`;
+            $("#rsvpGroup").style.display = state.session ? "flex" : "none";
+            $("#btnFollow").style.display = state.session ? "inline-flex" : "none";
+            $("#btnFollow").classList.toggle("active", state.isFollowing);
+            ["going", "interested", "not_going"].forEach((k) => { $(`[data-rsvp="${k}"]`)?.classList.toggle("active", state.rsvpStatus === k); });
+            $("#eventCounts").innerHTML = `<span class="count">${state.counts.followers} ${tr("labels.followers")}</span><span class="count">${state.counts.going} ${tr("labels.going")}</span><span class="count">${state.counts.interested} ${tr("labels.interested")}</span>`;
+            $("#organizerActions").style.display = isOrganizer() ? "inline-flex" : "none";
+            if (isOrganizer()) fillEditEventForm();
+        }
+        
+        function renderScheduleCalendar() {
+            const grid = $("#calendarGrid"); const label = $("#calLabel"); if (!grid || !label) return;
+            const m = state.calendarMonth; label.textContent = m.toLocaleString(undefined, { month: "long", year: "numeric" });
+            const start = new Date(m.getFullYear(), m.getMonth(), 1); const end = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+            const firstDayIndex = (start.getDay() + 6) % 7; const daysInMonth = end.getDate();
+            grid.innerHTML = ``;
+            for (let i = 0; i < firstDayIndex; i++) grid.appendChild(document.createElement("div"));
+            const byDay = new Map();
+            for (const ev of state.events) {
+                const d = new Date(ev.start_time); if (d.getMonth() !== m.getMonth() || d.getFullYear() !== m.getFullYear()) continue;
+                const day = d.getDate(); if (!byDay.has(day)) byDay.set(day, []); byDay.get(day).push(ev);
+            }
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cell = document.createElement("div"); cell.className = "cal-cell"; cell.innerHTML = `<div class="cal-day">${day}</div>`;
+                (byDay.get(day) || []).forEach((ev) => {
+                    const title = state.language === "es" ? ev.title_es || ev.title_en : ev.title_en || ev.title_es;
+                    const badge = document.createElement("button"); badge.className = `cal-badge status-${ev.status}`; badge.title = title || ""; badge.textContent = (ev.language || "bi").toUpperCase();
+                    badge.addEventListener("click", () => openEvent(ev.id)); cell.appendChild(badge);
+                });
+                grid.appendChild(cell);
+            }
+        }
+        
+        /* ====== MODERN FORUM LOGIC ====== */
+        function showDiscussionView(view) {
+            if (view === 'detail') {
+                $("#thread-welcome").style.display = 'none';
+                $("#threadDetailView").style.display = 'flex';
+            } else { // 'welcome'
+                $("#thread-welcome").style.display = 'grid';
+                $("#threadDetailView").style.display = 'none';
+            }
+        }
+
+        async function openThread(threadId) {
+            state.selectedThreadId = threadId;
+            showDiscussionView('detail');
+            renderThreads();
+            await loadComments(threadId);
+        }
+
+        async function loadThreads(eventId) {
+            const { data } = await supabase.from("threads").select("*, comments(count), profiles(id, full_name)").eq("event_id", eventId).order("created_at",{ascending:false});
+            state.threads = data || []; 
+            for (const th of state.threads) {
+                if (th.profiles) {
+                    state.profileCache.set(th.created_by, th.profiles);
+                } else {
+                    await fetchProfile(th.created_by);
+                }
+            }
+            renderThreads();
+        }
+
+        function renderThreads() {
+            const list = $("#threadsList"); 
+            if (!list) return; 
+            list.innerHTML = "";
+            
+            for (const th of state.threads) {
+                const author = state.profileCache.get(th.created_by);
+                const authorName = author?.full_name || '...';
+                const initial = authorName.charAt(0).toUpperCase();
+
+                const item = document.createElement("div");
+                item.className = "thread-list-item";
+                if(th.id === state.selectedThreadId) item.classList.add('active');
+
+                item.innerHTML = `
+                    <div class="avatar-circle">${initial}</div>
+                    <div>
+                        <div class="title">${th.pinned ? "📌 " : ""}${escapeHtml(th.title)}</div>
+                        <div class="meta">${th.comments[0].count} replies • by ${escapeHtml(authorName)}</div>
+                    </div>
+                `;
+                item.addEventListener('click', () => openThread(th.id));
+                list.appendChild(item);
+            }
+        }
+
+        async function loadComments(threadId) {
+            const { data } = await supabase.from("comments").select("*").eq("thread_id", threadId).order("created_at", { ascending: true });
+            state.comments = data || []; 
+            for (const c of state.comments) {
+                await fetchProfile(c.created_by);
+            }
+            renderComments();
+        }
+
+        function renderComments() {
+            const container = $(`#commentsList`);
+            if (!container) return;
+            container.innerHTML = "";
+
+            const commentsByParentId = new Map();
+            for (const comment of state.comments) {
+                const parentId = comment.parent_id || 'root';
+                if (!commentsByParentId.has(parentId)) {
+                    commentsByParentId.set(parentId, []);
+                }
+                commentsByParentId.get(parentId).push(comment);
+            }
+
+            const rootComments = commentsByParentId.get('root') || [];
+            for (const comment of rootComments) {
+                container.appendChild(createCommentNode(comment, commentsByParentId));
+            }
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function createCommentNode(comment, commentsByParentId) {
+            const profile = state.profileCache.get(comment.created_by);
+            const authorName = profile?.full_name || '...';
+            const initial = authorName.charAt(0).toUpperCase();
+
+            const node = document.createElement('div');
+            node.className = 'comment-node';
+            
+            node.innerHTML = `
+                <div class="comment-threadline"></div>
+                <div class="comment-main">
+                    <div class="comment-author">
+                        <div class="avatar-circle">${initial}</div>
+                        <strong>${escapeHtml(authorName)}</strong>
+                        <span class="timestamp">• ${fmtDateTime(comment.created_at)}</span>
+                    </div>
+                    <div class="comment-text">${comment.is_deleted ? "<em>(deleted)</em>" : escapeHtml(comment.content)}</div>
+                    <div class="comment-actions">
+                        <button class="btn-ghost" data-reply-id="${comment.id}">Reply</button>
+                    </div>
+                    <div class="comment-replies"></div>
+                </div>
+            `;
+            
+            const repliesContainer = node.querySelector('.comment-replies');
+            const children = commentsByParentId.get(comment.id) || [];
+            if (children.length === 0) {
+                 node.querySelector('.comment-threadline').style.height = '20px'; // Shorten line if no replies
+            }
+            for (const child of children) {
+                repliesContainer.appendChild(createCommentNode(child, commentsByParentId));
+            }
+
+            node.querySelector(`[data-reply-id]`).addEventListener('click', (e) => {
+                const parentId = e.target.dataset.replyId;
+                const existingForm = node.querySelector('.inline-reply-form');
+                if (existingForm) {
+                    existingForm.remove();
+                    return;
+                }
+                
+                const formContainer = document.createElement('div');
+                formContainer.className = 'inline-reply-form';
+                formContainer.innerHTML = `
+                    <form class="inline-form">
+                        <input type="text" placeholder="Replying to ${authorName}..." required />
+                        <button type="submit" class="btn-primary">Reply</button>
+                    </form>
+                `;
+                
+                formContainer.querySelector('form').addEventListener('submit', async (ev) => {
+                    ev.preventDefault();
+                    const input = ev.target.querySelector('input');
+                    const content = input.value.trim();
+                    if(content) {
+                        await createComment(state.selectedThreadId, parentId, content);
+                        await loadComments(state.selectedThreadId);
+                    }
+                });
+                node.querySelector('.comment-actions').insertAdjacentElement('afterend', formContainer);
+                formContainer.querySelector('input').focus();
+            });
+
+            return node;
+        }
+        
+        async function createThread(title) { 
+            if (!title || !state.selectedEvent) return; 
+            const { data } = await supabase.from("threads").insert({event_id: state.selectedEvent.id, title, created_by: state.session.user.id}).select().single();
+            await loadThreads(state.selectedEvent.id); 
+            if (data) openThread(data.id);
+        }
+        async function createComment(thread_id, parent_id, content) { 
+            await supabase.from("comments").insert({event_id: state.selectedEvent.id, thread_id, parent_id, content, created_by: state.session.user.id}); 
+        }
+
+        /* ====== End forum logic ====== */
+        
+        async function loadFiles(eventId) { const { data } = await supabase.from("attachments").select("*").eq("event_id", eventId).order("created_at", { ascending: false }); state.files = data || []; renderFiles(); }
+        async function uploadFile(file) { if (!file || !state.selectedEvent) return; const eventId = state.selectedEvent.id; const object_path = `events/${eventId}/${Date.now()}-${file.name}`; await supabase.storage.from("attachments").upload(object_path, file); await supabase.from("attachments").insert({event_id: eventId, bucket_id: "attachments", object_path, file_name: file.name, file_type: file.type, file_size: file.size, created_by: state.session.user.id}); await loadFiles(eventId); }
+        async function getSignedUrl(path) { const { data } = await supabase.storage.from("attachments").createSignedUrl(path, 3600); return data?.signedUrl; }
+        async function renderFiles() {
+            const grid = $("#filesList"); const empty = $("#emptyFiles"); if (!grid || !empty) return; grid.innerHTML = ""; empty.style.display = state.files.length ? "none" : "block";
+            for (const f of state.files) { const div = document.createElement("div"); div.className = "file"; const url = await getSignedUrl(f.object_path); div.innerHTML = `<div class="meta"><div class="name">${escapeHtml(f.file_name)}</div><div class="size">${bytesToSize(f.file_size)}</div></div><div class="actions"><a class="btn-secondary" href="${url}" target="_blank" rel="noopener">Open</a>${canDeleteFile(f) ? `<button class="btn-danger" data-del="${f.id}">Delete</button>` : ""}</div>`; div.querySelector("[data-del]")?.addEventListener("click", () => deleteFile(f)); grid.appendChild(div); }
+        }
+        function canDeleteFile(f) { const uid = state.session?.user?.id; if (!uid) return false; return f.created_by === uid || isOrganizer(); }
+        async function deleteFile(f) { await supabase.storage.from("attachments").remove([f.object_path]); await supabase.from("attachments").delete().eq("id", f.id); await loadFiles(state.selectedEvent.id); }
+        async function loadRSVPFollow(eventId) {
+            state.rsvpStatus = null; state.isFollowing = false; state.counts = { followers: 0, going: 0, interested: 0 };
+            const [{ data: follows }, { data: rsvps }] = await Promise.all([supabase.from("event_follows").select("event_id",{count:'exact'}).eq("event_id",eventId), supabase.from("event_rsvps").select("status").eq("event_id",eventId)]);
+            state.counts.followers = follows?.length || 0; state.counts.going = rsvps?.filter((r) => r.status === "going").length || 0; state.counts.interested = rsvps?.filter((r) => r.status === "interested").length || 0;
+            if (state.session) { const uid = state.session.user.id; const [{data:myFollow},{data:myRsvp}] = await Promise.all([supabase.from("event_follows").select("id").eq("event_id",eventId).eq("profile_id",uid).maybeSingle(), supabase.from("event_rsvps").select("status").eq("event_id",eventId).eq("profile_id",uid).maybeSingle()]); state.isFollowing = !!myFollow; state.rsvpStatus = myRsvp?.status || null; }
+            renderEventHeader();
+        }
+        async function toggleFollow() { if (!state.session || !state.selectedEvent) return; const uid = state.session.user.id; const eventId = state.selectedEvent.id; if (state.isFollowing) await supabase.from("event_follows").delete().eq("event_id", eventId).eq("profile_id", uid); else await supabase.from("event_follows").insert({ event_id: eventId, profile_id: uid }); await loadRSVPFollow(eventId); }
+        async function setRSVP(status) { if (!state.session || !state.selectedEvent) return; const uid = state.session.user.id; const eventId = state.selectedEvent.id; await supabase.from("event_rsvps").upsert({ event_id: eventId, profile_id: uid, status }, { onConflict: "event_id,profile_id" }); await loadRSVPFollow(eventId); }
+        async function loadSpeakers(eventId) { const { data } = await supabase.from("event_speakers").select("*,profiles(full_name,username)").eq("event_id", eventId).order("created_at"); state.speakers = (data || []).map((s) => ({...s, profile: s.profiles||null})); renderSpeakers(); }
+        function renderSpeakers() {
+            const list = $("#speakersList"); if (!list) return;
+            list.innerHTML = state.speakers.map((s) => `<div class="speaker"><div class="speaker-name">${escapeHtml(s.profile?.full_name||s.name)}${s.profile_id && s.profile ? ` <span class="tag">@${escapeHtml(s.profile.username||"")}</span>` : ""}${s.affiliation ? ` — <span class="muted">${escapeHtml(s.affiliation)}</span>` : ""}</div>${isOrganizer() ? `<button class="btn-ghost btn-sm" data-remove-speaker="${s.id}">Remove</button>` : ""}</div>`).join("") || `<div class="muted">—</div>`;
+            list.querySelectorAll("[data-remove-speaker]").forEach((btn) => btn.addEventListener("click", async (e) => { if (confirm("Remove speaker?")) { await supabase.from("event_speakers").delete().eq("id", e.target.dataset.removeSpeaker); await loadSpeakers(state.selectedEvent.id); } }));
+            $("#manageSpeakers").style.display = isOrganizer() ? "block" : "none";
+        }
+        function isOrganizer() { return ["organizer", "admin"].includes(state.profile?.role); }
+        
+        /* ===== Admin: update/delete events ===== */
+        function fillEditEventForm() { const ev = state.selectedEvent; if (!ev) return; $("#editTitleEn").value = ev.title_en || ""; $("#editTitleEs").value = ev.title_es || ""; $("#editDescEn").value = ev.description_en || ""; $("#editDescEs").value = ev.description_es || ""; $("#editStartTime").value = toLocalInputValue(ev.start_time); $("#editEndTime").value = toLocalInputValue(ev.end_time); $("#editEventLang").value = ev.language || "bi"; $("#editHostOrg").value = ev.host_org || ""; $("#editZoomUrl").value = ev.zoom_url || ""; }
+        async function updateEvent(payload) {
+            if (isUpdatingEvent) return false; isUpdatingEvent = true;
+            try { await supabase.from("events").update(payload).eq("id", state.selectedEvent.id); await loadEvents(); state.selectedEvent = state.events.find((e) => e.id === state.selectedEvent.id); renderEventHeader(); $("#editEventPanel").style.display = "none"; }
+            catch (e) { setFlash(tr("errors.update_event")); } finally { isUpdatingEvent = false; }
+        }
+        async function deleteEvent() { if (!state.selectedEvent || !confirm("Delete event?")) return; await supabase.from("events").delete().eq("id", state.selectedEvent.id); await loadEvents(); showView("schedule"); }
+        async function addSpeaker({ name, affiliation, linkMyProfile }) { if (!state.selectedEvent) return; await supabase.from("event_speakers").insert({ event_id: state.selectedEvent.id, name, affiliation, profile_id: linkMyProfile ? state.session?.user?.id : null }); await loadSpeakers(state.selectedEvent.id); }
+
+        /* ============= Wire-up ============= */
+        function wireUI() {
+            $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
+            $("#emailForm")?.addEventListener("submit", (e) => { e.preventDefault(); const email = $("#email")?.value.trim(); if (email) sendMagicLink(email); });
+            $("#btnGoogle")?.addEventListener("click", () => oauth("google"));
+            
+            $("#btnProfile")?.addEventListener("click", () => showView("profile"));
+            $("#backFromProfile")?.addEventListener("click", () => showView("schedule"));
+            $("#backToSchedule")?.addEventListener("click", () => showView("schedule"));
+
+            document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => {
+                document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active")); tab.classList.add("active");
+                document.querySelectorAll(".tab-panel").forEach((p) => (p.style.display = "none"));
+                $(`#tab_${tab.dataset.tab}`).style.display = "flex";
+            }));
+
+            const langSwitch = document.getElementById('langSwitch');
+            if (langSwitch) {
+                langSwitch.addEventListener('click', () => {
+                    state.language = state.language === 'en' ? 'es' : 'en';
+                    localStorage.setItem("lang", state.language);
+                    applyI18n();
+                    renderEventsList();
+                    if (state.selectedEvent) { renderEventHeader(); renderThreads(); if(state.selectedThreadId) renderComments(); }
+                    renderFiles(); renderScheduleCalendar();
+                });
+            }
+
+            $("#search")?.addEventListener("input", renderEventsList);
+            const scheduleCard = $("#schedule");
+            $("#viewList")?.addEventListener("click", () => { scheduleCard.classList.remove("calendar-view"); $("#viewList").classList.add("active"); $("#viewCalendar").classList.remove("active"); $("#eventsList").style.display = "grid"; $("#calendar").style.display = "none"; });
+            $("#viewCalendar")?.addEventListener("click", () => { scheduleCard.classList.add("calendar-view"); $("#viewCalendar").classList.add("active"); $("#viewList").classList.remove("active"); $("#eventsList").style.display = "none"; $("#calendar").style.display = "flex"; });
+            $("#calPrev")?.addEventListener("click", () => { state.calendarMonth = new Date(state.calendarMonth.getFullYear(), state.calendarMonth.getMonth() - 1, 1); renderScheduleCalendar(); });
+            $("#calNext")?.addEventListener("click", () => { state.calendarMonth = new Date(state.calendarMonth.getFullYear(), state.calendarMonth.getMonth() + 1, 1); renderScheduleCalendar(); });
+            
+            $("#profileForm")?.addEventListener("submit", async (e) => { e.preventDefault(); if (!state.session) return; const p = { full_name: $("#fullName").value.trim(), username: $("#username").value.trim(), affiliation: $("#affiliation").value.trim() }; await supabase.from("profiles").update(p).eq("id", state.session.user.id); setFlash(tr("profile.saved")); await ensureProfile(); renderAuthUI(); });
+            
+            // Forum UI wire-up
+            $("#newThreadForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const title = $("#threadTitle")?.value.trim(); if (title) { await createThread(title); $("#threadTitle").value = ""; } });
+            $("#replyToThreadForm")?.addEventListener("submit", async (e) => { 
+                e.preventDefault(); 
+                const textarea = e.target.querySelector("textarea");
+                const content = textarea.value.trim();
+                if (content && state.selectedThreadId) { 
+                    await createComment(state.selectedThreadId, null, content); 
+                    textarea.value = ""; 
+                    await loadComments(state.selectedThreadId); 
+                } 
+            });
+
+            $("#uploadForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const f = $("#fileInput")?.files[0]; if (f) { await uploadFile(f); $("#fileInput").value = ""; } });
+            $("#btnFollow")?.addEventListener("click", toggleFollow);
+            document.querySelectorAll("[data-rsvp]").forEach((btn) => btn.addEventListener("click", () => setRSVP(btn.dataset.rsvp)));
+            $("#btnEditEvent")?.addEventListener("click", () => $("#editEventPanel").style.display = "block");
+            $("#btnCancelEdit")?.addEventListener("click", () => $("#editEventPanel").style.display = "none");
+            $("#editEventForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const p = { title_en: $("#editTitleEn").value, title_es: $("#editTitleEs").value, description_en: $("#editDescEn").value, description_es: $("#editDescEs").value, start_time: toIsoOrNull($("#editStartTime").value), end_time: toIsoOrNull($("#editEndTime").value), language: $("#editEventLang").value, host_org: $("#editHostOrg").value, zoom_url: $("#editZoomUrl").value }; await updateEvent(p); });
+            $("#btnDeleteEvent")?.addEventListener("click", deleteEvent);
+            $("#linkMyProfile")?.addEventListener("click", () => $("#speakerName").value = state.profile?.full_name || "");
+            $("#addSpeakerForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const name = $("#speakerName").value.trim(); const affiliation = $("#speakerAffiliation").value.trim(); await addSpeaker({ name, affiliation, linkMyProfile: !name && state.profile?.full_name }); $("#speakerName").value = ""; $("#speakerAffiliation").value = ""; });
+            
+            $("#year").textContent = new Date().getFullYear();
+        }
+
+        /* ============= Bootstrap ============= */
+        (async function main() {
+            applyI18n();
+            wireUI();
+            await initAuth();
+            await loadEvents();
+
+            if (window.location.hash === '#profile' && state.session) {
+                showView('profile');
+            } else {
+                showView("schedule");
+            }
+        })();
+    </script>
 </body>
 
 </html>
