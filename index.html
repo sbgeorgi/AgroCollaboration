@@ -1,195 +1,398 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Almuerzo Agrivoltaico • Seminar Platform</title>
-  <meta name="description" content="An informal seminar series to share advances in agrivoltaics in Latin America (EN/ES)." />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-  <link rel="preconnect" href="https://esm.sh" crossorigin />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Almuerzo Agrivoltaico • Seminar Platform</title>
+    <meta name="description"
+        content="An informal seminar series to share advances in agrivoltaics in Latin America (EN/ES)." />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://esm.sh" crossorigin />
 </head>
+
 <body>
-  <header class="site-header">
-    <div class="container header-grid">
-      <div class="brand">
-        <div class="logo-circle">A</div>
-        <div class="brand-text">
-          <div class="title">Almuerzo Agrivoltaico</div>
-          <div class="subtitle" data-i18n="tagline">An informal seminar series to share advances in agrivoltaics in Latin America</div>
+    <header class="site-header">
+        <div class="container header-grid">
+            <div class="brand">
+                <div class="logo-circle">A</div>
+                <div class="brand-text">
+                    <div class="title">Almuerzo Agrivoltaico</div>
+                    <div class="subtitle" data-i18n="tagline">
+                        An informal seminar series to share advances in agrivoltaics in Latin America
+                    </div>
+                </div>
+            </div>
+            <nav class="nav">
+                <button id="btnSchedule" class="link" data-i18n="nav.schedule">Schedule</button>
+                <button id="btnCommunity" class="link" data-i18n="nav.community">Community</button>
+                <button id="btnAdmin" class="link" data-i18n="nav.admin">Admin</button>
+                <div class="divider"></div>
+                <div id="langSwitch" class="lang-switch-slider" data-lang="en">
+                    <span>EN</span>
+                    <span>ES</span>
+                </div>
+                <div class="auth-area">
+                    <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
+                        <span id="userInitial"></span>
+                    </button>
+                    <span id="userName"></span>
+                    <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
+                    <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+                        Sign out
+                    </button>
+                </div>
+            </nav>
         </div>
-      </div>
-      <nav class="nav">
-        <button id="btnSchedule" class="link" data-i18n="nav.schedule">Schedule</button>
-        <button id="btnCommunity" class="link" data-i18n="nav.community">Community</button>
-        <button id="btnAdmin" class="link" data-i18n="nav.admin">Admin</button>
-        <div class="divider"></div>
-        <div class="lang-switch">
-          <button class="chip" data-lang="en">EN</button>
-          <button class="chip" data-lang="es">ES</button>
+    </header>
+
+    <div id="flash" class="flash" role="status" aria-live="polite"></div>
+
+    <main class="container">
+        <!-- Hero -->
+        <section id="hero" class="card hero">
+            <h1>Almuerzo Agrivoltaico</h1>
+            <p data-i18n="intro">
+                Agrivoltaics (agrivoltaics) is an emerging field that integrates solar energy with
+                crop/livestock production. This bilingual seminar focuses on Latin America. Hosted by
+                UNAM and University of Arizona.
+            </p>
+            <div class="meta">
+                <span class="meta-item" data-i18n="format">Online • Monthly • 1 hour (30 min talk + 30 min
+                    discussion)</span>
+                <span class="meta-item" data-i18n="hosted">Hosted by UNAM & University of Arizona</span>
+            </div>
+        </section>
+
+        <!-- Auth (shown when signed out) -->
+        <section id="auth" class="card" aria-labelledby="authTitle">
+            <div class="auth-centered">
+                <h2 id="authTitle" data-i18n="auth.title">Sign in to participate</h2>
+
+                <button id="btnGoogle" class="btn-social btn-google">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
+                        <path
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                            fill="#4285F4"></path>
+                        <path
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                            fill="#34A853"></path>
+                        <path
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                            fill="#FBBC05"></path>
+                        <path
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                            fill="#EA4335"></path>
+                        <path d="M1 1h22v22H1z" fill="none"></path>
+                    </svg>
+                    <span>Sign in with Google</span>
+                </button>
+
+                <div class="separator" data-i18n="auth.or">or</div>
+
+                <form id="emailForm" class="auth-form-secondary">
+                    <label for="email" class="sr-only" data-i18n="auth.email">Email</label>
+                    <input id="email" type="email" placeholder="you@example.com" required
+                        data-i18n-placeholder="auth.email" />
+                    <button class="btn-secondary" type="submit" data-i18n="auth.magic">
+                        Send magic link
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Profile (shown as a separate view) -->
+        <section id="profile" class="card" aria-labelledby="profileTitle" style="display: none">
+            <button class="btn-ghost" id="backFromProfile">
+                ← <span data-i18n="back.schedule">Back to schedule</span>
+            </button>
+            <h2 id="profileTitle" data-i18n="profile.title">Your profile</h2>
+            <form id="profileForm" class="grid-form">
+                <div>
+                    <label for="fullName" data-i18n="profile.full_name">Full name</label>
+                    <input id="fullName" />
+                </div>
+                <div>
+                    <label for="username" data-i18n="profile.username">Username</label>
+                    <input id="username" />
+                </div>
+                <div class="col-span-2">
+                    <label for="affiliation" data-i18n="profile.affiliation">Affiliation</label>
+                    <input id="affiliation" />
+                </div>
+                <div class="col-span-2">
+                    <button class="btn-secondary" type="submit" data-i18n="profile.save">
+                        Save profile
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Schedule / Community -->
+        <section id="schedule" class="card" aria-labelledby="scheduleTitle">
+            <div class="section-header">
+                <h2 id="scheduleTitle" data-i18n="schedule.title">Upcoming Talks</h2>
+                <div class="search-bar">
+                    <input id="search" type="search" placeholder="Search..."
+                        data-i18n-placeholder="search.placeholder" />
+                </div>
+            </div>
+
+            <div class="view-switch">
+                <button id="viewList" class="chip chip-toggle active" data-i18n="schedule.list">
+                    List
+                </button>
+                <button id="viewCalendar" class="chip chip-toggle" data-i18n="schedule.calendar">
+                    Calendar
+                </button>
+            </div>
+
+            <div id="eventsList" class="events-grid"></div>
+
+            <div id="calendar" class="calendar" style="display: none">
+                <div class="calendar-header">
+                    <button id="calPrev" class="btn-ghost" aria-label="Previous month">◀</button>
+                    <div id="calLabel" class="cal-label">Month</div>
+                    <button id="calNext" class="btn-ghost" aria-label="Next month">▶</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+                <div class="calendar-legend">
+                    <span class="legend scheduled" data-i18n="legend.scheduled">Scheduled</span>
+                    <span class="legend completed" data-i18n="legend.completed">Completed</span>
+                    <span class="legend canceled" data-i18n="legend.canceled">Canceled</span>
+                </div>
+            </div>
+
+            <div id="emptyEvents" class="empty" style="display: none" data-i18n="schedule.empty">
+                No events yet. Check back soon.
+            </div>
+        </section>
+
+        <!-- Event Detail -->
+        <section id="eventDetail" class="card" style="display: none">
+            <button class="btn-ghost" id="backToSchedule">
+                ← <span data-i18n="back.schedule">Back to schedule</span>
+            </button>
+
+            <div id="eventHeader" class="event-header"></div>
+
+            <div class="event-actions">
+                <div class="rsvp-group" id="rsvpGroup" style="display: none">
+                    <button class="chip" data-rsvp="going" id="rsvpGoing">
+                        👍 <span data-i18n="rsvp.going">Going</span>
+                    </button>
+                    <button class="chip" data-rsvp="interested" id="rsvpInterested">
+                        ⭐ <span data-i18n="rsvp.interested">Interested</span>
+                    </button>
+                    <button class="chip" data-rsvp="not_going" id="rsvpNotGoing">
+                        🚫 <span data-i18n="rsvp.notgoing">Not going</span>
+                    </button>
+                </div>
+                <button id="btnFollow" class="chip" style="display: none">
+                    ★ <span data-i18n="follow">Follow</span>
+                </button>
+                <div id="eventCounts" class="event-counts"></div>
+                <div id="organizerActions" style="display: none">
+                    <button id="btnEditEvent" class="btn-secondary" data-i18n="event.edit">Edit</button>
+                    <button id="btnDeleteEvent" class="btn-danger" data-i18n="event.delete">Delete</button>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" data-tab="discussion" data-i18n="tabs.discussion">
+                    Discussion
+                </button>
+                <button class="tab" data-tab="files" data-i18n="tabs.files">Files</button>
+                <button class="tab" data-tab="about" data-i18n="tabs.about">About</button>
+            </div>
+
+            <div id="tab_discussion" class="tab-panel">
+                <form id="newThreadForm" class="inline-form">
+                    <input id="threadTitle" type="text" placeholder="New topic title…"
+                        data-i18n-placeholder="thread.placeholder" />
+                    <button class="btn-primary" type="submit" data-i18n="thread.create">
+                        Create Topic
+                    </button>
+                </form>
+                <div id="threadsList" class="threads"></div>
+                <div id="emptyThreads" class="empty" style="display: none" data-i18n="thread.empty">
+                    No topics yet. Start the discussion!
+                </div>
+            </div>
+
+            <div id="tab_files" class="tab-panel" style="display: none">
+                <form id="uploadForm" class="inline-form">
+                    <input id="fileInput" type="file" />
+                    <button class="btn-primary" type="submit" data-i18n="files.upload">Upload</button>
+                </form>
+                <div id="filesList" class="files"></div>
+                <div id="emptyFiles" class="empty" style="display: none" data-i18n="files.empty">
+                    No files yet.
+                </div>
+            </div>
+
+            <div id="tab_about" class="tab-panel" style="display: none">
+                <div id="eventAbout" class="event-about"></div>
+
+                <h3 class="subheading" data-i18n="speakers.title">Speakers</h3>
+                <div id="speakersList" class="speakers-list"></div>
+
+                <div id="manageSpeakers" style="display: none">
+                    <form id="addSpeakerForm" class="inline-form">
+                        <input id="speakerName" type="text" placeholder="Speaker name" />
+                        <input id="speakerAffiliation" type="text" placeholder="Affiliation" />
+                        <button class="btn-secondary" type="button" id="linkMyProfile">
+                            🔗 <span data-i18n="speakers.link_me">Link to my profile</span>
+                        </button>
+                        <button class="btn-primary" type="submit" data-i18n="speakers.add">
+                            Add speaker
+                        </button>
+                    </form>
+                </div>
+
+                <div id="editEventPanel" class="edit-event" style="display: none">
+                    <h3 class="subheading" data-i18n="event.edit_title">Edit event</h3>
+                    <form id="editEventForm" class="grid-form">
+                        <div>
+                            <label data-i18n="event.title_en">Title (EN)</label>
+                            <input id="editTitleEn" required />
+                        </div>
+                        <div>
+                            <label data-i18n="event.title_es">Title (ES)</label>
+                            <input id="editTitleEs" />
+                        </div>
+                        <div class="col-span-2">
+                            <label data-i18n="event.desc_en">Description (EN)</label>
+                            <textarea id="editDescEn"></textarea>
+                        </div>
+                        <div class="col-span-2">
+                            <label data-i18n="event.desc_es">Description (ES)</label>
+                            <textarea id="editDescEs"></textarea>
+                        </div>
+                        <div>
+                            <label data-i18n="event.start">Start time</label>
+                            <input id="editStartTime" type="datetime-local" required />
+                        </div>
+                        <div>
+                            <label data-i18n="event.end">End time</label>
+                            <input id="editEndTime" type="datetime-local" />
+                        </div>
+                        <div>
+                            <label data-i18n="event.lang">Language</label>
+                            <select id="editEventLang">
+                                <option value="bi">Bilingual</option>
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label data-i18n="event.host">Host org</label>
+                            <input id="editHostOrg" />
+                        </div>
+                        <div class="col-span-2">
+                            <label data-i18n="event.zoom">Zoom URL (members only)</label>
+                            <input id="editZoomUrl" type="url" />
+                        </div>
+                        <div class="col-span-2">
+                            <button class="btn-primary" type="submit" data-i18n="save">Save</button>
+                            <button class="btn-ghost" type="button" id="btnCancelEdit" data-i18n="cancel">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin (organizers only) -->
+        <section id="admin" class="card" style="display: none">
+            <h2 data-i18n="admin.title">Organizer Tools</h2>
+            <div class="admin-layout">
+                <form id="createEventForm" class="grid-form">
+                    <div>
+                        <label data-i18n="event.title_en">Title (EN)</label>
+                        <input id="titleEn" required />
+                    </div>
+                    <div>
+                        <label data-i18n="event.title_es">Title (ES)</label>
+                        <input id="titleEs" />
+                    </div>
+                    <div class="col-span-2">
+                        <label data-i18n="event.desc_en">Description (EN)</label>
+                        <textarea id="descEn"></textarea>
+                    </div>
+                    <div class="col-span-2">
+                        <label data-i18n="event.desc_es">Description (ES)</label>
+                        <textarea id="descEs"></textarea>
+                    </div>
+                    <div>
+                        <label data-i18n="event.start">Start time</label>
+                        <input id="startTime" type="datetime-local" required />
+                    </div>
+                    <div>
+                        <label data-i18n="event.end">End time</label>
+                        <input id="endTime" type="datetime-local" />
+                    </div>
+                    <div>
+                        <label data-i18n="event.lang">Language</label>
+                        <select id="eventLang">
+                            <option value="bi">Bilingual</option>
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label data-i18n="event.host">Host org</label>
+                        <input id="hostOrg" placeholder="UNAM, University of Arizona…" />
+                    </div>
+                    <div class="col-span-2">
+                        <label data-i18n="event.zoom">Zoom URL (members only)</label>
+                        <input id="zoomUrl" type="url" />
+                    </div>
+
+                    <div class="col-span-2">
+                        <button class="btn-primary" type="submit" data-i18n="event.create">
+                            Create Event
+                        </button>
+                    </div>
+                </form>
+
+                <div class="admin-side">
+                    <h3 class="subheading" data-i18n="slots.title">Existing time slots</h3>
+                    <div id="slotList" class="slot-list"></div>
+
+                    <h3 class="subheading" data-i18n="slots.blocked">Blocked/conflicting times</h3>
+                    <div id="slotConflicts" class="slot-conflicts"></div>
+
+                    <h3 class="subheading" data-i18n="calendar.preview">Calendar preview</h3>
+                    <div class="calendar mini">
+                        <div class="calendar-header">
+                            <div class="cal-label" id="adminCalLabel"></div>
+                        </div>
+                        <div class="calendar-grid" id="adminCalendarGrid"></div>
+                    </div>
+
+                    <h3 class="subheading" data-i18n="slots.suggestions">Suggested open 1-hr slots</h3>
+                    <div id="slotSuggestions" class="slot-suggestions"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>
+                © <span id="year"></span> Almuerzo Agrivoltaico •
+                <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin
+                    America.</span>
+            </small>
         </div>
-        <div class="auth-area">
-          <span id="userName"></span>
-          <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
-          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display:none;">Sign out</button>
-        </div>
-      </nav>
-    </div>
-  </header>
+    </footer>
 
-  <div id="flash" class="flash" role="status" aria-live="polite"></div>
-
-  <main class="container">
-    <!-- Hero -->
-    <section id="hero" class="card hero">
-      <h1>Almuerzo Agrivoltaico</h1>
-      <p data-i18n="intro">
-        Agrivoltaics (agrivoltaics) is an emerging field that integrates solar energy with crop/livestock production.
-        This bilingual seminar focuses on Latin America. Hosted by UNAM and University of Arizona.
-      </p>
-      <div class="meta">
-        <span class="meta-item" data-i18n="format">Online • Monthly • 1 hour (30 min talk + 30 min discussion)</span>
-        <span class="meta-item" data-i18n="hosted">Hosted by UNAM & University of Arizona</span>
-      </div>
-    </section>
-
-        <!-- Auth -->
-<section id="auth" class="card" aria-labelledby="authTitle">
-      <div class="auth-centered">
-        <h2 id="authTitle" data-i18n="auth.title">Sign in to participate</h2>
-
-        <button id="btnGoogle" class="btn-social btn-google">
-          <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
-            <path d="M1 1h22v22H1z" fill="none"></path>
-          </svg>
-          <span>Sign in with Google</span>
-        </button>
-
-        <div class="separator" data-i18n="auth.or">or</div>
-
-        <form id="emailForm" class="auth-form-secondary">
-          <label for="email" class="sr-only" data-i18n="auth.email">Email</label>
-          <input id="email" type="email" placeholder="you@example.com" required data-i18n-placeholder="auth.email" />
-          <button class="btn-secondary" type="submit" data-i18n="auth.magic">Send magic link</button>
-        </form>
-      </div>
-    </section>
-
-    <!-- Schedule -->
-    <section id="schedule" class="card" aria-labelledby="scheduleTitle">
-      <div class="section-header">
-        <h2 id="scheduleTitle" data-i18n="schedule.title">Upcoming Talks</h2>
-        <div class="search-bar">
-          <input id="search" type="search" placeholder="Search..." data-i18n-placeholder="search.placeholder" />
-        </div>
-      </div>
-      <div id="eventsList" class="events-grid"></div>
-      <div id="emptyEvents" class="empty" style="display:none;" data-i18n="schedule.empty">
-        No events yet. Check back soon.
-      </div>
-    </section>
-
-    <!-- Event Detail -->
-    <section id="eventDetail" class="card" style="display:none;">
-      <button class="btn-ghost" id="backToSchedule">← <span data-i18n="back.schedule">Back to schedule</span></button>
-      <div id="eventHeader" class="event-header"></div>
-
-      <div class="tabs">
-        <button class="tab active" data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
-        <button class="tab" data-tab="files" data-i18n="tabs.files">Files</button>
-        <button class="tab" data-tab="about" data-i18n="tabs.about">About</button>
-      </div>
-
-      <div id="tab_discussion" class="tab-panel">
-        <form id="newThreadForm" class="inline-form">
-          <input id="threadTitle" type="text" placeholder="New topic title…" data-i18n-placeholder="thread.placeholder" />
-          <button class="btn-primary" type="submit" data-i18n="thread.create">Create Topic</button>
-        </form>
-        <div id="threadsList" class="threads"></div>
-        <div id="emptyThreads" class="empty" style="display:none;" data-i18n="thread.empty">
-          No topics yet. Start the discussion!
-        </div>
-      </div>
-
-      <div id="tab_files" class="tab-panel" style="display:none;">
-        <form id="uploadForm" class="inline-form">
-          <input id="fileInput" type="file" />
-          <button class="btn-primary" type="submit" data-i18n="files.upload">Upload</button>
-        </form>
-        <div id="filesList" class="files"></div>
-        <div id="emptyFiles" class="empty" style="display:none;" data-i18n="files.empty">No files yet.</div>
-      </div>
-
-      <div id="tab_about" class="tab-panel" style="display:none;">
-        <div id="eventAbout" class="event-about"></div>
-      </div>
-    </section>
-
-    <!-- Admin (organizers only) -->
-    <section id="admin" class="card" style="display:none;">
-      <h2 data-i18n="admin.title">Organizer Tools</h2>
-      <form id="createEventForm" class="grid-form">
-        <div>
-          <label data-i18n="event.title_en">Title (EN)</label>
-          <input id="titleEn" required />
-        </div>
-        <div>
-          <label data-i18n="event.title_es">Title (ES)</label>
-          <input id="titleEs" />
-        </div>
-        <div class="col-span-2">
-          <label data-i18n="event.desc_en">Description (EN)</label>
-          <textarea id="descEn"></textarea>
-        </div>
-        <div class="col-span-2">
-          <label data-i18n="event.desc_es">Description (ES)</label>
-          <textarea id="descEs"></textarea>
-        </div>
-        <div>
-          <label data-i18n="event.start">Start time</label>
-          <input id="startTime" type="datetime-local" required />
-        </div>
-        <div>
-          <label data-i18n="event.end">End time</label>
-          <input id="endTime" type="datetime-local" />
-        </div>
-        <div>
-          <label data-i18n="event.lang">Language</label>
-          <select id="eventLang">
-            <option value="bi">Bilingual</option>
-            <option value="en">English</option>
-            <option value="es">Español</option>
-          </select>
-        </div>
-        <div>
-          <label data-i18n="event.host">Host org</label>
-          <input id="hostOrg" placeholder="UNAM, University of Arizona…" />
-        </div>
-        <div class="col-span-2">
-          <label data-i18n="event.zoom">Zoom URL (members only)</label>
-          <input id="zoomUrl" type="url" />
-        </div>
-        <div class="col-span-2">
-          <button class="btn-primary" type="submit" data-i18n="event.create">Create Event</button>
-        </div>
-      </form>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container">
-      <small>
-        © <span id="year"></span> Almuerzo Agrivoltaico • <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
-      </small>
-    </div>
-  </footer>
-
-  <!-- Supabase JS via ESM CDN -->
-  <script type="module" src="https://esm.sh/@supabase/supabase-js@2"></script>
-  <script src="app.js" type="module"></script>
+    <!-- Supabase JS via ESM CDN -->
+    <script type="module" src="https://esm.sh/@supabase/supabase-js@2"></script>
+    <script src="app.js" type="module"></script>
 </body>
+
 </html>
