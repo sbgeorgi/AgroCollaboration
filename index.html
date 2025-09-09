@@ -634,41 +634,41 @@
         }
 
         /* This new rule wraps the bubble and actions to place them on one line */
-.comment-body-wrapper {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    margin-top: var(--space-1);
-}
+        .comment-body-wrapper {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            margin-top: var(--space-1);
+        }
 
-/* Pill bubble for the message */
-.comment-bubble {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    /* margin-top: var(--space-1); <-- This line is removed */
-    padding: calc(var(--space-2) - 2px) var(--space-3);
-    background: linear-gradient(180deg, var(--color-surface-strong), var(--color-surface));
-    border: 1px solid var(--color-border);
-    border-radius: 9999px;
-    max-width: 100%;
-    box-shadow: 0 1px 0 rgba(73, 2, 239, 0.74), 0 2px 5px rgba(73, 2, 239, 0.74) inset;
-}
+        /* Pill bubble for the message */
+        .comment-bubble {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            /* margin-top: var(--space-1); <-- This line is removed */
+            padding: calc(var(--space-2) - 2px) var(--space-3);
+            background: linear-gradient(180deg, var(--color-surface-strong), var(--color-surface));
+            border: 1px solid var(--color-border);
+            border-radius: 9999px;
+            max-width: 100%;
+            box-shadow: 0 1px 0 rgba(73, 2, 239, 0.74), 0 2px 5px rgba(73, 2, 239, 0.74) inset;
+        }
 
-.comment-text {
-    margin: 0;
-    line-height: 1.5;
-    font-size: 0.95rem;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-}
+        .comment-text {
+            margin: 0;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
 
-/* Action row */
-.comment-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-}
+        /* Action row */
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
 
         .comment-actions .btn-ghost {
             font-size: 0.75rem;
@@ -702,8 +702,10 @@
 
         .thread-dot {
             position: absolute;
-            left: -24px; /* sits on the rail */
-            top: 26px;   /* aligns roughly with the bubble's first line */
+            left: -24px;
+            /* sits on the rail */
+            top: 26px;
+            /* aligns roughly with the bubble's first line */
             width: 14px;
             height: 14px;
             border-radius: 50%;
@@ -714,7 +716,7 @@
         }
 
         /* small tweak: when there's no replies rail, hide the dot */
-        .comment-node.depth-0 > .comment-main .thread-dot {
+        .comment-node.depth-0>.comment-main .thread-dot {
             display: none;
         }
 
@@ -735,11 +737,13 @@
             flex-grow: 1;
             resize: none;
         }
-        
+
         #profile {
             flex-shrink: 0;
-            overflow-y: auto;  /* Enable scrolling for the profile section */
-            max-height: 100%;  /* Ensure it doesn't exceed container height */
+            overflow-y: auto;
+            /* Enable scrolling for the profile section */
+            max-height: 100%;
+            /* Ensure it doesn't exceed container height */
         }
 
         /* Profile Form Styles - REMOVED max-width restriction */
@@ -750,13 +754,15 @@
 
         .profile-form {
             /* Removed: max-width: 800px; */
-            width: 100%;  /* Take full width of container */
+            width: 100%;
+            /* Take full width of container */
         }
-        
+
         /* --- Public Profile View --- */
         #publicProfileView {
             overflow-y: auto;
         }
+
         #publicProfileView .public-profile-header {
             display: grid;
             grid-template-columns: auto 1fr;
@@ -766,6 +772,7 @@
             padding-bottom: var(--space-4);
             border-bottom: 1px solid var(--color-border);
         }
+
         #publicProfileView .avatar-circle-large {
             width: 80px;
             height: 80px;
@@ -777,19 +784,23 @@
             font-size: 2.2rem;
             flex-shrink: 0;
         }
-        #publicProfileView h2 { 
-            margin: 0; 
+
+        #publicProfileView h2 {
+            margin: 0;
             font-size: 1.4rem;
         }
-        #publicProfileView p { 
-            margin: var(--space-1) 0 0 0; 
+
+        #publicProfileView p {
+            margin: var(--space-1) 0 0 0;
         }
+
         #publicProfileView .public-profile-meta {
             display: flex;
             flex-wrap: wrap;
             gap: var(--space-2);
             margin-top: var(--space-2);
         }
+
         #publicProfileView .meta-chip {
             display: inline-flex;
             align-items: center;
@@ -801,16 +812,20 @@
             font-size: .8rem;
             line-height: 1;
         }
+
         #publicProfileView .meta-chip .emoji {
             opacity: .9;
         }
+
         #publicProfileView .email a {
             color: var(--color-primary);
             text-decoration: none;
         }
+
         #publicProfileView .email a:hover {
             text-decoration: underline;
         }
+
         /* Links list with clear icons */
         #publicProfileView .link-list {
             list-style: none;
@@ -819,6 +834,7 @@
             flex-direction: column;
             gap: var(--space-2);
         }
+
         #publicProfileView .link-list a {
             text-decoration: none;
             color: var(--color-primary);
@@ -827,9 +843,11 @@
             gap: var(--space-2);
             font-weight: 500;
         }
+
         #publicProfileView .link-list a:hover {
             text-decoration: underline;
         }
+
         #publicProfileView .link-icon {
             display: inline-grid;
             place-items: center;
@@ -840,18 +858,21 @@
             color: var(--color-primary);
             font-size: 0.95em;
         }
+
         /* Research chips */
         #publicProfileView .chips {
             display: flex;
             flex-wrap: wrap;
             gap: var(--space-2);
         }
+
         #publicProfileView .chip {
             padding: var(--space-1) var(--space-2);
             background: var(--color-surface-strong);
             border-radius: 999px;
             font-size: 0.85rem;
         }
+
         /* Section spacing overrides to make it feel like a profile */
         #publicProfileView .form-section {
             margin-bottom: var(--space-4);
@@ -924,8 +945,9 @@
                 ← <span data-i18n="back.schedule">Back to schedule</span>
             </button>
             <h2 id="profileTitle" data-i18n="profile.title">Complete Your Profile</h2>
-            <p id="profileIntro" class="profile-intro" data-i18n="profile.intro">Please complete your profile to continue. Fields marked with * are required.</p>
-            
+            <p id="profileIntro" class="profile-intro" data-i18n="profile.intro">Please complete your profile to
+                continue. Fields marked with * are required.</p>
+
             <form id="profileForm" class="profile-form">
                 <!-- Basic Information -->
                 <div class="form-section">
@@ -937,8 +959,10 @@
                         </div>
                         <div class="form-field required">
                             <label for="username" data-i18n="profile.username">Username *</label>
-                            <input id="username" required pattern="[a-zA-Z0-9_-]+" title="Only letters, numbers, underscores and hyphens allowed" />
-                            <small class="field-hint" data-i18n="profile.username_hint">Used for @mentions and profile URL</small>
+                            <input id="username" required pattern="[a-zA-Z0-9_-]+"
+                                title="Only letters, numbers, underscores and hyphens allowed" />
+                            <small class="field-hint" data-i18n="profile.username_hint">Used for @mentions and profile
+                                URL</small>
                         </div>
                         <div class="form-field required col-span-2">
                             <label for="affiliation" data-i18n="profile.affiliation">Affiliation/Organization *</label>
@@ -967,7 +991,8 @@
                             <input id="personalWebsite" type="url" placeholder="https://..." />
                         </div>
                         <div class="form-field">
-                            <label for="professionalWebsite" data-i18n="profile.professional_website">Professional/Lab Website</label>
+                            <label for="professionalWebsite" data-i18n="profile.professional_website">Professional/Lab
+                                Website</label>
                             <input id="professionalWebsite" type="url" placeholder="https://..." />
                         </div>
                         <div class="form-field col-span-2">
@@ -982,8 +1007,10 @@
                     <h3 data-i18n="profile.fields_section">Research Interests</h3>
                     <div class="form-field">
                         <label for="fieldsOfStudy" data-i18n="profile.fields_of_study">Fields of Study</label>
-                        <textarea id="fieldsOfStudy" rows="3" placeholder="e.g., Solar Energy, Agricultural Systems, Environmental Science..."></textarea>
-                        <small class="field-hint" data-i18n="profile.fields_hint">Separate multiple fields with commas</small>
+                        <textarea id="fieldsOfStudy" rows="3"
+                            placeholder="e.g., Solar Energy, Agricultural Systems, Environmental Science..."></textarea>
+                        <small class="field-hint" data-i18n="profile.fields_hint">Separate multiple fields with
+                            commas</small>
                     </div>
                 </div>
 
@@ -991,7 +1018,8 @@
                     <button class="btn-primary" type="submit" data-i18n="profile.save">
                         Save Profile
                     </button>
-                    <button class="btn-ghost" type="button" id="skipProfile" style="display: none;" data-i18n="profile.skip">
+                    <button class="btn-ghost" type="button" id="skipProfile" style="display: none;"
+                        data-i18n="profile.skip">
                         Skip for now
                     </button>
                 </div>
@@ -1235,24 +1263,24 @@
                     email: "Email", magic: "Send magic link", magic_hint: "We'll email you a sign-in link. Check your inbox.", or: "or",
                     required: "Please sign in to view event details.",
                 },
-                profile: { 
-                    title: "Complete Your Profile", 
+                profile: {
+                    title: "Complete Your Profile",
                     intro: "Please complete your profile to continue. Fields marked with * are required.",
                     basic_info: "Basic Information",
                     contact_info: "Contact Information",
                     professional_links: "Professional Links",
                     fields_section: "Research Interests",
-                    full_name: "Full Name", 
-                    username: "Username", 
+                    full_name: "Full Name",
+                    username: "Username",
                     username_hint: "Used for @mentions and profile URL",
-                    affiliation: "Affiliation/Organization", 
+                    affiliation: "Affiliation/Organization",
                     work_email: "Work Email",
                     personal_website: "Personal Website",
                     professional_website: "Professional/Lab Website",
                     google_scholar: "Google Scholar Profile",
                     fields_of_study: "Fields of Study",
                     fields_hint: "Separate multiple fields with commas",
-                    save: "Save Profile", 
+                    save: "Save Profile",
                     saved: "Profile updated",
                     skip: "Skip for now",
                     incomplete: "Please complete your profile to access all features"
@@ -1286,24 +1314,24 @@
                     email: "Correo", magic: "Enviar enlace mágico", magic_hint: "Te enviaremos un enlace de acceso. Revisa tu bandeja.", or: "o",
                     required: "Por favor, inicia sesión para ver los detalles del evento.",
                 },
-                profile: { 
-                    title: "Completa tu Perfil", 
+                profile: {
+                    title: "Completa tu Perfil",
                     intro: "Por favor completa tu perfil para continuar. Los campos marcados con * son obligatorios.",
                     basic_info: "Información Básica",
                     contact_info: "Información de Contacto",
                     professional_links: "Enlaces Profesionales",
                     fields_section: "Intereses de Investigación",
-                    full_name: "Nombre Completo", 
-                    username: "Usuario", 
+                    full_name: "Nombre Completo",
+                    username: "Usuario",
                     username_hint: "Usado para @menciones y URL del perfil",
-                    affiliation: "Afiliación/Organización", 
+                    affiliation: "Afiliación/Organización",
                     work_email: "Correo de Trabajo",
                     personal_website: "Sitio Web Personal",
                     professional_website: "Sitio Web Profesional/Laboratorio",
                     google_scholar: "Perfil de Google Scholar",
                     fields_of_study: "Campos de Estudio",
                     fields_hint: "Separa múltiples campos con comas",
-                    save: "Guardar Perfil", 
+                    save: "Guardar Perfil",
                     saved: "Perfil actualizado",
                     skip: "Omitir por ahora",
                     incomplete: "Por favor completa tu perfil para acceder a todas las funciones"
@@ -1403,7 +1431,7 @@
                 state.session = session;
                 if (session) {
                     await ensureProfile();
-                    
+
                     if (!state.profileComplete) {
                         setTimeout(() => {
                             showView("profile");
@@ -1416,9 +1444,9 @@
                 }
             } catch (err) {
                 console.error("Session check error:", err);
-            } finally { 
-                renderAuthUI(); 
-                renderHeader(); 
+            } finally {
+                renderAuthUI();
+                renderHeader();
             }
 
             supabase.auth.onAuthStateChange(async (event, session) => {
@@ -1427,7 +1455,7 @@
                     await ensureProfile();
                     if (event === "SIGNED_IN") {
                         setFlash(tr("auth.magic_hint"));
-                        
+
                         if (!state.profileComplete) {
                             showView("profile");
                             $("#backFromProfile").style.display = "none";
@@ -1438,8 +1466,8 @@
                     state.profile = null;
                     state.profileComplete = false;
                 }
-                renderAuthUI(); 
-                renderHeader(); 
+                renderAuthUI();
+                renderHeader();
                 await loadEvents();
             });
         }
@@ -1447,7 +1475,7 @@
         function renderAuthUI() {
             const showAuthCard = !state.session && $("#schedule").style.display !== 'none';
             $("#auth").style.display = showAuthCard ? "block" : "none";
-            
+
             if (state.session && state.profile) {
                 $("#fullName").value = state.profile?.full_name || "";
                 $("#username").value = state.profile?.username || "";
@@ -1457,7 +1485,7 @@
                 $("#professionalWebsite").value = state.profile?.professional_website || "";
                 $("#googleScholar").value = state.profile?.google_scholar || "";
                 $("#fieldsOfStudy").value = state.profile?.fields_of_study || "";
-                
+
                 if (state.profileComplete) {
                     $("#backFromProfile").style.display = "inline-block";
                     $("#skipProfile").style.display = "none";
@@ -1558,7 +1586,7 @@
                 if (btnAdmin) btnAdmin.style.display = "none";
             }
         }
-        
+
         // UPDATED: richer, always-fresh public profile rendering
         async function renderPublicProfile(userId) {
             const container = $("#publicProfileView");
@@ -1603,7 +1631,7 @@
             } else {
                 emailChip.style.display = "none";
             }
-            
+
             // Links with clear link icons
             const linksList = $("#publicProfileLinks");
             linksList.innerHTML = "";
@@ -1643,141 +1671,202 @@
         }
 
         /* ============= Data: Events & Schedule ============= */
-        async function loadEvents() {
-            const { data } = await supabase.from("events").select("*").order("start_time", { ascending: true });
-            state.events = data || [];
-            renderEventsList();
-            renderScheduleCalendar();
+async function loadEvents() {
+    // MODIFIED: Fetched event_speakers along with events
+    const { data } = await supabase.from("events").select("*, event_speakers(*)").order("start_time", { ascending: true });
+    state.events = data || [];
+    renderEventsList();
+    renderScheduleCalendar();
+}
+
+function renderEventsList() {
+    const list = $("#eventsList"), empty = $("#emptyEvents");
+    if (!list || !empty) return;
+    const term = ($("#search")?.value || "").toLowerCase().trim();
+    
+    // MODIFIED: Search now includes speaker names and affiliations
+    const filtered = state.events.filter((e) => {
+        if (!term) return true;
+        const speakerMatch = (e.event_speakers || []).some(s => 
+            s.name.toLowerCase().includes(term) || 
+            (s.affiliation && s.affiliation.toLowerCase().includes(term))
+        );
+        const eventMatch = [e.title_en, e.title_es, e.description_en, e.description_es, e.host_org].filter(Boolean).some((v) => v.toLowerCase().includes(term));
+        return speakerMatch || eventMatch;
+    });
+
+    empty.style.display = filtered.length ? "none" : "block";
+    list.innerHTML = filtered.map(ev => {
+        const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
+        const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
+        
+        // ADDED: Logic to format speaker information for the card
+        let speakerLine = '';
+        if (ev.event_speakers && ev.event_speakers.length > 0) {
+            const primarySpeaker = ev.event_speakers.find(s => s.primary_speaker) || ev.event_speakers[0];
+            speakerLine = `<div class="event-speaker">👤 ${escapeHtml(primarySpeaker.name)}${primarySpeaker.affiliation ? ` (${escapeHtml(primarySpeaker.affiliation)})` : ''}</div>`;
         }
 
-        function renderEventsList() {
-            const list = $("#eventsList"), empty = $("#emptyEvents");
-            if (!list || !empty) return;
-            const term = ($("#search")?.value || "").toLowerCase().trim();
-            const filtered = state.events.filter((e) => !term || [e.title_en, e.title_es, e.description_en, e.description_es, e.host_org].filter(Boolean).some((v) => v.toLowerCase().includes(term)));
+        return `
+        <div class="event-card">
+            <div class="when">${fmtDateTime(ev.start_time)}</div>
+            <div class="event-title">${escapeHtml(title)}</div>
+            ${speakerLine} 
+            <div class="actions">
+                <button class="btn-secondary" data-open="${String(ev.id)}">${tr("open", "Open")}</button>
+            </div>
+            ${desc ? `<div class="event-desc">${escapeHtml(desc).substring(0, 140)}…</div>` : ""}
+            <div class="tags">
+                <span class="tag">${(ev.language || "bi").toUpperCase()}</span>
+                <span class="tag status-${ev.status || "scheduled"}">${ev.status || "scheduled"}</span>
+                ${ev.host_org ? `<span class="tag">${escapeHtml(ev.host_org)}</span>` : ""}
+            </div>
+            ${state.session && ev.zoom_url ? `
+            <div class="zoom-info">
+                <a href="${ev.zoom_url}" target="_blank" rel="noopener" class="btn-primary">🔗 ${tr('join_zoom')}</a>
+                <button class="btn-ghost" data-copy-link="${ev.zoom_url}" aria-label="${tr('copy_link')}">📋</button>
+            </div>` : ''}
+        </div>`;
+    }).join('');
+}
 
-            empty.style.display = filtered.length ? "none" : "block";
-            list.innerHTML = filtered.map(ev => {
-                const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
-                const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
-                return `
-                <div class="event-card">
-                    <div class="when">${fmtDateTime(ev.start_time)}</div>
-                    <div class="event-title">${escapeHtml(title)}</div>
-                    <div class="actions">
-                        <button class="btn-secondary" data-open="${String(ev.id)}">${tr("open", "Open")}</button>
-                    </div>
-                    ${desc ? `<div class="event-desc">${escapeHtml(desc).substring(0, 140)}…</div>` : ""}
-                    <div class="tags">
-                        <span class="tag">${(ev.language || "bi").toUpperCase()}</span>
-                        <span class="tag status-${ev.status || "scheduled"}">${ev.status || "scheduled"}</span>
-                        ${ev.host_org ? `<span class="tag">${escapeHtml(ev.host_org)}</span>` : ""}
-                    </div>
-                    ${state.session && ev.zoom_url ? `
-                    <div class="zoom-info">
-                        <a href="${ev.zoom_url}" target="_blank" rel="noopener" class="btn-primary">🔗 ${tr('join_zoom')}</a>
-                        <button class="btn-ghost" data-copy-link="${ev.zoom_url}" aria-label="${tr('copy_link')}">📋</button>
-                    </div>` : ''}
-                </div>`;
-            }).join('');
-        }
+async function openEvent(eventId) {
+    if (!state.session) {
+        setFlash(tr('auth.required'));
+        $("#auth").scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
 
-        async function openEvent(eventId) {
-            if (!state.session) {
-                setFlash(tr('auth.required'));
-                $("#auth").scrollIntoView({ behavior: 'smooth' });
-                return;
-            }
+    // MODIFICATION: No need to find in local state, fetch fresh with speakers
+    // This ensures speaker data is always up-to-date when an event is opened.
+    const { data: ev, error } = await supabase
+        .from('events')
+        .select('*, event_speakers(*)')
+        .eq('id', eventId)
+        .single();
 
-            const ev = state.events.find((e) => String(e.id) === String(eventId));
-            if (!ev) return;
+    if (error || !ev) {
+        console.error("Failed to fetch event details", error);
+        setFlash("Could not load event.", true);
+        return;
+    }
 
-            state.selectedEvent = ev;
-            state.selectedThreadId = null;
-            showDiscussionView('welcome');
-            subscribeToEventChanges(ev.id);
-            await Promise.all([loadThreads(ev.id), loadFiles(ev.id), loadRSVPFollow(ev.id)]);
-            renderEventHeader();
-            showView("event");
-        }
+    state.selectedEvent = ev;
+    state.selectedThreadId = null;
+    showDiscussionView('welcome');
+    subscribeToEventChanges(ev.id);
+    await Promise.all([loadThreads(ev.id), loadFiles(ev.id), loadRSVPFollow(ev.id)]);
+    renderEventHeader();
+    showView("event");
+}
 
-        function renderEventHeader() {
-            const ev = state.selectedEvent; if (!ev) return;
-            const container = $("#compactEventHeaderContainer");
-            if (!container) return;
+function renderEventHeader() {
+    const ev = state.selectedEvent; if (!ev) return;
+    const container = $("#compactEventHeaderContainer");
+    if (!container) return;
 
+    const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
+    const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
+
+    // ADDED: Logic to format speaker list for the event detail header
+    let speakersHtml = '';
+    if (ev.event_speakers && ev.event_speakers.length > 0) {
+        const speakerItems = ev.event_speakers
+            .sort((a, b) => b.primary_speaker - a.primary_speaker) // Primary speaker first
+            .map(s => `
+                <li>
+                    <span class="speaker-name">${escapeHtml(s.name)} ${s.primary_speaker ? '⭐' : ''}</span>
+                    ${s.affiliation ? `<span class="speaker-affiliation">${escapeHtml(s.affiliation)}</span>` : ''}
+                </li>
+            `).join('');
+        
+        speakersHtml = `
+            <div class="event-speakers">
+                <h3>Speaker(s)</h3>
+                <ul class="speaker-list">${speakerItems}</ul>
+            </div>
+        `;
+    }
+
+    container.innerHTML = `
+        <div class="event-header-row1">
+            <div class="title-and-attrs">
+                <h2 class="event-title">${escapeHtml(title)}</h2>
+                <div class="event-attrs">
+                    <span>${fmtDateTime(ev.start_time)}</span>
+                    ${ev.host_org ? `<span>• ${escapeHtml(ev.host_org)}</span>` : ""}
+                    <span>• ${(ev.language || "bi").toUpperCase()}</span>
+                </div>
+            </div>
+            <button class="btn-ghost" id="backToScheduleCompact">
+                ← <span>${tr('back.schedule')}</span>
+            </button>
+        </div>
+        <div class="event-header-row2">
+            <div class="event-actions">
+                <div class="rsvp-group" style="display: ${state.session ? 'flex' : 'none'}">
+                    <button class="chip ${state.rsvpStatus === 'going' ? 'active' : ''}" data-rsvp="going">
+                        <span>${tr('rsvp.going')}</span>
+                    </button>
+                    <button class="chip ${state.rsvpStatus === 'interested' ? 'active' : ''}" data-rsvp="interested">
+                        <span>${tr('rsvp.interested')}</span>
+                    </button>
+                    <button class="chip ${state.rsvpStatus === 'not_going' ? 'active' : ''}" data-rsvp="not_going">
+                        <span>${tr('rsvp.notgoing')}</span>
+                    </button>
+                </div>
+                <button id="btnFollowCompact" class="chip ${state.isFollowing ? 'active' : ''}" style="display: ${state.session ? 'inline-flex' : 'none'}">
+                    <span>${tr('follow')}</span>
+                </button>
+            </div>
+            <div class="event-counts">
+                <span class="count">${state.counts.followers} ${tr("labels.followers")}</span>
+                <span class="count">${state.counts.going} ${tr("labels.going")}</span>
+                <span class="count">${state.counts.interested} ${tr("labels.interested")}</span>
+            </div>
+        </div>
+        ${desc ? `<p class="event-description">${escapeHtml(desc).replace(/\n/g, "<br/>")}</p>` : ""}
+        ${speakersHtml} 
+    `;
+}
+
+function renderScheduleCalendar() {
+    const grid = $("#calendarGrid"), label = $("#calLabel"); if (!grid || !label) return;
+    const m = state.calendarMonth; label.textContent = m.toLocaleString(state.language, { month: "long", year: "numeric" });
+    const start = new Date(m.getFullYear(), m.getMonth(), 1), end = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+    const firstDayIndex = (start.getDay() + 6) % 7, daysInMonth = end.getDate(); grid.innerHTML = ``;
+    for (let i = 0; i < firstDayIndex; i++) grid.appendChild(document.createElement("div"));
+    const byDay = state.events.reduce((acc, ev) => {
+        const d = new Date(ev.start_time); if (d.getMonth() !== m.getMonth() || d.getFullYear() !== m.getFullYear()) return acc;
+        const day = d.getDate(); if (!acc.has(day)) acc.set(day, []); acc.get(day).push(ev); return acc;
+    }, new Map());
+    for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement("div"); cell.className = "cal-cell"; cell.innerHTML = `<div class="cal-day">${day}</div>`;
+        (byDay.get(day) || []).forEach((ev) => {
             const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
             const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
 
-            container.innerHTML = `
-                <div class="event-header-row1">
-                    <div class="title-and-attrs">
-                        <h2 class="event-title">${escapeHtml(title)}</h2>
-                        <div class="event-attrs">
-                            <span>${fmtDateTime(ev.start_time)}</span>
-                            ${ev.host_org ? `<span>• ${escapeHtml(ev.host_org)}</span>` : ""}
-                            <span>• ${(ev.language || "bi").toUpperCase()}</span>
-                        </div>
-                    </div>
-                    <button class="btn-ghost" id="backToScheduleCompact">
-                        ← <span>${tr('back.schedule')}</span>
-                    </button>
-                </div>
-                <div class="event-header-row2">
-                    <div class="event-actions">
-                        <div class="rsvp-group" style="display: ${state.session ? 'flex' : 'none'}">
-                            <button class="chip ${state.rsvpStatus === 'going' ? 'active' : ''}" data-rsvp="going">
-                                <span>${tr('rsvp.going')}</span>
-                            </button>
-                            <button class="chip ${state.rsvpStatus === 'interested' ? 'active' : ''}" data-rsvp="interested">
-                                <span>${tr('rsvp.interested')}</span>
-                            </button>
-                            <button class="chip ${state.rsvpStatus === 'not_going' ? 'active' : ''}" data-rsvp="not_going">
-                                <span>${tr('rsvp.notgoing')}</span>
-                            </button>
-                        </div>
-                        <button id="btnFollowCompact" class="chip ${state.isFollowing ? 'active' : ''}" style="display: ${state.session ? 'inline-flex' : 'none'}">
-                            <span>${tr('follow')}</span>
-                        </button>
-                    </div>
-                    <div class="event-counts">
-                        <span class="count">${state.counts.followers} ${tr("labels.followers")}</span>
-                        <span class="count">${state.counts.going} ${tr("labels.going")}</span>
-                        <span class="count">${state.counts.interested} ${tr("labels.interested")}</span>
-                    </div>
-                </div>
-                ${desc ? `<p class="event-description">${escapeHtml(desc).replace(/\n/g, "<br/>")}</p>` : ""}`;
-        }
-
-        function renderScheduleCalendar() {
-            const grid = $("#calendarGrid"), label = $("#calLabel"); if (!grid || !label) return;
-            const m = state.calendarMonth; label.textContent = m.toLocaleString(state.language, { month: "long", year: "numeric" });
-            const start = new Date(m.getFullYear(), m.getMonth(), 1), end = new Date(m.getFullYear(), m.getMonth() + 1, 0);
-            const firstDayIndex = (start.getDay() + 6) % 7, daysInMonth = end.getDate(); grid.innerHTML = ``;
-            for (let i = 0; i < firstDayIndex; i++) grid.appendChild(document.createElement("div"));
-            const byDay = state.events.reduce((acc, ev) => {
-                const d = new Date(ev.start_time); if (d.getMonth() !== m.getMonth() || d.getFullYear() !== m.getFullYear()) return acc;
-                const day = d.getDate(); if (!acc.has(day)) acc.set(day, []); acc.get(day).push(ev); return acc;
-            }, new Map());
-            for (let day = 1; day <= daysInMonth; day++) {
-                const cell = document.createElement("div"); cell.className = "cal-cell"; cell.innerHTML = `<div class="cal-day">${day}</div>`;
-                (byDay.get(day) || []).forEach((ev) => {
-                    const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
-                    const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
-                    
-                    const eventDiv = document.createElement("button");
-                    eventDiv.className = `cal-event status-${ev.status}`;
-                    eventDiv.innerHTML = `
-                        <div class="cal-event-title">${escapeHtml(title)}</div>
-                        ${desc ? `<div class="cal-event-desc">${escapeHtml(desc).substring(0, 60)}...</div>` : ''}
-                    `;
-                    eventDiv.addEventListener("click", () => openEvent(ev.id));
-                    
-                    cell.appendChild(eventDiv);
-                });
-                grid.appendChild(cell);
+            // ADDED: Logic to get speaker name for calendar view
+            let speakerName = '';
+            if (ev.event_speakers && ev.event_speakers.length > 0) {
+                const primarySpeaker = ev.event_speakers.find(s => s.primary_speaker) || ev.event_speakers[0];
+                speakerName = `<div class="cal-event-speaker">👤 ${escapeHtml(primarySpeaker.name)}</div>`;
             }
-        }
+
+            const eventDiv = document.createElement("button");
+            eventDiv.className = `cal-event status-${ev.status}`;
+            eventDiv.innerHTML = `
+                <div class="cal-event-title">${escapeHtml(title)}</div>
+                ${desc ? `<div class="cal-event-desc">${escapeHtml(desc).substring(0, 60)}...</div>` : ''}
+                ${speakerName}
+            `;
+            eventDiv.addEventListener("click", () => openEvent(ev.id));
+
+            cell.appendChild(eventDiv);
+        });
+        grid.appendChild(cell);
+    }
+}
 
         /* ====== Discussion Forum Logic ====== */
         function showDiscussionView(view) {
@@ -1855,17 +1944,17 @@
         }
 
         function createCommentNode(comment, commentsByParentId, depth = 0) {
-    const profile = state.profileCache.get(comment.created_by);
-    const authorName = profile?.full_name || '...';
-    const initial = authorName.charAt(0).toUpperCase();
-    const children = commentsByParentId.get(comment.id) || [];
-    const accent = accentFromId(comment.created_by);
+            const profile = state.profileCache.get(comment.created_by);
+            const authorName = profile?.full_name || '...';
+            const initial = authorName.charAt(0).toUpperCase();
+            const children = commentsByParentId.get(comment.id) || [];
+            const accent = accentFromId(comment.created_by);
 
-    const node = document.createElement('div');
-    node.className = `comment-node depth-${depth}`;
-    node.style.setProperty('--accent', accent);
+            const node = document.createElement('div');
+            node.className = `comment-node depth-${depth}`;
+            node.style.setProperty('--accent', accent);
 
-    node.innerHTML = `
+            node.innerHTML = `
         <div class="comment-main">
             ${depth > 0 ? `<span class="thread-dot" aria-hidden="true"></span>` : ''}
             <div class="comment-author">
@@ -1887,50 +1976,50 @@
         </div>
     `;
 
-    // The avatar background picks up the accent with a subtle tint
-    const avatar = node.querySelector('.comment-avatar');
-    if (avatar) {
-        avatar.style.background = `color-mix(in oklab, ${accent} 22%, var(--color-surface-strong))`;
-    }
+            // The avatar background picks up the accent with a subtle tint
+            const avatar = node.querySelector('.comment-avatar');
+            if (avatar) {
+                avatar.style.background = `color-mix(in oklab, ${accent} 22%, var(--color-surface-strong))`;
+            }
 
-    const repliesContainer = node.querySelector('.comment-replies');
-    for (const child of children) {
-        repliesContainer.appendChild(createCommentNode(child, commentsByParentId, depth + 1));
-    }
+            const repliesContainer = node.querySelector('.comment-replies');
+            for (const child of children) {
+                repliesContainer.appendChild(createCommentNode(child, commentsByParentId, depth + 1));
+            }
 
-    node.querySelector(`[data-reply-id]`).addEventListener('click', (e) => {
-        const parentId = e.target.dataset.replyId;
-        const existingForm = node.querySelector('.inline-reply-form');
-        if (existingForm) {
-            existingForm.remove();
-            return;
-        }
+            node.querySelector(`[data-reply-id]`).addEventListener('click', (e) => {
+                const parentId = e.target.dataset.replyId;
+                const existingForm = node.querySelector('.inline-reply-form');
+                if (existingForm) {
+                    existingForm.remove();
+                    return;
+                }
 
-        const formContainer = document.createElement('div');
-        formContainer.className = 'inline-reply-form';
-        formContainer.innerHTML = `
+                const formContainer = document.createElement('div');
+                formContainer.className = 'inline-reply-form';
+                formContainer.innerHTML = `
             <form class="inline-form">
                 <input type="text" placeholder="Replying to ${escapeHtml(authorName)}..." required />
                 <button type="submit" class="btn-primary">${tr('reply', 'Reply')}</button>
             </form>
         `;
 
-        formContainer.querySelector('form').addEventListener('submit', async (ev) => {
-            ev.preventDefault();
-            const input = ev.target.querySelector('input');
-            const content = input.value.trim();
-            if (content) {
-                await createComment(state.selectedThreadId, parentId, content);
-                await loadComments(state.selectedThreadId);
-            }
-        });
-        // MODIFICATION: Insert the reply form after the new wrapper
-        node.querySelector('.comment-body-wrapper').insertAdjacentElement('afterend', formContainer);
-        formContainer.querySelector('input').focus();
-    });
+                formContainer.querySelector('form').addEventListener('submit', async (ev) => {
+                    ev.preventDefault();
+                    const input = ev.target.querySelector('input');
+                    const content = input.value.trim();
+                    if (content) {
+                        await createComment(state.selectedThreadId, parentId, content);
+                        await loadComments(state.selectedThreadId);
+                    }
+                });
+                // MODIFICATION: Insert the reply form after the new wrapper
+                node.querySelector('.comment-body-wrapper').insertAdjacentElement('afterend', formContainer);
+                formContainer.querySelector('input').focus();
+            });
 
-    return node;
-}
+            return node;
+        }
 
         function renderComments() {
             const container = $(`#commentsList`);
@@ -2025,20 +2114,20 @@
 
             // --- Profile View ---
             // UPDATED: After saving, invalidate cache and reload my profile
-            $("#profileForm")?.addEventListener("submit", async (e) => { 
-                e.preventDefault(); if (!state.session) return; 
+            $("#profileForm")?.addEventListener("submit", async (e) => {
+                e.preventDefault(); if (!state.session) return;
                 const profileData = { full_name: $("#fullName").value.trim(), username: $("#username").value.trim(), affiliation: $("#affiliation").value.trim(), work_email: $("#workEmail").value.trim(), personal_website: $("#personalWebsite").value.trim() || null, professional_website: $("#professionalWebsite").value.trim() || null, google_scholar: $("#googleScholar").value.trim() || null, fields_of_study: $("#fieldsOfStudy").value.trim() || null };
                 const { error } = await supabase.from("profiles").update(profileData).eq("id", state.session.user.id);
-                if (!error) { 
+                if (!error) {
                     // Invalidate cache so public profile refreshes
-                    state.profileCache.delete(state.session.user.id); 
-                    state.profile = null; 
-                    await ensureProfile(); 
-                    setFlash(tr("profile.saved")); 
-                    renderHeader(); 
-                    if (state.profileComplete) { showView("schedule"); } 
-                } else { 
-                    setFlash("Error: " + error.message); 
+                    state.profileCache.delete(state.session.user.id);
+                    state.profile = null;
+                    await ensureProfile();
+                    setFlash(tr("profile.saved"));
+                    renderHeader();
+                    if (state.profileComplete) { showView("schedule"); }
+                } else {
+                    setFlash("Error: " + error.message);
                 }
             });
             $("#skipProfile")?.addEventListener("click", () => showView("schedule"));
