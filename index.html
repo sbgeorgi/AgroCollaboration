@@ -1219,7 +1219,7 @@
         const SUPABASE_ANON_KEY =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
 
-const REDIRECT_TO = 'https://sbgeorgi.github.io/AgroCollaboration/';
+        const REDIRECT_TO = window.location.origin + window.location.pathname;
         /* ============================================ */
 
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -1672,8 +1672,8 @@ const REDIRECT_TO = 'https://sbgeorgi.github.io/AgroCollaboration/';
 
         /* ============= Data: Events & Schedule ============= */
 async function loadEvents() {
-    // MODIFIED: Fetched event_speakers along with events
-    const { data } = await supabase.from("events").select("*, event_speakers(*)").order("start_time", { ascending: true });
+    // Reverted to only fetch from the 'events' table to avoid RLS permission errors.
+    const { data } = await supabase.from("events").select("*").order("start_time", { ascending: true });
     state.events = data || [];
     renderEventsList();
     renderScheduleCalendar();
@@ -1737,19 +1737,10 @@ async function openEvent(eventId) {
         return;
     }
 
-    // MODIFICATION: No need to find in local state, fetch fresh with speakers
-    // This ensures speaker data is always up-to-date when an event is opened.
-    const { data: ev, error } = await supabase
-        .from('events')
-        .select('*, event_speakers(*)')
-        .eq('id', eventId)
-        .single();
-
-    if (error || !ev) {
-        console.error("Failed to fetch event details", error);
-        setFlash("Could not load event.", true);
-        return;
-    }
+    // Reverted to find the event in the already-loaded state.
+    // This avoids a failing database call when opening an event.
+    const ev = state.events.find((e) => String(e.id) === String(eventId));
+    if (!ev) return;
 
     state.selectedEvent = ev;
     state.selectedThreadId = null;
