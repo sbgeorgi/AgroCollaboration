@@ -1671,141 +1671,202 @@
         }
 
         /* ============= Data: Events & Schedule ============= */
-        async function loadEvents() {
-            const { data } = await supabase.from("events").select("*").order("start_time", { ascending: true });
-            state.events = data || [];
-            renderEventsList();
-            renderScheduleCalendar();
+async function loadEvents() {
+    // MODIFIED: Fetched event_speakers along with events
+    const { data } = await supabase.from("events").select("*, event_speakers(*)").order("start_time", { ascending: true });
+    state.events = data || [];
+    renderEventsList();
+    renderScheduleCalendar();
+}
+
+function renderEventsList() {
+    const list = $("#eventsList"), empty = $("#emptyEvents");
+    if (!list || !empty) return;
+    const term = ($("#search")?.value || "").toLowerCase().trim();
+    
+    // MODIFIED: Search now includes speaker names and affiliations
+    const filtered = state.events.filter((e) => {
+        if (!term) return true;
+        const speakerMatch = (e.event_speakers || []).some(s => 
+            s.name.toLowerCase().includes(term) || 
+            (s.affiliation && s.affiliation.toLowerCase().includes(term))
+        );
+        const eventMatch = [e.title_en, e.title_es, e.description_en, e.description_es, e.host_org].filter(Boolean).some((v) => v.toLowerCase().includes(term));
+        return speakerMatch || eventMatch;
+    });
+
+    empty.style.display = filtered.length ? "none" : "block";
+    list.innerHTML = filtered.map(ev => {
+        const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
+        const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
+        
+        // ADDED: Logic to format speaker information for the card
+        let speakerLine = '';
+        if (ev.event_speakers && ev.event_speakers.length > 0) {
+            const primarySpeaker = ev.event_speakers.find(s => s.primary_speaker) || ev.event_speakers[0];
+            speakerLine = `<div class="event-speaker">👤 ${escapeHtml(primarySpeaker.name)}${primarySpeaker.affiliation ? ` (${escapeHtml(primarySpeaker.affiliation)})` : ''}</div>`;
         }
 
-        function renderEventsList() {
-            const list = $("#eventsList"), empty = $("#emptyEvents");
-            if (!list || !empty) return;
-            const term = ($("#search")?.value || "").toLowerCase().trim();
-            const filtered = state.events.filter((e) => !term || [e.title_en, e.title_es, e.description_en, e.description_es, e.host_org].filter(Boolean).some((v) => v.toLowerCase().includes(term)));
+        return `
+        <div class="event-card">
+            <div class="when">${fmtDateTime(ev.start_time)}</div>
+            <div class="event-title">${escapeHtml(title)}</div>
+            ${speakerLine} 
+            <div class="actions">
+                <button class="btn-secondary" data-open="${String(ev.id)}">${tr("open", "Open")}</button>
+            </div>
+            ${desc ? `<div class="event-desc">${escapeHtml(desc).substring(0, 140)}…</div>` : ""}
+            <div class="tags">
+                <span class="tag">${(ev.language || "bi").toUpperCase()}</span>
+                <span class="tag status-${ev.status || "scheduled"}">${ev.status || "scheduled"}</span>
+                ${ev.host_org ? `<span class="tag">${escapeHtml(ev.host_org)}</span>` : ""}
+            </div>
+            ${state.session && ev.zoom_url ? `
+            <div class="zoom-info">
+                <a href="${ev.zoom_url}" target="_blank" rel="noopener" class="btn-primary">🔗 ${tr('join_zoom')}</a>
+                <button class="btn-ghost" data-copy-link="${ev.zoom_url}" aria-label="${tr('copy_link')}">📋</button>
+            </div>` : ''}
+        </div>`;
+    }).join('');
+}
 
-            empty.style.display = filtered.length ? "none" : "block";
-            list.innerHTML = filtered.map(ev => {
-                const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
-                const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
-                return `
-                <div class="event-card">
-                    <div class="when">${fmtDateTime(ev.start_time)}</div>
-                    <div class="event-title">${escapeHtml(title)}</div>
-                    <div class="actions">
-                        <button class="btn-secondary" data-open="${String(ev.id)}">${tr("open", "Open")}</button>
-                    </div>
-                    ${desc ? `<div class="event-desc">${escapeHtml(desc).substring(0, 140)}…</div>` : ""}
-                    <div class="tags">
-                        <span class="tag">${(ev.language || "bi").toUpperCase()}</span>
-                        <span class="tag status-${ev.status || "scheduled"}">${ev.status || "scheduled"}</span>
-                        ${ev.host_org ? `<span class="tag">${escapeHtml(ev.host_org)}</span>` : ""}
-                    </div>
-                    ${state.session && ev.zoom_url ? `
-                    <div class="zoom-info">
-                        <a href="${ev.zoom_url}" target="_blank" rel="noopener" class="btn-primary">🔗 ${tr('join_zoom')}</a>
-                        <button class="btn-ghost" data-copy-link="${ev.zoom_url}" aria-label="${tr('copy_link')}">📋</button>
-                    </div>` : ''}
-                </div>`;
-            }).join('');
-        }
+async function openEvent(eventId) {
+    if (!state.session) {
+        setFlash(tr('auth.required'));
+        $("#auth").scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
 
-        async function openEvent(eventId) {
-            if (!state.session) {
-                setFlash(tr('auth.required'));
-                $("#auth").scrollIntoView({ behavior: 'smooth' });
-                return;
-            }
+    // MODIFICATION: No need to find in local state, fetch fresh with speakers
+    // This ensures speaker data is always up-to-date when an event is opened.
+    const { data: ev, error } = await supabase
+        .from('events')
+        .select('*, event_speakers(*)')
+        .eq('id', eventId)
+        .single();
 
-            const ev = state.events.find((e) => String(e.id) === String(eventId));
-            if (!ev) return;
+    if (error || !ev) {
+        console.error("Failed to fetch event details", error);
+        setFlash("Could not load event.", true);
+        return;
+    }
 
-            state.selectedEvent = ev;
-            state.selectedThreadId = null;
-            showDiscussionView('welcome');
-            subscribeToEventChanges(ev.id);
-            await Promise.all([loadThreads(ev.id), loadFiles(ev.id), loadRSVPFollow(ev.id)]);
-            renderEventHeader();
-            showView("event");
-        }
+    state.selectedEvent = ev;
+    state.selectedThreadId = null;
+    showDiscussionView('welcome');
+    subscribeToEventChanges(ev.id);
+    await Promise.all([loadThreads(ev.id), loadFiles(ev.id), loadRSVPFollow(ev.id)]);
+    renderEventHeader();
+    showView("event");
+}
 
-        function renderEventHeader() {
-            const ev = state.selectedEvent; if (!ev) return;
-            const container = $("#compactEventHeaderContainer");
-            if (!container) return;
+function renderEventHeader() {
+    const ev = state.selectedEvent; if (!ev) return;
+    const container = $("#compactEventHeaderContainer");
+    if (!container) return;
 
+    const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
+    const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
+
+    // ADDED: Logic to format speaker list for the event detail header
+    let speakersHtml = '';
+    if (ev.event_speakers && ev.event_speakers.length > 0) {
+        const speakerItems = ev.event_speakers
+            .sort((a, b) => b.primary_speaker - a.primary_speaker) // Primary speaker first
+            .map(s => `
+                <li>
+                    <span class="speaker-name">${escapeHtml(s.name)} ${s.primary_speaker ? '⭐' : ''}</span>
+                    ${s.affiliation ? `<span class="speaker-affiliation">${escapeHtml(s.affiliation)}</span>` : ''}
+                </li>
+            `).join('');
+        
+        speakersHtml = `
+            <div class="event-speakers">
+                <h3>Speaker(s)</h3>
+                <ul class="speaker-list">${speakerItems}</ul>
+            </div>
+        `;
+    }
+
+    container.innerHTML = `
+        <div class="event-header-row1">
+            <div class="title-and-attrs">
+                <h2 class="event-title">${escapeHtml(title)}</h2>
+                <div class="event-attrs">
+                    <span>${fmtDateTime(ev.start_time)}</span>
+                    ${ev.host_org ? `<span>• ${escapeHtml(ev.host_org)}</span>` : ""}
+                    <span>• ${(ev.language || "bi").toUpperCase()}</span>
+                </div>
+            </div>
+            <button class="btn-ghost" id="backToScheduleCompact">
+                ← <span>${tr('back.schedule')}</span>
+            </button>
+        </div>
+        <div class="event-header-row2">
+            <div class="event-actions">
+                <div class="rsvp-group" style="display: ${state.session ? 'flex' : 'none'}">
+                    <button class="chip ${state.rsvpStatus === 'going' ? 'active' : ''}" data-rsvp="going">
+                        <span>${tr('rsvp.going')}</span>
+                    </button>
+                    <button class="chip ${state.rsvpStatus === 'interested' ? 'active' : ''}" data-rsvp="interested">
+                        <span>${tr('rsvp.interested')}</span>
+                    </button>
+                    <button class="chip ${state.rsvpStatus === 'not_going' ? 'active' : ''}" data-rsvp="not_going">
+                        <span>${tr('rsvp.notgoing')}</span>
+                    </button>
+                </div>
+                <button id="btnFollowCompact" class="chip ${state.isFollowing ? 'active' : ''}" style="display: ${state.session ? 'inline-flex' : 'none'}">
+                    <span>${tr('follow')}</span>
+                </button>
+            </div>
+            <div class="event-counts">
+                <span class="count">${state.counts.followers} ${tr("labels.followers")}</span>
+                <span class="count">${state.counts.going} ${tr("labels.going")}</span>
+                <span class="count">${state.counts.interested} ${tr("labels.interested")}</span>
+            </div>
+        </div>
+        ${desc ? `<p class="event-description">${escapeHtml(desc).replace(/\n/g, "<br/>")}</p>` : ""}
+        ${speakersHtml} 
+    `;
+}
+
+function renderScheduleCalendar() {
+    const grid = $("#calendarGrid"), label = $("#calLabel"); if (!grid || !label) return;
+    const m = state.calendarMonth; label.textContent = m.toLocaleString(state.language, { month: "long", year: "numeric" });
+    const start = new Date(m.getFullYear(), m.getMonth(), 1), end = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+    const firstDayIndex = (start.getDay() + 6) % 7, daysInMonth = end.getDate(); grid.innerHTML = ``;
+    for (let i = 0; i < firstDayIndex; i++) grid.appendChild(document.createElement("div"));
+    const byDay = state.events.reduce((acc, ev) => {
+        const d = new Date(ev.start_time); if (d.getMonth() !== m.getMonth() || d.getFullYear() !== m.getFullYear()) return acc;
+        const day = d.getDate(); if (!acc.has(day)) acc.set(day, []); acc.get(day).push(ev); return acc;
+    }, new Map());
+    for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement("div"); cell.className = "cal-cell"; cell.innerHTML = `<div class="cal-day">${day}</div>`;
+        (byDay.get(day) || []).forEach((ev) => {
             const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
             const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
 
-            container.innerHTML = `
-                <div class="event-header-row1">
-                    <div class="title-and-attrs">
-                        <h2 class="event-title">${escapeHtml(title)}</h2>
-                        <div class="event-attrs">
-                            <span>${fmtDateTime(ev.start_time)}</span>
-                            ${ev.host_org ? `<span>• ${escapeHtml(ev.host_org)}</span>` : ""}
-                            <span>• ${(ev.language || "bi").toUpperCase()}</span>
-                        </div>
-                    </div>
-                    <button class="btn-ghost" id="backToScheduleCompact">
-                        ← <span>${tr('back.schedule')}</span>
-                    </button>
-                </div>
-                <div class="event-header-row2">
-                    <div class="event-actions">
-                        <div class="rsvp-group" style="display: ${state.session ? 'flex' : 'none'}">
-                            <button class="chip ${state.rsvpStatus === 'going' ? 'active' : ''}" data-rsvp="going">
-                                <span>${tr('rsvp.going')}</span>
-                            </button>
-                            <button class="chip ${state.rsvpStatus === 'interested' ? 'active' : ''}" data-rsvp="interested">
-                                <span>${tr('rsvp.interested')}</span>
-                            </button>
-                            <button class="chip ${state.rsvpStatus === 'not_going' ? 'active' : ''}" data-rsvp="not_going">
-                                <span>${tr('rsvp.notgoing')}</span>
-                            </button>
-                        </div>
-                        <button id="btnFollowCompact" class="chip ${state.isFollowing ? 'active' : ''}" style="display: ${state.session ? 'inline-flex' : 'none'}">
-                            <span>${tr('follow')}</span>
-                        </button>
-                    </div>
-                    <div class="event-counts">
-                        <span class="count">${state.counts.followers} ${tr("labels.followers")}</span>
-                        <span class="count">${state.counts.going} ${tr("labels.going")}</span>
-                        <span class="count">${state.counts.interested} ${tr("labels.interested")}</span>
-                    </div>
-                </div>
-                ${desc ? `<p class="event-description">${escapeHtml(desc).replace(/\n/g, "<br/>")}</p>` : ""}`;
-        }
-
-        function renderScheduleCalendar() {
-            const grid = $("#calendarGrid"), label = $("#calLabel"); if (!grid || !label) return;
-            const m = state.calendarMonth; label.textContent = m.toLocaleString(state.language, { month: "long", year: "numeric" });
-            const start = new Date(m.getFullYear(), m.getMonth(), 1), end = new Date(m.getFullYear(), m.getMonth() + 1, 0);
-            const firstDayIndex = (start.getDay() + 6) % 7, daysInMonth = end.getDate(); grid.innerHTML = ``;
-            for (let i = 0; i < firstDayIndex; i++) grid.appendChild(document.createElement("div"));
-            const byDay = state.events.reduce((acc, ev) => {
-                const d = new Date(ev.start_time); if (d.getMonth() !== m.getMonth() || d.getFullYear() !== m.getFullYear()) return acc;
-                const day = d.getDate(); if (!acc.has(day)) acc.set(day, []); acc.get(day).push(ev); return acc;
-            }, new Map());
-            for (let day = 1; day <= daysInMonth; day++) {
-                const cell = document.createElement("div"); cell.className = "cal-cell"; cell.innerHTML = `<div class="cal-day">${day}</div>`;
-                (byDay.get(day) || []).forEach((ev) => {
-                    const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
-                    const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
-
-                    const eventDiv = document.createElement("button");
-                    eventDiv.className = `cal-event status-${ev.status}`;
-                    eventDiv.innerHTML = `
-                        <div class="cal-event-title">${escapeHtml(title)}</div>
-                        ${desc ? `<div class="cal-event-desc">${escapeHtml(desc).substring(0, 60)}...</div>` : ''}
-                    `;
-                    eventDiv.addEventListener("click", () => openEvent(ev.id));
-
-                    cell.appendChild(eventDiv);
-                });
-                grid.appendChild(cell);
+            // ADDED: Logic to get speaker name for calendar view
+            let speakerName = '';
+            if (ev.event_speakers && ev.event_speakers.length > 0) {
+                const primarySpeaker = ev.event_speakers.find(s => s.primary_speaker) || ev.event_speakers[0];
+                speakerName = `<div class="cal-event-speaker">👤 ${escapeHtml(primarySpeaker.name)}</div>`;
             }
-        }
+
+            const eventDiv = document.createElement("button");
+            eventDiv.className = `cal-event status-${ev.status}`;
+            eventDiv.innerHTML = `
+                <div class="cal-event-title">${escapeHtml(title)}</div>
+                ${desc ? `<div class="cal-event-desc">${escapeHtml(desc).substring(0, 60)}...</div>` : ''}
+                ${speakerName}
+            `;
+            eventDiv.addEventListener("click", () => openEvent(ev.id));
+
+            cell.appendChild(eventDiv);
+        });
+        grid.appendChild(cell);
+    }
+}
 
         /* ====== Discussion Forum Logic ====== */
         function showDiscussionView(view) {
