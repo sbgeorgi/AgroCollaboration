@@ -1222,13 +1222,23 @@
         const REDIRECT_TO = window.location.origin + window.location.pathname;
         /* ============================================ */
 
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            auth: {
-                persistSession: true,
-                autoRefreshToken: true,
-                detectSessionInUrl: true,
-            },
-        });
+       const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    flowType: 'pkce',
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false, // we'll handle the exchange ourselves
+  },
+});
+
+// Before initAuth()
+if (location.search.includes('code=')) {
+  const { error } = await supabase.auth.exchangeCodeForSession(location.href);
+  // Clean query string after exchange
+  const url = new URL(location.href);
+  url.search = '';
+  history.replaceState({}, '', url.toString());
+}
 
         let eventRealtimeChannel = null;
 
