@@ -2,7 +2,8 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-t" />
+  <!-- FIX: Corrected the charset typo from utf-t to utf-8 -->
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin • Almuerzo Agrivoltaico</title>
   <meta name="description" content="Organizer tools for managing the Almuerzo Agrivoltaico seminar series." />
@@ -13,102 +14,381 @@
   <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales-all.global.min.js"></script>
 
   <style>
-    /* --- Vertical Fit & Layout Adjustments --- */
+    /* --- Full viewport, no scrolling anywhere --- */
     html, body {
-      height: 100%;
-      overflow: hidden; /* Prevent body scroll */
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
     }
+    
     body {
       display: flex;
       flex-direction: column;
+      margin: 0;
     }
+
+    /* Compact header */
+    .site-header {
+      flex-shrink: 0;
+      padding: var(--space-2) var(--space-3); /* Reduce header padding */
+    }
+
+    /* Main container takes remaining space */
     main.container {
-      flex-grow: 1;
+      flex: 1;
+      min-height: 0;
       display: flex;
       flex-direction: column;
-      min-height: 0; /* Necessary for flex children */
-      padding-bottom: var(--space-3);
+      overflow: hidden;
+      padding: var(--space-2); /* Reduced padding */
+      box-sizing: border-box;
     }
+
+    /* Admin card fills all available space */
     #admin.card {
-      flex-grow: 1;
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      flex: 1;
+      min-height: 0;
       display: flex;
       flex-direction: column;
-      padding: var(--space-3);
+      padding: var(--space-2); /* Reduced padding */
+      box-sizing: border-box;
+      overflow: hidden;
     }
+
     .admin-layout-inner {
-      flex-grow: 1;
+      flex: 1;
+      min-height: 0;
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: var(--space-3);
+      grid-template-columns: minmax(420px, 1fr) minmax(520px, 1fr);
+      gap: var(--space-2); /* Reduced gap */
       align-items: stretch;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Both columns - no scrolling */
+    .organizer-form-container,
+    .admin-side {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
       min-height: 0;
     }
-    .admin-side, .organizer-form-container {
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto; /* Allow form to scroll if needed */
-    }
-    #calendar {
-      flex-grow: 1;
-      min-height: 400px; /* Prevent calendar from collapsing too much on small screens */
-    }
+
+    /* Compact headings */
     .organizer-form-container h2,
     .admin-side h2 {
-      margin-bottom: var(--space-2);
+      margin-bottom: var(--space-1); /* Reduced margin */
       margin-top: 0;
+      flex-shrink: 0;
+      font-size: 1.2rem; /* Smaller heading */
     }
+
+    /* Very compact form */
     .grid-form {
-      gap: var(--space-2);
+      gap: 8px; /* Minimal gap */
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+      font-size: 0.9rem; /* Smaller font */
     }
-    .grid-form h3 {
-      margin-block: 0 var(--space-1);
+    
+    .grid-form .col-span-2 { grid-column: span 2; }
+    
+    .grid-form h3 { 
+      margin: 0 0 6px 0; /* Minimal margin */
+      font-size: 1rem;
     }
+    
+    /* Compact form inputs */
+    .grid-form label {
+      font-size: 0.75rem; /* Smaller labels */
+      margin-bottom: 2px;
+      display: block;
+    }
+    
+    .grid-form input, 
+    .grid-form select {
+      height: 28px; /* Smaller inputs */
+      padding: 2px 6px;
+      font-size: 0.85rem;
+    }
+    
     .grid-form textarea {
-      height: 80px;
-      resize: vertical;
-      min-height: 60px;
-    }
+  height: 66px !important; /* About 2-3 lines of text */
+  min-height: 66px !important;
+  max-height: 66px !important;
+  resize: none; /* Keep fixed size */
+  padding: 4px 6px;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  overflow-y: auto; /* Allow scrolling if content is longer */
+}
+
+    
     p.muted {
-      margin-top: 0;
-      margin-bottom: var(--space-2);
+      margin: 4px 0; /* Minimal margin */
+      opacity: 0.75;
+      font-size: 0.75rem;
     }
-    /* --- Speaker Fields Styling --- */
+
+    /* Compact tags input */
+    .tags-field {
+      margin-top: 4px;
+    }
+    
+    .tags-field label {
+      font-size: 0.75rem;
+      margin-bottom: 2px;
+    }
+    
+    .tags-input {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 4px 6px; /* Smaller padding */
+      border: 1px solid var(--color-border, var(--border));
+      border-radius: var(--radius-2, 8px);
+      background: var(--card-2, #1d1f24);
+      min-height: 28px; /* Smaller height */
+      max-height: 56px; /* Limit height to 2 rows */
+      overflow-y: auto;
+    }
+    
+    .tags-input input {
+      flex: 1;
+      min-width: 120px;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      padding: 2px 4px;
+      font-size: 0.85rem;
+      height: 20px;
+    }
+    
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1px 6px; /* Smaller chips */
+      border-radius: 999px;
+      border: 1px solid var(--color-border, var(--border));
+      background: rgba(91, 214, 160, 0.12);
+      color: var(--text);
+      font-size: 0.75rem;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    /* Very compact speakers section */
     .speakers-fieldset {
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-2);
-      padding: var(--space-3);
-      margin-top: var(--space-3);
+      border: 1px solid var(--color-border, var(--border));
+      border-radius: var(--radius-2, 8px);
+      padding: 8px; /* Minimal padding */
+      margin-top: 8px;
+      background: var(--card-2, #1d1f24);
+      max-height: 120px; /* Limit speakers section height */
+      overflow-y: auto;
+      overflow-x: hidden;
     }
+    
     .speakers-fieldset legend {
       font-weight: 600;
-      padding: 0 var(--space-2);
+      font-size: 0.85rem;
+      padding: 0 6px;
     }
+    
     .speaker-row {
       display: grid;
       grid-template-columns: 1fr 1fr auto auto;
-      gap: var(--space-2);
+      gap: 6px; /* Smaller gap */
       align-items: center;
-      margin-bottom: var(--space-2);
-      padding-bottom: var(--space-2);
-      border-bottom: 1px solid var(--color-surface-strong);
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--color-surface-strong, rgba(255,255,255,0.08));
     }
-    .speaker-row:last-child {
-      border-bottom: none;
-      margin-bottom: 0;
+    
+    .speaker-row:last-child { 
+      border-bottom: none; 
+      margin-bottom: 0; 
+      padding-bottom: 0;
     }
-    .speaker-row .col-span-2 {
-      grid-column: span 2;
+    
+    .speaker-row input,
+    .speaker-row select {
+      height: 24px; /* Smaller inputs */
+      padding: 2px 4px;
+      font-size: 0.8rem;
     }
-    .speaker-row label { font-size: 0.8rem; }
+    
+    .speaker-row label { 
+      font-size: 0.7rem; 
+      margin-bottom: 1px;
+    }
+    
     .speaker-row .checkbox-field {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-end;
-      gap: var(--space-1);
+      gap: 2px;
+    }
+    
+    .speaker-row .checkbox-field input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+    }
+    
+    .btn-danger-ghost {
+      border: 1px solid var(--color-border, var(--border));
+      background: transparent;
+      color: var(--muted, #aaa);
+      padding: 2px 6px; /* Smaller button */
+      border-radius: var(--radius, 6px);
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    
+    /* Compact buttons */
+    .btn-primary, .btn-secondary {
+      padding: 6px 12px; /* Smaller buttons */
+      font-size: 0.85rem;
+    }
+    
+    #addCreateSpeakerBtn,
+    #addEditSpeakerBtn {
+      padding: 4px 8px;
+      font-size: 0.8rem;
     }
 
-    /* --- FullCalendar Dark Theme Overrides --- */
+    /* Calendar side - compact tools */
+    .calendar-tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px; /* Smaller margin */
+      flex-shrink: 0;
+    }
+    
+    .calendar-tools .tool {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 6px; /* Smaller padding */
+      border: 1px solid var(--color-border, var(--border));
+      border-radius: var(--radius-2, 8px);
+      background: var(--card-2, #1d1f24);
+    }
+    
+    .calendar-tools input {
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      min-width: 120px;
+      height: 24px; /* Smaller input */
+      font-size: 0.8rem;
+    }
+    
+    .calendar-tools .hint {
+      font-size: 0.7rem;
+      opacity: 0.75;
+    }
+
+    /* Calendar takes remaining space */
+    #calendar {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* FullCalendar adjustments for compact view */
+    #calendar .fc {
+      height: 100%;
+      font-size: 0.85rem; /* Smaller calendar text */
+    }
+    
+    #calendar .fc-toolbar {
+      padding: 4px 0; /* Smaller toolbar */
+    }
+    
+    #calendar .fc-toolbar-title {
+      font-size: 1rem; /* Smaller title */
+    }
+    
+    #calendar .fc-button {
+      padding: 2px 6px; /* Smaller buttons */
+      font-size: 0.8rem;
+    }
+    
+    #calendar .fc-col-header-cell {
+      padding: 4px; /* Smaller header cells */
+    }
+    
+    #calendar .fc-timegrid-slot {
+      height: 2em; /* Smaller time slots */
+    }
+    
+    #calendar .fc-event-main {
+      padding: 2px 4px; /* Smaller event padding */
+      font-size: 0.75rem;
+    }
+
+    /* Compact conflict warnings */
+    .slot-conflicts {
+      margin-top: 4px !important;
+      max-height: 40px;
+      overflow-y: auto;
+    }
+    
+    .conflict-row { 
+      font-size: 0.75rem; 
+      color: #ffbe0b;
+      line-height: 1.2;
+    }
+
+    /* Modal - also compact */
+    #edit-event-modal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      box-shadow: var(--shadow-lg);
+      width: 90%;
+      max-width: 700px;
+      max-height: 85vh;
+      padding: var(--space-2); /* Smaller padding */
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    
+    #edit-event-modal .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-2);
+    }
+    
+    #edit-event-modal h2 { 
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    /* Access denied card */
+    #accessDenied.card {
+      max-height: 100%;
+      overflow-y: auto;
+    }
+
+    /* FullCalendar Dark Theme Overrides */
     #calendar {
       --fc-bg-color: var(--card-2);
       --fc-border-color: var(--border);
@@ -125,32 +405,33 @@
       --fc-button-active-border-color: var(--brand-2);
       --fc-button-hover-bg-color: var(--border);
     }
-    .fc .fc-col-header-cell-cushion { text-decoration: none; color: var(--muted); }
-    .fc .fc-daygrid-day-number { text-decoration: none; }
-    .fc .fc-event-main { padding: 4px 6px; font-weight: 600; }
-    /* --- Edit Modal Styling --- */
-    #edit-event-modal {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text);
-      box-shadow: var(--shadow-lg);
-      width: 90%;
-      max-width: 800px; /* Increased width for speakers */
-      padding: var(--space-4);
+
+    /* Mini chips on events */
+    .mini-chip {
+      display: inline-block;
+      padding: 0px 4px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.75);
+      color: #000;
+      font-size: 9px;
+      line-height: 14px;
+      border: 1px solid rgba(0,0,0,0.1);
     }
-    #edit-event-modal::backdrop {
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(5px);
+
+    /* Responsive - for very small screens, switch to tabs or single column */
+    @media (max-width: 900px) {
+      .admin-layout-inner { 
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+      }
+      
+      /* Show one at a time with tabs or toggle */
+      .organizer-form-container,
+      .admin-side {
+        max-height: 50vh;
+      }
     }
-    #edit-event-modal .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-3);
-    }
-    #edit-event-modal h2 { margin: 0; }
-  </style>
+</style>
 </head>
 
 <body>
@@ -169,8 +450,9 @@
       </div>
       <nav class="nav">
         <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
         <a href="about.html" class="link" data-i18n="nav.about">About</a>
-        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+        <a href="admin.html" id="btnAdmin" class="link active" data-i18n="nav.admin" style="display: none;">Admin</a>
         <div class="divider"></div>
         <div id="langSwitch" class="lang-switch-slider" data-lang="en">
           <span>EN</span>
@@ -182,7 +464,9 @@
           </button>
           <span id="userName"></span>
           <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
-          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">Sign out</button>
+          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+            Sign out
+          </button>
         </div>
       </nav>
     </div>
@@ -197,7 +481,6 @@
         <div class="organizer-form-container">
           <h2 data-i18n="admin.title">Organizer Tools</h2>
           <form id="createEventForm" class="grid-form">
-            <h3 class="subheading col-span-2">Create New Event</h3>
             <div><label data-i18n="event.title_en">Title (EN)</label><input id="titleEn" required /></div>
             <div><label data-i18n="event.title_es">Title (ES)</label><input id="titleEs" /></div>
             <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea id="descEn"></textarea></div>
@@ -213,7 +496,16 @@
             </div>
             <div><label data-i18n="event.host">Host org</label><input id="hostOrg" placeholder="UNAM, University of Arizona…" /></div>
             <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="zoomUrl" type="url" /></div>
-            
+
+            <!-- Tags Section (Create) -->
+            <div class="tags-field col-span-2">
+              <label data-i18n="tags.label">Tags (optional)</label>
+              <div class="tags-input" id="createTagsInput" role="group" aria-label="Create tags input">
+                <div class="chips-wrap"></div>
+                <input id="createTagsField" data-i18n-placeholder="tags.placeholder" placeholder="Press Enter or comma to add. Not mandatory." />
+              </div>
+            </div>
+
             <!-- Speakers Section -->
             <fieldset class="speakers-fieldset col-span-2">
                 <legend data-i18n="speakers.title">Speakers</legend>
@@ -232,7 +524,13 @@
         <!-- Right Side: Interactive Calendar -->
         <div class="admin-side">
           <h2 data-i18n="calendar.title">Event Calendar</h2>
-          <p class="muted" style="font-size: 0.9rem;">Drag, resize, or click events to edit. Click-and-drag an empty slot to create.</p>
+          <div class="calendar-tools">
+            <div class="tool">
+              <span class="hint">#</span>
+              <input id="tagFilterInput" data-i18n-placeholder="tags.filter" placeholder="Filter by tags (comma separated)" />
+            </div>
+            <span class="hint" style="margin-left:4px;">Filter calendar events by tag</span>
+          </div>
           <div id="calendar"></div>
         </div>
       </div>
@@ -268,7 +566,17 @@
       </div>
       <div><label data-i18n="event.host">Host org</label><input id="editHostOrg" /></div>
       <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="editZoomUrl" type="url" /></div>
-      
+
+      <!-- Tags Section (Edit) -->
+      <div class="tags-field col-span-2">
+        <label data-i18n="tags.label">Tags (optional)</label>
+        <div class="tags-input" id="editTagsInput" role="group" aria-label="Edit tags input">
+          <div class="chips-wrap"></div>
+          <input id="editTagsField" data-i18n-placeholder="tags.placeholder" placeholder="earth science, agriculture, environment" />
+        </div>
+        <p class="muted" data-i18n="tags.hint">Press Enter or comma to add. Not mandatory.</p>
+      </div>
+
       <!-- Speakers Section for Edit Modal -->
       <fieldset class="speakers-fieldset col-span-2">
           <legend data-i18n="speakers.title">Speakers</legend>
@@ -305,14 +613,15 @@
       profile: null,
       language: localStorage.getItem("lang") || "en",
       events: [],
-      profiles: [], // To store user profiles for speaker selection
+      profiles: [],
+      tagFilter: [], // for calendar filtering
     };
 
     // Basic i18n
     const t = {
       en: {
         tagline: "An informal seminar series to share advances in agrivoltaics in Latin America",
-        nav: { schedule: "Schedule", about: "About", admin: "Admin" },
+        nav: { schedule: "Schedule", about: "About", admin: "Admin", archive: "Archive" },
         auth: { signin: "Sign in", signout: "Sign out" },
         admin: { title: "Organizer Tools" },
         calendar: { title: "Event Calendar" },
@@ -321,9 +630,15 @@
           start: "Start time", end: "End time", host: "Host org", zoom: "Zoom URL (members only)", lang: "Language",
           create: "Create Event", edit_title: "Edit Event", delete: "Delete"
         },
-        speakers: { 
-            title: "Speakers", add: "Add Speaker", name: "Name*", affiliation: "Affiliation", 
-            link_profile: "Link Profile", primary: "Primary", remove: "Remove" 
+        speakers: {
+            title: "Speakers", add: "Add Speaker", name: "Name*", affiliation: "Affiliation",
+            link_profile: "Link Profile", primary: "Primary", remove: "Remove"
+        },
+        tags: {
+          label: "Tags (optional)",
+          placeholder: "earth science, agriculture, environment",
+          hint: "Press Enter or comma to add. Not mandatory.",
+          filter: "Filter by tags (comma separated)"
         },
         slots: { blocked: "Blocked/conflicting times" },
         save: "Save Changes",
@@ -337,7 +652,7 @@
       },
       es: {
         tagline: "Serie de seminarios informales para compartir avances en agrofotovoltaica en América Latina",
-        nav: { schedule: "Calendario", about: "Acerca de", admin: "Admin" },
+        nav: { schedule: "Calendario", about: "Acerca de", admin: "Admin", archive: "Archivo" },
         auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
         admin: { title: "Herramientas para organizadores" },
         calendar: { title: "Calendario de Eventos" },
@@ -346,9 +661,15 @@
           start: "Inicio", end: "Fin", host: "Institución anfitriona", zoom: "Enlace de Zoom (solo miembros)",
           lang: "Idioma", create: "Crear evento", edit_title: "Editar Evento", delete: "Eliminar"
         },
-        speakers: { 
-            title: "Ponentes", add: "Añadir Ponente", name: "Nombre*", affiliation: "Afiliación", 
-            link_profile: "Vincular Perfil", primary: "Principal", remove: "Quitar" 
+        speakers: {
+            title: "Ponentes", add: "Añadir Ponente", name: "Nombre*", affiliation: "Afiliación",
+            link_profile: "Vincular Perfil", primary: "Principal", remove: "Quitar"
+        },
+        tags: {
+          label: "Etiquetas (opcional)",
+          placeholder: "ciencias de la tierra, agricultura, medio ambiente",
+          hint: "Presiona Enter o coma para añadir. No es obligatorio.",
+          filter: "Filtrar por etiquetas (separadas por comas)"
         },
         slots: { blocked: "Horarios bloqueados/en conflicto" },
         save: "Guardar Cambios",
@@ -388,11 +709,24 @@
       if (!startIso) return [];
       return state.events.filter(ev => {
         if (ev.status === 'canceled') return false;
-        if (excludeId != null && String(ev.id) === String(excludeId)) return false; 
+        if (excludeId != null && String(ev.id) === String(excludeId)) return false;
         return overlaps(startIso, endIso, ev.start_time, ev.end_time);
       });
     };
     const isOrganizer = () => ["organizer", "admin"].includes(state.profile?.role);
+    const escapeHtml = (s) => (s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+
+    /* --- Tag helpers --- */
+    const normalizeTags = (arr) => {
+      const out = [];
+      const seen = new Set();
+      (arr || []).forEach(t => {
+        const v = String(t || '').trim().toLowerCase();
+        if (v && !seen.has(v)) { seen.add(v); out.push(v); }
+      });
+      return out;
+    };
+    const splitTokens = (s) => String(s || '').split(/[,\n]/g).map(t => t.trim()).filter(Boolean);
 
     const applyI18n = () => {
       document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = tr(e.dataset.i18n, e.textContent));
@@ -423,19 +757,19 @@
         $("#accessDenied").style.display = 'none';
         await loadProfiles();
         if (!calendar) initializeCalendar();
-        loadEvents();
+        await loadEvents();
       } else {
         $("#admin").style.display = 'none';
         $("#accessDenied").style.display = 'block';
       }
     };
-    
+
     const ensureProfile = async (session) => {
       if (!session?.user?.id) return null;
       const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
       return data || null;
     };
-    
+
     const initAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       state.session = session;
@@ -453,73 +787,139 @@
 
     /* ============= Speakers & Profiles ============= */
     const loadProfiles = async () => {
-        const { data, error } = await supabase.from('profiles').select('id, full_name, affiliation').order('full_name');
-        if (error) {
-            setFlash(tr('errors.load_profiles'), true);
-            state.profiles = [];
-        } else {
-            state.profiles = data || [];
-        }
-    }
-    
+      const { data, error } = await supabase.from('profiles').select('id, full_name, affiliation').order('full_name');
+      if (error) {
+        setFlash(tr('errors.load_profiles'), true);
+        state.profiles = [];
+      } else {
+        state.profiles = data || [];
+      }
+    };
+
     const createProfileOptions = (selectedId) => {
-        return `
-            <option value="">--</option>
-            ${state.profiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${p.full_name}</option>`).join('')}
-        `;
+      return `
+        <option value="">--</option>
+        ${state.profiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.full_name || '')}</option>`).join('')}
+      `;
     };
 
     const renderSpeakerFields = (containerId, speakers = []) => {
-        const container = $(`#${containerId}`);
-        container.innerHTML = '';
-        if (speakers.length === 0) {
-            addSpeakerField(containerId); // Add one empty field by default
-        } else {
-            speakers.forEach(speaker => addSpeakerField(containerId, speaker));
-        }
-    }
+      const container = $(`#${containerId}`);
+      container.innerHTML = '';
+      if (speakers.length === 0) {
+        addSpeakerField(containerId); // Add one empty field by default
+      } else {
+        speakers.forEach(speaker => addSpeakerField(containerId, speaker));
+      }
+    };
 
     const addSpeakerField = (containerId, speaker = {}) => {
-        const container = $(`#${containerId}`);
-        const speakerRow = document.createElement('div');
-        speakerRow.className = 'speaker-row';
-        speakerRow.innerHTML = `
-            <div><label>${tr('speakers.name')}</label><input type="text" class="speaker-name" value="${speaker.name || ''}" required></div>
-            <div><label>${tr('speakers.affiliation')}</label><input type="text" class="speaker-affiliation" value="${speaker.affiliation || ''}"></div>
-            <div><label>${tr('speakers.link_profile')}</label><select class="speaker-profile">${createProfileOptions(speaker.profile_id)}</select></div>
-            <div style="display: flex; gap: 1rem; align-items: flex-end;">
-              <div class="checkbox-field">
-                  <label>${tr('speakers.primary')}</label>
-                  <input type="checkbox" class="speaker-primary" ${speaker.primary_speaker ? 'checked' : ''}>
-              </div>
-              <button type="button" class="btn-danger-ghost remove-speaker-btn">✕</button>
-            </div>
-        `;
-        container.appendChild(speakerRow);
-    }
-    
+      const container = $(`#${containerId}`);
+      const speakerRow = document.createElement('div');
+      speakerRow.className = 'speaker-row';
+      speakerRow.innerHTML = `
+        <div><label>${tr('speakers.name')}</label><input type="text" class="speaker-name" value="${escapeHtml(speaker.name || '')}" required></div>
+        <div><label>${tr('speakers.affiliation')}</label><input type="text" class="speaker-affiliation" value="${escapeHtml(speaker.affiliation || '')}"></div>
+        <div><label>${tr('speakers.link_profile')}</label><select class="speaker-profile">${createProfileOptions(speaker.profile_id)}</select></div>
+        <div style="display: flex; gap: 1rem; align-items: flex-end;">
+          <div class="checkbox-field">
+              <label>${tr('speakers.primary')}</label>
+              <input type="checkbox" class="speaker-primary" ${speaker.primary_speaker ? 'checked' : ''}>
+          </div>
+          <button type="button" class="btn-danger-ghost remove-speaker-btn" title="${tr('speakers.remove')}">✕</button>
+        </div>
+      `;
+      container.appendChild(speakerRow);
+    };
+
+    /* ============= Tags Input Component ============= */
+    const getTags = (containerId) => {
+      const el = document.getElementById(containerId);
+      try { const arr = JSON.parse(el?.dataset.tags || '[]'); return Array.isArray(arr) ? arr : []; }
+      catch { return []; }
+    };
+    const setTags = (containerId, arr) => {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      const tags = normalizeTags(arr);
+      el.dataset.tags = JSON.stringify(tags);
+      const wrap = el.querySelector('.chips-wrap');
+      if (wrap) {
+        wrap.innerHTML = tags.map((t, i) => `
+          <span class="tag-chip" title="${escapeHtml(t)}">
+            <span>#${escapeHtml(t)}</span>
+            <button type="button" class="chip-remove" data-index="${i}" aria-label="Remove ${escapeHtml(t)}">×</button>
+          </span>
+        `).join('');
+      }
+    };
+    const addTags = (containerId, newOnes) => setTags(containerId, [...getTags(containerId), ...normalizeTags(newOnes)]);
+    const removeTagAt = (containerId, idx) => {
+      const arr = getTags(containerId);
+      arr.splice(idx, 1);
+      setTags(containerId, arr);
+    };
+    const initTagsInput = (containerId, fieldId, initial = []) => {
+      const inputEl = document.getElementById(fieldId);
+      setTags(containerId, initial);
+      const addFromInput = () => {
+        const val = inputEl.value;
+        const tokens = splitTokens(val);
+        if (tokens.length) addTags(containerId, tokens);
+        inputEl.value = '';
+      };
+      inputEl.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') {
+          e.preventDefault(); addFromInput();
+        } else if (e.key === 'Backspace' && !inputEl.value) {
+          const arr = getTags(containerId);
+          if (arr.length) { arr.pop(); setTags(containerId, arr); }
+        }
+      };
+      inputEl.onpaste = (e) => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text');
+        addTags(containerId, splitTokens(text));
+      };
+      const container = document.getElementById(containerId);
+      container.addEventListener('click', (e) => {
+        const btn = e.target.closest('.chip-remove');
+        if (btn) { removeTagAt(containerId, parseInt(btn.dataset.index, 10)); }
+      });
+    };
+
     /* ============= Events: Load / Map ============= */
     const languageColors = { en: '#3a86ff', es: '#ffbe0b', bi: 'var(--brand-2)' };
+
+    const passesTagFilter = (ev) => {
+      if (!state.tagFilter.length) return true;
+      const tags = normalizeTags(ev.topic_tags || []);
+      return state.tagFilter.every(t => tags.includes(t));
+    };
+
     const loadEvents = async () => {
       const { data, error } = await supabase.from("events").select("*").order("start_time");
       if (error) { console.error(error); return; }
       state.events = data || [];
       if (calendar) calendar.refetchEvents();
     };
+
     const formatEventsForCalendar = () =>
-      state.events.map(ev => {
-        const eventColor = ev.status === 'canceled' ? '#555' : (languageColors[ev.language] || languageColors.bi);
-        return {
-          id: ev.id,
-          title: state.language === 'es' ? (ev.title_es || ev.title_en) : (ev.title_en || ev.title_es),
-          start: ev.start_time,
-          end: ev.end_time,
-          backgroundColor: eventColor,
-          borderColor: eventColor,
-          textColor: ev.language === 'es' || ev.language === 'bi' ? '#000' : '#fff',
-          extendedProps: ev
-        }
-      });
+      state.events
+        .filter(passesTagFilter)
+        .map(ev => {
+          const eventColor = ev.status === 'canceled' ? '#555' : (languageColors[ev.language] || languageColors.bi);
+          return {
+            id: ev.id,
+            title: state.language === 'es' ? (ev.title_es || ev.title_en) : (ev.title_en || ev.title_es),
+            start: ev.start_time,
+            end: ev.end_time,
+            backgroundColor: eventColor,
+            borderColor: eventColor,
+            textColor: ev.language === 'es' || ev.language === 'bi' ? '#000' : '#fff',
+            extendedProps: ev
+          }
+        });
 
     /* ============= Calendar ============= */
     const handleEventClick = async ({ event }) => {
@@ -539,6 +939,8 @@
       const { data: speakers } = await supabase.from('event_speakers').select('*').eq('event_id', ev.id);
       renderSpeakerFields('editSpeakersContainer', speakers || []);
 
+      initTagsInput('editTagsInput', 'editTagsField', ev.topic_tags || []);
+
       $("#edit-event-modal").showModal();
     };
 
@@ -550,7 +952,6 @@
       calendar.unselect();
       checkCreateFormConflicts();
       $("#titleEn").focus();
-      document.querySelector('.organizer-form-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
     const handleDateClick = (info) => {
@@ -563,7 +964,6 @@
       $('#endTime').type = 'datetime-local';
       checkCreateFormConflicts();
       $("#titleEn").focus();
-      document.querySelector('.organizer-form-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
     const handleEventMove = async ({ event, revert }) => {
@@ -576,7 +976,7 @@
       if (error) { setFlash(tr('errors.update_event'), true); revert(); }
       else { setFlash("Event time updated!"); await loadEvents(); }
     };
-    
+
     const initializeCalendar = () => {
       const mountEl = $('#calendar');
       if (!mountEl || !window.FullCalendar) return;
@@ -590,8 +990,19 @@
         events: (_fetchInfo, success, _failure) => success(formatEventsForCalendar()),
         eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
         locale: state.language === 'es' ? 'es' : 'en',
+        eventDidMount: (info) => {
+          const tags = normalizeTags(info.event.extendedProps.topic_tags || []);
+          if (tags.length) {
+            const el = document.createElement('div');
+            el.className = 'ev-tags';
+            const short = tags.slice(0, 2); // keep compact
+            el.innerHTML = short.map(t => `<span class="mini-chip">#${escapeHtml(t)}</span>`).join('');
+            info.el.appendChild(el);
+          }
+        }
       });
       calendar.render();
+      window.setTimeout(() => calendar.updateSize(), 120); // retry after render paint
     };
 
     /* ============= Create / Update / Delete ============= */
@@ -609,27 +1020,27 @@
     };
 
     const getSpeakersFromForm = (containerId) => {
-        const container = document.getElementById(containerId);
-        return Array.from(container.querySelectorAll('.speaker-row')).map(row => {
-            return {
-                name: row.querySelector('.speaker-name').value.trim(),
-                affiliation: row.querySelector('.speaker-affiliation').value.trim() || null,
-                profile_id: row.querySelector('.speaker-profile').value || null,
-                primary_speaker: row.querySelector('.speaker-primary').checked,
-            };
-        }).filter(s => s.name); // Only include speakers with a name
+      const container = document.getElementById(containerId);
+      return Array.from(container.querySelectorAll('.speaker-row')).map(row => {
+        return {
+          name: row.querySelector('.speaker-name').value.trim(),
+          affiliation: row.querySelector('.speaker-affiliation').value.trim() || null,
+          profile_id: row.querySelector('.speaker-profile').value || null,
+          primary_speaker: row.querySelector('.speaker-primary').checked,
+        };
+      }).filter(s => s.name);
     };
 
     const createEvent = async (payload) => {
       if (!payload.title_en || !payload.start_time) { setFlash("Title (EN) and Start Time are required.", true); return; }
       if (checkCreateFormConflicts()) { setFlash(tr('errors.overlap'), true); return; }
-      
+
       const { data: eventData, error: eventError } = await supabase.from("events").insert([{
         ...payload, status: "scheduled", created_by: state.session.user.id
       }]).select().single();
 
       if (eventError) { setFlash(tr("errors.create_event"), true); console.error(eventError); return; }
-      
+
       const speakers = getSpeakersFromForm('createSpeakersContainer');
       if (speakers.length > 0) {
         const speakersPayload = speakers.map(s => ({ ...s, event_id: eventData.id }));
@@ -642,14 +1053,14 @@
       $('#startTime').type = 'text'; $('#endTime').type = 'text';
       $("#slotConflicts").innerHTML = '';
       renderSpeakerFields('createSpeakersContainer');
+      initTagsInput('createTagsInput', 'createTagsField', []);
       await loadEvents();
     };
 
     const updateEvent = async (id, payload) => {
       const { error } = await supabase.from("events").update(payload).eq("id", id);
       if (error) { setFlash(tr('errors.update_event'), true); console.error(error); return; }
-      
-      // Update speakers: delete old ones, insert new ones
+
       const { error: deleteError } = await supabase.from('event_speakers').delete().eq('event_id', id);
       if (deleteError) { setFlash('Event updated, but failed to update speakers (delete step).', true); console.error(deleteError); }
 
@@ -664,7 +1075,7 @@
       await loadEvents();
       $("#edit-event-modal").close();
     };
-    
+
     const deleteEvent = async (id) => {
       if (!confirm("Are you sure you want to permanently delete this event and all related data (speakers, RSVPs, discussions etc.)? This action cannot be undone.")) return;
       try {
@@ -678,12 +1089,24 @@
       }
     };
 
+    /*
+     * REMOVED: All JavaScript-based scaling functions (fitAdminToViewport, fitModalToViewport)
+     * and their related event listeners/observers have been removed.
+     * The layout is now handled 100% by CSS, which is more reliable and efficient.
+     * The fix for the initial "flash" was correcting the meta charset typo, allowing
+     * the main stylesheet to load correctly from the start.
+    */
+
     /* ============= Wire UI ============= */
     const wireUI = () => {
       $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
       $("#btnSignIn")?.addEventListener("click", () => window.location.href = 'index.html');
-      $("#btnProfile")?.addEventListener("click", () => window.location.href = 'index.html#profile');
-      $("#langSwitch")?.addEventListener('click', () => { state.language = state.language === 'en' ? 'es' : 'en'; localStorage.setItem("lang", state.language); applyI18n(); if (calendar) calendar.render(); });
+      $("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
+      $("#langSwitch")?.addEventListener('click', () => {
+        state.language = state.language === 'en' ? 'es' : 'en';
+        localStorage.setItem("lang", state.language);
+        applyI18n(); if (calendar) calendar.render();
+      });
 
       const setupDateTimePlaceholders = (startEl, endEl) => {
         const handleFocus = (el) => { el.type = 'datetime-local'; };
@@ -702,10 +1125,17 @@
           start_time: toIsoOrNull($("#startTime")?.value), end_time: toIsoOrNull($("#endTime")?.value),
           language: $("#eventLang")?.value || "bi", host_org: $("#hostOrg")?.value.trim() || null,
           zoom_url: $("#zoomUrl")?.value.trim() || null,
+          topic_tags: getTags('createTagsInput'),
         });
       });
-      
-      $("#close-modal-btn")?.addEventListener("click", () => $("#edit-event-modal").close());
+
+      $("#tagFilterInput")?.addEventListener('keyup', (e) => {
+        const val = e.target.value || '';
+        state.tagFilter = normalizeTags(splitTokens(val));
+        if (calendar) calendar.refetchEvents();
+      });
+
+      $("#close-modal-btn")?.addEventListener("click", () => { $("#edit-event-modal").close(); });
       $("#editStartTime")?.addEventListener("input", checkEditFormConflicts);
       $("#editEndTime")?.addEventListener("input", checkEditFormConflicts);
       $("#editEventForm")?.addEventListener("submit", async (e) => {
@@ -719,18 +1149,20 @@
           description_en: $("#editDescEn").value?.trim() || null, description_es: $("#editDescEs").value?.trim() || null,
           language: $("#editEventLang").value, host_org: $("#editHostOrg").value?.trim() || null,
           zoom_url: $("#editZoomUrl").value?.trim() || null, start_time, end_time,
+          topic_tags: getTags('editTagsInput'),
         });
       });
       $("#btnDeleteEvent")?.addEventListener("click", () => deleteEvent($("#editEventId").value));
 
-      // Speaker button listeners
-      $('#addCreateSpeakerBtn')?.addEventListener('click', () => addSpeakerField('createSpeakersContainer'));
-      $('#addEditSpeakerBtn')?.addEventListener('click', () => addSpeakerField('editSpeakersContainer'));
+      $('#addCreateSpeakerBtn')?.addEventListener('click', () => { addSpeakerField('createSpeakersContainer'); });
+      $('#addEditSpeakerBtn')?.addEventListener('click', () => { addSpeakerField('editSpeakersContainer'); });
       document.body.addEventListener('click', e => {
           if (e.target.classList.contains('remove-speaker-btn')) {
               e.target.closest('.speaker-row').remove();
           }
       });
+
+      initTagsInput('createTagsInput', 'createTagsField', []);
     };
 
     /* ============= Bootstrap ============= */

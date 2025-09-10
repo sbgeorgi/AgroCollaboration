@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Archive • Almuerzo Agrivoltaico</title>
+  <meta name="description" content="Archive of previous agrivoltaics talks (EN/ES)." />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    main.container {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0;
+      padding: var(--space-3);
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden; /* Fully contain content */
+    }
+    main.container > .card { margin: 0; }
+    #archive { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; }
+    #archiveList {
+      flex-grow: 1;
+      min-height: 0;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+      grid-template-rows: repeat(2, minmax(350px, 1fr));
+      grid-auto-rows: minmax(350px, 1fr);
+      gap: var(--space-4);
+      padding: var(--space-3);
+      scroll-behavior: smooth;
+    }
+    @supports (scrollbar-gutter: stable) {
+      #archiveList { scrollbar-gutter: stable both-edges; }
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-bottom: var(--space-2);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .filters {
+      display: flex; gap: .5rem; align-items: center; flex-wrap: wrap;
+      margin-left: auto;
+    }
+    .filters .chip-toggle { cursor: pointer; }
+
+    /* IMPROVEMENT: Card styling overhaul */
+    .event-card {
+      position: relative; /* Anchor for the absolute positioned button */
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid #485061; /* Thin silver-toned border */
+      border-radius: 16px; /* More curved corners */
+      /* Permanent "lifted" styling */
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-3);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      min-height: 0;
+    }
+    /* IMPROVEMENT: Modern glow on hover */
+    .event-card:hover {
+      border-color: color-mix(in oklab, var(--color-primary) 30%, #485061);
+      box-shadow: var(--shadow-3), 0 0 16px 4px color-mix(in oklab, var(--color-primary) 15%, transparent);
+    }
+    
+    .event-card .when { color: var(--color-primary); font-weight: 500; font-size: 0.9em; }
+
+    .event-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-3);
+      /* Add padding-right to avoid content overlapping with the corner button */
+      padding-right: 4rem; 
+    }
+    .event-info { display: flex; flex-direction: column; gap: var(--space-1); }
+    .event-title { font-size: 1.25rem; font-weight: 600; line-height: 1.3; }
+    .event-speaker { color: var(--color-text-muted); }
+    .actions { display: flex; flex-direction: column; gap: .5rem; flex-shrink: 0; }
+    
+    .event-desc {
+      flex-grow: 1;
+      min-height: 40px;
+      overflow-y: auto;
+      padding-right: var(--space-2);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      color: var(--color-text-muted);
+      font-size: 0.9rem; /* Smaller description text */
+    }
+    .event-desc::-webkit-scrollbar { width: 8px; }
+    .event-desc::-webkit-scrollbar-track { background: transparent; }
+    .event-desc::-webkit-scrollbar-thumb { background-color: var(--color-border); border-radius: 10px; border: 2px solid var(--color-surface); }
+    .event-card .tags { display:flex; flex-wrap:wrap; gap:.5rem; align-items: center; }
+    
+    .tag-topic { background: var(--color-surface-strong); border: 1px solid var(--color-border); border-radius: 999px; padding: .15rem .5rem; font-size: .8rem; }
+
+    .tags-filter-group { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+    .filter-tags { display:flex; gap:.35rem; flex-wrap:wrap; }
+    .chip.active { background: var(--color-primary-muted); color: var(--color-primary); border-color: color-mix(in oklab, var(--color-primary) 40%, var(--color-border)); }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-grid">
+      <div class="brand">
+        <a href="index.html" style="display: contents; text-decoration: none;">
+          <div class="logo-circle">A</div>
+          <div class="brand-text">
+            <div class="title">Almuerzo Agrivoltaico</div>
+            <div class="subtitle" data-i18n="tagline">
+              An informal seminar series to share advances in agrivoltaics in Latin America
+            </div>
+          </div>
+        </a>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+        <a href="archive.html" class="link active" data-i18n="nav.archive">Archive</a>
+        <a href="about.html" class="link" data-i18n="nav.about">About</a>
+        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display:none;">Admin</a>
+        <div class="divider"></div>
+        <div id="langSwitch" class="lang-switch-slider" data-lang="en">
+          <span>EN</span>
+          <span>ES</span>
+        </div>
+        <div class="auth-area">
+          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
+            <span id="userInitial"></span>
+          </button>
+          <span id="userName"></span>
+          <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
+          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+            Sign out
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div id="flash" class="flash" role="status" aria-live="polite"></div>
+
+  <main class="container">
+    <section id="archive" class="card">
+      <div class="section-header">
+        <h2 data-i18n="archive.title">Archive</h2>
+        <div class="tags-filter-group">
+          <div style="font-weight:600;" data-i18n="archive.filter_by_tags">Filter by Tags</div>
+          <div id="tagsFilter" class="filter-tags"></div>
+        </div>
+        <div class="filters">
+          <div class="search-bar">
+            <input id="search" type="search" placeholder="Search..." data-i18n-placeholder="search.placeholder" />
+          </div>
+          <select id="yearFilter"></select>
+          <label class="chip chip-toggle" style="user-select:none;">
+            <input type="checkbox" id="hasRecording" style="margin-right:.35rem;" />
+            <span data-i18n="archive.recordings_only">Recordings only</span>
+          </label>
+          <button id="clearFilters" class="btn-ghost" data-i18n="archive.clear">Clear</button>
+        </div>
+      </div>
+
+      <div id="archiveList"></div>
+
+      <div id="emptyArchive" class="empty" style="display:none;" data-i18n="archive.empty">
+        No past events found.
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>
+        © <span id="year"></span> Almuerzo Agrivoltaico •
+        <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
+      </small>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    /* ================== CONFIG ================== */
+    const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    });
+
+    const state = {
+      session: null,
+      profile: null,
+      language: localStorage.getItem("lang") || "en",
+      events: [],
+      filters: {
+        search: "",
+        year: "all",
+        tags: new Set(),
+        onlyRecording: false,
+      }
+    };
+
+    const t = {
+      en: {
+        tagline: "An informal seminar series to share advances in agrivoltaics in Latin America",
+        nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin" },
+        search: { placeholder: "Search..." },
+        archive: { title: "Archive", recordings_only: "Recordings only", clear: "Clear", empty: "No past events found.", filter_by_tags: "Filter by Tags" },
+        footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
+        open: "Open",
+        recording: "Recording",
+      },
+      es: {
+        tagline: "Serie de seminarios informales para compartir avances en agrofotovoltaica en América Latina",
+        nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin" },
+        search: { placeholder: "Buscar..." },
+        archive: { title: "Archivo", recordings_only: "Solo con grabaciones", clear: "Limpiar", empty: "No se encontraron eventos pasados.", filter_by_tags: "Filtrar por Etiquetas" },
+        footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
+        open: "Abrir",
+        recording: "Grabación",
+      }
+    };
+
+    function tr(key, fallback = "") {
+      const lang = state.language;
+      const parts = key.split(".");
+      let obj = t[lang];
+      for (const p of parts) obj = obj?.[p];
+      return obj ?? fallback;
+    }
+    const $ = (sel) => document.querySelector(sel);
+    function escapeHtml(s = "") { 
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+    function fmtDateTime(iso) { try { return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso)); } catch { return iso; } }
+    
+    function linkify(text = "") {
+      if (!text) return '';
+      let safeText = escapeHtml(text);
+      const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+      return safeText.replace(urlPattern, `<a href="$&" target="_blank" rel="noopener noreferrer">$&</a>`);
+    }
+
+    function applyI18n() {
+      document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); });
+      const langSwitch = $("#langSwitch");
+      if (langSwitch) langSwitch.dataset.lang = state.language;
+    }
+
+    async function initAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      state.session = session;
+      if (session) await ensureProfile();
+      renderHeader();
+
+      supabase.auth.onAuthStateChange(async (evt, session2) => {
+        state.session = session2;
+        if (session2) await ensureProfile();
+        renderHeader();
+      });
+    }
+
+    async function ensureProfile() {
+      const uid = state.session?.user?.id;
+      if (!uid) { state.profile = null; return; }
+      const { data } = await supabase.from("profiles").select("*").eq("id", uid).maybeSingle();
+      state.profile = data || null;
+    }
+
+    function renderHeader() {
+      const btnSignIn = $("#btnSignIn"), btnSignOut = $("#btnSignOut"), btnAdmin = $("#btnAdmin"), userName = $("#userName"), btnProfile = $("#btnProfile");
+      if (state.session) {
+        btnSignIn.style.display = "none"; btnSignOut.style.display = "inline-block";
+        btnProfile.style.display = "grid"; userName.style.display = "inline";
+        userName.textContent = state.profile?.full_name || state.profile?.username || "";
+        $("#userInitial").textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
+        if (btnAdmin) btnAdmin.style.display = state.profile?.role === "admin" ? "inline-block" : "none";
+      } else {
+        btnSignIn.style.display = "inline-block"; btnSignOut.style.display = "none";
+        btnProfile.style.display = "none"; userName.style.display = "none";
+        if (btnAdmin) btnAdmin.style.display = "none";
+      }
+    }
+
+    async function loadEvents() {
+      const { data } = await supabase.from("events").select("*, event_speakers(*)").order("start_time", { ascending: false });
+      state.events = data || [];
+      buildFilters();
+      renderArchiveList();
+    }
+
+    function buildFilters() {
+      const years = Array.from(new Set(
+        state.events.map(e => new Date(e.start_time).getFullYear())
+      )).sort((a, b) => b - a);
+      const yearSel = $("#yearFilter");
+      yearSel.innerHTML = `<option value="all">All years</option>` + years.map(y => `<option value="${y}">${y}</option>`).join("");
+
+      const tags = new Set();
+      for (const e of state.events) (e.topic_tags || []).forEach(t => tags.add(t));
+      const tagsContainer = $("#tagsFilter");
+      tagsContainer.innerHTML = "";
+      Array.from(tags).sort((a, b) => a.localeCompare(b)).forEach(tag => {
+        const btn = document.createElement("button");
+        btn.className = "chip";
+        btn.type = "button";
+        btn.textContent = `#${tag}`;
+        btn.dataset.tag = tag;
+        btn.addEventListener("click", () => {
+          if (state.filters.tags.has(tag)) state.filters.tags.delete(tag);
+          else state.filters.tags.add(tag);
+          btn.classList.toggle("active");
+          renderArchiveList();
+        });
+        tagsContainer.appendChild(btn);
+      });
+    }
+
+    function isPast(e) {
+      return new Date(e.start_time).getTime() < Date.now();
+    }
+
+    function renderArchiveList() {
+      const wrap = $("#archiveList"), empty = $("#emptyArchive"); if (!wrap || !empty) return;
+      const term = ($("#search")?.value || "").toLowerCase().trim();
+      const year = $("#yearFilter")?.value || "all";
+      const onlyRec = $("#hasRecording")?.checked || false;
+      const tagsSel = state.filters.tags;
+
+      const pastEvents = state.events.filter(isPast);
+
+      const candidates = pastEvents.filter(ev => {
+        if (onlyRec && !ev.recording_url) return false;
+        if (year !== "all" && String(new Date(ev.start_time).getFullYear()) !== String(year)) return false;
+
+        if (tagsSel.size > 0) {
+          const evTags = new Set(ev.topic_tags || []);
+          for (const t of tagsSel) if (!evTags.has(t)) return false;
+        }
+
+        if (!term) return true;
+
+        const speakerMatch = (ev.event_speakers || []).some(s =>
+          (s.name || "").toLowerCase().includes(term) || (s.affiliation || "").toLowerCase().includes(term)
+        );
+        const tagsMatch = (ev.topic_tags || []).some(tg => (tg || "").toLowerCase().includes(term));
+        const eventMatch = [ev.title_en, ev.title_es, ev.description_en, ev.description_es, ev.host_org]
+          .filter(Boolean)
+          .some(v => v.toLowerCase().includes(term));
+
+        return speakerMatch || tagsMatch || eventMatch;
+      });
+
+      empty.style.display = candidates.length ? "none" : "block";
+      wrap.innerHTML = candidates.map(ev => {
+        const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
+        const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
+
+        let speakerLine = '';
+        if (ev.event_speakers && ev.event_speakers.length > 0) {
+          const primarySpeaker = ev.event_speakers.find(s => s.primary_speaker) || ev.event_speakers[0];
+          speakerLine = `<div class="event-speaker">👤 ${escapeHtml(primarySpeaker.name)}${primarySpeaker.affiliation ? ` (${escapeHtml(primarySpeaker.affiliation)})` : ''}</div>`;
+        }
+
+        const tagsHtml = (ev.topic_tags || []).map(tag => `<span class="tag-topic">#${escapeHtml(tag)}</span>`).join("");
+        const recordingBtn = ev.recording_url ? `<a href="${escapeHtml(ev.recording_url)}" class="btn-secondary" target="_blank" rel="noopener">${tr('recording')}</a>` : "";
+
+        return `
+          <div class="event-card">
+            <button class="btn-primary" onclick="window.location.href='index.html?event=${encodeURIComponent(ev.id)}'" style="position: absolute; top: var(--space-3); right: var(--space-3);">${tr('open')}</button>
+            <div class="when">${fmtDateTime(ev.start_time)}</div>
+            <div class="event-header">
+              <div class="event-info">
+                <div class="event-title">${escapeHtml(title)}</div>
+                ${speakerLine}
+              </div>
+              <div class="actions">
+                ${recordingBtn}
+              </div>
+            </div>
+            ${desc ? `<div class="event-desc">${linkify(desc)}</div>` : ""}
+            <div class="tags">
+              ${tagsHtml}
+              <span class="tag">${(ev.language || "bi").toUpperCase()}</span>
+              ${ev.host_org ? `<span class="tag">${escapeHtml(ev.host_org)}</span>` : ""}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function wireUI() {
+      $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
+      $("#btnSignIn")?.addEventListener("click", async () => {
+        await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.href } });
+      });
+      
+      // FIX: Added event listener for the profile button
+      $("#btnProfile")?.addEventListener("click", () => {
+        window.location.href = 'profile.html';
+      });
+
+      $("#search")?.addEventListener("input", () => { state.filters.search = $("#search").value; renderArchiveList(); });
+      $("#yearFilter")?.addEventListener("change", () => { renderArchiveList(); });
+      $("#hasRecording")?.addEventListener("change", () => { renderArchiveList(); });
+      $("#clearFilters")?.addEventListener("click", () => {
+        $("#search").value = "";
+        $("#yearFilter").value = "all";
+        $("#hasRecording").checked = false;
+        state.filters.tags.clear();
+        document.querySelectorAll("#tagsFilter .chip.active").forEach(el => el.classList.remove("active"));
+        renderArchiveList();
+      });
+
+      $("#langSwitch")?.addEventListener("click", () => {
+        state.language = state.language === "en" ? "es" : "en";
+        localStorage.setItem("lang", state.language);
+        applyI18n();
+        renderArchiveList();
+      });
+
+      $("#year").textContent = new Date().getFullYear();
+    }
+
+    (async function main() {
+      applyI18n();
+      wireUI();
+      await initAuth();
+      await loadEvents();
+    })();
+  </script>
+</body>
+
+</html>

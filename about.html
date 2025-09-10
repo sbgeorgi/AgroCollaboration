@@ -43,40 +43,41 @@
 
 <body>
     <header class="site-header">
-        <div class="container header-grid">
-            <div class="brand">
-                <a href="index.html" style="display: contents; text-decoration: none;">
-                    <div class="logo-circle">A</div>
-                    <div class="brand-text">
-                        <div class="title">Almuerzo Agrivoltaico</div>
-                        <div class="subtitle" data-i18n="tagline">
-                            An informal seminar series to share advances in agrivoltaics in Latin America
-                        </div>
-                    </div>
-                </a>
+    <div class="container header-grid">
+      <div class="brand">
+        <a href="index.html" style="display: contents; text-decoration: none;">
+          <div class="logo-circle">A</div>
+          <div class="brand-text">
+            <div class="title">Almuerzo Agrivoltaico</div>
+            <div class="subtitle" data-i18n="tagline">
+              An informal seminar series to share advances in agrivoltaics in Latin America
             </div>
-            <nav class="nav">
-                <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-                <a href="about.html" class="link" data-i18n="nav.about">About</a>
-                <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-                <div class="divider"></div>
-                <div id="langSwitch" class="lang-switch-slider" data-lang="en">
-                    <span>EN</span>
-                    <span>ES</span>
-                </div>
-                <div class="auth-area">
-                    <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
-                        <span id="userInitial"></span>
-                    </button>
-                    <span id="userName"></span>
-                    <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
-                    <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
-                        Sign out
-                    </button>
-                </div>
-            </nav>
+          </div>
+        </a>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
+        <a href="about.html" class="link active" data-i18n="nav.about">About</a>
+        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+        <div class="divider"></div>
+        <div id="langSwitch" class="lang-switch-slider" data-lang="en">
+          <span>EN</span>
+          <span>ES</span>
         </div>
-    </header>
+        <div class="auth-area">
+          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
+            <span id="userInitial"></span>
+          </button>
+          <span id="userName"></span>
+          <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
+          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+            Sign out
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
 
     <div id="flash" class="flash" role="status" aria-live="polite"></div>
 
@@ -253,13 +254,13 @@
         const t = {
             en: {
                 tagline: "An informal seminar series to share advances in agrivoltaics in Latin America",
-                nav: { schedule: "Schedule", about: "About", admin: "Admin" },
+                nav: { schedule: "Schedule", about: "About", admin: "Admin", archive: "Archive" },
                 auth: { signin: "Sign in", signout: "Sign out" },
                 footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
             },
             es: {
                 tagline: "Serie de seminarios informales para compartir avances en agrofotovoltaica en América Latina",
-                nav: { schedule: "Calendario", about: "Acerca de", admin: "Admin" },
+                nav: { schedule: "Calendario", about: "Acerca de", admin: "Admin", archive: "Archivo" },
                 auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
                 footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
             },
@@ -336,7 +337,9 @@
         function wireUI() {
             $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
             $("#btnSignIn")?.addEventListener("click", () => window.location.href = 'index.html');
-            $("#btnProfile")?.addEventListener("click", () => window.location.href = 'index.html#profile');
+            
+            // FIX: Corrected the profile button navigation
+            $("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
             
             const langSwitch = document.getElementById('langSwitch');
             if (langSwitch) {

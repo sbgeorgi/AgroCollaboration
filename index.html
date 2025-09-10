@@ -2,2178 +2,1428 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Almuerzo Agrivoltaico • Seminar Platform</title>
-    <meta name="description"
-        content="An informal seminar series to share advances in agrivoltaics in Latin America (EN/ES)." />
-    <link rel="stylesheet" href="styles.css" />
-    <style>
-        /* --- Vertical Fit & Layout Fixes for index.html --- */
-        html,
-        body {
-            height: 100%;
-            overflow: hidden;
-            /* Prevent body from scrolling */
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-        }
-
-        main.container {
-            flex-grow: 1;
-            /* Allow main to fill space between header and footer */
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            /* Critical for flex children to shrink/grow properly */
-            padding-top: var(--space-3);
-            padding-bottom: var(--space-3);
-            gap: var(--space-3);
-            /* Replaces margins for spacing between cards */
-        }
-
-        /* Override default card margins for this flex layout */
-        main.container>.card {
-            margin: 0;
-        }
-
-        /* Make static sections shrinkable, but not growable */
-        #hero,
-        #auth,
-        #profile {
-            flex-shrink: 0;
-        }
-
-
-
-        .hero {
-            padding: var(--space-3) var(--space-4) !important;
-        }
-
-        #schedule,
-        #eventDetail {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-        }
-
-        #eventsList,
-        #calendar {
-            flex-grow: 1;
-            min-height: 0;
-        }
-
-        #eventsList {
-            overflow-y: auto;
-        }
-
-        /* Modernized Event Card in List View */
-        .event-card {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: var(--space-2) var(--space-4);
-            align-items: center;
-        }
-
-        .event-card .when {
-            grid-column: 1 / -1;
-            color: var(--color-primary);
-            font-weight: 500;
-        }
-
-        .event-card .event-title {
-            grid-column: 1;
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .event-card .event-desc {
-            grid-column: 1 / -1;
-            color: var(--color-text-muted);
-            margin-top: var(--space-1);
-        }
-
-        .event-card .tags {
-            grid-column: 1 / -1;
-            margin-top: var(--space-3);
-        }
-
-        .event-card .actions {
-            grid-column: 2;
-            grid-row: 2;
-        }
-
-        .event-card .zoom-info {
-            grid-column: 1 / -1;
-            display: flex;
-            gap: var(--space-2);
-            align-items: center;
-            margin-top: var(--space-3);
-            padding-top: var(--space-3);
-            border-top: 1px solid var(--color-surface-strong);
-        }
-
-        #calendar {
-            display: none;
-            /* Initially hidden */
-            flex-direction: column;
-        }
-
-        #calendarGrid {
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-
-        .hero {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: var(--space-4);
-        }
-
-        .hero-main {
-            flex: 1 1 60%;
-            min-width: 350px;
-        }
-
-        .hero-main>h1 {
-            margin-top: 0;
-            margin-bottom: var(--space-2);
-        }
-
-        .hero-main>p {
-            margin: 0;
-        }
-
-        .hero .meta {
-            flex: 0 1 auto;
-            text-align: right;
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-1);
-        }
-
-        /* --- CALENDAR & SCHEDULE HEADER REWORK --- */
-        #schedule .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: var(--space-3);
-            margin-bottom: var(--space-3);
-        }
-
-        .section-header .calendar-header {
-            display: none;
-            align-items: center;
-            gap: var(--space-2);
-            flex-grow: 1;
-            justify-content: center;
-        }
-
-        #schedule.calendar-view .section-header .calendar-header {
-            display: flex;
-        }
-
-        #schedule .calendar-header-standalone {
-            display: none;
-        }
-
-        /* Calendar event display styles */
-        .cal-event {
-            display: block;
-            width: 100%;
-            padding: var(--space-2);
-            margin-top: var(--space-1);
-            font-size: 0.75rem;
-            line-height: 1.3;
-            text-align: left;
-            border: none;
-            border-radius: var(--radius-1);
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            overflow: hidden;
-        }
-
-        .cal-event-title {
-            font-weight: 600;
-            font-size: 0.8rem;
-            margin-bottom: var(--space-1);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .cal-event-desc {
-            font-size: 0.7rem;
-            line-height: 1.3;
-            opacity: 0.85;
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .cal-event.status-scheduled {
-            background-color: var(--color-primary-muted);
-            color: var(--color-primary);
-        }
-
-        .cal-event.status-completed {
-            background-color: var(--color-success-muted);
-            color: var(--color-success);
-        }
-
-        .cal-event.status-canceled {
-            background-color: var(--color-danger-muted);
-            color: var(--color-danger);
-        }
-
-        .cal-event:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .cal-cell {
-            min-height: 100px;
-            padding: var(--space-2);
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-1);
-        }
-
-        .cal-day {
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: var(--space-1);
-        }
-
-        .section-title-group {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-            flex-wrap: wrap;
-        }
-
-        #schedule .section-header h2 {
-            margin: 0;
-        }
-
-        /* NEW: Compact, Horizontal Auth Section */
-        #auth .auth-centered {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: var(--space-4);
-            padding: var(--space-2) var(--space-3);
-            min-height: auto;
-        }
-
-        #auth .auth-centered h2 {
-            margin: 0;
-            font-size: 1.1rem;
-            flex-shrink: 0;
-        }
-
-        .auth-controls {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: var(--space-3);
-            flex-grow: 1;
-            justify-content: flex-end;
-        }
-
-        #emailForm.auth-form-secondary {
-            display: flex;
-            gap: var(--space-2);
-        }
-
-        /* Make auth stack nicely on mobile */
-        @media (max-width: 800px) {
-            #auth .auth-centered {
-                flex-direction: column;
-                align-items: center;
-                gap: var(--space-3);
-            }
-
-            .auth-controls {
-                justify-content: center;
-            }
-        }
-
-        /* Stack header rows vertically to fit in the narrow sidebar */
-        .event-header-row1,
-        .event-header-row2 {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: var(--space-3);
-        }
-
-        .title-and-attrs {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: var(--space-1);
-            flex-wrap: wrap;
-        }
-
-        .event-header-row1 .event-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin: 0;
-            line-height: 1.3;
-            flex-shrink: 0;
-        }
-
-        #compactEventHeaderContainer .event-attrs {
-            font-size: 0.9rem;
-            color: var(--color-text-muted);
-            display: flex;
-            gap: var(--space-2);
-            flex-wrap: wrap;
-        }
-
-        .event-header-row1 .btn-ghost {
-            flex-shrink: 0;
-        }
-
-        .event-header-row2 .event-actions {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: var(--space-2);
-        }
-
-        .event-header-row2 .rsvp-group {
-            display: flex;
-            gap: var(--space-2);
-        }
-
-        /* MODIFICATION: Make chips smaller in this specific context */
-        .sidebar-container .event-header-row2 .chip {
-            padding: var(--space-1) var(--space-2);
-            font-size: 0.8rem;
-        }
-
-        /* MODIFICATION: Make counts smaller and closer together */
-        .event-header-row2 .event-counts {
-            display: flex;
-            gap: var(--space-2);
-            /* Was var(--space-3) */
-            font-size: 0.75rem;
-            /* Was 0.8rem */
-            color: var(--color-text-muted);
-            flex-shrink: 0;
-        }
-
-
-        #compactEventHeaderContainer .event-description {
-            color: var(--color-text-muted);
-            line-height: 1.5;
-            margin: var(--space-3) 0 0 0;
-            font-size: 0.9rem;
-        }
-
-        /* Profile Form Styles */
-        .profile-intro {
-            color: var(--color-text-muted);
-            margin-bottom: var(--space-4);
-        }
-
-        .profile-form {
-            max-width: 800px;
-        }
-
-        .form-section {
-            margin-bottom: var(--space-5);
-            padding-bottom: var(--space-4);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .form-section:last-of-type {
-            border-bottom: none;
-        }
-
-        .form-section h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: var(--space-3);
-            color: var(--color-text);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-3);
-        }
-
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-1);
-        }
-
-        .form-field.required label::after {
-            content: " *";
-            color: var(--color-danger);
-        }
-
-        .form-field.col-span-2 {
-            grid-column: 1 / -1;
-        }
-
-        .field-hint {
-            font-size: 0.85rem;
-            color: var(--color-text-muted);
-            margin-top: var(--space-1);
-        }
-
-        .form-actions {
-            display: flex;
-            gap: var(--space-3);
-            margin-top: var(--space-4);
-            padding-top: var(--space-4);
-            border-top: 1px solid var(--color-border);
-        }
-
-        @media (max-width: 600px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-field.col-span-2 {
-                grid-column: 1;
-            }
-        }
-
-
-        /* --- REDESIGNED REDDIT-STYLE DISCUSSION UI --- */
-        /* The #eventDetail card is now a transparent container for the two-column layout */
-        #eventDetail.card {
-            padding: 0;
-            border: none;
-            background: none;
-            box-shadow: none;
-        }
-
-        .tab-panel {
-            flex-grow: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* This is now the main layout for the entire Event Detail view */
-        #discussion-layout {
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: var(--space-4);
-            flex-grow: 1;
-            min-height: 0;
-        }
-
-        /* The left sidebar container */
-        .sidebar-container {
-            background-color: var(--color-surface);
-            border-radius: var(--radius-3);
-            padding: var(--space-3);
-            border: 1px solid var(--color-border);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            min-height: 0;
-        }
-
-        /* Add a separator below the header inside the sidebar */
-        .sidebar-container #compactEventHeaderContainer {
-            padding-bottom: var(--space-3);
-            border-bottom: 1px solid var(--color-border);
-            margin-bottom: var(--space-3);
-            flex-shrink: 0;
-            /* Prevent header from collapsing */
-        }
-
-        #threadsList {
-            background: var(--color-surface);
-            border: 1px solid var(--color-surface-strong);
-            border-radius: var(--radius-2);
-            padding: var(--space-2);
-            margin-top: var(--space-3);
-        }
-
-        .thread-list-item {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: var(--space-3);
-            padding: var(--space-3);
-            border-radius: var(--radius-2);
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            border-bottom: 1px solid var(--color-surface-strong);
-        }
-
-        .thread-list-item:last-child {
-            border-bottom: none;
-        }
-
-        .thread-list-item:hover {
-            background-color: var(--color-surface-hover);
-        }
-
-        .thread-list-item.active {
-            background-color: var(--color-primary-muted);
-        }
-
-        .thread-list-item .title {
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .thread-list-item .meta {
-            font-size: 0.8rem;
-            color: var(--color-text-muted);
-        }
-
-        .avatar-circle {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: var(--color-surface-strong);
-            display: grid;
-            place-content: center;
-            font-weight: 600;
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
-
-        /* The right-side main content area */
-        #discussion-main {
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            background-color: var(--color-surface);
-            border-radius: var(--radius-3);
-            padding: var(--space-3);
-            border: 1px solid var(--color-border);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-        }
-
-        #thread-welcome {
-            flex-grow: 1;
-            display: grid;
-            place-content: center;
-            color: var(--color-text-muted);
-            text-align: center;
-            padding: var(--space-4);
-        }
-
-        #threadDetailView {
-            flex-grow: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-            padding: 0;
-            /* Parent #discussion-main has padding now */
-        }
-
-        /* Compact Comment styles start */
-        #commentsList {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: var(--space-2);
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-2);
-            /* spacing between root comments */
-        }
-
-        /* Node container */
-        .comment-node {
-            display: block;
-            position: relative;
-        }
-
-        /* Author row */
-        .comment-author {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            font-size: 0.85rem;
-        }
-
-        .avatar-circle.comment-avatar {
-            width: 26px;
-            height: 26px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            color: var(--color-text);
-        }
-
-        .comment-author strong {
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .comment-author strong:hover,
-        .avatar-circle.comment-avatar:hover {
-            text-decoration: underline;
-        }
-
-        .comment-author .timestamp {
-            color: var(--color-text-muted);
-        }
-
-        /* This new rule wraps the bubble and actions to place them on one line */
-        .comment-body-wrapper {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-            margin-top: var(--space-1);
-        }
-
-        /* Pill bubble for the message */
-        .comment-bubble {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-2);
-            /* margin-top: var(--space-1); <-- This line is removed */
-            padding: calc(var(--space-2) - 2px) var(--space-3);
-            background: linear-gradient(180deg, var(--color-surface-strong), var(--color-surface));
-            border: 1px solid var(--color-border);
-            border-radius: 9999px;
-            max-width: 100%;
-            box-shadow: 0 1px 0 rgba(73, 2, 239, 0.74), 0 2px 5px rgba(73, 2, 239, 0.74) inset;
-        }
-
-        .comment-text {
-            margin: 0;
-            line-height: 1.5;
-            font-size: 0.95rem;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-        }
-
-        /* Action row */
-        .comment-actions {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-        }
-
-        .comment-actions .btn-ghost {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--color-text-muted);
-            padding: var(--space-1) 0;
-        }
-
-        /* Nested replies section with continuous left rail */
-        .comment-replies {
-            margin-top: var(--space-2);
-            margin-left: 28px;
-            padding-left: 16px;
-            border-left: 2px solid var(--color-surface-strong);
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-2);
-            position: relative;
-        }
-
-        .comment-replies:empty {
-            border-left: none;
-            padding-left: 0;
-            margin-left: 0;
-        }
-
-        /* Circular node marker on the rail (like Reddit) */
-        .comment-main {
-            position: relative;
-        }
-
-        .thread-dot {
-            position: absolute;
-            left: -24px;
-            /* sits on the rail */
-            top: 26px;
-            /* aligns roughly with the bubble's first line */
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--color-surface);
-            border: 2px solid var(--accent, var(--color-primary));
-            box-shadow: 0 0 0 3px var(--color-surface);
-            pointer-events: none;
-        }
-
-        /* small tweak: when there's no replies rail, hide the dot */
-        .comment-node.depth-0>.comment-main .thread-dot {
-            display: none;
-        }
-
-        /* Inline reply form */
-        .inline-reply-form {
-            margin-top: var(--space-2);
-        }
-
-        #replyToThreadForm {
-            padding-top: var(--space-3);
-            border-top: 1px solid var(--color-border);
-            display: flex;
-            gap: var(--space-2);
-            align-items: center;
-        }
-
-        #replyToThreadForm textarea {
-            flex-grow: 1;
-            resize: none;
-        }
-
-        #profile {
-            flex-shrink: 0;
-            overflow-y: auto;
-            /* Enable scrolling for the profile section */
-            max-height: 100%;
-            /* Ensure it doesn't exceed container height */
-        }
-
-        /* Profile Form Styles - REMOVED max-width restriction */
-        .profile-intro {
-            color: var(--color-text-muted);
-            margin-bottom: var(--space-4);
-        }
-
-        .profile-form {
-            /* Removed: max-width: 800px; */
-            width: 100%;
-            /* Take full width of container */
-        }
-
-        /* --- Public Profile View --- */
-        #publicProfileView {
-            overflow-y: auto;
-        }
-
-        #publicProfileView .public-profile-header {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            align-items: center;
-            gap: var(--space-4);
-            margin-bottom: var(--space-4);
-            padding-bottom: var(--space-4);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        #publicProfileView .avatar-circle-large {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: var(--color-surface-strong);
-            display: grid;
-            place-content: center;
-            font-weight: 600;
-            font-size: 2.2rem;
-            flex-shrink: 0;
-        }
-
-        #publicProfileView h2 {
-            margin: 0;
-            font-size: 1.4rem;
-        }
-
-        #publicProfileView p {
-            margin: var(--space-1) 0 0 0;
-        }
-
-        #publicProfileView .public-profile-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-2);
-            margin-top: var(--space-2);
-        }
-
-        #publicProfileView .meta-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            padding: .2rem .5rem;
-            border-radius: 999px;
-            background: var(--color-surface-strong);
-            color: var(--color-text);
-            font-size: .8rem;
-            line-height: 1;
-        }
-
-        #publicProfileView .meta-chip .emoji {
-            opacity: .9;
-        }
-
-        #publicProfileView .email a {
-            color: var(--color-primary);
-            text-decoration: none;
-        }
-
-        #publicProfileView .email a:hover {
-            text-decoration: underline;
-        }
-
-        /* Links list with clear icons */
-        #publicProfileView .link-list {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-2);
-        }
-
-        #publicProfileView .link-list a {
-            text-decoration: none;
-            color: var(--color-primary);
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-2);
-            font-weight: 500;
-        }
-
-        #publicProfileView .link-list a:hover {
-            text-decoration: underline;
-        }
-
-        #publicProfileView .link-icon {
-            display: inline-grid;
-            place-items: center;
-            width: 1.3em;
-            height: 1.3em;
-            border-radius: 3px;
-            background: var(--color-surface-strong);
-            color: var(--color-primary);
-            font-size: 0.95em;
-        }
-
-        /* Research chips */
-        #publicProfileView .chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-2);
-        }
-
-        #publicProfileView .chip {
-            padding: var(--space-1) var(--space-2);
-            background: var(--color-surface-strong);
-            border-radius: 999px;
-            font-size: 0.85rem;
-        }
-
-        /* Section spacing overrides to make it feel like a profile */
-        #publicProfileView .form-section {
-            margin-bottom: var(--space-4);
-            padding-bottom: var(--space-4);
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Almuerzo Agrivoltaico • Seminar Platform</title>
+  <meta name="description" content="An informal seminar series to share advances in agrivoltaics in Latin America (EN/ES)." />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* --- Vertical Fit & Layout Fixes for index.html --- */
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    main.container>.card {
+      margin: 0;
+    }
+
+    #hero,
+    #auth {
+      flex-shrink: 0;
+    }
+
+    .hero {
+      padding: var(--space-3) var(--space-4) !important;
+    }
+
+    #schedule,
+    #eventDetail {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    #eventsList,
+    #calendar {
+      flex-grow: 1;
+      min-height: 0;
+    }
+
+    #eventsList {
+      overflow-y: auto;
+    }
+
+    /* Modernized Event Card in List View */
+    .event-card {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-2) var(--space-4);
+      align-items: center;
+    }
+
+    .event-card .when {
+      grid-column: 1 / -1;
+      color: var(--color-primary);
+      font-weight: 500;
+    }
+
+    .event-card .event-title {
+      grid-column: 1;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .event-card .event-desc {
+      grid-column: 1 / -1;
+      color: var(--color-text-muted);
+      margin-top: var(--space-1);
+    }
+
+    .event-card .tags {
+      grid-column: 1 / -1;
+      margin-top: var(--space-3);
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+    }
+
+    .tag-topic {
+      background: var(--color-surface-strong);
+      border: 1px solid var(--color-border);
+      border-radius: 999px;
+      padding: .15rem .5rem;
+      font-size: .8rem;
+    }
+
+    .event-card .actions {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    #calendar {
+      display: none;
+      flex-direction: column;
+    }
+
+    #calendarGrid {
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .hero-main {
+      flex: 1 1 60%;
+      min-width: 350px;
+    }
+
+    .hero-main>h1 {
+      margin-top: 0;
+      margin-bottom: var(--space-2);
+    }
+
+    .hero-main>p {
+      margin: 0;
+    }
+
+    .hero .meta {
+      flex: 0 1 auto;
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    /* --- CALENDAR & SCHEDULE HEADER REWORK --- */
+    #schedule .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .section-header .calendar-header {
+      display: none;
+      align-items: center;
+      gap: var(--space-2);
+      flex-grow: 1;
+      justify-content: center;
+    }
+
+    #schedule.calendar-view .section-header .calendar-header {
+      display: flex;
+    }
+
+    #schedule .calendar-header-standalone {
+      display: none;
+    }
+
+    /* Calendar event display styles */
+    .cal-event {
+      display: block;
+      width: 100%;
+      padding: var(--space-2);
+      margin-top: var(--space-1);
+      font-size: 0.75rem;
+      line-height: 1.3;
+      text-align: left;
+      border: none;
+      border-radius: var(--radius-1);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      overflow: hidden;
+    }
+
+    .cal-event-title {
+      font-weight: 600;
+      font-size: 0.8rem;
+      margin-bottom: var(--space-1);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cal-event-desc {
+      font-size: 0.7rem;
+      line-height: 1.3;
+      opacity: 0.85;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .cal-event.status-scheduled {
+      background-color: var(--color-primary-muted);
+      color: var(--color-primary);
+    }
+
+    .cal-event.status-completed {
+      background-color: var(--color-success-muted);
+      color: var(--color-success);
+    }
+
+    .cal-event.status-canceled {
+      background-color: var(--color-danger-muted);
+      color: var(--color-danger);
+    }
+
+    .cal-event:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .cal-cell {
+      min-height: 100px;
+      padding: var(--space-2);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .cal-day {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: var(--space-1);
+    }
+
+    .section-title-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+
+    #schedule .section-header h2 {
+      margin: 0;
+    }
+
+    /* NEW: Compact, Horizontal Auth Section */
+    #auth .auth-centered {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-2) var(--space-3);
+      min-height: auto;
+    }
+
+    #auth .auth-centered h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .auth-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3);
+      flex-grow: 1;
+      justify-content: flex-end;
+    }
+
+    #emailForm.auth-form-secondary {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    @media (max-width: 800px) {
+      #auth .auth-centered {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-3);
+      }
+
+      .auth-controls {
+        justify-content: center;
+      }
+    }
+
+    /* ========== Event Detail Layout ========== */
+    #eventDetail.card {
+      padding: 0;
+      border: none;
+      background: none;
+      box-shadow: none;
+    }
+
+    .tab-panel {
+      flex-grow: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #discussion-layout {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: var(--space-4);
+      flex-grow: 1;
+      min-height: 0;
+    }
+
+    .sidebar-container,
+    #discussion-main {
+      background-color: var(--color-surface);
+      border-radius: var(--radius-3);
+      padding: var(--space-3);
+      border: 1px solid var(--color-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .sidebar-container {
+      overflow-y: auto;
+    }
+
+    .sidebar-container #compactEventHeaderContainer {
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: var(--space-3);
+      flex-shrink: 0;
+    }
+
+    .sidebar-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+
+    .sidebar-title-row h2 {
+      margin: 0;
+      font-size: 1.4rem;
+      line-height: 1.25;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .btn-pill {
+      border-radius: 999px;
+      border: 1px solid var(--color-border);
+      padding: .2rem .6rem;
+      font-size: .8rem;
+      background: var(--color-surface-strong);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.2s ease;
+    }
+    .btn-pill:hover {
+      background-color: var(--color-surface-hover);
+    }
+
+    .event-speakers { margin-top: var(--space-2); }
+    .speaker-list { display: flex; flex-wrap: wrap; gap: .4rem; margin: .5rem 0 0; padding: 0; list-style: none; }
+    .speaker-pill {
+      display: inline-flex; align-items: center; gap: .4rem; padding: .2rem .6rem; border-radius: 999px;
+      border: 1px solid var(--spk-color, var(--color-primary));
+      background: color-mix(in oklab, var(--spk-color, var(--color-primary)) 10%, transparent);
+      font-size: .85rem; line-height: 1.1; color: var(--color-text);
+    }
+    .speaker-affiliation { color: var(--color-text-muted); font-size: .8rem; }
+    .sidebar-meta { margin-top: var(--space-2); color: var(--color-text-muted); display: flex; flex-direction: column; gap: .3rem; font-size: .9rem; }
+    .sidebar-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: var(--space-2); }
+    .zoom-inline { margin-top: var(--space-3); display: flex; gap: .5rem; align-items: center; }
+    .event-actions-row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-top: var(--space-3); }
+    .chip {
+      border-radius: 999px; padding: .3rem .7rem; border: 1px solid var(--color-border);
+      display: inline-flex; align-items: center; gap: .35rem; cursor: pointer; font-weight: 600;
+      font-size: .8rem; white-space: nowrap; transition: all 0.2s ease;
+    }
+    .chip:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .chip.active { font-weight: 700; }
+    .chip[data-rsvp="going"].active { background: var(--color-success-muted); color: var(--color-success); border-color: var(--color-success); }
+    .chip[data-rsvp="interested"].active { background: color-mix(in oklab, orange 15%, transparent); color: #d06900; border-color: orange; }
+    .chip[data-rsvp="not_going"].active { background: var(--color-danger-muted); color: var(--color-danger); border-color: var(--color-danger); }
+    .chip#btnFollowCompact.active { background: var(--color-primary-muted); color: var(--color-primary); border-color: var(--color-primary); }
+
+    .inline-form { display: flex; gap: .5rem; align-items: center; margin-bottom: var(--space-3); }
+    .inline-form input[type="text"] { flex: 1; }
+
+    #threadsList { flex-grow: 1; display: flex; flex-direction: column; gap: var(--space-1); }
+    .thread-list-item {
+      display: grid; grid-template-columns: auto 1fr; gap: var(--space-2); padding: var(--space-2);
+      border-radius: var(--radius-2); cursor: pointer; transition: background-color 0.2s ease; align-items: center;
+    }
+    .thread-list-item:hover { background-color: var(--color-surface-hover); }
+    .thread-list-item.active { background-color: var(--color-primary-muted); }
+    .thread-list-item .title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .thread-list-item .meta { font-size: 0.8rem; color: var(--color-text-muted); }
+    .avatar-circle {
+      width: 32px; height: 32px; border-radius: 50%; background-color: var(--color-surface-strong);
+      display: grid; place-content: center; font-weight: 600; font-size: 1rem; flex-shrink: 0;
+    }
+
+    .tabs {
+      display: flex; gap: var(--space-2); margin-bottom: var(--space-3);
+      border-bottom: 1px solid var(--color-border); flex-shrink: 0;
+    }
+    .tab {
+      background: none; border: none; color: var(--color-text-muted); padding: .5rem .2rem;
+      cursor: pointer; font-weight: 600; font-size: .95rem; border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab:hover { color: var(--color-text); }
+    .tab.active { color: var(--color-primary); border-color: var(--color-primary); }
+
+    .prose { line-height: 1.6; color: var(--color-text); font-size: 1rem; overflow-y: auto; padding-right: var(--space-2); }
+    .prose a { color: var(--color-primary); text-decoration: none; border-bottom: 1px solid var(--color-primary-muted); }
+    .prose a:hover { border-bottom-color: var(--color-primary); }
+    
+    #thread-welcome {
+      flex-grow: 1; display: grid; place-content: center; color: var(--color-text-muted);
+      text-align: center; padding: var(--space-4);
+    }
+
+    /* --- CORRECTED CHAT STYLES (from old version) --- */
+    #threadDetailView {
+      flex-grow: 1; min-height: 0; display: flex; flex-direction: column; padding: 0;
+    }
+    #commentsList {
+      flex-grow: 1; overflow-y: auto; padding: var(--space-2);
+      display: flex; flex-direction: column; gap: var(--space-2);
+    }
+    .comment-node { display: block; position: relative; }
+    .comment-author { display: flex; align-items: center; gap: var(--space-2); font-size: 0.85rem; }
+    .avatar-circle.comment-avatar {
+      width: 26px; height: 26px; font-size: 0.8rem; cursor: pointer; color: var(--color-text);
+    }
+    .comment-author strong { font-weight: 600; cursor: pointer; }
+    .comment-author .timestamp { color: var(--color-text-muted); }
+    .comment-body-wrapper {
+      display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-1);
+    }
+    .comment-bubble {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: calc(var(--space-2) - 2px) var(--space-3);
+      background: var(--color-surface-strong);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-2); max-width: 100%;
+    }
+    .comment-text {
+      margin: 0; line-height: 1.5; font-size: 0.95rem; word-wrap: break-word; white-space: pre-wrap;
+    }
+    .comment-actions { display: flex; align-items: center; gap: var(--space-3); }
+    .comment-actions .btn-ghost {
+      font-size: 0.75rem; font-weight: 600; color: var(--color-text-muted); padding: var(--space-1) 0;
+    }
+    .comment-replies {
+      margin-top: var(--space-2); margin-left: 28px; padding-left: 16px;
+      border-left: 2px solid var(--color-surface-strong);
+      display: flex; flex-direction: column; gap: var(--space-2); position: relative;
+    }
+    .comment-replies:empty { border-left: none; padding-left: 0; margin-left: 0; }
+    .comment-main { position: relative; }
+    .thread-dot {
+      position: absolute; left: -25px; top: 12px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--color-surface);
+      border: 2px solid var(--accent, var(--color-primary));
+      box-shadow: 0 0 0 3px var(--color-surface); pointer-events: none;
+    }
+    .comment-node.depth-0 > .comment-main .thread-dot { display: none; }
+    .inline-reply-form { margin-top: var(--space-2); }
+    #replyToThreadForm {
+      padding-top: var(--space-3); border-top: 1px solid var(--color-border);
+      display: flex; gap: var(--space-2); align-items: center;
+    }
+    #replyToThreadForm textarea { flex-grow: 1; resize: none; }
+    /* --- END CORRECTED CHAT STYLES --- */
+  </style>
 
 </head>
 
 <body>
-    <header class="site-header">
-        <div class="container header-grid">
-            <div class="brand">
-                <a href="index.html" style="display: contents; text-decoration: none;">
-                    <div class="logo-circle">A</div>
-                    <div class="brand-text">
-                        <div class="title">Almuerzo Agrivoltaico</div>
-                        <div class="subtitle" data-i18n="tagline">
-                            An informal seminar series to share advances in agrivoltaics in Latin America
-                        </div>
-                    </div>
-                </a>
+  <header class="site-header">
+    <div class="container header-grid">
+      <div class="brand">
+        <a href="index.html" style="display: contents; text-decoration: none;">
+          <div class="logo-circle">A</div>
+          <div class="brand-text">
+            <div class="title">Almuerzo Agrivoltaico</div>
+            <div class="subtitle" data-i18n="tagline">
+              An informal seminar series to share advances in agrivoltaics in Latin America
             </div>
-            <nav class="nav">
-                <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-                <a href="about.html" class="link" data-i18n="nav.about">About</a>
-                <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-                <div class="divider"></div>
-                <div id="langSwitch" class="lang-switch-slider" data-lang="en">
-                    <span>EN</span>
-                    <span>ES</span>
-                </div>
-                <div class="auth-area">
-                    <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
-                        <span id="userInitial"></span>
-                    </button>
-                    <span id="userName"></span>
-                    <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
-                    <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
-                        Sign out
-                    </button>
-                </div>
-            </nav>
+          </div>
+        </a>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
+        <a href="about.html" class="link" data-i18n="nav.about">About</a>
+        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+        <div class="divider"></div>
+        <div id="langSwitch" class="lang-switch-slider" data-lang="en">
+          <span>EN</span>
+          <span>ES</span>
         </div>
-    </header>
+        <div class="auth-area">
+          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
+            <span id="userInitial"></span>
+          </button>
+          <span id="userName"></span>
+          <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
+          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+            Sign out
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
 
-    <div id="flash" class="flash" role="status" aria-live="polite"></div>
+  <div id="flash" class="flash" role="status" aria-live="polite"></div>
 
-    <main class="container">
-        <!-- Hero -->
-        <section id="hero" class="card hero">
-            <div class="hero-main">
-                <h1>Almuerzo Agrivoltaico</h1>
-                <p data-i18n="intro">
-                    Agrivoltaics (agrivoltaics) is an emerging field that integrates solar energy with
-                    crop/livestock production. This bilingual seminar focuses on Latin America. Hosted by
-                    UNAM and University of Arizona.
-                </p>
+  <main class="container">
+    <!-- Hero -->
+    <section id="hero" class="card hero">
+      <div class="hero-main">
+        <h1>Almuerzo Agrivoltaico</h1>
+        <p data-i18n="intro">
+          Agrivoltaics (agrivoltaics) is an emerging field that integrates solar energy with
+          crop/livestock production. This bilingual seminar focuses on Latin America. Hosted by
+          UNAM and University of Arizona.
+        </p>
+      </div>
+      <div class="meta">
+        <span class="meta-item" data-i18n="format">Online • Monthly • 1 hour (30 min talk + 30 min
+          discussion)</span>
+        <span class="meta-item" data-i18n="hosted">Hosted by UNAM & University of Arizona</span>
+      </div>
+    </section>
+
+    <!-- Schedule -->
+    <section id="schedule" class="card" aria-labelledby="scheduleTitle">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2 id="scheduleTitle" data-i18n="schedule.title">Talks</h2>
+          <div class="view-switch">
+            <button id="viewList" class="chip chip-toggle active" data-i18n="schedule.list">List</button>
+            <button id="viewCalendar" class="chip chip-toggle" data-i18n="schedule.calendar">Calendar</button>
+          </div>
+        </div>
+        <div class="calendar-header">
+          <button id="calPrev" class="btn-ghost" aria-label="Previous month">◀</button>
+          <div id="calLabel" class="cal-label">Month</div>
+          <button id="calNext" class="btn-ghost" aria-label="Next month">▶</button>
+        </div>
+        <div class="search-bar">
+          <input id="search" type="search" placeholder="Search..." data-i18n-placeholder="search.placeholder" />
+        </div>
+      </div>
+
+      <div id="eventsList" class="events-grid"></div>
+
+      <div id="calendar" class="calendar">
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="calendar-legend">
+          <span class="legend scheduled" data-i18n="legend.scheduled">Scheduled</span>
+          <span class="legend completed" data-i18n="legend.completed">Completed</span>
+          <span class="legend canceled" data-i18n="legend.canceled">Canceled</span>
+        </div>
+      </div>
+
+      <div id="emptyEvents" class="empty" style="display: none" data-i18n="schedule.empty">
+        No events yet. Check back soon.
+      </div>
+    </section>
+
+    <!-- Auth (shown when signed out, now compact and after schedule) -->
+    <section id="auth" class="card" aria-labelledby="authTitle">
+      <div class="auth-centered">
+        <h2 id="authTitle" data-i18n="auth.title">Sign in to participate</h2>
+        <div class="auth-controls">
+          <button id="btnGoogle" class="btn-social btn-google">
+            <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+              <path d="M1 1h22v22H1z" fill="none"></path>
+            </svg>
+            <span>Sign in with Google</span>
+          </button>
+          <form id="emailForm" class="auth-form-secondary">
+            <label for="email" class="sr-only" data-i18n="auth.email">Email</label>
+            <input id="email" type="email" placeholder="you@example.com" required data-i18n-placeholder="auth.email" />
+            <button class="btn-secondary" type="submit" data-i18n="auth.magic">Send magic link</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Event Detail -->
+    <section id="eventDetail" class="card" style="display: none">
+      <div id="discussion-layout">
+        <!-- LEFT SIDEBAR -->
+        <div class="sidebar-container">
+          <div id="compactEventHeaderContainer">
+            <!-- JS Renders Event Details Here -->
+          </div>
+
+          <form id="newThreadForm" class="inline-form">
+            <input id="threadTitle" type="text" placeholder="Start a new topic..." required data-i18n-placeholder="thread.placeholder" />
+            <button class="btn-primary" type="submit" data-i18n="thread.create">Create</button>
+          </form>
+          <div id="threadsList">
+            <!-- JS Renders Threads Here -->
+          </div>
+        </div>
+
+        <!-- RIGHT MAIN AREA -->
+        <div id="discussion-main">
+          <div class="tabs">
+            <button class="tab active" data-tab="description" data-i18n="tabs.description">Description</button>
+            <button class="tab" data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
+            <button class="tab" data-tab="files" data-i18n="tabs.files">Files</button>
+          </div>
+
+          <!-- Description Panel -->
+          <div id="tab_description" class="tab-panel">
+            <div id="descriptionContent" class="prose"></div>
+          </div>
+
+          <!-- Discussion Panel -->
+          <div id="tab_discussion" class="tab-panel" style="display: none;">
+            <div id="thread-welcome">
+              <div>
+                <h3 data-i18n="discussion.welcome_title">Welcome to the discussion!</h3>
+                <p data-i18n="discussion.welcome_body">Select a topic from the left to view the
+                  conversation, or start a new one.</p>
+              </div>
             </div>
-            <div class="meta">
-                <span class="meta-item" data-i18n="format">Online • Monthly • 1 hour (30 min talk + 30 min
-                    discussion)</span>
-                <span class="meta-item" data-i18n="hosted">Hosted by UNAM & University of Arizona</span>
+            <div id="threadDetailView" style="display: none;">
+              <div id="commentsList"></div>
+              <form id="replyToThreadForm">
+                <textarea placeholder="Write a comment..." required data-i18n-placeholder="comment.placeholder"></textarea>
+                <button class="btn-primary" type="submit" data-i18n="comment.send">Send</button>
+              </form>
             </div>
-        </section>
+          </div>
 
-        <!-- Profile (shown as a separate view) -->
-        <section id="profile" class="card" aria-labelledby="profileTitle" style="display: none">
-            <button class="btn-ghost" id="backFromProfile" style="display: none;">
-                ← <span data-i18n="back.schedule">Back to schedule</span>
-            </button>
-            <h2 id="profileTitle" data-i18n="profile.title">Complete Your Profile</h2>
-            <p id="profileIntro" class="profile-intro" data-i18n="profile.intro">Please complete your profile to
-                continue. Fields marked with * are required.</p>
-
-            <form id="profileForm" class="profile-form">
-                <!-- Basic Information -->
-                <div class="form-section">
-                    <h3 data-i18n="profile.basic_info">Basic Information</h3>
-                    <div class="form-grid">
-                        <div class="form-field required">
-                            <label for="fullName" data-i18n="profile.full_name">Full Name *</label>
-                            <input id="fullName" required />
-                        </div>
-                        <div class="form-field required">
-                            <label for="username" data-i18n="profile.username">Username *</label>
-                            <input id="username" required pattern="[a-zA-Z0-9_-]+"
-                                title="Only letters, numbers, underscores and hyphens allowed" />
-                            <small class="field-hint" data-i18n="profile.username_hint">Used for @mentions and profile
-                                URL</small>
-                        </div>
-                        <div class="form-field required col-span-2">
-                            <label for="affiliation" data-i18n="profile.affiliation">Affiliation/Organization *</label>
-                            <input id="affiliation" required />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Contact Information -->
-                <div class="form-section">
-                    <h3 data-i18n="profile.contact_info">Contact Information</h3>
-                    <div class="form-grid">
-                        <div class="form-field required col-span-2">
-                            <label for="workEmail" data-i18n="profile.work_email">Work Email *</label>
-                            <input id="workEmail" type="email" required />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Professional Links -->
-                <div class="form-section">
-                    <h3 data-i18n="profile.professional_links">Professional Links</h3>
-                    <div class="form-grid">
-                        <div class="form-field">
-                            <label for="personalWebsite" data-i18n="profile.personal_website">Personal Website</label>
-                            <input id="personalWebsite" type="url" placeholder="https://..." />
-                        </div>
-                        <div class="form-field">
-                            <label for="professionalWebsite" data-i18n="profile.professional_website">Professional/Lab
-                                Website</label>
-                            <input id="professionalWebsite" type="url" placeholder="https://..." />
-                        </div>
-                        <div class="form-field col-span-2">
-                            <label for="googleScholar" data-i18n="profile.google_scholar">Google Scholar Profile</label>
-                            <input id="googleScholar" type="url" placeholder="https://scholar.google.com/..." />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Fields of Study -->
-                <div class="form-section">
-                    <h3 data-i18n="profile.fields_section">Research Interests</h3>
-                    <div class="form-field">
-                        <label for="fieldsOfStudy" data-i18n="profile.fields_of_study">Fields of Study</label>
-                        <textarea id="fieldsOfStudy" rows="3"
-                            placeholder="e.g., Solar Energy, Agricultural Systems, Environmental Science..."></textarea>
-                        <small class="field-hint" data-i18n="profile.fields_hint">Separate multiple fields with
-                            commas</small>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button class="btn-primary" type="submit" data-i18n="profile.save">
-                        Save Profile
-                    </button>
-                    <button class="btn-ghost" type="button" id="skipProfile" style="display: none;"
-                        data-i18n="profile.skip">
-                        Skip for now
-                    </button>
-                </div>
+          <!-- Files Panel -->
+          <div id="tab_files" class="tab-panel" style="display: none">
+            <form id="uploadForm" class="inline-form">
+              <input id="fileInput" type="file" />
+              <button class="btn-primary" type="submit" data-i18n="files.upload">Upload</button>
             </form>
-        </section>
-
-        <!-- Public Profile View -->
-        <section id="publicProfileView" class="card" style="display: none;">
-            <button class="btn-ghost" id="backFromPublicProfile">
-                ← <span data-i18n="back.event">Back to Event</span>
-            </button>
-            <div class="public-profile-header">
-                <div class="avatar-circle-large" id="publicProfileInitial"></div>
-                <div>
-                    <h2 id="publicProfileName"></h2>
-                    <p id="publicProfileAffiliation" class="text-muted"></p>
-                    <div class="public-profile-meta">
-                        <span id="publicProfileUsername" class="meta-chip" style="display:none;">
-                            <span class="emoji">👤</span><span class="txt"></span>
-                        </span>
-                        <span id="publicProfileEmail" class="meta-chip email" style="display:none;">
-                            <span class="emoji">📧</span><a class="txt" href="#"></a>
-                        </span>
-                        <span id="publicProfileRole" class="meta-chip" style="display:none;">
-                            <span class="emoji">🛡️</span><span class="txt"></span>
-                        </span>
-                    </div>
-                </div>
+            <div id="filesList" class="files"></div>
+            <div id="emptyFiles" class="empty" style="display: none" data-i18n="files.empty">
+              No files yet.
             </div>
-            <div class="public-profile-body">
-                <div class="form-section">
-                    <h3 data-i18n="profile.professional_links">Professional Links</h3>
-                    <ul id="publicProfileLinks" class="link-list">
-                        <!-- Links injected here -->
-                    </ul>
-                </div>
-                <div class="form-section">
-                    <h3 data-i18n="profile.fields_section">Research Interests</h3>
-                    <div id="publicProfileFields" class="chips"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Schedule -->
-        <section id="schedule" class="card" aria-labelledby="scheduleTitle">
-            <div class="section-header">
-                <div class="section-title-group">
-                    <h2 id="scheduleTitle" data-i18n="schedule.title">Upcoming Talks</h2>
-                    <div class="view-switch">
-                        <button id="viewList" class="chip chip-toggle active" data-i18n="schedule.list">List</button>
-                        <button id="viewCalendar" class="chip chip-toggle"
-                            data-i18n="schedule.calendar">Calendar</button>
-                    </div>
-                </div>
-                <div class="calendar-header">
-                    <button id="calPrev" class="btn-ghost" aria-label="Previous month">◀</button>
-                    <div id="calLabel" class="cal-label">Month</div>
-                    <button id="calNext" class="btn-ghost" aria-label="Next month">▶</button>
-                </div>
-                <div class="search-bar">
-                    <input id="search" type="search" placeholder="Search..."
-                        data-i18n-placeholder="search.placeholder" />
-                </div>
-            </div>
-
-            <div id="eventsList" class="events-grid"></div>
-
-            <div id="calendar" class="calendar">
-                <div class="calendar-grid" id="calendarGrid"></div>
-                <div class="calendar-legend">
-                    <span class="legend scheduled" data-i18n="legend.scheduled">Scheduled</span>
-                    <span class="legend completed" data-i18n="legend.completed">Completed</span>
-                    <span class="legend canceled" data-i18n="legend.canceled">Canceled</span>
-                </div>
-            </div>
-
-            <div id="emptyEvents" class="empty" style="display: none" data-i18n="schedule.empty">
-                No events yet. Check back soon.
-            </div>
-        </section>
-
-        <!-- Auth (shown when signed out, now compact and after schedule) -->
-        <section id="auth" class="card" aria-labelledby="authTitle">
-            <div class="auth-centered">
-                <h2 id="authTitle" data-i18n="auth.title">Sign in to participate</h2>
-                <div class="auth-controls">
-                    <button id="btnGoogle" class="btn-social btn-google">
-                        <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
-                            <path
-                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                                fill="#4285F4"></path>
-                            <path
-                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                fill="#34A853"></path>
-                            <path
-                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                                fill="#FBBC05"></path>
-                            <path
-                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                                fill="#EA4335"></path>
-                            <path d="M1 1h22v22H1z" fill="none"></path>
-                        </svg>
-                        <span>Sign in with Google</span>
-                    </button>
-                    <form id="emailForm" class="auth-form-secondary">
-                        <label for="email" class="sr-only" data-i18n="auth.email">Email</label>
-                        <input id="email" type="email" placeholder="you@example.com" required
-                            data-i18n-placeholder="auth.email" />
-                        <button class="btn-secondary" type="submit" data-i18n="auth.magic">Send magic link</button>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        <!-- Event Detail -->
-        <section id="eventDetail" class="card" style="display: none">
-            <!-- RESTRUCTURED: The grid layout is now the top-level element -->
-            <div id="discussion-layout">
-
-                <!-- LEFT SIDEBAR -->
-                <div class="sidebar-container">
-                    <!-- Header content moved here -->
-                    <div id="compactEventHeaderContainer"></div>
-
-                    <!-- Original sidebar content -->
-                    <form id="newThreadForm" class="inline-form">
-                        <input id="threadTitle" type="text" placeholder="Start a new topic..." required
-                            data-i18n-placeholder="thread.placeholder" />
-                        <button class="btn-primary" type="submit" data-i18n="thread.create">Create</button>
-                    </form>
-                    <div id="threadsList"></div>
-                </div>
-
-                <!-- RIGHT MAIN AREA -->
-                <div id="discussion-main">
-                    <!-- Tabs moved here -->
-                    <div class="tabs">
-                        <button class="tab active" data-tab="discussion" data-i18n="tabs.discussion">
-                            Discussion
-                        </button>
-                        <button class="tab" data-tab="files" data-i18n="tabs.files">Files</button>
-                    </div>
-
-                    <!-- Discussion Panel Content -->
-                    <div id="tab_discussion" class="tab-panel">
-                        <div id="thread-welcome">
-                            <div>
-                                <h3 data-i18n="discussion.welcome_title">Welcome to the discussion!</h3>
-                                <p data-i18n="discussion.welcome_body">Select a topic from the left to view the
-                                    conversation, or start a new one.</p>
-                            </div>
-                        </div>
-                        <div id="threadDetailView" style="display: none;">
-                            <div id="commentsList"></div>
-                            <form id="replyToThreadForm">
-                                <textarea placeholder="Write a comment..." required
-                                    data-i18n-placeholder="comment.placeholder"></textarea>
-                                <button class="btn-primary" type="submit" data-i18n="comment.send">Send</button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Files Panel Content -->
-                    <div id="tab_files" class="tab-panel" style="display: none">
-                        <form id="uploadForm" class="inline-form">
-                            <input id="fileInput" type="file" />
-                            <button class="btn-primary" type="submit" data-i18n="files.upload">Upload</button>
-                        </form>
-                        <div id="filesList" class="files"></div>
-                        <div id="emptyFiles" class="empty" style="display: none" data-i18n="files.empty">
-                            No files yet.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="site-footer">
-        <div class="container">
-            <small>
-                © <span id="year"></span> Almuerzo Agrivoltaico •
-                <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin
-                    America.</span>
-            </small>
+          </div>
         </div>
-    </footer>
+      </div>
+    </section>
+  </main>
 
-    <!-- JS Logic embedded in HTML -->
-    <script type="module">
-        import {
-            createClient
-        } from "https://esm.sh/@supabase/supabase-js@2";
+  <footer class="site-footer">
+    <div class="container">
+      <small>
+        © <span id="year"></span> Almuerzo Agrivoltaico •
+        <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin
+          America.</span>
+      </small>
+    </div>
+  </footer>
 
-        /* ================== CONFIG ================== */
-        const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
-        const SUPABASE_ANON_KEY =
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
+  <!-- JS Logic embedded in HTML -->
+  <script type="module">
+    import { 
+      supabase, 
+      authState, 
+      initAuth, 
+      fetchProfile, 
+      renderAuthUI,
+      signInWithGoogle,
+      signInWithEmail,
+      signOut
+    } from "./auth.js";
 
-        const REDIRECT_TO = window.location.origin + window.location.pathname;
-        /* ============================================ */
+    let eventRealtimeChannel = null;
 
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            auth: {
-                persistSession: true,
-                autoRefreshToken: true,
-                detectSessionInUrl: true,
-            },
-        });
+    const state = {
+      language: localStorage.getItem("lang") || "en",
+      events: [],
+      selectedEvent: null,
+      threads: [],
+      selectedThreadId: null,
+      comments: [],
+      files: [],
+      rsvpStatus: null,
+      isFollowing: false,
+      counts: { followers: 0, going: 0, interested: 0 },
+      calendarMonth: new Date(),
+    };
 
-        let eventRealtimeChannel = null;
+    // Basic i18n
+    const t = {
+      en: {
+        tagline: "An informal seminar series to share advances in agrivoltaics in Latin America",
+        intro: "Agrivoltaics (agrivoltaics) is an emerging field that integrates solar energy with crop/livestock production. This bilingual seminar focuses on Latin America. Hosted by UNAM and University of Arizona.",
+        format: "Online • Monthly • 1 hour (30 min talk + 30 min discussion)",
+        hosted: "Hosted by UNAM & University of Arizona",
+        nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin" },
+        auth: {
+          title: "Sign in to participate", signin: "Sign in", signout: "Sign out",
+          email: "Email", magic: "Send magic link", magic_hint: "We'll email you a sign-in link. Check your inbox.", or: "or",
+          required: "Please sign in to view event details.",
+        },
+        profile: { incomplete: "Please complete your profile to access all features" },
+        schedule: { title: "Talks", empty: "No events yet. Check back soon.", list: "List", calendar: "Calendar" },
+        search: { placeholder: "Search..." },
+        back: { schedule: "Back to schedule" },
+        tabs: { description: "Description", discussion: "Discussion", files: "Files" },
+        discussion: { welcome_title: "Welcome to the discussion!", welcome_body: "Select a topic from the left to view the conversation, or start a new one." },
+        thread: { placeholder: "Start a new topic...", create: "Create", empty: "No topics yet. Start the discussion!" },
+        comment: { placeholder: "Write a comment...", send: "Send" },
+        files: { upload: "Upload", empty: "No files yet." },
+        footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
+        rsvp: { going: "Going", interested: "Interested", notgoing: "Not going", saved: "RSVP updated" },
+        follow: "Follow",
+        reply: "Reply",
+        legend: { scheduled: "Scheduled", completed: "Completed", canceled: "Canceled" },
+        save: "Save", cancel: "Cancel",
+        errors: { upload: "Upload failed" },
+        labels: { followers: "followers", going: "going", interested: "interested" },
+        open: "Open", join_zoom: "Join Zoom", copy_link: "Copy Zoom link", copied: "Copied!",
+        tags: "Tags",
+        speakers: "Speaker(s)"
+      },
+      es: {
+        tagline: "Serie de seminarios informales para compartir avances en agrofotovoltaica en América Latina",
+        intro: "La agrofotovoltaica integra energía solar con producción agrícola/ganadera. Este seminario bilingüe se enfoca en América Latina. Organizado por UNAM y University of Arizona.",
+        format: "En línea • Mensual • 1 hora (30 min charla + 30 min discusión)",
+        hosted: "Organizado por UNAM y University of Arizona",
+        nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin" },
+        auth: {
+          title: "Inicia sesión para participar", signin: "Iniciar sesión", signout: "Cerrar sesión",
+          email: "Correo", magic: "Enviar enlace mágico", magic_hint: "Te enviaremos un enlace de acceso. Revisa tu bandeja.", or: "o",
+          required: "Por favor, inicia sesión para ver los detalles del evento.",
+        },
+        profile: { incomplete: "Por favor completa tu perfil para acceder a todas las funciones" },
+        schedule: { title: "Charlas", empty: "Aún no hay eventos. Vuelve pronto.", list: "Lista", calendar: "Calendario" },
+        search: { placeholder: "Buscar..." },
+        back: { schedule: "Volver al calendario" },
+        tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" },
+        discussion: { welcome_title: "¡Bienvenido/a a la discusión!", welcome_body: "Selecciona un tema de la izquierda o crea uno nuevo." },
+        thread: { placeholder: "Iniciar un nuevo tema...", create: "Crear", empty: "Aún no hay temas. ¡Comienza la discusión!" },
+        comment: { placeholder: "Escribe un comentario...", send: "Enviar" },
+        files: { upload: "Subir", empty: "No hay archivos." },
+        footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
+        rsvp: { going: "Asistiré", interested: "Interesado/a", notgoing: "No asistiré", saved: "Asistencia actualizada" },
+        follow: "Seguir",
+        reply: "Responder",
+        legend: { scheduled: "Programado", completed: "Completado", cancelado: "Cancelado" },
+        save: "Guardar", cancel: "Cancelar",
+        errors: { upload: "Fallo al subir" },
+        labels: { followers: "seguidores", going: "asisten", interested: "interesados" },
+        open: "Abrir", join_zoom: "Unirse a Zoom", copy_link: "Copiar enlace de Zoom", copied: "¡Copiado!",
+        tags: "Etiquetas",
+        speakers: "Ponente(s)"
+      },
+    };
 
-        const state = {
-            session: null,
-            profile: null,
-            profileComplete: false,
-            language: localStorage.getItem("lang") || "en",
-            events: [],
-            selectedEvent: null,
-            threads: [],
-            selectedThreadId: null,
-            comments: [],
-            profileCache: new Map(),
-            files: [],
-            rsvpStatus: null,
-            isFollowing: false,
-            counts: { followers: 0, going: 0, interested: 0 },
-            calendarMonth: new Date(),
-        };
+    function tr(key, fallback = "") {
+      const lang = state.language;
+      const parts = key.split(".");
+      let obj = t[lang];
+      for (const p of parts) obj = obj?.[p];
+      return obj ?? fallback;
+    }
 
-        // Basic i18n
-        const t = {
-            en: {
-                tagline: "An informal seminar series to share advances in agrivoltaics in Latin America",
-                intro: "Agrivoltaics (agrivoltaics) is an emerging field that integrates solar energy with crop/livestock production. This bilingual seminar focuses on Latin America. Hosted by UNAM and University of Arizona.",
-                format: "Online • Monthly • 1 hour (30 min talk + 30 min discussion)",
-                hosted: "Hosted by UNAM & University of Arizona",
-                nav: { schedule: "Schedule", about: "About", admin: "Admin" },
-                auth: {
-                    title: "Sign in to participate", signin: "Sign in", signout: "Sign out",
-                    email: "Email", magic: "Send magic link", magic_hint: "We'll email you a sign-in link. Check your inbox.", or: "or",
-                    required: "Please sign in to view event details.",
-                },
-                profile: {
-                    title: "Complete Your Profile",
-                    intro: "Please complete your profile to continue. Fields marked with * are required.",
-                    basic_info: "Basic Information",
-                    contact_info: "Contact Information",
-                    professional_links: "Professional Links",
-                    fields_section: "Research Interests",
-                    full_name: "Full Name",
-                    username: "Username",
-                    username_hint: "Used for @mentions and profile URL",
-                    affiliation: "Affiliation/Organization",
-                    work_email: "Work Email",
-                    personal_website: "Personal Website",
-                    professional_website: "Professional/Lab Website",
-                    google_scholar: "Google Scholar Profile",
-                    fields_of_study: "Fields of Study",
-                    fields_hint: "Separate multiple fields with commas",
-                    save: "Save Profile",
-                    saved: "Profile updated",
-                    skip: "Skip for now",
-                    incomplete: "Please complete your profile to access all features"
-                },
-                schedule: { title: "Upcoming Talks", empty: "No events yet. Check back soon.", list: "List", calendar: "Calendar" },
-                search: { placeholder: "Search..." },
-                back: { schedule: "Back to schedule", event: "Back to Event" },
-                tabs: { discussion: "Discussion", files: "Files" },
-                discussion: { welcome_title: "Welcome to the discussion!", welcome_body: "Select a topic from the left to view the conversation, or start a new one." },
-                thread: { placeholder: "Start a new topic...", create: "Create", empty: "No topics yet. Start the discussion!" },
-                comment: { placeholder: "Write a comment...", send: "Send" },
-                files: { upload: "Upload", empty: "No files yet." },
-                footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
-                rsvp: { going: "Going", interested: "Interested", notgoing: "Not going", saved: "RSVP updated" },
-                follow: "Follow",
-                reply: "Reply",
-                legend: { scheduled: "Scheduled", completed: "Completed", canceled: "Canceled" },
-                save: "Save", cancel: "Cancel",
-                errors: { upload: "Upload failed" },
-                labels: { followers: "followers", going: "going", interested: "interested" },
-                open: "Open", join_zoom: "Join Zoom", copy_link: "Copy Zoom link", copied: "Copied!",
-            },
-            es: {
-                tagline: "Serie de seminarios informales para compartir avances en agrofotovoltaica en América Latina",
-                intro: "La agrofotovoltaica integra energía solar con producción agrícola/ganadera. Este seminario bilingüe se enfoca en América Latina. Organizado por UNAM y University of Arizona.",
-                format: "En línea • Mensual • 1 hora (30 min charla + 30 min discusión)",
-                hosted: "Organizado por UNAM y University of Arizona",
-                nav: { schedule: "Calendario", about: "Acerca de", admin: "Admin" },
-                auth: {
-                    title: "Inicia sesión para participar", signin: "Iniciar sesión", signout: "Cerrar sesión",
-                    email: "Correo", magic: "Enviar enlace mágico", magic_hint: "Te enviaremos un enlace de acceso. Revisa tu bandeja.", or: "o",
-                    required: "Por favor, inicia sesión para ver los detalles del evento.",
-                },
-                profile: {
-                    title: "Completa tu Perfil",
-                    intro: "Por favor completa tu perfil para continuar. Los campos marcados con * son obligatorios.",
-                    basic_info: "Información Básica",
-                    contact_info: "Información de Contacto",
-                    professional_links: "Enlaces Profesionales",
-                    fields_section: "Intereses de Investigación",
-                    full_name: "Nombre Completo",
-                    username: "Usuario",
-                    username_hint: "Usado para @menciones y URL del perfil",
-                    affiliation: "Afiliación/Organización",
-                    work_email: "Correo de Trabajo",
-                    personal_website: "Sitio Web Personal",
-                    professional_website: "Sitio Web Profesional/Laboratorio",
-                    google_scholar: "Perfil de Google Scholar",
-                    fields_of_study: "Campos de Estudio",
-                    fields_hint: "Separa múltiples campos con comas",
-                    save: "Guardar Perfil",
-                    saved: "Perfil actualizado",
-                    skip: "Omitir por ahora",
-                    incomplete: "Por favor completa tu perfil para acceder a todas las funciones"
-                },
-                schedule: { title: "Próximas charlas", empty: "Aún no hay eventos. Vuelve pronto.", list: "Lista", calendar: "Calendario" },
-                search: { placeholder: "Buscar..." },
-                back: { schedule: "Volver al calendario", event: "Volver al Evento" },
-                tabs: { discussion: "Discusión", files: "Archivos" },
-                discussion: { welcome_title: "¡Bienvenido/a a la discusión!", welcome_body: "Selecciona un tema de la izquierda o crea uno nuevo." },
-                thread: { placeholder: "Iniciar un nuevo tema...", create: "Crear", empty: "Aún no hay temas. ¡Comienza la discusión!" },
-                comment: { placeholder: "Escribe un comentario...", send: "Enviar" },
-                files: { upload: "Subir", empty: "No hay archivos." },
-                footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
-                rsvp: { going: "Asistiré", interested: "Interesado/a", notgoing: "No asistiré", saved: "Asistencia actualizada" },
-                follow: "Seguir",
-                reply: "Responder",
-                legend: { scheduled: "Programado", completed: "Completado", canceled: "Cancelado" },
-                save: "Guardar", cancel: "Cancelar",
-                errors: { upload: "Fallo al subir" },
-                labels: { followers: "seguidores", going: "asisten", interested: "interesados" },
-                open: "Abrir", join_zoom: "Unirse a Zoom", copy_link: "Copiar enlace de Zoom", copied: "¡Copiado!",
-            },
-        };
+    const $ = (sel) => document.querySelector(sel);
 
-        function tr(key, fallback = "") {
-            const lang = state.language;
-            const parts = key.split(".");
-            let obj = t[lang];
-            for (const p of parts) obj = obj?.[p];
-            return obj ?? fallback;
+    function setFlash(msg, timeout = 3000) {
+      const el = $("#flash");
+      if (!el) return;
+      el.textContent = msg;
+      el.style.display = "block";
+      clearTimeout(setFlash._t);
+      if (timeout > 0) {
+        setFlash._t = setTimeout(() => (el.style.display = "none"), timeout);
+      }
+    }
+
+    function fmtDateTime(iso) {
+      try { return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso)); } catch (_) { return iso; }
+    }
+
+    function bytesToSize(bytes = 0) {
+      if (bytes === 0) return "0 B";
+      const k = 1024, sizes = ["B", "KB", "MB", "GB", "TB"], i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    }
+
+    function escapeHtml(s = "") {
+      return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+    }
+
+    function linkify(text = "") {
+      let safe = escapeHtml(text);
+      const urlRegex = /\b(https?:\/\/[^\s<]+)\b/g;
+      safe = safe.replace(urlRegex, (m) => `<a href="${m}" target="_blank" rel="noopener noreferrer">${m}</a>`);
+      safe = safe.replace(/\n/g, "<br/>");
+      return safe;
+    }
+
+    function applyI18n() {
+      document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); });
+      const langSwitch = $("#langSwitch");
+      if (langSwitch) langSwitch.dataset.lang = state.language;
+    }
+
+    function showView(which) {
+      $("#schedule").style.display = "none";
+      $("#eventDetail").style.display = "none";
+      $("#hero").style.display = "none";
+      $("#auth").style.display = "none";
+
+      if (which === "schedule") {
+        $("#hero").style.display = "flex";
+        $("#schedule").style.display = "flex";
+        if (!authState.session) $("#auth").style.display = "block";
+      } else if (which === "event") {
+        $("#eventDetail").style.display = "flex";
+      }
+    }
+
+    /* ============= Data: Events & Schedule ============= */
+    async function loadEvents() {
+      const { data } = await supabase.from("events").select("*, event_speakers(*)").order("start_time", { ascending: true });
+      state.events = data || [];
+      renderEventsList();
+      renderScheduleCalendar();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const eid = urlParams.get("event") || urlParams.get("e");
+
+      // DECIDE INITIAL VIEW
+      if (eid) {
+        if (authState.session) {
+          await openEvent(eid);
+        } else {
+          // If not logged in, remember the event, show a message, and display the default schedule view
+          authState.pendingDeepLinkEventId = eid;
+          setFlash(tr('auth.required'));
+          $("#auth")?.scrollIntoView({ behavior: 'smooth' });
+          showView("schedule");
         }
+      } else {
+        // If no event is specified in the URL, show the default schedule view
+        showView("schedule");
+      }
+    }
 
-        /* ============== UI helpers ============== */
-        const $ = (sel) => document.querySelector(sel);
+    function nowUtcComparable(d) {
+      return new Date(d).getTime();
+    }
 
-        function setFlash(msg, timeout = 3000) {
-            const el = $("#flash");
-            if (!el) return;
-            el.textContent = msg;
-            el.style.display = "block";
-            clearTimeout(setFlash._t);
-            if (timeout > 0) {
-                setFlash._t = setTimeout(() => (el.style.display = "none"), timeout);
-            }
-        }
+    function renderEventsList() {
+      const list = $("#eventsList"), empty = $("#emptyEvents");
+      if (!list || !empty) return;
+      const term = ($("#search")?.value || "").toLowerCase().trim();
+      const now = Date.now();
 
-        function fmtDateTime(iso) {
-            try { return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso)); } catch (_) { return iso; }
-        }
+      const futureEvents = state.events.filter(e => nowUtcComparable(e.start_time) >= now);
 
-        function bytesToSize(bytes = 0) {
-            if (bytes === 0) return "0 B";
-            const k = 1024, sizes = ["B", "KB", "MB", "GB", "TB"], i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-        }
-
-        function escapeHtml(s = "") {
-            return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
-        }
-
-        function applyI18n() {
-            document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); });
-            document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); });
-            const langSwitch = $("#langSwitch");
-            if (langSwitch) langSwitch.dataset.lang = state.language;
-        }
-
-        /* ============= Views ============= */
-        function showView(which, data = null) {
-            $("#schedule").style.display = "none";
-            $("#eventDetail").style.display = "none";
-            $("#hero").style.display = "none";
-            $("#auth").style.display = "none";
-            $("#profile").style.display = "none";
-            $("#publicProfileView").style.display = "none";
-
-            if (which === "schedule") {
-                $("#hero").style.display = "flex";
-                $("#schedule").style.display = "flex";
-                if (!state.session) $("#auth").style.display = "block";
-            } else if (which === "event") {
-                $("#eventDetail").style.display = "flex";
-            } else if (which === "profile") {
-                $("#profile").style.display = "block";
-            } else if (which === "publicProfile") {
-                $("#publicProfileView").style.display = "block";
-                if (data && data.userId) {
-                    renderPublicProfile(data.userId);
-                }
-            }
-        }
-
-        /* ============= Auth & Profiles ============= */
-        async function initAuth() {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                state.session = session;
-                if (session) {
-                    await ensureProfile();
-
-                    if (!state.profileComplete) {
-                        setTimeout(() => {
-                            showView("profile");
-                            $("#backFromProfile").style.display = "none";
-                            $("#skipProfile").style.display = "inline-block";
-                            $("#profileIntro").textContent = tr("profile.intro");
-                            setFlash(tr("profile.incomplete"));
-                        }, 500);
-                    }
-                }
-            } catch (err) {
-                console.error("Session check error:", err);
-            } finally {
-                renderAuthUI();
-                renderHeader();
-            }
-
-            supabase.auth.onAuthStateChange(async (event, session) => {
-                state.session = session;
-                if (session) {
-                    await ensureProfile();
-                    if (event === "SIGNED_IN") {
-                        setFlash(tr("auth.magic_hint"));
-
-                        if (!state.profileComplete) {
-                            showView("profile");
-                            $("#backFromProfile").style.display = "none";
-                            $("#skipProfile").style.display = "inline-block";
-                        }
-                    }
-                } else {
-                    state.profile = null;
-                    state.profileComplete = false;
-                }
-                renderAuthUI();
-                renderHeader();
-                await loadEvents();
-            });
-        }
-
-        function renderAuthUI() {
-            const showAuthCard = !state.session && $("#schedule").style.display !== 'none';
-            $("#auth").style.display = showAuthCard ? "block" : "none";
-
-            if (state.session && state.profile) {
-                $("#fullName").value = state.profile?.full_name || "";
-                $("#username").value = state.profile?.username || "";
-                $("#affiliation").value = state.profile?.affiliation || "";
-                $("#workEmail").value = state.profile?.work_email || state.session.user.email || "";
-                $("#personalWebsite").value = state.profile?.personal_website || "";
-                $("#professionalWebsite").value = state.profile?.professional_website || "";
-                $("#googleScholar").value = state.profile?.google_scholar || "";
-                $("#fieldsOfStudy").value = state.profile?.fields_of_study || "";
-
-                if (state.profileComplete) {
-                    $("#backFromProfile").style.display = "inline-block";
-                    $("#skipProfile").style.display = "none";
-                    $("#profileTitle").textContent = tr("profile.title", "Your Profile");
-                    $("#profileIntro").style.display = "none";
-                }
-            }
-        }
-
-        // UPDATED: robust profile fetch with refresh and completeness flag
-        async function fetchProfile(uid, { refresh = false } = {}) {
-            if (!uid) return null;
-
-            const cached = state.profileCache.get(uid);
-            if (!refresh && cached && cached.__complete) return cached;
-
-            const { data, error } = await supabase
-                .from("profiles")
-                .select("id, username, full_name, affiliation, role, preferred_language, work_email, personal_website, professional_website, google_scholar, fields_of_study, updated_at")
-                .eq("id", uid)
-                .maybeSingle();
-
-            if (error) {
-                console.error(`Error fetching profile for ${uid}:`, error);
-                return cached || null;
-            }
-            if (data) {
-                const complete = { ...data, __complete: true };
-                state.profileCache.set(uid, complete);
-                return complete;
-            }
-            return null;
-        }
-
-        // UPDATED: create-or-load profile uses work_email (not 'email') and caches
-        async function ensureProfile() {
-            const uid = state.session?.user?.id;
-            if (!uid) return;
-
-            const { data, error } = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("id", uid)
-                .maybeSingle();
-
-            let profile = data;
-
-            if (!profile) {
-                const email = state.session.user.email;
-                const defaultUsername = (email || "")
-                    .split("@")[0]
-                    .replace(/[^a-zA-Z0-9_-]/g, "");
-                const fullName = state.session.user.user_metadata?.full_name || null;
-
-                const insertPayload = {
-                    id: uid,
-                    username: defaultUsername || null,
-                    full_name: fullName,
-                    work_email: email, // correct column for email
-                };
-
-                const { data: newProfile, error: insertErr } = await supabase
-                    .from("profiles")
-                    .insert(insertPayload)
-                    .select()
-                    .single();
-
-                if (insertErr) {
-                    console.error("Profile insert error:", insertErr);
-                }
-                profile = newProfile || null;
-            }
-
-            if (profile) {
-                state.profileCache.set(uid, { ...profile, __complete: true });
-            }
-
-            state.profile = profile;
-            state.profileComplete = !!(
-                profile?.full_name &&
-                profile?.username &&
-                profile?.affiliation &&
-                profile?.work_email
-            );
-        }
-
-        function renderHeader() {
-            const btnSignIn = $("#btnSignIn"), btnSignOut = $("#btnSignOut"), btnAdmin = $("#btnAdmin"), userName = $("#userName"), btnProfile = $("#btnProfile");
-            if (state.session) {
-                btnSignIn.style.display = "none"; btnSignOut.style.display = "inline-block";
-                btnProfile.style.display = "grid"; userName.style.display = "inline";
-                userName.textContent = state.profile?.full_name || state.profile?.username || "";
-                $("#userInitial").textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
-                if (btnAdmin) btnAdmin.style.display = state.profile?.role === "admin" ? "inline-block" : "none";
-            } else {
-                btnSignIn.style.display = "inline-block"; btnSignOut.style.display = "none";
-                btnProfile.style.display = "none"; userName.style.display = "none";
-                if (btnAdmin) btnAdmin.style.display = "none";
-            }
-        }
-
-        // UPDATED: richer, always-fresh public profile rendering
-        async function renderPublicProfile(userId) {
-            const container = $("#publicProfileView");
-            if (!container) return;
-
-            const profile = await fetchProfile(userId, { refresh: true });
-            if (!profile) {
-                container.innerHTML = `<button class="btn-ghost" id="backFromPublicProfile">← ${tr('back.event')}</button><div class="empty">User not found.</div>`;
-                return;
-            }
-
-            const initial = (profile.full_name || profile.username || "U").charAt(0).toUpperCase();
-            $("#publicProfileInitial").textContent = initial;
-            $("#publicProfileName").textContent = profile.full_name || profile.username || "Unnamed User";
-            $("#publicProfileAffiliation").textContent = profile.affiliation || "No affiliation provided.";
-
-            // Username chip
-            const userChip = $("#publicProfileUsername");
-            if (profile.username) {
-                userChip.style.display = "inline-flex";
-                userChip.querySelector(".txt").textContent = `@${profile.username}`;
-            } else {
-                userChip.style.display = "none";
-            }
-
-            // Role chip
-            const roleChip = $("#publicProfileRole");
-            if (profile.role) {
-                roleChip.style.display = "inline-flex";
-                roleChip.querySelector(".txt").textContent = String(profile.role);
-            } else {
-                roleChip.style.display = "none";
-            }
-
-            // Email chip (clickable)
-            const emailChip = $("#publicProfileEmail");
-            if (profile.work_email) {
-                emailChip.style.display = "inline-flex";
-                const emailLink = emailChip.querySelector("a.txt");
-                emailLink.textContent = profile.work_email;
-                emailLink.href = `mailto:${encodeURIComponent(profile.work_email)}`;
-            } else {
-                emailChip.style.display = "none";
-            }
-
-            // Links with clear link icons
-            const linksList = $("#publicProfileLinks");
-            linksList.innerHTML = "";
-            const linkItem = (url, label, emoji = "🔗") => `
-                <li>
-                    <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">
-                        <span class="link-icon" aria-hidden="true">${emoji}</span>
-                        <span>${escapeHtml(label)}</span>
-                    </a>
-                </li>
-            `;
-
-            if (profile.personal_website) {
-                linksList.innerHTML += linkItem(profile.personal_website, tr('profile.personal_website'), "🏠");
-            }
-            if (profile.professional_website) {
-                linksList.innerHTML += linkItem(profile.professional_website, tr('profile.professional_website'), "🏛️");
-            }
-            if (profile.google_scholar) {
-                linksList.innerHTML += linkItem(profile.google_scholar, tr('profile.google_scholar'), "🎓");
-            }
-            if (!linksList.innerHTML) {
-                linksList.innerHTML = `<li>No links provided.</li>`;
-            }
-
-            // Research interests as chips
-            const fieldsContainer = $("#publicProfileFields");
-            const fields = (profile.fields_of_study || "")
-                .split(",")
-                .map(s => s.trim())
-                .filter(Boolean);
-            if (fields.length) {
-                fieldsContainer.innerHTML = fields.map(f => `<span class="chip">${escapeHtml(f)}</span>`).join("");
-            } else {
-                fieldsContainer.innerHTML = `<span class="text-muted">No research interests provided.</span>`;
-            }
-        }
-
-        /* ============= Data: Events & Schedule ============= */
-async function loadEvents() {
-    // MODIFIED: Fetched event_speakers along with events
-    const { data } = await supabase.from("events").select("*, event_speakers(*)").order("start_time", { ascending: true });
-    state.events = data || [];
-    renderEventsList();
-    renderScheduleCalendar();
-}
-
-function renderEventsList() {
-    const list = $("#eventsList"), empty = $("#emptyEvents");
-    if (!list || !empty) return;
-    const term = ($("#search")?.value || "").toLowerCase().trim();
-    
-    // MODIFIED: Search now includes speaker names and affiliations
-    const filtered = state.events.filter((e) => {
+      const filtered = futureEvents.filter((e) => {
         if (!term) return true;
-        const speakerMatch = (e.event_speakers || []).some(s => 
-            s.name.toLowerCase().includes(term) || 
-            (s.affiliation && s.affiliation.toLowerCase().includes(term))
+        const speakerMatch = (e.event_speakers || []).some(s =>
+          (s.name || "").toLowerCase().includes(term) ||
+          (s.affiliation || "").toLowerCase().includes(term)
         );
-        const eventMatch = [e.title_en, e.title_es, e.description_en, e.description_es, e.host_org].filter(Boolean).some((v) => v.toLowerCase().includes(term));
-        return speakerMatch || eventMatch;
-    });
+        const tagsMatch = (e.topic_tags || []).some(tag => (tag || "").toLowerCase().includes(term));
+        const eventMatch = [e.title_en, e.title_es, e.description_en, e.description_es, e.host_org]
+          .filter(Boolean)
+          .some((v) => v.toLowerCase().includes(term));
+        return speakerMatch || tagsMatch || eventMatch;
+      });
 
-    empty.style.display = filtered.length ? "none" : "block";
-    list.innerHTML = filtered.map(ev => {
+      empty.style.display = filtered.length ? "none" : "block";
+      list.innerHTML = filtered.map(ev => {
         const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
         const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
-        
-        // ADDED: Logic to format speaker information for the card
+
         let speakerLine = '';
         if (ev.event_speakers && ev.event_speakers.length > 0) {
-            const primarySpeaker = ev.event_speakers.find(s => s.primary_speaker) || ev.event_speakers[0];
-            speakerLine = `<div class="event-speaker">👤 ${escapeHtml(primarySpeaker.name)}${primarySpeaker.affiliation ? ` (${escapeHtml(primarySpeaker.affiliation)})` : ''}</div>`;
+          const primarySpeaker = ev.event_speakers.find(s => s.primary_speaker) || ev.event_speakers[0];
+          speakerLine = `<div class="event-speaker">👤 ${escapeHtml(primarySpeaker.name)}${primarySpeaker.affiliation ? ` (${escapeHtml(primarySpeaker.affiliation)})` : ''}</div>`;
         }
+
+        const tagTopics = (ev.topic_tags || []).map(tag => `<span class="tag-topic">#${escapeHtml(tag)}</span>`).join("");
 
         return `
         <div class="event-card">
-            <div class="when">${fmtDateTime(ev.start_time)}</div>
-            <div class="event-title">${escapeHtml(title)}</div>
-            ${speakerLine} 
-            <div class="actions">
-                <button class="btn-secondary" data-open="${String(ev.id)}">${tr("open", "Open")}</button>
-            </div>
-            ${desc ? `<div class="event-desc">${escapeHtml(desc).substring(0, 140)}…</div>` : ""}
-            <div class="tags">
-                <span class="tag">${(ev.language || "bi").toUpperCase()}</span>
-                <span class="tag status-${ev.status || "scheduled"}">${ev.status || "scheduled"}</span>
-                ${ev.host_org ? `<span class="tag">${escapeHtml(ev.host_org)}</span>` : ""}
-            </div>
-            ${state.session && ev.zoom_url ? `
-            <div class="zoom-info">
-                <a href="${ev.zoom_url}" target="_blank" rel="noopener" class="btn-primary">🔗 ${tr('join_zoom')}</a>
-                <button class="btn-ghost" data-copy-link="${ev.zoom_url}" aria-label="${tr('copy_link')}">📋</button>
-            </div>` : ''}
+          <div class="when">${fmtDateTime(ev.start_time)}</div>
+          <div class="event-title">${escapeHtml(title)}</div>
+          ${speakerLine}
+          <div class="actions">
+            <button class="btn-secondary" data-open="${String(ev.id)}">${tr("open", "Open")}</button>
+          </div>
+          ${desc ? `<div class="event-desc">${escapeHtml(desc).substring(0, 140)}…</div>` : ""}
+          <div class="tags">
+            ${tagTopics}
+            <span class="tag">${(ev.language || "bi").toUpperCase()}</span>
+            ${ev.host_org ? `<span class="tag">${escapeHtml(ev.host_org)}</span>` : ""}
+          </div>
         </div>`;
-    }).join('');
-}
+      }).join('');
+    }
 
-async function openEvent(eventId) {
-    if (!state.session) {
+    async function openEvent(eventId) {
+      if (!authState.session) {
         setFlash(tr('auth.required'));
         $("#auth").scrollIntoView({ behavior: 'smooth' });
         return;
-    }
+      }
 
-    // MODIFICATION: No need to find in local state, fetch fresh with speakers
-    // This ensures speaker data is always up-to-date when an event is opened.
-    const { data: ev, error } = await supabase
+      const { data: ev, error } = await supabase
         .from('events')
         .select('*, event_speakers(*)')
         .eq('id', eventId)
         .single();
 
-    if (error || !ev) {
+      if (error || !ev) {
         console.error("Failed to fetch event details", error);
         setFlash("Could not load event.", true);
         return;
+      }
+
+      state.selectedEvent = ev;
+      state.selectedThreadId = null;
+      showDiscussionView('welcome');
+      subscribeToEventChanges(ev.id);
+      await Promise.all([loadThreads(ev.id), loadFiles(ev.id), loadRSVPFollow(ev.id)]);
+      renderEventHeader();
+      renderDescriptionTab();
+      setActiveTab('description');
+      showView("event");
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("event", ev.id);
+      history.replaceState(null, "", url.toString());
     }
 
-    state.selectedEvent = ev;
-    state.selectedThreadId = null;
-    showDiscussionView('welcome');
-    subscribeToEventChanges(ev.id);
-    await Promise.all([loadThreads(ev.id), loadFiles(ev.id), loadRSVPFollow(ev.id)]);
-    renderEventHeader();
-    showView("event");
-}
+    function colorFromString(str = "") {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      const hue = Math.abs(hash) % 360;
+      return `hsl(${hue} 70% 45%)`;
+    }
 
-function renderEventHeader() {
-    const ev = state.selectedEvent; if (!ev) return;
-    const container = $("#compactEventHeaderContainer");
-    if (!container) return;
+    function renderEventHeader() {
+      const ev = state.selectedEvent; if (!ev) return;
+      const container = $("#compactEventHeaderContainer");
+      if (!container) return;
 
-    const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
-    const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
+      const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
 
-    // ADDED: Logic to format speaker list for the event detail header
-    let speakersHtml = '';
-    if (ev.event_speakers && ev.event_speakers.length > 0) {
-        const speakerItems = ev.event_speakers
-            .sort((a, b) => b.primary_speaker - a.primary_speaker) // Primary speaker first
-            .map(s => `
-                <li>
-                    <span class="speaker-name">${escapeHtml(s.name)} ${s.primary_speaker ? '⭐' : ''}</span>
-                    ${s.affiliation ? `<span class="speaker-affiliation">${escapeHtml(s.affiliation)}</span>` : ''}
-                </li>
-            `).join('');
-        
+      let speakersHtml = "";
+      if (ev.event_speakers && ev.event_speakers.length > 0) {
+        const speakersSorted = [...ev.event_speakers].sort((a, b) => (b.primary_speaker === true) - (a.primary_speaker === true));
+        const speakerPills = speakersSorted.map(s => {
+          const col = colorFromString(s.name || "");
+          return `
+            <li class="speaker-pill" style="--spk-color:${col}">
+              <span class="speaker-name">${escapeHtml(s.name)} ${s.primary_speaker ? '⭐' : ''}</span>
+              ${s.affiliation ? `<span class="speaker-affiliation">${escapeHtml(s.affiliation)}</span>` : ''}
+            </li>
+          `;
+        }).join("");
+
         speakersHtml = `
-            <div class="event-speakers">
-                <h3>Speaker(s)</h3>
-                <ul class="speaker-list">${speakerItems}</ul>
-            </div>
+          <div class="event-speakers">
+            <div style="font-weight:600; font-size: .9rem; color: var(--color-text-muted); margin-bottom: .2rem;">${tr('speakers')}</div>
+            <ul class="speaker-list">${speakerPills}</ul>
+          </div>
         `;
+      }
+
+      const metaHtml = `
+        <div class="sidebar-meta">
+          <div>🗓️ ${fmtDateTime(ev.start_time)}</div>
+          ${ev.host_org ? `<div>🏢 ${escapeHtml(ev.host_org)}</div>` : ""}
+          <div>🌐 ${(ev.language || "bi").toUpperCase()}</div>
+        </div>
+      `;
+
+      const tagsHtml = `
+        <div class="sidebar-tags">
+          ${(ev.topic_tags || []).map(tag => `<span class="tag-topic">#${escapeHtml(tag)}</span>`).join("")}
+        </div>
+      `;
+
+      const zoomHtml = (authState.session && ev.zoom_url) ? `
+        <div class="zoom-inline">
+          <a href="${ev.zoom_url}" target="_blank" rel="noopener" class="btn-primary">🔗 ${tr('join_zoom')}</a>
+          <button class="btn-ghost" data-copy-link="${ev.zoom_url}" aria-label="${tr('copy_link')}">📋</button>
+        </div>
+      ` : "";
+
+      const actionsHtml = `
+        <div class="event-actions-row">
+          <button class="chip ${state.rsvpStatus === 'going' ? 'active' : ''}" data-rsvp="going">${tr('rsvp.going')}</button>
+          <button class="chip ${state.rsvpStatus === 'interested' ? 'active' : ''}" data-rsvp="interested">${tr('rsvp.interested')}</button>
+          <button class="chip ${state.rsvpStatus === 'not_going' ? 'active' : ''}" data-rsvp="not_going">${tr('rsvp.notgoing')}</button>
+          <button id="btnFollowCompact" class="chip ${state.isFollowing ? 'active' : ''}" style="display: ${authState.session ? 'inline-flex' : 'none'}">${tr('follow')}</button>
+          <span class="event-counts" style="margin-left:auto; font-size:.8rem; color:var(--color-text-muted); display:flex; gap:.5rem;">
+            <span class="count">${state.counts.followers} ${tr("labels.followers")}</span>
+            <span class="count">${state.counts.going} ${tr("labels.going")}</span>
+            <span class="count">${state.counts.interested} ${tr("labels.interested")}</span>
+          </span>
+        </div>
+      `;
+
+      container.innerHTML = `
+        <div class="sidebar-title-row">
+          <h2 class="event-title">${escapeHtml(title)}</h2>
+          <button class="btn-pill" id="backToScheduleCompact">← ${tr('back.schedule')}</button>
+        </div>
+        ${metaHtml}
+        ${speakersHtml}
+        ${tagsHtml}
+        ${zoomHtml}
+        ${actionsHtml}
+      `;
     }
 
-    container.innerHTML = `
-        <div class="event-header-row1">
-            <div class="title-and-attrs">
-                <h2 class="event-title">${escapeHtml(title)}</h2>
-                <div class="event-attrs">
-                    <span>${fmtDateTime(ev.start_time)}</span>
-                    ${ev.host_org ? `<span>• ${escapeHtml(ev.host_org)}</span>` : ""}
-                    <span>• ${(ev.language || "bi").toUpperCase()}</span>
-                </div>
-            </div>
-            <button class="btn-ghost" id="backToScheduleCompact">
-                ← <span>${tr('back.schedule')}</span>
-            </button>
-        </div>
-        <div class="event-header-row2">
-            <div class="event-actions">
-                <div class="rsvp-group" style="display: ${state.session ? 'flex' : 'none'}">
-                    <button class="chip ${state.rsvpStatus === 'going' ? 'active' : ''}" data-rsvp="going">
-                        <span>${tr('rsvp.going')}</span>
-                    </button>
-                    <button class="chip ${state.rsvpStatus === 'interested' ? 'active' : ''}" data-rsvp="interested">
-                        <span>${tr('rsvp.interested')}</span>
-                    </button>
-                    <button class="chip ${state.rsvpStatus === 'not_going' ? 'active' : ''}" data-rsvp="not_going">
-                        <span>${tr('rsvp.notgoing')}</span>
-                    </button>
-                </div>
-                <button id="btnFollowCompact" class="chip ${state.isFollowing ? 'active' : ''}" style="display: ${state.session ? 'inline-flex' : 'none'}">
-                    <span>${tr('follow')}</span>
-                </button>
-            </div>
-            <div class="event-counts">
-                <span class="count">${state.counts.followers} ${tr("labels.followers")}</span>
-                <span class="count">${state.counts.going} ${tr("labels.going")}</span>
-                <span class="count">${state.counts.interested} ${tr("labels.interested")}</span>
-            </div>
-        </div>
-        ${desc ? `<p class="event-description">${escapeHtml(desc).replace(/\n/g, "<br/>")}</p>` : ""}
-        ${speakersHtml} 
-    `;
-}
+    function renderDescriptionTab() {
+      const ev = state.selectedEvent;
+      const el = $("#descriptionContent");
+      if (!el) return;
+      const desc = state.language === "es" && ev?.description_es ? ev.description_es : ev?.description_en || "";
+      const extraLinks = [];
+      if (ev?.registration_url) extraLinks.push(`<a href="${escapeHtml(ev.registration_url)}" target="_blank" rel="noopener">📝 Registration</a>`);
+      if (ev?.livestream_url) extraLinks.push(`<a href="${escapeHtml(ev.livestream_url)}" target="_blank" rel="noopener">📺 Livestream</a>`);
+      if (ev?.recording_url) extraLinks.push(`<a href="${escapeHtml(ev.recording_url)}" target="_blank" rel="noopener">🎥 Recording</a>`);
+      el.innerHTML = `
+        ${desc ? `<div>${linkify(desc)}</div>` : `<div class="text-muted">No description provided.</div>`}
+        ${extraLinks.length ? `<div style="margin-top:.8rem; display:flex; gap:.6rem; flex-wrap:wrap;">${extraLinks.join("")}</div>` : ""}
+      `;
+    }
 
-function renderScheduleCalendar() {
-    const grid = $("#calendarGrid"), label = $("#calLabel"); if (!grid || !label) return;
-    const m = state.calendarMonth; label.textContent = m.toLocaleString(state.language, { month: "long", year: "numeric" });
-    const start = new Date(m.getFullYear(), m.getMonth(), 1), end = new Date(m.getFullYear(), m.getMonth() + 1, 0);
-    const firstDayIndex = (start.getDay() + 6) % 7, daysInMonth = end.getDate(); grid.innerHTML = ``;
-    for (let i = 0; i < firstDayIndex; i++) grid.appendChild(document.createElement("div"));
-    const byDay = state.events.reduce((acc, ev) => {
+    function setActiveTab(name) {
+      document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach((p) => (p.style.display = "none"));
+      const tabBtn = document.querySelector(`.tab[data-tab="${name}"]`);
+      const panel = document.querySelector(`#tab_${name}`);
+      if (tabBtn) tabBtn.classList.add("active");
+      if (panel) panel.style.display = "flex";
+    }
+
+    function renderScheduleCalendar() {
+      const grid = $("#calendarGrid"), label = $("#calLabel"); if (!grid || !label) return;
+      const m = state.calendarMonth; label.textContent = m.toLocaleString(state.language, { month: "long", year: "numeric" });
+      const start = new Date(m.getFullYear(), m.getMonth(), 1), end = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+      const firstDayIndex = (start.getDay() + 6) % 7, daysInMonth = end.getDate(); grid.innerHTML = ``;
+
+      for (let i = 0; i < firstDayIndex; i++) grid.appendChild(document.createElement("div"));
+      const byDay = state.events.reduce((acc, ev) => {
         const d = new Date(ev.start_time); if (d.getMonth() !== m.getMonth() || d.getFullYear() !== m.getFullYear()) return acc;
         const day = d.getDate(); if (!acc.has(day)) acc.set(day, []); acc.get(day).push(ev); return acc;
-    }, new Map());
-    for (let day = 1; day <= daysInMonth; day++) {
+      }, new Map());
+
+      for (let day = 1; day <= daysInMonth; day++) {
         const cell = document.createElement("div"); cell.className = "cal-cell"; cell.innerHTML = `<div class="cal-day">${day}</div>`;
         (byDay.get(day) || []).forEach((ev) => {
-            const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
-            const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
+          const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
+          const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
 
-            // ADDED: Logic to get speaker name for calendar view
-            let speakerName = '';
-            if (ev.event_speakers && ev.event_speakers.length > 0) {
-                const primarySpeaker = ev.event_speakers.find(s => s.primary_speaker) || ev.event_speakers[0];
-                speakerName = `<div class="cal-event-speaker">👤 ${escapeHtml(primarySpeaker.name)}</div>`;
-            }
+          let speakerName = '';
+          if (ev.event_speakers && ev.event_speakers.length > 0) {
+            const primarySpeaker = ev.event_speakers.find(s => s.primary_speaker) || ev.event_speakers[0];
+            speakerName = `<div class="cal-event-speaker">👤 ${escapeHtml(primarySpeaker.name)}</div>`;
+          }
 
-            const eventDiv = document.createElement("button");
-            eventDiv.className = `cal-event status-${ev.status}`;
-            eventDiv.innerHTML = `
+          const eventDiv = document.createElement("button");
+          eventDiv.className = `cal-event status-${ev.status}`;
+          eventDiv.innerHTML = `
                 <div class="cal-event-title">${escapeHtml(title)}</div>
                 ${desc ? `<div class="cal-event-desc">${escapeHtml(desc).substring(0, 60)}...</div>` : ''}
                 ${speakerName}
             `;
-            eventDiv.addEventListener("click", () => openEvent(ev.id));
+          eventDiv.addEventListener("click", () => openEvent(ev.id));
 
-            cell.appendChild(eventDiv);
+          cell.appendChild(eventDiv);
         });
         grid.appendChild(cell);
+      }
     }
-}
 
-        /* ====== Discussion Forum Logic ====== */
-        function showDiscussionView(view) {
-            if (view === 'detail') {
-                $("#thread-welcome").style.display = 'none';
-                $("#threadDetailView").style.display = 'flex';
-            } else { // 'welcome'
-                $("#thread-welcome").style.display = 'grid';
-                $("#threadDetailView").style.display = 'none';
-            }
+    /* ====== Discussion Forum Logic (Corrected from old version) ====== */
+    function showDiscussionView(view) {
+      if (view === 'detail') {
+        $("#thread-welcome").style.display = 'none';
+        $("#threadDetailView").style.display = 'flex';
+      } else { // 'welcome'
+        $("#thread-welcome").style.display = 'grid';
+        $("#threadDetailView").style.display = 'none';
+      }
+    }
+
+    async function openThread(threadId) {
+      state.selectedThreadId = threadId;
+      showDiscussionView('detail');
+      renderThreads();
+      await loadComments(threadId);
+      setActiveTab('discussion');
+    }
+
+    async function loadThreads(eventId) {
+      const { data } = await supabase.from("threads").select("*, comments(count), profiles(id, full_name, username)").eq("event_id", eventId).order("created_at", { ascending: false });
+      state.threads = data || [];
+      for (const th of state.threads) {
+        if (th.profiles) {
+          authState.profileCache.set(th.created_by, th.profiles);
+        } else {
+          await fetchProfile(th.created_by);
         }
+      }
+      renderThreads();
+    }
 
-        async function openThread(threadId) {
-            state.selectedThreadId = threadId;
-            showDiscussionView('detail');
-            renderThreads();
-            await loadComments(threadId);
-        }
+    function renderThreads() {
+      const list = $("#threadsList");
+      if (!list) return;
+      list.innerHTML = "";
 
-        async function loadThreads(eventId) {
-            const { data } = await supabase.from("threads").select("*, comments(count), profiles(id, full_name)").eq("event_id", eventId).order("created_at", { ascending: false });
-            state.threads = data || [];
-            for (const th of state.threads) {
-                if (th.profiles) {
-                    state.profileCache.set(th.created_by, { ...th.profiles, __complete: true });
-                } else {
-                    await fetchProfile(th.created_by);
-                }
-            }
-            renderThreads();
-        }
+      if (!state.threads.length) {
+        list.innerHTML = `<div class="empty" data-i18n="thread.empty">${tr('thread.empty')}</div>`;
+      }
 
-        function renderThreads() {
-            const list = $("#threadsList");
-            if (!list) return;
-            list.innerHTML = "";
+      for (const th of state.threads) {
+        const author = authState.profileCache.get(th.created_by);
+        const authorName = author?.full_name || author?.username || '...';
+        const initial = authorName.charAt(0).toUpperCase();
 
-            for (const th of state.threads) {
-                const author = state.profileCache.get(th.created_by);
-                const authorName = author?.full_name || '...';
-                const initial = authorName.charAt(0).toUpperCase();
+        const item = document.createElement("div");
+        item.className = "thread-list-item";
+        if (th.id === state.selectedThreadId) item.classList.add('active');
 
-                const item = document.createElement("div");
-                item.className = "thread-list-item";
-                if (th.id === state.selectedThreadId) item.classList.add('active');
+        item.innerHTML = `
+          <div class="avatar-circle">${initial}</div>
+          <div>
+            <div class="title">${th.pinned ? "📌 " : ""}${escapeHtml(th.title)}</div>
+            <div class="meta">${th.comments[0].count} replies • by ${escapeHtml(authorName)}</div>
+          </div>
+        `;
+        item.addEventListener('click', () => openThread(th.id));
+        list.appendChild(item);
+      }
+    }
 
-                item.innerHTML = `
-                    <div class="avatar-circle">${initial}</div>
-                    <div>
-                        <div class="title">${th.pinned ? "📌 " : ""}${escapeHtml(th.title)}</div>
-                        <div class="meta">${th.comments[0].count} replies • by ${escapeHtml(authorName)}</div>
+    async function loadComments(threadId) {
+        if (!threadId) return;
+        const { data } = await supabase.from("comments").select("*").eq("thread_id", threadId).order("created_at", { ascending: true });
+        state.comments = data || [];
+        // Pre-fetch all profiles needed for the comments
+        const userIds = [...new Set(state.comments.map(c => c.created_by))];
+        await Promise.all(userIds.map(id => fetchProfile(id)));
+        renderComments();
+    }
+
+    function accentFromId(id = "") {
+        let hash = 0;
+        for (let i = 0; i < id.length; i++) hash = (hash << 5) - hash + id.charCodeAt(i);
+        const hue = Math.abs(hash) % 360;
+        return `hsl(${hue} 70% 50%)`;
+    }
+
+    function createCommentNode(comment, commentsByParentId, depth = 0) {
+        const profile = authState.profileCache.get(comment.created_by);
+        const authorName = profile?.full_name || profile?.username || '...';
+        const initial = authorName.charAt(0).toUpperCase();
+        const children = commentsByParentId.get(comment.id) || [];
+        const accent = accentFromId(comment.created_by);
+
+        const node = document.createElement('div');
+        node.className = `comment-node depth-${depth}`;
+        node.style.setProperty('--accent', accent);
+
+        node.innerHTML = `
+            <div class="comment-main">
+                ${depth > 0 ? `<span class="thread-dot" aria-hidden="true"></span>` : ''}
+                <div class="comment-author">
+                    <div class="avatar-circle comment-avatar" data-user-id="${comment.created_by}" title="Open profile">${initial}</div>
+                    <strong class="author-name" data-open-profile-id="${comment.created_by}" title="Open profile">${escapeHtml(authorName)}</strong>
+                    <span class="timestamp">• ${fmtDateTime(comment.created_at)}</span>
+                </div>
+                <div class="comment-body-wrapper">
+                    <div class="comment-bubble">
+                        <div class="comment-text">${comment.is_deleted ? "<em>(deleted)</em>" : linkify(comment.content)}</div>
                     </div>
-                `;
-                item.addEventListener('click', () => openThread(th.id));
-                list.appendChild(item);
-            }
-        }
-
-        async function loadComments(threadId) {
-            if (!threadId) return;
-            const { data } = await supabase.from("comments").select("*").eq("thread_id", threadId).order("created_at", { ascending: true });
-            state.comments = data || [];
-            for (const c of state.comments) {
-                await fetchProfile(c.created_by);
-            }
-            renderComments();
-        }
-
-        /* Accent color generation for avatars/rails based on user id (stable palette) */
-        function accentFromId(id = "") {
-            let hash = 0;
-            for (let i = 0; i < id.length; i++) hash = (hash << 5) - hash + id.charCodeAt(i);
-            const hue = Math.abs(hash) % 360;
-            return `hsl(${hue} 70% 50%)`;
-        }
-
-        function createCommentNode(comment, commentsByParentId, depth = 0) {
-            const profile = state.profileCache.get(comment.created_by);
-            const authorName = profile?.full_name || '...';
-            const initial = authorName.charAt(0).toUpperCase();
-            const children = commentsByParentId.get(comment.id) || [];
-            const accent = accentFromId(comment.created_by);
-
-            const node = document.createElement('div');
-            node.className = `comment-node depth-${depth}`;
-            node.style.setProperty('--accent', accent);
-
-            node.innerHTML = `
-        <div class="comment-main">
-            ${depth > 0 ? `<span class="thread-dot" aria-hidden="true"></span>` : ''}
-            <div class="comment-author">
-                <div class="avatar-circle comment-avatar" data-user-id="${comment.created_by}" title="Open profile">${initial}</div>
-                <strong class="author-name" data-open-profile-id="${comment.created_by}" title="Open profile">${escapeHtml(authorName)}</strong>
-                <span class="timestamp">• ${fmtDateTime(comment.created_at)}</span>
-            </div>
-            <!-- MODIFICATION START: Wrapped bubble and actions in a new div -->
-            <div class="comment-body-wrapper">
-                <div class="comment-bubble">
-                    <div class="comment-text">${comment.is_deleted ? "<em>(deleted)</em>" : escapeHtml(comment.content)}</div>
+                    <div class="comment-actions">
+                        <button class="btn-ghost" data-reply-id="${comment.id}">💬 ${tr('reply', 'Reply')}</button>
+                    </div>
                 </div>
-                <div class="comment-actions">
-                    <button class="btn-ghost" data-reply-id="${comment.id}">💬 ${tr('reply', 'Reply')}</button>
-                </div>
+                <div class="comment-replies"></div>
             </div>
-            <!-- MODIFICATION END -->
-            <div class="comment-replies"></div>
-        </div>
-    `;
-
-            // The avatar background picks up the accent with a subtle tint
-            const avatar = node.querySelector('.comment-avatar');
-            if (avatar) {
-                avatar.style.background = `color-mix(in oklab, ${accent} 22%, var(--color-surface-strong))`;
-            }
-
-            const repliesContainer = node.querySelector('.comment-replies');
-            for (const child of children) {
-                repliesContainer.appendChild(createCommentNode(child, commentsByParentId, depth + 1));
-            }
-
-            node.querySelector(`[data-reply-id]`).addEventListener('click', (e) => {
-                const parentId = e.target.dataset.replyId;
-                const existingForm = node.querySelector('.inline-reply-form');
-                if (existingForm) {
-                    existingForm.remove();
-                    return;
-                }
-
-                const formContainer = document.createElement('div');
-                formContainer.className = 'inline-reply-form';
-                formContainer.innerHTML = `
-            <form class="inline-form">
-                <input type="text" placeholder="Replying to ${escapeHtml(authorName)}..." required />
-                <button type="submit" class="btn-primary">${tr('reply', 'Reply')}</button>
-            </form>
         `;
 
-                formContainer.querySelector('form').addEventListener('submit', async (ev) => {
-                    ev.preventDefault();
-                    const input = ev.target.querySelector('input');
-                    const content = input.value.trim();
-                    if (content) {
-                        await createComment(state.selectedThreadId, parentId, content);
-                        await loadComments(state.selectedThreadId);
-                    }
-                });
-                // MODIFICATION: Insert the reply form after the new wrapper
-                node.querySelector('.comment-body-wrapper').insertAdjacentElement('afterend', formContainer);
-                formContainer.querySelector('input').focus();
-            });
-
-            return node;
+        const avatar = node.querySelector('.comment-avatar');
+        if (avatar) {
+            avatar.style.background = `color-mix(in oklab, ${accent} 22%, var(--color-surface-strong))`;
         }
 
-        function renderComments() {
-            const container = $(`#commentsList`);
-            if (!container) return;
-            container.innerHTML = "";
+        const repliesContainer = node.querySelector('.comment-replies');
+        for (const child of children) {
+            repliesContainer.appendChild(createCommentNode(child, commentsByParentId, depth + 1));
+        }
 
-            const commentsByParentId = new Map();
-            for (const comment of state.comments) {
-                const parentId = comment.parent_id || 'root';
-                if (!commentsByParentId.has(parentId)) {
-                    commentsByParentId.set(parentId, []);
-                }
-                commentsByParentId.get(parentId).push(comment);
+        node.querySelector(`[data-reply-id]`).addEventListener('click', (e) => {
+            const parentId = e.target.closest('[data-reply-id]').dataset.replyId;
+            const existingForm = node.querySelector('.inline-reply-form');
+            if (existingForm) {
+                existingForm.remove();
+                return;
             }
 
-            const rootComments = commentsByParentId.get('root') || [];
-            for (const comment of rootComments) {
-                container.appendChild(createCommentNode(comment, commentsByParentId, 0));
+            const formContainer = document.createElement('div');
+            formContainer.className = 'inline-reply-form';
+            formContainer.innerHTML = `
+              <form class="inline-form">
+                  <input type="text" placeholder="Replying to ${escapeHtml(authorName)}..." required />
+                  <button type="submit" class="btn-primary">${tr('reply', 'Reply')}</button>
+              </form>
+            `;
+
+            formContainer.querySelector('form').addEventListener('submit', async (ev) => {
+                ev.preventDefault();
+                const input = ev.target.querySelector('input');
+                const content = input.value.trim();
+                if (content) {
+                    await createComment(state.selectedThreadId, parentId, content);
+                    await loadComments(state.selectedThreadId);
+                }
+            });
+            node.querySelector('.comment-body-wrapper').insertAdjacentElement('afterend', formContainer);
+            formContainer.querySelector('input').focus();
+        });
+
+        return node;
+    }
+
+    function renderComments() {
+        const container = $(`#commentsList`);
+        if (!container) return;
+        container.innerHTML = "";
+
+        const commentsByParentId = new Map();
+        for (const comment of state.comments) {
+            const parentId = comment.parent_id || 'root';
+            if (!commentsByParentId.has(parentId)) {
+                commentsByParentId.set(parentId, []);
             }
-
-            container.scrollTop = container.scrollHeight;
+            commentsByParentId.get(parentId).push(comment);
         }
 
-        async function createThread(title) {
-            if (!title || !state.selectedEvent) return;
-            const { data } = await supabase.from("threads").insert({ event_id: state.selectedEvent.id, title, created_by: state.session.user.id }).select().single();
-            await loadThreads(state.selectedEvent.id);
-            if (data) openThread(data.id);
+        const rootComments = commentsByParentId.get('root') || [];
+        for (const comment of rootComments) {
+            container.appendChild(createCommentNode(comment, commentsByParentId, 0));
         }
-        async function createComment(thread_id, parent_id, content) {
-            await supabase.from("comments").insert({ event_id: state.selectedEvent.id, thread_id, parent_id, content, created_by: state.session.user.id });
+    }
+
+    async function createThread(title) {
+      if (!title || !state.selectedEvent) return;
+      const { data } = await supabase.from("threads").insert({ event_id: state.selectedEvent.id, title, created_by: authState.session.user.id }).select().single();
+      await loadThreads(state.selectedEvent.id);
+      if (data) openThread(data.id);
+    }
+    async function createComment(thread_id, parent_id, content) {
+      await supabase.from("comments").insert({ event_id: state.selectedEvent.id, thread_id, parent_id, content, created_by: authState.session.user.id });
+    }
+
+    /* ====== Files / RSVP / Follow ====== */
+    async function loadFiles(eventId) { const { data } = await supabase.from("attachments").select("*").eq("event_id", eventId).order("created_at", { ascending: false }); state.files = data || []; renderFiles(); }
+    async function uploadFile(file) { if (!file || !state.selectedEvent) return; const eventId = state.selectedEvent.id; const object_path = `events/${eventId}/${Date.now()}-${file.name}`; await supabase.storage.from("attachments").upload(object_path, file); await supabase.from("attachments").insert({ event_id: eventId, bucket_id: "attachments", object_path, file_name: file.name, file_type: file.type, file_size: file.size, created_by: authState.session.user.id }); }
+    async function getSignedUrl(path) { const { data } = await supabase.storage.from("attachments").createSignedUrl(path, 3600); return data?.signedUrl; }
+    async function renderFiles() {
+      const grid = $("#filesList"), empty = $("#emptyFiles"); if (!grid || !empty) return; grid.innerHTML = ""; empty.style.display = state.files.length ? "none" : "block";
+      for (const f of state.files) {
+        const div = document.createElement("div"); div.className = "file";
+        const url = await getSignedUrl(f.object_path);
+        div.innerHTML = `<div class="meta"><div class="name">${escapeHtml(f.file_name)}</div><div class="size">${bytesToSize(f.file_size)}</div></div><div class="actions"><a class="btn-secondary" href="${url}" target="_blank" rel="noopener">${tr('open')}</a>${authState.profile?.role === 'admin' ? `<button class="btn-danger" data-del-file-id="${f.id}" data-del-file-path="${f.object_path}">Delete</button>` : ""}</div>`;
+        grid.appendChild(div);
+      }
+    }
+    async function deleteFile(id, path) { if (!confirm('Delete file permanently?')) return; await supabase.storage.from("attachments").remove([path]); await supabase.from("attachments").delete().eq("id", id); }
+    async function loadRSVPFollow(eventId) {
+      state.rsvpStatus = null; state.isFollowing = false; state.counts = { followers: 0, going: 0, interested: 0 };
+      const { data: countsData } = await supabase.rpc('get_event_counts', { event_id_param: eventId });
+      if (countsData) { state.counts.followers = countsData.followers_count; state.counts.going = countsData.going_count; state.counts.interested = countsData.interested_count; }
+      if (authState.session) {
+        const uid = authState.session.user.id; const [{ data: myFollow }, { data: myRsvp }] = await Promise.all([
+          supabase.from("event_follows").select("id").eq("event_id", eventId).eq("profile_id", uid).maybeSingle(),
+          supabase.from("event_rsvps").select("status").eq("event_id", eventId).eq("profile_id", uid).maybeSingle()
+        ]);
+        state.isFollowing = !!myFollow; state.rsvpStatus = myRsvp?.status || null;
+      }
+      renderEventHeader();
+    }
+    async function toggleFollow() { if (!authState.session || !state.selectedEvent) return; const uid = authState.session.user.id; const eventId = state.selectedEvent.id; if (state.isFollowing) await supabase.from("event_follows").delete().eq("event_id", eventId).eq("profile_id", uid); else await supabase.from("event_follows").insert({ event_id: eventId, profile_id: uid }); }
+
+    async function setRSVP(status) {
+      if (!authState.session || !state.selectedEvent) return;
+      const uid = authState.session.user.id; const eventId = state.selectedEvent.id;
+      await supabase.from("event_rsvps").upsert({ event_id: eventId, profile_id: uid, status }, { onConflict: "event_id,profile_id" });
+      setFlash(tr('rsvp.saved'));
+    }
+
+    /* ============= Realtime Subscriptions ============= */
+    function cleanupSubscriptions() {
+      if (eventRealtimeChannel) { supabase.removeChannel(eventRealtimeChannel); eventRealtimeChannel = null; }
+    }
+    function subscribeToEventChanges(eventId) {
+      cleanupSubscriptions();
+      eventRealtimeChannel = supabase.channel(`event-${eventId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'attachments', filter: `event_id=eq.${eventId}` }, () => loadFiles(eventId))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'event_follows', filter: `event_id=eq.${eventId}` }, () => loadRSVPFollow(eventId))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'event_rsvps', filter: `event_id=eq.${eventId}` }, () => loadRSVPFollow(eventId))
+        .subscribe();
+    }
+
+    /* ============= Wire-up ============= */
+    function wireUI() {
+      $("#btnSignOut")?.addEventListener("click", () => signOut());
+      $("#emailForm")?.addEventListener("submit", async (e) => { 
+        e.preventDefault(); 
+        const email = $("#email")?.value.trim(); 
+        if (email) { 
+          const msg = await signInWithEmail(email, tr);
+          setFlash(msg); 
+        } 
+      });
+      $("#btnGoogle")?.addEventListener("click", () => signInWithGoogle());
+
+      $("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
+
+      $("#eventsList").addEventListener("click", e => {
+        const openBtn = e.target.closest('[data-open]');
+        if (openBtn) { openEvent(openBtn.dataset.open); return; }
+      });
+
+      $("#search")?.addEventListener("input", renderEventsList);
+      $("#viewList")?.addEventListener("click", () => { $("#schedule").classList.remove("calendar-view"); $("#viewList").classList.add("active"); $("#viewCalendar").classList.remove("active"); $("#eventsList").style.display = "grid"; $("#calendar").style.display = "none"; });
+      $("#viewCalendar")?.addEventListener("click", () => { $("#schedule").classList.add("calendar-view"); $("#viewCalendar").classList.add("active"); $("#viewList").classList.remove("active"); $("#eventsList").style.display = "none"; $("#calendar").style.display = "flex"; });
+      $("#calPrev")?.addEventListener("click", () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() - 1); renderScheduleCalendar(); });
+      $("#calNext")?.addEventListener("click", () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() + 1); renderScheduleCalendar(); });
+
+      $("#eventDetail").addEventListener('click', (e) => {
+        const backBtn = e.target.closest('#backToScheduleCompact'); if (backBtn) {
+          cleanupSubscriptions(); showView('schedule');
+          const url = new URL(window.location.href);
+          url.searchParams.delete("event");
+          history.replaceState(null, "", url.toString());
+          return;
         }
+        const followBtn = e.target.closest('#btnFollowCompact'); if (followBtn) { toggleFollow(); return; }
+        const rsvpBtn = e.target.closest('[data-rsvp]'); if (rsvpBtn) { setRSVP(rsvpBtn.dataset.rsvp); return; }
+        const delFileBtn = e.target.closest('[data-del-file-id]'); if (delFileBtn) { deleteFile(delFileBtn.dataset.delFileId, delFileBtn.dataset.delFilePath); return; }
+        const copyBtn = e.target.closest('[data-copy-link]'); if (copyBtn) { navigator.clipboard.writeText(copyBtn.dataset.copyLink); setFlash(tr('copied')); return; }
 
-        /* ====== Other Data Logic (Files, RSVP) ====== */
-
-        async function loadFiles(eventId) { const { data } = await supabase.from("attachments").select("*").eq("event_id", eventId).order("created_at", { ascending: false }); state.files = data || []; renderFiles(); }
-        async function uploadFile(file) { if (!file || !state.selectedEvent) return; const eventId = state.selectedEvent.id; const object_path = `events/${eventId}/${Date.now()}-${file.name}`; await supabase.storage.from("attachments").upload(object_path, file); await supabase.from("attachments").insert({ event_id: eventId, bucket_id: "attachments", object_path, file_name: file.name, file_type: file.type, file_size: file.size, created_by: state.session.user.id }); }
-        async function getSignedUrl(path) { const { data } = await supabase.storage.from("attachments").createSignedUrl(path, 3600); return data?.signedUrl; }
-        async function renderFiles() {
-            const grid = $("#filesList"), empty = $("#emptyFiles"); if (!grid || !empty) return; grid.innerHTML = ""; empty.style.display = state.files.length ? "none" : "block";
-            for (const f of state.files) { const div = document.createElement("div"); div.className = "file"; const url = await getSignedUrl(f.object_path); div.innerHTML = `<div class="meta"><div class="name">${escapeHtml(f.file_name)}</div><div class="size">${bytesToSize(f.file_size)}</div></div><div class="actions"><a class="btn-secondary" href="${url}" target="_blank" rel="noopener">Open</a>${state.profile?.role === 'admin' ? `<button class="btn-danger" data-del-file-id="${f.id}" data-del-file-path="${f.object_path}">Delete</button>` : ""}</div>`; grid.appendChild(div); }
+        const profileEl = e.target.closest('[data-open-profile-id], .comment-avatar[data-user-id]');
+        if (profileEl) {
+          const userId = profileEl.dataset.openProfileId || profileEl.dataset.userId;
+          if (userId) window.location.href = `profile.html?user=${userId}`;
         }
-        async function deleteFile(id, path) { if (!confirm('Delete file permanently?')) return; await supabase.storage.from("attachments").remove([path]); await supabase.from("attachments").delete().eq("id", id); }
-        async function loadRSVPFollow(eventId) {
-            state.rsvpStatus = null; state.isFollowing = false; state.counts = { followers: 0, going: 0, interested: 0 };
-            const { data: countsData } = await supabase.rpc('get_event_counts', { event_id_param: eventId });
-            if (countsData) { state.counts.followers = countsData.followers_count; state.counts.going = countsData.going_count; state.counts.interested = countsData.interested_count; }
-            if (state.session) { const uid = state.session.user.id; const [{ data: myFollow }, { data: myRsvp }] = await Promise.all([supabase.from("event_follows").select("id").eq("event_id", eventId).eq("profile_id", uid).maybeSingle(), supabase.from("event_rsvps").select("status").eq("event_id", eventId).eq("profile_id", uid).maybeSingle()]); state.isFollowing = !!myFollow; state.rsvpStatus = myRsvp?.status || null; }
-            renderEventHeader();
+      });
+
+      document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => {
+        setActiveTab(tab.dataset.tab);
+      }));
+
+      $("#newThreadForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const title = $("#threadTitle")?.value.trim(); if (title) { await createThread(title); $("#threadTitle").value = ""; } });
+      $("#replyToThreadForm")?.addEventListener("submit", async (e) => {
+        e.preventDefault(); const textarea = e.target.querySelector("textarea"); const content = textarea.value.trim();
+        if (content && state.selectedThreadId) { await createComment(state.selectedThreadId, null, content); textarea.value = ""; await loadComments(state.selectedThreadId); }
+      });
+      $("#uploadForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const f = $("#fileInput")?.files[0]; if (f) { await uploadFile(f); $("#fileInput").value = ""; } });
+      $("#langSwitch")?.addEventListener('click', () => {
+        state.language = state.language === 'en' ? 'es' : 'en';
+        localStorage.setItem("lang", state.language);
+        applyI18n(); renderEventsList();
+        if (state.selectedEvent) { renderEventHeader(); renderThreads(); renderDescriptionTab(); if (state.selectedThreadId) renderComments(); }
+        renderFiles(); renderScheduleCalendar();
+      });
+      $("#year").textContent = new Date().getFullYear();
+    }
+
+    (async function main() {
+      applyI18n();
+      wireUI();
+      
+      // Initialize auth with callbacks
+      await initAuth({
+        onAuthReady: (authState, viewUserId) => {
+          if (!viewUserId) {
+            renderAuthUI();
+          }
+        },
+        onAuthChange: (authState, viewUserId) => {
+          if (!viewUserId) {
+            renderAuthUI();
+          }
         }
-        async function toggleFollow() { if (!state.session || !state.selectedEvent) return; const uid = state.session.user.id; const eventId = state.selectedEvent.id; if (state.isFollowing) await supabase.from("event_follows").delete().eq("event_id", eventId).eq("profile_id", uid); else await supabase.from("event_follows").insert({ event_id: eventId, profile_id: uid }); }
-        async function setRSVP(status) { if (!state.session || !state.selectedEvent) return; const uid = state.session.user.id; const eventId = state.selectedEvent.id; await supabase.from("event_rsvps").upsert({ event_id: eventId, profile_id: uid, status }, { onConflict: "event_id,profile_id" }); }
+      });
+      
+      await loadEvents();
+      // NOTE: The showView() call has been moved inside loadEvents()
+      // to handle deep linking correctly.
 
-        /* ============= Realtime Subscriptions ============= */
-        function cleanupSubscriptions() {
-            if (eventRealtimeChannel) { supabase.removeChannel(eventRealtimeChannel); eventRealtimeChannel = null; }
-        }
-        function subscribeToEventChanges(eventId) {
-            cleanupSubscriptions();
-            eventRealtimeChannel = supabase.channel(`event-${eventId}`)
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'attachments', filter: `event_id=eq.${eventId}` }, () => loadFiles(eventId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'event_follows', filter: `event_id=eq.${eventId}` }, () => loadRSVPFollow(eventId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'event_rsvps', filter: `event_id=eq.${eventId}` }, () => loadRSVPFollow(eventId))
-                .subscribe();
-        }
-
-        /* ============= Wire-up ============= */
-        function wireUI() {
-            // --- Auth ---
-            $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
-            $("#emailForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const email = $("#email")?.value.trim(); if (email) { await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: REDIRECT_TO } }); setFlash(tr("auth.magic_hint")); } });
-            $("#btnGoogle")?.addEventListener("click", () => supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: REDIRECT_TO } }));
-
-            // --- Navigation ---
-            $("#btnProfile")?.addEventListener("click", () => showView("profile"));
-            $("#backFromProfile")?.addEventListener("click", () => showView("schedule"));
-            $("#backFromPublicProfile")?.addEventListener("click", () => showView("event"));
-
-            // --- Main Schedule View (using event delegation) ---
-            $("#eventsList").addEventListener("click", e => {
-                const openBtn = e.target.closest('[data-open]');
-                if (openBtn) { openEvent(openBtn.dataset.open); return; }
-                const copyBtn = e.target.closest('[data-copy-link]');
-                if (copyBtn) { navigator.clipboard.writeText(copyBtn.dataset.copyLink); setFlash(tr('copied')); }
-            });
-
-            $("#search")?.addEventListener("input", renderEventsList);
-            $("#viewList")?.addEventListener("click", () => { $("#schedule").classList.remove("calendar-view"); $("#viewList").classList.add("active"); $("#viewCalendar").classList.remove("active"); $("#eventsList").style.display = "grid"; $("#calendar").style.display = "none"; });
-            $("#viewCalendar")?.addEventListener("click", () => { $("#schedule").classList.add("calendar-view"); $("#viewCalendar").classList.add("active"); $("#viewList").classList.remove("active"); $("#eventsList").style.display = "none"; $("#calendar").style.display = "flex"; });
-            $("#calPrev")?.addEventListener("click", () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() - 1); renderScheduleCalendar(); });
-            $("#calNext")?.addEventListener("click", () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() + 1); renderScheduleCalendar(); });
-
-            // --- Profile View ---
-            // UPDATED: After saving, invalidate cache and reload my profile
-            $("#profileForm")?.addEventListener("submit", async (e) => {
-                e.preventDefault(); if (!state.session) return;
-                const profileData = { full_name: $("#fullName").value.trim(), username: $("#username").value.trim(), affiliation: $("#affiliation").value.trim(), work_email: $("#workEmail").value.trim(), personal_website: $("#personalWebsite").value.trim() || null, professional_website: $("#professionalWebsite").value.trim() || null, google_scholar: $("#googleScholar").value.trim() || null, fields_of_study: $("#fieldsOfStudy").value.trim() || null };
-                const { error } = await supabase.from("profiles").update(profileData).eq("id", state.session.user.id);
-                if (!error) {
-                    // Invalidate cache so public profile refreshes
-                    state.profileCache.delete(state.session.user.id);
-                    state.profile = null;
-                    await ensureProfile();
-                    setFlash(tr("profile.saved"));
-                    renderHeader();
-                    if (state.profileComplete) { showView("schedule"); }
-                } else {
-                    setFlash("Error: " + error.message);
-                }
-            });
-            $("#skipProfile")?.addEventListener("click", () => showView("schedule"));
-
-            // --- Event Detail View (using a single delegated listener for robustness) ---
-            $("#eventDetail").addEventListener('click', (e) => {
-                const backBtn = e.target.closest('#backToScheduleCompact'); if (backBtn) { cleanupSubscriptions(); showView('schedule'); return; }
-                const followBtn = e.target.closest('#btnFollowCompact'); if (followBtn) { toggleFollow(); return; }
-                const rsvpBtn = e.target.closest('[data-rsvp]'); if (rsvpBtn) { setRSVP(rsvpBtn.dataset.rsvp); return; }
-                const delFileBtn = e.target.closest('[data-del-file-id]'); if (delFileBtn) { deleteFile(delFileBtn.dataset.delFileId, delFileBtn.dataset.delFilePath); return; }
-
-                // NEW: Open public profile by clicking avatar or author name
-                const profileEl = e.target.closest('[data-open-profile-id], .comment-avatar[data-user-id]');
-                if (profileEl) {
-                    const userId = profileEl.dataset.openProfileId || profileEl.dataset.userId;
-                    if (userId) showView('publicProfile', { userId });
-                }
-            });
-
-            document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => {
-                document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active")); tab.classList.add("active");
-                document.querySelectorAll(".tab-panel").forEach((p) => (p.style.display = "none"));
-                $(`#tab_${tab.dataset.tab}`).style.display = "flex";
-            }));
-
-            $("#newThreadForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const title = $("#threadTitle")?.value.trim(); if (title) { await createThread(title); $("#threadTitle").value = ""; } });
-            $("#replyToThreadForm")?.addEventListener("submit", async (e) => {
-                e.preventDefault(); const textarea = e.target.querySelector("textarea"); const content = textarea.value.trim();
-                if (content && state.selectedThreadId) { await createComment(state.selectedThreadId, null, content); textarea.value = ""; await loadComments(state.selectedThreadId); }
-            });
-            $("#uploadForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const f = $("#fileInput")?.files[0]; if (f) { await uploadFile(f); $("#fileInput").value = ""; } });
-            $("#langSwitch")?.addEventListener('click', () => { state.language = state.language === 'en' ? 'es' : 'en'; localStorage.setItem("lang", state.language); applyI18n(); renderEventsList(); if (state.selectedEvent) { renderEventHeader(); renderThreads(); if (state.selectedThreadId) renderComments(); } renderFiles(); renderScheduleCalendar(); });
-            $("#year").textContent = new Date().getFullYear();
-        }
-
-        /* ============= Bootstrap ============= */
-        (async function main() {
-            applyI18n();
-            wireUI();
-            await initAuth();
-            await loadEvents();
-            showView("schedule");
-
-            supabase.channel('public:events').on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadEvents()).subscribe();
-        })();
-    </script>
+      supabase.channel('public:events').on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadEvents()).subscribe();
+    })();
+  </script>
 </body>
 
 </html>
