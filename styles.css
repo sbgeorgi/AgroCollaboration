@@ -1117,6 +1117,16 @@ main.container {
       overflow: hidden; /* Fully contain content */
     }
 
+    main.main-content {
+    width: 100%;
+    flex-grow: 1;           /* Allows the main area to grow and fill available space */
+    display: flex;          /* Enables flexbox layout */
+    flex-direction: column; /* Stacks children vertically */
+    align-items: center;    /* << THIS IS THE KEY: Centers children (the card) horizontally */
+    padding: var(--space-3);  /* Adds some spacing around the content */
+    box-sizing: border-box; /* Ensures padding is included in the total width */
+}
+
     main.container > .card {
   margin: 0;
 }

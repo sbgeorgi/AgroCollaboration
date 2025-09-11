@@ -8,116 +8,197 @@
   <meta name="description" content="Archive of previous agrivoltaics talks (EN/ES)." />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    html, body {
-      height: 100%;
-      overflow: hidden;
+    /* --- CORE LAYOUT: Full viewport on DESKTOP ONLY --- */
+    @media (min-width: 961px) {
+      html,
+      body {
+        height: 100vh;
+        max-height: 100vh;
+        overflow: hidden;
+      }
     }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
     body {
       display: flex;
       flex-direction: column;
+      background-color: var(--background, #121317);
+      color: var(--text, #f1f1f1);
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     }
+
+    .site-header, .site-footer {
+      flex-shrink: 0;
+    }
+    .site-footer {
+      background: var(--background);
+      border-top: 1px solid var(--border);
+    }
+
     main.container {
-      width: 100% !important;
-      max-width: 100% !important;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding: var(--space-3);
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+    }
+
+    #archive.card {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
       margin: 0;
       padding: var(--space-3);
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden; /* Fully contain content */
+      overflow: hidden;
     }
-    main.container > .card { margin: 0; }
-    #archive { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; }
-    #archiveList {
-      flex-grow: 1;
-      min-height: 0;
-      overflow-y: auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
-      grid-template-rows: repeat(2, minmax(350px, 1fr));
-      grid-auto-rows: minmax(350px, 1fr);
-      gap: var(--space-4);
-      padding: var(--space-3);
-      scroll-behavior: smooth;
-    }
-    @supports (scrollbar-gutter: stable) {
-      #archiveList { scrollbar-gutter: stable both-edges; }
-    }
-
+    
+    /* --- FILTER BAR --- */
     .section-header {
       display: flex;
-      align-items: center;
-      justify-content: flex-start;
       flex-wrap: wrap;
-      gap: var(--space-3);
-      margin-bottom: var(--space-2);
-      padding-bottom: var(--space-3);
-      border-bottom: 1px solid var(--color-border);
-    }
-    .filters {
-      display: flex; gap: .5rem; align-items: center; flex-wrap: wrap;
-      margin-left: auto;
-    }
-    .filters .chip-toggle { cursor: pointer; }
-
-    /* IMPROVEMENT: Card styling overhaul */
-    .event-card {
-      position: relative; /* Anchor for the absolute positioned button */
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-3);
-      padding: var(--space-4);
-      background: var(--color-surface);
-      border: 1px solid #485061; /* Thin silver-toned border */
-      border-radius: 16px; /* More curved corners */
-      /* Permanent "lifted" styling */
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-3);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-      min-height: 0;
-    }
-    /* IMPROVEMENT: Modern glow on hover */
-    .event-card:hover {
-      border-color: color-mix(in oklab, var(--color-primary) 30%, #485061);
-      box-shadow: var(--shadow-3), 0 0 16px 4px color-mix(in oklab, var(--color-primary) 15%, transparent);
-    }
-    
-    .event-card .when { color: var(--color-primary); font-weight: 500; font-size: 0.9em; }
-
-    .event-header {
-      display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: var(--space-3);
-      /* Add padding-right to avoid content overlapping with the corner button */
-      padding-right: 4rem; 
+      gap: var(--space-2) var(--space-3);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
-    .event-info { display: flex; flex-direction: column; gap: var(--space-1); }
-    .event-title { font-size: 1.25rem; font-weight: 600; line-height: 1.3; }
-    .event-speaker { color: var(--color-text-muted); }
-    .actions { display: flex; flex-direction: column; gap: .5rem; flex-shrink: 0; }
     
-    .event-desc {
-      flex-grow: 1;
-      min-height: 40px;
-      overflow-y: auto;
-      padding-right: var(--space-2);
-      line-height: 1.6;
-      white-space: pre-wrap;
-      color: var(--color-text-muted);
-      font-size: 0.9rem; /* Smaller description text */
+    .section-header h2 { margin: 0; }
+    .tags-filter-group { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; flex-grow: 1; min-width: 200px; }
+    .filter-tags { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+    .chip.active { background: var(--brand-2-muted); color: var(--brand-2); border-color: var(--brand-2); }
+    .filters { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+    .filters input[type="search"], .filters select {
+      background-color: var(--card-2); border: 1px solid var(--border); border-radius: var(--radius);
+      color: var(--text); padding: var(--space-1) var(--space-2); height: 38px;
     }
-    .event-desc::-webkit-scrollbar { width: 8px; }
-    .event-desc::-webkit-scrollbar-track { background: transparent; }
-    .event-desc::-webkit-scrollbar-thumb { background-color: var(--color-border); border-radius: 10px; border: 2px solid var(--color-surface); }
-    .event-card .tags { display:flex; flex-wrap:wrap; gap:.5rem; align-items: center; }
-    
-    .tag-topic { background: var(--color-surface-strong); border: 1px solid var(--color-border); border-radius: 999px; padding: .15rem .5rem; font-size: .8rem; }
+    .filters input[type="search"] { min-width: 200px; }
+    .filters select {
+      -webkit-appearance: none; -moz-appearance: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;
+    }
+    .chip-toggle {
+      display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;
+      padding: var(--space-1) var(--space-2); background-color: var(--card-2); border: 1px solid var(--border);
+      border-radius: var(--radius); height: 38px; box-sizing: border-box;
+    }
+    .chip-toggle input[type="checkbox"] { width: 1em; height: 1em; }
 
-    .tags-filter-group { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
-    .filter-tags { display:flex; gap:.35rem; flex-wrap:wrap; }
-    .chip.active { background: var(--color-primary-muted); color: var(--color-primary); border-color: color-mix(in oklab, var(--color-primary) 40%, var(--color-border)); }
+    /* --- EVENT CARD GRID --- */
+    #archiveList {
+      flex-grow: 1; overflow-y: auto; padding: var(--space-3) var(--space-1);
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      grid-auto-rows: min-content; gap: var(--space-3);
+    }
+    @supports (scrollbar-gutter: stable) { #archiveList { scrollbar-gutter: stable; padding-right: var(--space-2); } }
+
+    /* --- EVENT CARD DESIGN --- */
+    .event-card {
+      position: relative; display: flex; flex-direction: column; background: var(--card);
+      border: 1px solid var(--border); border-radius: var(--radius-2); box-shadow: var(--shadow-2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      min-height: 320px; padding: var(--space-3);
+    }
+    .event-card:hover { transform: translateY(-4px); border-color: var(--brand-2); box-shadow: var(--shadow-4), 0 0 24px 0px rgba(91, 214, 160, 0.15); }
+    .event-card .when { font-size: 0.85rem; color: var(--text-muted); margin-bottom: var(--space-1); }
+    .event-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); }
+    .event-title { font-size: 1.4rem; font-weight: 600; line-height: 1.3; margin-bottom: var(--space-1); }
+    .event-speaker { color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+    .event-desc {
+      flex-grow: 1; margin: var(--space-2) 0; max-height: 150px; overflow-y: auto;
+      padding-right: var(--space-1); line-height: 1.6; font-size: 0.9rem; color: var(--text-muted);
+    }
+    .event-desc::-webkit-scrollbar { width: 6px; }
+    .event-desc::-webkit-scrollbar-track { background: transparent; }
+    .event-desc::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 10px; }
+    .event-card .tags { display: flex; flex-wrap: wrap; gap: var(--space-1); align-items: center; margin-top: auto; padding-top: var(--space-2); border-top: 1px solid var(--border); }
+    .tag-topic { background: var(--card-2); border: 1px solid var(--border); border-radius: 999px; padding: .15rem .6rem; font-size: .75rem; font-weight: 500; }
+    #emptyArchive { text-align: center; padding: var(--space-4); color: var(--text-muted); }
+    
+    /* --- HEADER & NAVIGATION --- */
+    .mobile-menu-btn { display: none; }
+    
+    /* DESKTOP Navigation (default state) */
+    .nav {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+    }
+
+    /* Mobile Nav Overlay - Defined globally to hide it on desktop by default */
+    .mobile-nav-overlay {
+      display: none; /* Hidden by default, shown with JS */
+      flex-direction: column; justify-content: center; align-items: center;
+      gap: var(--space-4); position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
+      background: rgba(18, 19, 23, 0.9); backdrop-filter: blur(10px);
+      z-index: 1000; opacity: 0; transition: opacity 0.3s ease-in-out;
+    }
+    .mobile-nav-overlay.is-open { display: flex; opacity: 1; }
+    
+    /* --- RESPONSIVE ADJUSTMENTS --- */
+    @media (max-width: 960px) {
+      /* Show hamburger, hide desktop nav container */
+      .mobile-menu-btn {
+        display: block;
+        background: none; border: none; color: var(--text);
+        font-size: 2rem; cursor: pointer; z-index: 1001;
+        padding: 0; line-height: 0;
+      }
+      .header-grid > .nav { display: none; }
+      
+      /* Styling for the content within the mobile nav overlay */
+      .mobile-nav-overlay .nav {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-4); /* Increased gap for better spacing */
+      }
+      .mobile-nav-overlay .link {
+        font-size: 1.8rem; /* Larger font size for links */
+        font-weight: 500;
+      }
+      .mobile-nav-overlay .divider {
+        display: none; /* Hide the divider line */
+      }
+      .mobile-nav-overlay .auth-area {
+        margin-top: var(--space-2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-3);
+      }
+      
+      /* Mobile Menu Close Button */
+      .mobile-nav-close-btn {
+        position: absolute; top: var(--space-3); right: var(--space-3);
+        background: none; border: none; color: var(--text);
+        cursor: pointer; line-height: 1; padding: 0;
+      }
+
+      body.menu-open { overflow: hidden; }
+      
+      /* Mobile Filter Bar */
+      .section-header { flex-direction: column; align-items: stretch; gap: var(--space-3); }
+      .tags-filter-group { flex-direction: column; align-items: flex-start; gap: var(--space-2); text-align: left; }
+      .filters { flex-direction: column; align-items: stretch; width: 100%; gap: var(--space-2); }
+      .filters input[type="search"], .filters select, .filters .chip-toggle { width: 100%; box-sizing: border-box; }
+
+      /* Mobile Grid & Padding */
+      #archiveList { grid-template-columns: 1fr; }
+      main.container, #archive.card { padding: var(--space-2); }
+    }
   </style>
 </head>
 
@@ -135,13 +216,19 @@
           </div>
         </a>
       </div>
+      
+      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+
+      <!-- Desktop Nav -->
       <nav class="nav">
         <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
         <a href="archive.html" class="link active" data-i18n="nav.archive">Archive</a>
         <a href="about.html" class="link" data-i18n="nav.about">About</a>
         <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display:none;">Admin</a>
         <div class="divider"></div>
-        <div id="langSwitch" class="lang-switch-slider" data-lang="en">
+        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
           <span>EN</span>
           <span>ES</span>
         </div>
@@ -158,27 +245,29 @@
       </nav>
     </div>
   </header>
+  
+  <div id="mobileNavOverlay" class="mobile-nav-overlay">
+    <!-- Content will be injected by JS -->
+  </div>
 
   <div id="flash" class="flash" role="status" aria-live="polite"></div>
 
   <main class="container">
     <section id="archive" class="card">
       <div class="section-header">
-        <h2 data-i18n="archive.title">Archive</h2>
+        <h2>Archive</h2>
         <div class="tags-filter-group">
-          <div style="font-weight:600;" data-i18n="archive.filter_by_tags">Filter by Tags</div>
+          <div style="font-weight:500; opacity: 0.8;" data-i18n="archive.filter_by_tags">Filter by Tags:</div>
           <div id="tagsFilter" class="filter-tags"></div>
         </div>
         <div class="filters">
-          <div class="search-bar">
             <input id="search" type="search" placeholder="Search..." data-i18n-placeholder="search.placeholder" />
-          </div>
-          <select id="yearFilter"></select>
-          <label class="chip chip-toggle" style="user-select:none;">
-            <input type="checkbox" id="hasRecording" style="margin-right:.35rem;" />
-            <span data-i18n="archive.recordings_only">Recordings only</span>
-          </label>
-          <button id="clearFilters" class="btn-ghost" data-i18n="archive.clear">Clear</button>
+            <select id="yearFilter"></select>
+            <label class="chip-toggle">
+                <input type="checkbox" id="hasRecording" />
+                <span data-i18n="archive.recordings_only">Recordings only</span>
+            </label>
+            <button id="clearFilters" class="btn-ghost" data-i18n="archive.clear">Clear</button>
         </div>
       </div>
 
@@ -208,74 +297,45 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, },
     });
 
     const state = {
-      session: null,
-      profile: null,
-      language: localStorage.getItem("lang") || "en",
-      events: [],
-      filters: {
-        search: "",
-        year: "all",
-        tags: new Set(),
-        onlyRecording: false,
-      }
+      session: null, profile: null, language: localStorage.getItem("lang") || "en", events: [],
+      filters: { search: "", year: "all", tags: new Set(), onlyRecording: false, }
     };
 
     const t = {
       en: {
         tagline: "An informal seminar series to share advances in agrivoltaics in Latin America",
         nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin" },
-        search: { placeholder: "Search..." },
-        archive: { title: "Archive", recordings_only: "Recordings only", clear: "Clear", empty: "No past events found.", filter_by_tags: "Filter by Tags" },
+        search: { placeholder: "Search title, speaker, description..." },
+        archive: { title: "Archive", recordings_only: "Recordings only", clear: "Clear", empty: "No past events match your filters.", filter_by_tags: "Filter by Tags" },
         footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
-        open: "Open",
-        recording: "Recording",
+        open: "Open", recording: "Recording", all_years: "All years",
       },
       es: {
         tagline: "Serie de seminarios informales para compartir avances en agrofotovoltaica en América Latina",
         nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin" },
-        search: { placeholder: "Buscar..." },
-        archive: { title: "Archivo", recordings_only: "Solo con grabaciones", clear: "Limpiar", empty: "No se encontraron eventos pasados.", filter_by_tags: "Filtrar por Etiquetas" },
+        search: { placeholder: "Buscar título, ponente, descripción..." },
+        archive: { title: "Archivo", recordings_only: "Solo con grabaciones", clear: "Limpiar", empty: "Ningún evento pasado coincide con sus filtros.", filter_by_tags: "Filtrar por Etiquetas" },
         footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
-        open: "Abrir",
-        recording: "Grabación",
+        open: "Abrir", recording: "Grabación", all_years: "Todos los años",
       }
     };
 
-    function tr(key, fallback = "") {
-      const lang = state.language;
-      const parts = key.split(".");
-      let obj = t[lang];
-      for (const p of parts) obj = obj?.[p];
-      return obj ?? fallback;
-    }
+    function tr(key, fallback = "") { const lang = state.language; const parts = key.split("."); let obj = t[lang]; for (const p of parts) obj = obj?.[p]; return obj ?? fallback; }
     const $ = (sel) => document.querySelector(sel);
-    function escapeHtml(s = "") { 
-      const div = document.createElement('div');
-      div.textContent = s;
-      return div.innerHTML;
-    }
-    function fmtDateTime(iso) { try { return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso)); } catch { return iso; } }
-    
-    function linkify(text = "") {
-      if (!text) return '';
-      let safeText = escapeHtml(text);
-      const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-      return safeText.replace(urlPattern, `<a href="$&" target="_blank" rel="noopener noreferrer">$&</a>`);
-    }
+    function escapeHtml(s = "") { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
+    function fmtDateTime(iso) { try { return new Intl.DateTimeFormat(state.language === 'es' ? 'es-MX' : 'en-US', { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso)); } catch { return iso; } }
+    function linkify(text = "") { if (!text) return ''; let safeText = escapeHtml(text); const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig; return safeText.replace(urlPattern, `<a href="$&" target="_blank" rel="noopener noreferrer" class="link">$&</a>`); }
 
     function applyI18n() {
       document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); });
       document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); });
-      const langSwitch = $("#langSwitch");
-      if (langSwitch) langSwitch.dataset.lang = state.language;
+      document.querySelectorAll(".lang-switch-slider").forEach(el => { if (el) el.dataset.lang = state.language; });
+      const yearSel = $("#yearFilter");
+      if (yearSel && yearSel.options.length > 0) { yearSel.options[0].textContent = tr('archive.all_years'); }
     }
 
     async function initAuth() {
@@ -283,174 +343,194 @@
       state.session = session;
       if (session) await ensureProfile();
       renderHeader();
-
       supabase.auth.onAuthStateChange(async (evt, session2) => {
         state.session = session2;
-        if (session2) await ensureProfile();
+        if (session2) await ensureProfile(); else state.profile = null;
         renderHeader();
       });
     }
 
     async function ensureProfile() {
-      const uid = state.session?.user?.id;
-      if (!uid) { state.profile = null; return; }
-      const { data } = await supabase.from("profiles").select("*").eq("id", uid).maybeSingle();
-      state.profile = data || null;
+      const uid = state.session?.user?.id; if (!uid) { state.profile = null; return; }
+      const { data } = await supabase.from("profiles").select("*").eq("id", uid).maybeSingle(); state.profile = data || null;
+    }
+    
+    // --- Moved Mobile Menu functions to global scope for better access ---
+    function setupMobileMenu() {
+        const mobileNavOverlay = $("#mobileNavOverlay");
+        const desktopNav = document.querySelector('.header-grid .nav');
+        if (!mobileNavOverlay || !desktopNav) return;
+
+        mobileNavOverlay.innerHTML = ''; // Clear previous content
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'mobile-nav-close-btn';
+        closeBtn.setAttribute('aria-label', 'Close menu');
+        closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        
+        const content = desktopNav.cloneNode(true);
+        content.id = ''; // Avoid duplicate IDs
+        const langSwitchMobile = content.querySelector('#langSwitchDesktop');
+        if (langSwitchMobile) langSwitchMobile.id = 'langSwitchMobile';
+        
+        mobileNavOverlay.appendChild(closeBtn);
+        mobileNavOverlay.appendChild(content);
+
+        closeBtn.addEventListener('click', closeMenu);
+        mobileNavOverlay.addEventListener('click', (e) => { if (e.target === mobileNavOverlay) closeMenu(); });
+        
+        // Wire up listeners for the cloned elements
+        langSwitchMobile?.addEventListener('click', handleLangSwitch);
+        content.querySelector("#btnSignIn")?.addEventListener("click", () => window.location.href = 'index.html');
+        content.querySelector("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
+        content.querySelector("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
     }
 
     function renderHeader() {
       const btnSignIn = $("#btnSignIn"), btnSignOut = $("#btnSignOut"), btnAdmin = $("#btnAdmin"), userName = $("#userName"), btnProfile = $("#btnProfile");
+      const isOrganizer = ["organizer", "admin"].includes(state.profile?.role);
       if (state.session) {
         btnSignIn.style.display = "none"; btnSignOut.style.display = "inline-block";
         btnProfile.style.display = "grid"; userName.style.display = "inline";
         userName.textContent = state.profile?.full_name || state.profile?.username || "";
         $("#userInitial").textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
-        if (btnAdmin) btnAdmin.style.display = state.profile?.role === "admin" ? "inline-block" : "none";
+        if (btnAdmin) btnAdmin.style.display = isOrganizer ? "inline-block" : "none";
       } else {
         btnSignIn.style.display = "inline-block"; btnSignOut.style.display = "none";
         btnProfile.style.display = "none"; userName.style.display = "none";
         if (btnAdmin) btnAdmin.style.display = "none";
       }
+      // Re-build the mobile menu every time the header is rendered to reflect auth state
+      setupMobileMenu();
     }
 
     async function loadEvents() {
-      const { data } = await supabase.from("events").select("*, event_speakers(*)").order("start_time", { ascending: false });
+      const { data } = await supabase.from("events").select("*, event_speakers(*, profiles(full_name, affiliation))").order("start_time", { ascending: false });
       state.events = data || [];
       buildFilters();
       renderArchiveList();
     }
 
     function buildFilters() {
-      const years = Array.from(new Set(
-        state.events.map(e => new Date(e.start_time).getFullYear())
-      )).sort((a, b) => b - a);
+      const years = Array.from(new Set(state.events.map(e => new Date(e.start_time).getFullYear()))).sort((a, b) => b - a);
       const yearSel = $("#yearFilter");
-      yearSel.innerHTML = `<option value="all">All years</option>` + years.map(y => `<option value="${y}">${y}</option>`).join("");
-
+      yearSel.innerHTML = `<option value="all">${tr('archive.all_years')}</option>` + years.map(y => `<option value="${y}">${y}</option>`).join("");
       const tags = new Set();
       for (const e of state.events) (e.topic_tags || []).forEach(t => tags.add(t));
       const tagsContainer = $("#tagsFilter");
       tagsContainer.innerHTML = "";
       Array.from(tags).sort((a, b) => a.localeCompare(b)).forEach(tag => {
         const btn = document.createElement("button");
-        btn.className = "chip";
-        btn.type = "button";
-        btn.textContent = `#${tag}`;
-        btn.dataset.tag = tag;
+        btn.className = "chip"; btn.type = "button"; btn.textContent = `#${tag}`; btn.dataset.tag = tag;
         btn.addEventListener("click", () => {
-          if (state.filters.tags.has(tag)) state.filters.tags.delete(tag);
-          else state.filters.tags.add(tag);
-          btn.classList.toggle("active");
-          renderArchiveList();
+          if (state.filters.tags.has(tag)) state.filters.tags.delete(tag); else state.filters.tags.add(tag);
+          btn.classList.toggle("active"); renderArchiveList();
         });
         tagsContainer.appendChild(btn);
       });
     }
 
-    function isPast(e) {
-      return new Date(e.start_time).getTime() < Date.now();
-    }
+    function isPast(e) { return new Date(e.start_time).getTime() < Date.now(); }
 
     function renderArchiveList() {
       const wrap = $("#archiveList"), empty = $("#emptyArchive"); if (!wrap || !empty) return;
-      const term = ($("#search")?.value || "").toLowerCase().trim();
-      const year = $("#yearFilter")?.value || "all";
-      const onlyRec = $("#hasRecording")?.checked || false;
-      const tagsSel = state.filters.tags;
-
+      const term = state.filters.search.toLowerCase(); const year = state.filters.year;
+      const onlyRec = state.filters.onlyRecording; const tagsSel = state.filters.tags;
       const pastEvents = state.events.filter(isPast);
-
       const candidates = pastEvents.filter(ev => {
         if (onlyRec && !ev.recording_url) return false;
         if (year !== "all" && String(new Date(ev.start_time).getFullYear()) !== String(year)) return false;
-
-        if (tagsSel.size > 0) {
-          const evTags = new Set(ev.topic_tags || []);
-          for (const t of tagsSel) if (!evTags.has(t)) return false;
-        }
-
+        if (tagsSel.size > 0) { const evTags = new Set(ev.topic_tags || []); for (const t of tagsSel) if (!evTags.has(t)) return false; }
         if (!term) return true;
-
-        const speakerMatch = (ev.event_speakers || []).some(s =>
-          (s.name || "").toLowerCase().includes(term) || (s.affiliation || "").toLowerCase().includes(term)
-        );
+        const speakerMatch = (ev.event_speakers || []).some(s => (s.name || "").toLowerCase().includes(term) || (s.affiliation || "").toLowerCase().includes(term));
         const tagsMatch = (ev.topic_tags || []).some(tg => (tg || "").toLowerCase().includes(term));
-        const eventMatch = [ev.title_en, ev.title_es, ev.description_en, ev.description_es, ev.host_org]
-          .filter(Boolean)
-          .some(v => v.toLowerCase().includes(term));
-
+        const eventMatch = [ev.title_en, ev.title_es, ev.description_en, ev.description_es, ev.host_org].filter(Boolean).some(v => v.toLowerCase().includes(term));
         return speakerMatch || tagsMatch || eventMatch;
       });
-
       empty.style.display = candidates.length ? "none" : "block";
       wrap.innerHTML = candidates.map(ev => {
         const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
         const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
-
         let speakerLine = '';
         if (ev.event_speakers && ev.event_speakers.length > 0) {
           const primarySpeaker = ev.event_speakers.find(s => s.primary_speaker) || ev.event_speakers[0];
           speakerLine = `<div class="event-speaker">👤 ${escapeHtml(primarySpeaker.name)}${primarySpeaker.affiliation ? ` (${escapeHtml(primarySpeaker.affiliation)})` : ''}</div>`;
         }
-
         const tagsHtml = (ev.topic_tags || []).map(tag => `<span class="tag-topic">#${escapeHtml(tag)}</span>`).join("");
-        const recordingBtn = ev.recording_url ? `<a href="${escapeHtml(ev.recording_url)}" class="btn-secondary" target="_blank" rel="noopener">${tr('recording')}</a>` : "";
-
         return `
           <div class="event-card">
-            <button class="btn-primary" onclick="window.location.href='index.html?event=${encodeURIComponent(ev.id)}'" style="position: absolute; top: var(--space-3); right: var(--space-3);">${tr('open')}</button>
-            <div class="when">${fmtDateTime(ev.start_time)}</div>
-            <div class="event-header">
-              <div class="event-info">
-                <div class="event-title">${escapeHtml(title)}</div>
-                ${speakerLine}
+              <div class="event-header">
+                <div class="event-info">
+                  <div class="when">${fmtDateTime(ev.start_time)}</div>
+                  <h3 class="event-title">${escapeHtml(title)}</h3>
+                  ${speakerLine}
+                </div>
+                <div class="actions">
+                    <a href="event.html?id=${ev.id}" class="btn-primary">${tr('open')}</a>
+                </div>
               </div>
-              <div class="actions">
-                ${recordingBtn}
+              ${desc ? `<div class="event-desc">${linkify(desc)}</div>` : '<div style="flex-grow: 1;"></div>'}
+              <div class="tags">
+                ${tagsHtml}
+                <span class="tag">${(ev.language || "bi").toUpperCase()}</span>
+                ${ev.host_org ? `<span class="tag">${escapeHtml(ev.host_org)}</span>` : ""}
+                ${ev.recording_url ? `<a href="${escapeHtml(ev.recording_url)}" class="tag tag-success" target="_blank" rel="noopener">▶️ ${tr('recording')}</a>` : ""}
               </div>
-            </div>
-            ${desc ? `<div class="event-desc">${linkify(desc)}</div>` : ""}
-            <div class="tags">
-              ${tagsHtml}
-              <span class="tag">${(ev.language || "bi").toUpperCase()}</span>
-              ${ev.host_org ? `<span class="tag">${escapeHtml(ev.host_org)}</span>` : ""}
-            </div>
-          </div>
-        `;
+          </div>`;
       }).join("");
     }
-
-    function wireUI() {
-      $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
-      $("#btnSignIn")?.addEventListener("click", async () => {
-        await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.href } });
-      });
-      
-      // FIX: Added event listener for the profile button
-      $("#btnProfile")?.addEventListener("click", () => {
-        window.location.href = 'profile.html';
-      });
-
-      $("#search")?.addEventListener("input", () => { state.filters.search = $("#search").value; renderArchiveList(); });
-      $("#yearFilter")?.addEventListener("change", () => { renderArchiveList(); });
-      $("#hasRecording")?.addEventListener("change", () => { renderArchiveList(); });
-      $("#clearFilters")?.addEventListener("click", () => {
-        $("#search").value = "";
-        $("#yearFilter").value = "all";
-        $("#hasRecording").checked = false;
-        state.filters.tags.clear();
-        document.querySelectorAll("#tagsFilter .chip.active").forEach(el => el.classList.remove("active"));
-        renderArchiveList();
-      });
-
-      $("#langSwitch")?.addEventListener("click", () => {
+    
+    function handleLangSwitch() {
         state.language = state.language === "en" ? "es" : "en";
         localStorage.setItem("lang", state.language);
         applyI18n();
         renderArchiveList();
+    }
+    
+    function openMenu() {
+        const mobileMenuBtn = $("#mobileMenuBtn"), mobileNavOverlay = $("#mobileNavOverlay");
+        mobileNavOverlay.classList.add("is-open");
+        document.body.classList.add("menu-open");
+        mobileMenuBtn.setAttribute("aria-expanded", "true");
+        mobileMenuBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+    }
+
+    function closeMenu() {
+        const mobileMenuBtn = $("#mobileMenuBtn"), mobileNavOverlay = $("#mobileNavOverlay");
+        mobileNavOverlay.classList.remove("is-open");
+        document.body.classList.remove("menu-open");
+        mobileMenuBtn.setAttribute("aria-expanded", "false");
+        mobileMenuBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" y2="18"></line></svg>`;
+    }
+
+    function wireUI() {
+      // Wire desktop-only buttons
+      $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
+      $("#btnSignIn")?.addEventListener("click", () => window.location.href = 'index.html');
+      $("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
+      $("#langSwitchDesktop")?.addEventListener("click", handleLangSwitch);
+
+      const searchInput = $("#search"); let searchTimeout;
+      searchInput?.addEventListener("input", () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { state.filters.search = searchInput.value; renderArchiveList(); }, 300); });
+      $("#yearFilter")?.addEventListener("change", (e) => { state.filters.year = e.target.value; renderArchiveList(); });
+      $("#hasRecording")?.addEventListener("change", (e) => { state.filters.onlyRecording = e.target.checked; renderArchiveList(); });
+      $("#clearFilters")?.addEventListener("click", () => {
+        searchInput.value = ""; $("#yearFilter").value = "all"; $("#hasRecording").checked = false;
+        state.filters.search = ""; state.filters.year = "all"; state.filters.onlyRecording = false; state.filters.tags.clear();
+        document.querySelectorAll("#tagsFilter .chip.active").forEach(el => el.classList.remove("active"));
+        renderArchiveList();
       });
 
       $("#year").textContent = new Date().getFullYear();
+
+      $("#mobileMenuBtn")?.addEventListener("click", () => {
+        const overlay = $("#mobileNavOverlay");
+        if (overlay && !overlay.classList.contains('is-open')) {
+          openMenu();
+        } else {
+          closeMenu();
+        }
+      });
     }
 
     (async function main() {

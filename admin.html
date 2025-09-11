@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-  <!-- FIX: Corrected the charset typo from utf-t to utf-8 -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin • Almuerzo Agrivoltaico</title>
@@ -14,424 +13,276 @@
   <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales-all.global.min.js"></script>
 
   <style>
-    /* --- Full viewport, no scrolling anywhere --- */
+    /* --- CORE LAYOUT: Full viewport, no page scrolling --- */
     html, body {
       height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
       margin: 0;
       padding: 0;
-      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     }
-    
+
     body {
       display: flex;
       flex-direction: column;
-      margin: 0;
+      background-color: var(--background, #121317);
+      color: var(--text, #f1f1f1);
     }
 
-    /* Compact header */
     .site-header {
-      flex-shrink: 0;
-      padding: var(--space-2) var(--space-3); /* Reduce header padding */
+      flex-shrink: 0; /* Prevent header from shrinking */
+      z-index: 10;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
 
-    /* Main container takes remaining space */
+    /* Main container takes all remaining vertical space */
     main.container {
-      flex: 1;
-      min-height: 0;
+      flex-grow: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      padding: var(--space-2); /* Reduced padding */
+      min-height: 0; /* Crucial for flex children overflow */
+      padding: var(--space-2);
       box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
     }
 
-    /* Admin card fills all available space */
+    /* Admin card fills the main container */
     #admin.card {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
       width: 100%;
       max-width: 100%;
       margin: 0;
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      padding: var(--space-2); /* Reduced padding */
+      padding: var(--space-2);
       box-sizing: border-box;
-      overflow: hidden;
+      overflow: hidden; /* Hide any accidental overflow */
     }
 
+    /* The two-column grid layout for the admin tools */
     .admin-layout-inner {
-      flex: 1;
+      flex-grow: 1;
       min-height: 0;
       display: grid;
-      grid-template-columns: minmax(420px, 1fr) minmax(520px, 1fr);
-      gap: var(--space-2); /* Reduced gap */
-      align-items: stretch;
+      /* Flexible columns: form gets a min width, calendar takes up more space */
+      grid-template-columns: minmax(400px, 1.2fr) 2fr;
+      gap: var(--space-3);
       overflow: hidden;
-      width: 100%;
-      height: 100%;
     }
 
-    /* Both columns - no scrolling */
+    /* --- COLUMN STYLING --- */
     .organizer-form-container,
     .admin-side {
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      min-height: 0;
+      min-height: 0; /* Prevent content from expanding the container */
+      overflow: hidden; /* Contains children */
     }
 
-    /* Compact headings */
     .organizer-form-container h2,
     .admin-side h2 {
-      margin-bottom: var(--space-1); /* Reduced margin */
-      margin-top: 0;
-      flex-shrink: 0;
-      font-size: 1.2rem; /* Smaller heading */
+      margin: 0 0 var(--space-2) 0;
+      flex-shrink: 0; /* Prevent title from shrinking */
+      font-size: 1.3rem;
+      border-bottom: 1px solid var(--border, #333);
+      padding-bottom: var(--space-1);
     }
 
-    /* Very compact form */
+    /* --- LEFT COLUMN: FORM --- */
+    /* Make the form itself scrollable, not the whole column */
+    #createEventForm {
+      flex-grow: 1;
+      overflow-y: auto; /* The magic for the form panel */
+      overflow-x: hidden;
+      padding-right: var(--space-1); /* Space for scrollbar */
+      display: flex;
+      flex-direction: column;
+    }
+
     .grid-form {
-      gap: 8px; /* Minimal gap */
       display: grid;
       grid-template-columns: 1fr 1fr;
+      gap: var(--space-2);
       align-items: start;
-      font-size: 0.9rem; /* Smaller font */
     }
-    
+
     .grid-form .col-span-2 { grid-column: span 2; }
-    
-    .grid-form h3 { 
-      margin: 0 0 6px 0; /* Minimal margin */
-      font-size: 1rem;
-    }
-    
-    /* Compact form inputs */
-    .grid-form label {
-      font-size: 0.75rem; /* Smaller labels */
-      margin-bottom: 2px;
-      display: block;
-    }
-    
-    .grid-form input, 
-    .grid-form select {
-      height: 28px; /* Smaller inputs */
-      padding: 2px 6px;
-      font-size: 0.85rem;
-    }
-    
-    .grid-form textarea {
-  height: 66px !important; /* About 2-3 lines of text */
-  min-height: 66px !important;
-  max-height: 66px !important;
-  resize: none; /* Keep fixed size */
-  padding: 4px 6px;
-  font-size: 0.85rem;
-  line-height: 1.3;
-  overflow-y: auto; /* Allow scrolling if content is longer */
-}
+    .grid-form label { font-size: 0.8rem; margin-bottom: 4px; display: block; opacity: 0.8; }
+    .grid-form textarea { min-height: 80px; resize: vertical; }
 
-    
-    p.muted {
-      margin: 4px 0; /* Minimal margin */
-      opacity: 0.75;
-      font-size: 0.75rem;
-    }
-
-    /* Compact tags input */
-    .tags-field {
-      margin-top: 4px;
-    }
-    
-    .tags-field label {
-      font-size: 0.75rem;
-      margin-bottom: 2px;
-    }
-    
-    .tags-input {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 4px;
-      padding: 4px 6px; /* Smaller padding */
-      border: 1px solid var(--color-border, var(--border));
-      border-radius: var(--radius-2, 8px);
-      background: var(--card-2, #1d1f24);
-      min-height: 28px; /* Smaller height */
-      max-height: 56px; /* Limit height to 2 rows */
-      overflow-y: auto;
-    }
-    
-    .tags-input input {
-      flex: 1;
-      min-width: 120px;
-      border: none;
-      outline: none;
-      background: transparent;
-      color: var(--text);
-      padding: 2px 4px;
-      font-size: 0.85rem;
-      height: 20px;
-    }
-    
-    .tag-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 1px 6px; /* Smaller chips */
-      border-radius: 999px;
-      border: 1px solid var(--color-border, var(--border));
-      background: rgba(91, 214, 160, 0.12);
-      color: var(--text);
-      font-size: 0.75rem;
-      line-height: 1.2;
-      white-space: nowrap;
-    }
-
-    /* Very compact speakers section */
+    /* Speakers section - with its own scroll if needed */
     .speakers-fieldset {
-      border: 1px solid var(--color-border, var(--border));
+      border: 1px solid var(--border, #333);
       border-radius: var(--radius-2, 8px);
-      padding: 8px; /* Minimal padding */
-      margin-top: 8px;
+      padding: var(--space-1) var(--space-2);
+      margin-top: var(--space-1);
       background: var(--card-2, #1d1f24);
-      max-height: 120px; /* Limit speakers section height */
+      max-height: 200px; /* Limit height and allow scrolling */
       overflow-y: auto;
-      overflow-x: hidden;
     }
-    
-    .speakers-fieldset legend {
-      font-weight: 600;
-      font-size: 0.85rem;
-      padding: 0 6px;
-    }
-    
+
+    .speakers-fieldset legend { font-weight: 600; padding: 0 6px; font-size: 0.9rem; }
     .speaker-row {
       display: grid;
       grid-template-columns: 1fr 1fr auto auto;
-      gap: 6px; /* Smaller gap */
+      gap: var(--space-1);
       align-items: center;
-      margin-bottom: 6px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--color-surface-strong, rgba(255,255,255,0.08));
+      margin-bottom: var(--space-1);
+      padding-bottom: var(--space-1);
+      border-bottom: 1px solid var(--color-surface-strong, rgba(255, 255, 255, 0.08));
     }
-    
-    .speaker-row:last-child { 
-      border-bottom: none; 
-      margin-bottom: 0; 
-      padding-bottom: 0;
-    }
-    
-    .speaker-row input,
-    .speaker-row select {
-      height: 24px; /* Smaller inputs */
-      padding: 2px 4px;
-      font-size: 0.8rem;
-    }
-    
-    .speaker-row label { 
-      font-size: 0.7rem; 
-      margin-bottom: 1px;
-    }
-    
-    .speaker-row .checkbox-field {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 2px;
-    }
-    
-    .speaker-row .checkbox-field input[type="checkbox"] {
-      width: 14px;
-      height: 14px;
-    }
-    
+    .speaker-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .speaker-row label { font-size: 0.7rem; margin-bottom: 2px; }
+    .speaker-row .checkbox-field { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; }
+
     .btn-danger-ghost {
-      border: 1px solid var(--color-border, var(--border));
-      background: transparent;
-      color: var(--muted, #aaa);
-      padding: 2px 6px; /* Smaller button */
-      border-radius: var(--radius, 6px);
-      cursor: pointer;
-      font-size: 0.8rem;
+        padding: 4px 8px; font-size: 1rem; line-height: 1; height: fit-content; align-self: end;
     }
     
-    /* Compact buttons */
-    .btn-primary, .btn-secondary {
-      padding: 6px 12px; /* Smaller buttons */
-      font-size: 0.85rem;
-    }
-    
-    #addCreateSpeakerBtn,
-    #addEditSpeakerBtn {
-      padding: 4px 8px;
-      font-size: 0.8rem;
+    #createEventForm > .col-span-2:last-of-type {
+      margin-top: auto; /* Pushes the create button to the bottom */
+      padding-top: var(--space-2);
     }
 
-    /* Calendar side - compact tools */
+    /* --- RIGHT COLUMN: CALENDAR --- */
     .calendar-tools {
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-bottom: 6px; /* Smaller margin */
+      gap: var(--space-1);
+      margin-bottom: var(--space-2);
       flex-shrink: 0;
     }
-    
     .calendar-tools .tool {
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 6px; /* Smaller padding */
-      border: 1px solid var(--color-border, var(--border));
+      border: 1px solid var(--border, #333);
       border-radius: var(--radius-2, 8px);
       background: var(--card-2, #1d1f24);
+      padding: 0 var(--space-1);
     }
-    
     .calendar-tools input {
-      border: none;
-      outline: none;
-      background: transparent;
-      color: var(--text);
-      min-width: 120px;
-      height: 24px; /* Smaller input */
-      font-size: 0.8rem;
-    }
-    
-    .calendar-tools .hint {
-      font-size: 0.7rem;
-      opacity: 0.75;
+      border: none; outline: none; background: transparent; color: var(--text);
+      height: 36px;
     }
 
-    /* Calendar takes remaining space */
     #calendar {
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
+      flex-grow: 1;
+      min-height: 0; /* Critical for FullCalendar sizing */
       position: relative;
     }
 
-    /* FullCalendar adjustments for compact view */
-    #calendar .fc {
-      height: 100%;
-      font-size: 0.85rem; /* Smaller calendar text */
-    }
-    
-    #calendar .fc-toolbar {
-      padding: 4px 0; /* Smaller toolbar */
-    }
-    
-    #calendar .fc-toolbar-title {
-      font-size: 1rem; /* Smaller title */
-    }
-    
-    #calendar .fc-button {
-      padding: 2px 6px; /* Smaller buttons */
-      font-size: 0.8rem;
-    }
-    
-    #calendar .fc-col-header-cell {
-      padding: 4px; /* Smaller header cells */
-    }
-    
-    #calendar .fc-timegrid-slot {
-      height: 2em; /* Smaller time slots */
-    }
-    
-    #calendar .fc-event-main {
-      padding: 2px 4px; /* Smaller event padding */
-      font-size: 0.75rem;
-    }
-
-    /* Compact conflict warnings */
-    .slot-conflicts {
-      margin-top: 4px !important;
-      max-height: 40px;
-      overflow-y: auto;
-    }
-    
-    .conflict-row { 
-      font-size: 0.75rem; 
-      color: #ffbe0b;
-      line-height: 1.2;
-    }
-
-    /* Modal - also compact */
-    #edit-event-modal {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text);
-      box-shadow: var(--shadow-lg);
-      width: 90%;
-      max-width: 700px;
-      max-height: 85vh;
-      padding: var(--space-2); /* Smaller padding */
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
-    
-    #edit-event-modal .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-2);
-    }
-    
-    #edit-event-modal h2 { 
-      margin: 0;
-      font-size: 1.1rem;
-    }
-
-    /* Access denied card */
-    #accessDenied.card {
-      max-height: 100%;
-      overflow-y: auto;
-    }
-
     /* FullCalendar Dark Theme Overrides */
-    #calendar {
+    :root {
       --fc-bg-color: var(--card-2);
-      --fc-border-color: var(--border);
-      --fc-text-color: var(--text);
+      --fc-border-color: var(--border, #333);
+      --fc-text-color: var(--text, #f1f1f1);
       --fc-neutral-bg-color: rgba(255, 255, 255, 0.05);
       --fc-today-bg-color: rgba(91, 214, 160, 0.1);
-      --fc-event-bg-color: var(--brand-2);
-      --fc-event-border-color: var(--brand-2);
+      --fc-event-bg-color: var(--brand-2, #5bd6a0);
+      --fc-event-border-color: var(--brand-2, #5bd6a0);
       --fc-event-text-color: #000;
-      --fc-button-bg-color: var(--card-2);
-      --fc-button-border-color: var(--border);
-      --fc-button-text-color: var(--text);
-      --fc-button-active-bg-color: var(--brand-2);
-      --fc-button-active-border-color: var(--brand-2);
-      --fc-button-hover-bg-color: var(--border);
+      --fc-button-bg-color: var(--card-2, #1d1f24);
+      --fc-button-border-color: var(--border, #333);
+      --fc-button-text-color: var(--text, #f1f1f1);
+      --fc-button-active-bg-color: var(--brand-2, #5bd6a0);
+      --fc-button-active-border-color: var(--brand-2, #5bd6a0);
+      --fc-button-hover-bg-color: var(--border, #333);
     }
-
-    /* Mini chips on events */
+    #calendar .fc { height: 100%; }
+    .fc-col-header-cell-cushion { text-decoration: none; color: var(--text) !important; }
+    .fc-daygrid-day-number { text-decoration: none; }
+    
+    /* Calendar event tags */
+    .ev-tags {
+      margin-top: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+    }
     .mini-chip {
       display: inline-block;
-      padding: 0px 4px;
+      padding: 1px 6px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.75);
-      color: #000;
-      font-size: 9px;
+      background: rgba(0, 0, 0, 0.3);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 10px;
       line-height: 14px;
-      border: 1px solid rgba(0,0,0,0.1);
+      font-weight: 500;
+      white-space: nowrap;
     }
 
-    /* Responsive - for very small screens, switch to tabs or single column */
-    @media (max-width: 900px) {
-      .admin-layout-inner { 
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr 1fr;
-      }
-      
-      /* Show one at a time with tabs or toggle */
-      .organizer-form-container,
-      .admin-side {
-        max-height: 50vh;
-      }
+    /* --- MODAL & MISC --- */
+    #edit-event-modal {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      color: var(--text); box-shadow: var(--shadow-lg);
+      width: 90%; max-width: 700px; max-height: 90vh;
+      padding: var(--space-3); overflow-y: auto;
     }
-</style>
+    .conflict-row { font-size: 0.8rem; color: #ffbe0b; line-height: 1.4; }
+    #accessDenied.card { max-width: 600px; margin: var(--space-4) auto; }
+
+    /* --- HEADER & NAVIGATION --- */
+    .mobile-menu-btn { display: none; }
+    .nav { display: flex; align-items: center; gap: var(--space-2); }
+    .mobile-nav-overlay {
+      display: none; flex-direction: column; justify-content: center; align-items: center;
+      gap: var(--space-4); position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
+      background: rgba(18, 19, 23, 0.9); backdrop-filter: blur(10px);
+      z-index: 1000; opacity: 0; transition: opacity 0.3s ease-in-out;
+    }
+    .mobile-nav-overlay.is-open { display: flex; opacity: 1; }
+
+    /* --- RESPONSIVE: Tablet & Mobile --- */
+    @media (max-width: 960px) {
+      html, body {
+        overflow-y: auto; /* Allow page scrolling on mobile */
+        height: auto;
+        max-height: none;
+      }
+      main.container {
+        padding: var(--space-1);
+        min-height: auto;
+      }
+      .admin-layout-inner {
+        grid-template-columns: 1fr; /* Stack columns */
+        grid-template-rows: auto auto; /* Let them size naturally */
+        gap: var(--space-3);
+      }
+      .organizer-form-container {
+         max-height: 70vh; /* Give form a max height */
+      }
+      .admin-side {
+        min-height: 70vh; /* Ensure calendar has enough space */
+      }
+
+      /* Mobile Header Styles */
+      .mobile-menu-btn {
+        display: block; background: none; border: none; color: var(--text);
+        font-size: 2rem; cursor: pointer; z-index: 1001; padding: 0; line-height: 0;
+      }
+      .header-grid > .nav { display: none; }
+      
+      .mobile-nav-overlay .nav {
+        display: flex; flex-direction: column; align-items: center;
+        gap: var(--space-4);
+      }
+      .mobile-nav-overlay .link { font-size: 1.8rem; font-weight: 500; }
+      .mobile-nav-overlay .divider { display: none; }
+      .mobile-nav-overlay .auth-area {
+        margin-top: var(--space-2); display: flex; flex-direction: column;
+        align-items: center; gap: var(--space-3);
+      }
+      .mobile-nav-close-btn {
+        position: absolute; top: var(--space-3); right: var(--space-3);
+        background: none; border: none; color: var(--text);
+        cursor: pointer; line-height: 1; padding: 0;
+      }
+      body.menu-open { overflow: hidden; }
+    }
+  </style>
 </head>
 
 <body>
@@ -448,13 +299,18 @@
           </div>
         </a>
       </div>
+      
+      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+
       <nav class="nav">
         <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
         <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
         <a href="about.html" class="link" data-i18n="nav.about">About</a>
         <a href="admin.html" id="btnAdmin" class="link active" data-i18n="nav.admin" style="display: none;">Admin</a>
         <div class="divider"></div>
-        <div id="langSwitch" class="lang-switch-slider" data-lang="en">
+        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
           <span>EN</span>
           <span>ES</span>
         </div>
@@ -471,6 +327,10 @@
       </nav>
     </div>
   </header>
+  
+  <div id="mobileNavOverlay" class="mobile-nav-overlay">
+    <!-- Content will be injected by JS -->
+  </div>
 
   <div id="flash" class="flash" role="status" aria-live="polite"></div>
 
@@ -481,39 +341,51 @@
         <div class="organizer-form-container">
           <h2 data-i18n="admin.title">Organizer Tools</h2>
           <form id="createEventForm" class="grid-form">
-            <div><label data-i18n="event.title_en">Title (EN)</label><input id="titleEn" required /></div>
-            <div><label data-i18n="event.title_es">Title (ES)</label><input id="titleEs" /></div>
-            <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea id="descEn"></textarea></div>
-            <div class="col-span-2"><label data-i18n="event.desc_es">Description (ES)</label><textarea id="descEs"></textarea></div>
-            <div><label data-i18n="event.start">Start time</label><input id="startTime" type="text" placeholder="mm/dd/yyyy --:-- --" required /></div>
-            <div><label data-i18n="event.end">End time</label><input id="endTime" type="text" placeholder="mm/dd/yyyy --:-- --" /></div>
-            <div><label data-i18n="event.lang">Language</label>
-              <select id="eventLang">
-                <option value="bi">Bilingual</option>
-                <option value="en">English</option>
-                <option value="es">Español</option>
-              </select>
-            </div>
-            <div><label data-i18n="event.host">Host org</label><input id="hostOrg" placeholder="UNAM, University of Arizona…" /></div>
-            <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="zoomUrl" type="url" /></div>
+            <!-- Form fields are wrapped in a div to ensure the final button is pushed to the bottom -->
+            <div>
+              <div class="grid-form">
+                <div><label data-i18n="event.title_en">Title (EN)</label><input id="titleEn" required /></div>
+                <div><label data-i18n="event.title_es">Title (ES)</label><input id="titleEs" /></div>
+                <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea
+                    id="descEn"></textarea></div>
+                <div class="col-span-2"><label data-i18n="event.desc_es">Description (ES)</label><textarea
+                    id="descEs"></textarea></div>
+                <div><label data-i18n="event.start">Start time</label><input id="startTime" type="text"
+                    placeholder="mm/dd/yyyy --:-- --" required /></div>
+                <div><label data-i18n="event.end">End time</label><input id="endTime" type="text"
+                    placeholder="mm/dd/yyyy --:-- --" /></div>
+                <div><label data-i18n="event.lang">Language</label>
+                  <select id="eventLang">
+                    <option value="bi">Bilingual</option>
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                  </select>
+                </div>
+                <div><label data-i18n="event.host">Host org</label><input id="hostOrg"
+                    placeholder="UNAM, University of Arizona…" /></div>
+                <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="zoomUrl"
+                    type="url" /></div>
 
-            <!-- Tags Section (Create) -->
-            <div class="tags-field col-span-2">
-              <label data-i18n="tags.label">Tags (optional)</label>
-              <div class="tags-input" id="createTagsInput" role="group" aria-label="Create tags input">
-                <div class="chips-wrap"></div>
-                <input id="createTagsField" data-i18n-placeholder="tags.placeholder" placeholder="Press Enter or comma to add. Not mandatory." />
+                <!-- Tags Section (Create) -->
+                <div class="tags-field col-span-2">
+                  <label data-i18n="tags.label">Tags (optional)</label>
+                  <div class="tags-input" id="createTagsInput" role="group" aria-label="Create tags input">
+                    <div class="chips-wrap"></div>
+                    <input id="createTagsField" data-i18n-placeholder="tags.placeholder"
+                      placeholder="Press Enter or comma to add. Not mandatory." />
+                  </div>
+                </div>
+
+                <!-- Speakers Section -->
+                <fieldset class="speakers-fieldset col-span-2">
+                  <legend data-i18n="speakers.title">Speakers</legend>
+                  <div id="createSpeakersContainer"></div>
+                  <button type="button" class="btn-secondary" id="addCreateSpeakerBtn" data-i18n="speakers.add">Add
+                    Speaker</button>
+                </fieldset>
               </div>
+              <div id="slotConflicts" class="slot-conflicts col-span-2" style="margin-top: 1rem;"></div>
             </div>
-
-            <!-- Speakers Section -->
-            <fieldset class="speakers-fieldset col-span-2">
-                <legend data-i18n="speakers.title">Speakers</legend>
-                <div id="createSpeakersContainer"></div>
-                <button type="button" class="btn-secondary" id="addCreateSpeakerBtn" data-i18n="speakers.add">Add Speaker</button>
-            </fieldset>
-
-            <div id="slotConflicts" class="slot-conflicts col-span-2" style="margin-top: 1rem;"></div>
 
             <div class="col-span-2">
               <button class="btn-primary" type="submit" data-i18n="event.create">Create Event</button>
@@ -526,10 +398,11 @@
           <h2 data-i18n="calendar.title">Event Calendar</h2>
           <div class="calendar-tools">
             <div class="tool">
-              <span class="hint">#</span>
-              <input id="tagFilterInput" data-i18n-placeholder="tags.filter" placeholder="Filter by tags (comma separated)" />
+              <span>#</span>
+              <input id="tagFilterInput" data-i18n-placeholder="tags.filter"
+                placeholder="Filter by tags (comma separated)" />
             </div>
-            <span class="hint" style="margin-left:4px;">Filter calendar events by tag</span>
+            <span class="hint" style="opacity: 0.7;">Filter calendar events by tag</span>
           </div>
           <div id="calendar"></div>
         </div>
@@ -553,9 +426,12 @@
       <input type="hidden" id="editEventId">
       <div><label data-i18n="event.title_en">Title (EN)</label><input id="editTitleEn" required /></div>
       <div><label data-i18n="event.title_es">Title (ES)</label><input id="editTitleEs" /></div>
-      <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea id="editDescEn"></textarea></div>
-      <div class="col-span-2"><label data-i18n="event.desc_es">Description (ES)</label><textarea id="editDescEs"></textarea></div>
-      <div><label data-i18n="event.start">Start time</label><input id="editStartTime" type="datetime-local" required /></div>
+      <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea
+          id="editDescEn"></textarea></div>
+      <div class="col-span-2"><label data-i18n="event.desc_es">Description (ES)</label><textarea
+          id="editDescEs"></textarea></div>
+      <div><label data-i18n="event.start">Start time</label><input id="editStartTime" type="datetime-local" required />
+      </div>
       <div><label data-i18n="event.end">End time</label><input id="editEndTime" type="datetime-local" /></div>
       <div><label data-i18n="event.lang">Language</label>
         <select id="editEventLang">
@@ -565,27 +441,30 @@
         </select>
       </div>
       <div><label data-i18n="event.host">Host org</label><input id="editHostOrg" /></div>
-      <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="editZoomUrl" type="url" /></div>
+      <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="editZoomUrl"
+          type="url" /></div>
 
       <!-- Tags Section (Edit) -->
       <div class="tags-field col-span-2">
         <label data-i18n="tags.label">Tags (optional)</label>
         <div class="tags-input" id="editTagsInput" role="group" aria-label="Edit tags input">
           <div class="chips-wrap"></div>
-          <input id="editTagsField" data-i18n-placeholder="tags.placeholder" placeholder="earth science, agriculture, environment" />
+          <input id="editTagsField" data-i18n-placeholder="tags.placeholder"
+            placeholder="earth science, agriculture, environment" />
         </div>
         <p class="muted" data-i18n="tags.hint">Press Enter or comma to add. Not mandatory.</p>
       </div>
 
       <!-- Speakers Section for Edit Modal -->
       <fieldset class="speakers-fieldset col-span-2">
-          <legend data-i18n="speakers.title">Speakers</legend>
-          <div id="editSpeakersContainer"></div>
-          <button type="button" class="btn-secondary" id="addEditSpeakerBtn" data-i18n="speakers.add">Add Speaker</button>
+        <legend data-i18n="speakers.title">Speakers</legend>
+        <div id="editSpeakersContainer"></div>
+        <button type="button" class="btn-secondary" id="addEditSpeakerBtn" data-i18n="speakers.add">Add Speaker</button>
       </fieldset>
 
       <div id="editConflicts" class="slot-conflicts col-span-2" style="margin-top: 0.5rem;"></div>
-      <div class="col-span-2" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+      <div class="col-span-2"
+        style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
         <button class="btn-primary" type="submit" data-i18n="save">Save Changes</button>
         <button id="btnDeleteEvent" class="btn-danger" type="button" data-i18n="event.delete">Delete</button>
       </div>
@@ -631,8 +510,8 @@
           create: "Create Event", edit_title: "Edit Event", delete: "Delete"
         },
         speakers: {
-            title: "Speakers", add: "Add Speaker", name: "Name*", affiliation: "Affiliation",
-            link_profile: "Link Profile", primary: "Primary", remove: "Remove"
+          title: "Speakers", add: "Add Speaker", name: "Name*", affiliation: "Affiliation",
+          link_profile: "Link Profile", primary: "Primary", remove: "Remove"
         },
         tags: {
           label: "Tags (optional)",
@@ -662,8 +541,8 @@
           lang: "Idioma", create: "Crear evento", edit_title: "Editar Evento", delete: "Eliminar"
         },
         speakers: {
-            title: "Ponentes", add: "Añadir Ponente", name: "Nombre*", affiliation: "Afiliación",
-            link_profile: "Vincular Perfil", primary: "Principal", remove: "Quitar"
+          title: "Ponentes", add: "Añadir Ponente", name: "Nombre*", affiliation: "Afiliación",
+          link_profile: "Vincular Perfil", primary: "Principal", remove: "Quitar"
         },
         tags: {
           label: "Etiquetas (opcional)",
@@ -714,7 +593,7 @@
       });
     };
     const isOrganizer = () => ["organizer", "admin"].includes(state.profile?.role);
-    const escapeHtml = (s) => (s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    const escapeHtml = (s) => (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 
     /* --- Tag helpers --- */
     const normalizeTags = (arr) => {
@@ -731,12 +610,63 @@
     const applyI18n = () => {
       document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = tr(e.dataset.i18n, e.textContent));
       document.querySelectorAll("[data-i18n-placeholder]").forEach(e => e.placeholder = tr(e.dataset.i18nPlaceholder, e.placeholder));
-      const langSwitch = $("#langSwitch");
-      if (langSwitch) langSwitch.dataset.lang = state.language;
+      document.querySelectorAll(".lang-switch-slider").forEach(el => el.dataset.lang = state.language);
       if (calendar) calendar.setOption('locale', state.language === 'es' ? 'es' : 'en');
     };
 
-    /* ============= Auth + Header ============= */
+    /* ============= Mobile Menu + Header ============= */
+    function openMenu() {
+        const mobileMenuBtn = $("#mobileMenuBtn"), mobileNavOverlay = $("#mobileNavOverlay");
+        mobileNavOverlay.classList.add("is-open");
+        document.body.classList.add("menu-open");
+        mobileMenuBtn.setAttribute("aria-expanded", "true");
+        mobileMenuBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+    }
+
+    function closeMenu() {
+        const mobileMenuBtn = $("#mobileMenuBtn"), mobileNavOverlay = $("#mobileNavOverlay");
+        mobileNavOverlay.classList.remove("is-open");
+        document.body.classList.remove("menu-open");
+        mobileMenuBtn.setAttribute("aria-expanded", "false");
+        mobileMenuBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" y2="18"></line></svg>`;
+    }
+
+    function handleLangSwitch() {
+        state.language = state.language === "en" ? "es" : "en";
+        localStorage.setItem("lang", state.language);
+        applyI18n();
+        if (calendar) calendar.render();
+    }
+    
+    function setupMobileMenu() {
+        const mobileNavOverlay = $("#mobileNavOverlay");
+        const desktopNav = document.querySelector('.header-grid .nav');
+        if (!mobileNavOverlay || !desktopNav) return;
+
+        mobileNavOverlay.innerHTML = '';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'mobile-nav-close-btn';
+        closeBtn.setAttribute('aria-label', 'Close menu');
+        closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        
+        const content = desktopNav.cloneNode(true);
+        content.id = ''; 
+        const langSwitchMobile = content.querySelector('#langSwitchDesktop');
+        if (langSwitchMobile) langSwitchMobile.id = 'langSwitchMobile';
+        
+        mobileNavOverlay.appendChild(closeBtn);
+        mobileNavOverlay.appendChild(content);
+
+        closeBtn.addEventListener('click', closeMenu);
+        mobileNavOverlay.addEventListener('click', (e) => { if (e.target === mobileNavOverlay) closeMenu(); });
+        
+        langSwitchMobile?.addEventListener('click', handleLangSwitch);
+        content.querySelector("#btnSignIn")?.addEventListener("click", () => window.location.href = 'index.html');
+        content.querySelector("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
+        content.querySelector("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
+    }
+
     const renderHeader = () => {
       const loggedIn = !!state.session;
       $("#btnSignIn")?.style && ($("#btnSignIn").style.display = loggedIn ? "none" : "inline-block");
@@ -749,6 +679,7 @@
       }
       const btnAdmin = $("#btnAdmin");
       if (btnAdmin) btnAdmin.style.display = isOrganizer() ? "inline-block" : "none";
+      setupMobileMenu();
     };
 
     const checkAccess = async () => {
@@ -995,27 +926,28 @@
           if (tags.length) {
             const el = document.createElement('div');
             el.className = 'ev-tags';
-            const short = tags.slice(0, 2); // keep compact
-            el.innerHTML = short.map(t => `<span class="mini-chip">#${escapeHtml(t)}</span>`).join('');
-            info.el.appendChild(el);
+            const short = tags.slice(0, 3); // keep compact, show up to 3 tags
+            el.innerHTML = short.map(t => `<span class="mini-chip">${escapeHtml(t)}</span>`).join('');
+            
+            const eventContent = info.el.querySelector('.fc-event-main-frame') || info.el;
+            eventContent.appendChild(el);
           }
         }
       });
       calendar.render();
-      window.setTimeout(() => calendar.updateSize(), 120); // retry after render paint
     };
 
     /* ============= Create / Update / Delete ============= */
     const checkCreateFormConflicts = () => {
       const startIso = toIsoOrNull($("#startTime").value); const endIso = toIsoOrNull($("#endTime").value);
       const conflicts = findConflicts(startIso, endIso, null);
-      $("#slotConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${(ev.title_en || ev.title_es || '').replace(/</g,'&lt;')}</div>`).join("") : '';
+      $("#slotConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${(ev.title_en || ev.title_es || '').replace(/</g, '&lt;')}</div>`).join("") : '';
       return conflicts.length > 0;
     };
     const checkEditFormConflicts = () => {
       const id = $("#editEventId").value; const startIso = toIsoOrNull($("#editStartTime").value); const endIso = toIsoOrNull($("#editEndTime").value);
       const conflicts = findConflicts(startIso, endIso, id);
-      $("#editConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${(ev.title_en || ev.title_es || '').replace(/</g,'&lt;')}</div>`).join("") : '';
+      $("#editConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${(ev.title_en || ev.title_es || '').replace(/</g, '&lt;')}</div>`).join("") : '';
       return conflicts.length > 0;
     };
 
@@ -1089,30 +1021,29 @@
       }
     };
 
-    /*
-     * REMOVED: All JavaScript-based scaling functions (fitAdminToViewport, fitModalToViewport)
-     * and their related event listeners/observers have been removed.
-     * The layout is now handled 100% by CSS, which is more reliable and efficient.
-     * The fix for the initial "flash" was correcting the meta charset typo, allowing
-     * the main stylesheet to load correctly from the start.
-    */
-
     /* ============= Wire UI ============= */
     const wireUI = () => {
+      // Desktop-only button listeners
       $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
       $("#btnSignIn")?.addEventListener("click", () => window.location.href = 'index.html');
       $("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
-      $("#langSwitch")?.addEventListener('click', () => {
-        state.language = state.language === 'en' ? 'es' : 'en';
-        localStorage.setItem("lang", state.language);
-        applyI18n(); if (calendar) calendar.render();
+      $("#langSwitchDesktop")?.addEventListener('click', handleLangSwitch);
+      
+      // Mobile menu button listener
+      $("#mobileMenuBtn")?.addEventListener("click", () => {
+        const overlay = $("#mobileNavOverlay");
+        if (overlay && !overlay.classList.contains('is-open')) {
+          openMenu();
+        } else {
+          closeMenu();
+        }
       });
 
       const setupDateTimePlaceholders = (startEl, endEl) => {
         const handleFocus = (el) => { el.type = 'datetime-local'; };
         const handleBlur = (el) => { if (!el.value) el.type = 'text'; };
         startEl.addEventListener('focus', () => handleFocus(startEl)); startEl.addEventListener('blur', () => handleBlur(startEl)); if (!startEl.value) startEl.type = 'text';
-        if(endEl) { endEl.addEventListener('focus', () => handleFocus(endEl)); endEl.addEventListener('blur', () => handleBlur(endEl)); if (!endEl.value) endEl.type = 'text'; }
+        if (endEl) { endEl.addEventListener('focus', () => handleFocus(endEl)); endEl.addEventListener('blur', () => handleBlur(endEl)); if (!endEl.value) endEl.type = 'text'; }
       };
       setupDateTimePlaceholders($('#startTime'), $('#endTime'));
 
@@ -1157,9 +1088,9 @@
       $('#addCreateSpeakerBtn')?.addEventListener('click', () => { addSpeakerField('createSpeakersContainer'); });
       $('#addEditSpeakerBtn')?.addEventListener('click', () => { addSpeakerField('editSpeakersContainer'); });
       document.body.addEventListener('click', e => {
-          if (e.target.classList.contains('remove-speaker-btn')) {
-              e.target.closest('.speaker-row').remove();
-          }
+        if (e.target.classList.contains('remove-speaker-btn')) {
+          e.target.closest('.speaker-row').remove();
+        }
       });
 
       initTagsInput('createTagsInput', 'createTagsField', []);

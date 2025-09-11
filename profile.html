@@ -5,77 +5,84 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Your Profile • Almuerzo Agrivoltaico</title>
-    <meta name="description"
-        content="Manage your profile for the Almuerzo Agrivoltaico seminar series." />
+    <meta name="description" content="Manage your profile for the Almuerzo Agrivoltaico seminar series." />
     <link rel="stylesheet" href="styles.css" />
     <style>
-        /* --- Layout for this page --- */
-        html,
-        body {
-            height: 100%;
+        /* --- CORE LAYOUT --- */
+        @media (min-width: 961px) {
+            html,
+            body {
+                height: 100vh;
+                max-height: 100vh;
+                overflow: hidden;
+            }
         }
-
+        
         body {
             display: flex;
             flex-direction: column;
+            min-height: 100vh; /* Good mobile-first fallback */
+            background-color: var(--background, #121317);
+            color: var(--text, #f1f1f1);
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+
+        .site-header,
+        .site-footer {
+            flex-shrink: 0;
         }
 
         main.container {
-      width: 100% !important;
-      max-width: 100% !important;
-      margin: 0;
-      padding: var(--space-3);
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden; /* Fully contain content */
-    }
-
-        #profile,
-        #publicProfileView {
-            margin: 0 auto;
-            max-width: 900px;
-            /* Give the content a max width */
-        }
-
-        /* --- Extracted Profile Styles (from v1) --- */
-        #profile,
-        #publicProfileView {
-            overflow-y: auto;
-            /* Enable scrolling for the profile section */
-        }
-
-        .profile-intro {
-            color: var(--color-text-muted);
-            margin-bottom: var(--space-4);
-        }
-
-        .profile-form {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            padding: var(--space-3);
+            box-sizing: border-box;
             width: 100%;
+            max-width: 100% !important; /* FIX: Override external .container styles */
+            margin: 0;
+        }
+
+        #profile,
+        #publicProfileView,
+        #signInPrompt {
+            width: 100%;
+            max-width: 900px; /* Constrain content width */
+            margin: 0 auto; /* Center horizontally in the flex container */
+            padding: var(--space-4);
+            
+            /* Key changes for vertical fill and internal scroll */
+            flex-grow: 1;
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        /* --- PROFILE FORM STYLING --- */
+        .profile-intro {
+            color: var(--text-muted);
+            margin-bottom: var(--space-4);
         }
 
         .form-section {
             margin-bottom: var(--space-5);
             padding-bottom: var(--space-4);
-            border-bottom: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--border);
         }
-
-        .form-section:last-of-type {
-            border-bottom: none;
-        }
+        .form-section:last-of-type { border-bottom: none; margin-bottom: 0; }
 
         .form-section h3 {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 600;
             margin-bottom: var(--space-3);
-            color: var(--color-text);
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: var(--space-3);
+            gap: var(--space-4);
         }
 
         .form-field {
@@ -83,20 +90,43 @@
             flex-direction: column;
             gap: var(--space-1);
         }
-
+        .form-field.col-span-2 { grid-column: 1 / -1; }
+        
+        .form-field label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
         .form-field.required label::after {
             content: " *";
             color: var(--color-danger);
         }
-
-        .form-field.col-span-2 {
-            grid-column: 1 / -1;
+        
+        /* Apply consistent input/textarea styling from the design system */
+        .form-field input,
+        .form-field textarea {
+            background-color: var(--card-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: var(--space-2);
+            color: var(--text);
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
+        .form-field input:focus,
+        .form-field textarea:focus {
+            border-color: var(--brand-2);
+            outline: none;
+            box-shadow: 0 0 0 3px var(--brand-2-muted);
+        }
+        .form-field textarea { resize: vertical; min-height: 100px; }
 
         .field-hint {
             font-size: 0.85rem;
-            color: var(--color-text-muted);
-            margin-top: var(--space-1);
+            color: var(--text-muted);
+            margin-top: 2px;
         }
 
         .form-actions {
@@ -104,126 +134,56 @@
             gap: var(--space-3);
             margin-top: var(--space-4);
             padding-top: var(--space-4);
-            border-top: 1px solid var(--color-border);
-        }
-
-        @media (max-width: 600px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-field.col-span-2 {
-                grid-column: 1;
-            }
+            border-top: 1px solid var(--border);
         }
 
         /* --- Public Profile View --- */
         #publicProfileView .public-profile-header {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            align-items: center;
-            gap: var(--space-4);
-            margin-bottom: var(--space-4);
-            padding-bottom: var(--space-4);
-            border-bottom: 1px solid var(--color-border);
+            display: grid; grid-template-columns: auto 1fr; align-items: center;
+            gap: var(--space-4); margin-bottom: var(--space-4);
+            padding-bottom: var(--space-4); border-bottom: 1px solid var(--border);
         }
-
         #publicProfileView .avatar-circle-large {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: var(--color-surface-strong);
-            display: grid;
-            place-content: center;
-            font-weight: 600;
-            font-size: 2.2rem;
-            flex-shrink: 0;
+            width: 80px; height: 80px; border-radius: 50%; background-color: var(--card-2);
+            display: grid; place-content: center; font-weight: 600; font-size: 2.2rem;
         }
+        #publicProfileView h2 { margin: 0; font-size: 1.4rem; }
+        #publicProfileView .public-profile-meta { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+        #publicProfileView .meta-chip { display: inline-flex; align-items: center; gap: .4rem; padding: .2rem .5rem; border-radius: 999px; background: var(--card-2); font-size: .8rem; }
+        #publicProfileView .email a { color: var(--brand-2); text-decoration: none; }
+        #publicProfileView .link-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+        #publicProfileView .link-list a { text-decoration: none; color: var(--brand-2); display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 500; }
+        #publicProfileView .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 
-        #publicProfileView h2 {
-            margin: 0;
-            font-size: 1.4rem;
+        /* --- HEADER & NAVIGATION --- */
+        .mobile-menu-btn { display: none; }
+        .nav { display: flex; align-items: center; gap: var(--space-2); }
+        .mobile-nav-overlay {
+          display: none; flex-direction: column; justify-content: center; align-items: center;
+          gap: var(--space-4); position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
+          background: rgba(18, 19, 23, 0.9); backdrop-filter: blur(10px);
+          z-index: 1000; opacity: 0; transition: opacity 0.3s ease-in-out;
         }
+        .mobile-nav-overlay.is-open { display: flex; opacity: 1; }
 
-        #publicProfileView p {
-            margin: var(--space-1) 0 0 0;
-        }
+        /* --- RESPONSIVE ADJUSTMENTS --- */
+        @media (max-width: 960px) {
+            main.container { padding: var(--space-2); }
+            .form-grid { grid-template-columns: 1fr; gap: var(--space-3); }
+            .form-field.col-span-2 { grid-column: 1; }
 
-        #publicProfileView .public-profile-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-2);
-            margin-top: var(--space-2);
-        }
-
-        #publicProfileView .meta-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            padding: .2rem .5rem;
-            border-radius: 999px;
-            background: var(--color-surface-strong);
-            color: var(--color-text);
-            font-size: .8rem;
-            line-height: 1;
-        }
-
-        #publicProfileView .meta-chip .emoji {
-            opacity: .9;
-        }
-
-        #publicProfileView .email a {
-            color: var(--color-primary);
-            text-decoration: none;
-        }
-
-        #publicProfileView .email a:hover {
-            text-decoration: underline;
-        }
-
-        #publicProfileView .link-list {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-2);
-        }
-
-        #publicProfileView .link-list a {
-            text-decoration: none;
-            color: var(--color-primary);
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-2);
-            font-weight: 500;
-        }
-
-        #publicProfileView .link-list a:hover {
-            text-decoration: underline;
-        }
-
-        #publicProfileView .link-icon {
-            display: inline-grid;
-            place-items: center;
-            width: 1.3em;
-            height: 1.3em;
-            border-radius: 3px;
-            background: var(--color-surface-strong);
-            color: var(--color-primary);
-            font-size: 0.95em;
-        }
-
-        #publicProfileView .chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-2);
-        }
-
-        #publicProfileView .chip {
-            padding: var(--space-1) var(--space-2);
-            background: var(--color-surface-strong);
-            border-radius: 999px;
-            font-size: 0.85rem;
+            /* Mobile Header Styles */
+            .mobile-menu-btn {
+                display: block; background: none; border: none; color: var(--text);
+                font-size: 2rem; cursor: pointer; z-index: 1001; padding: 0; line-height: 0;
+            }
+            .header-grid > .nav { display: none; }
+            .mobile-nav-overlay .nav { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); }
+            .mobile-nav-overlay .link { font-size: 1.8rem; font-weight: 500; }
+            .mobile-nav-overlay .divider { display: none; }
+            .mobile-nav-overlay .auth-area { margin-top: var(--space-2); display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
+            .mobile-nav-close-btn { position: absolute; top: var(--space-3); right: var(--space-3); background: none; border: none; color: var(--text); cursor: pointer; line-height: 1; padding: 0; }
+            body.menu-open { overflow: hidden; }
         }
     </style>
 </head>
@@ -242,13 +202,18 @@
                     </div>
                 </a>
             </div>
+            
+            <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+
             <nav class="nav">
                 <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
                 <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
                 <a href="about.html" class="link" data-i18n="nav.about">About</a>
                 <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
                 <div class="divider"></div>
-                <div id="langSwitch" class="lang-switch-slider" data-lang="en">
+                <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
                     <span>EN</span>
                     <span>ES</span>
                 </div>
@@ -266,12 +231,16 @@
         </div>
     </header>
 
+    <div id="mobileNavOverlay" class="mobile-nav-overlay">
+        <!-- Content will be injected by JS -->
+    </div>
+
     <div id="flash" class="flash" role="status" aria-live="polite"></div>
 
     <main class="container">
         <!-- Profile Edit View -->
         <section id="profile" class="card" aria-labelledby="profileTitle" style="display: none">
-            <button class="btn-ghost" id="backButton" style="margin-bottom: var(--space-3);">
+            <button class="btn-ghost" id="backButton" style="margin-bottom: var(--space-3); align-self: flex-start;">
                 ← <span data-i18n="back.general">Back</span>
             </button>
             <h2 id="profileTitle" data-i18n="profile.title">Complete Your Profile</h2>
@@ -284,18 +253,18 @@
                     <h3 data-i18n="profile.basic_info">Basic Information</h3>
                     <div class="form-grid">
                         <div class="form-field required">
-                            <label for="fullName" data-i18n="profile.full_name">Full Name *</label>
+                            <label for="fullName" data-i18n="profile.full_name">Full Name</label>
                             <input id="fullName" required />
                         </div>
                         <div class="form-field required">
-                            <label for="username" data-i18n="profile.username">Username *</label>
+                            <label for="username" data-i18n="profile.username">Username</label>
                             <input id="username" required pattern="[a-zA-Z0-9_-]+"
                                 title="Only letters, numbers, underscores and hyphens allowed" />
                             <small class="field-hint" data-i18n="profile.username_hint">Used for @mentions and profile
                                 URL</small>
                         </div>
                         <div class="form-field required col-span-2">
-                            <label for="affiliation" data-i18n="profile.affiliation">Affiliation/Organization *</label>
+                            <label for="affiliation" data-i18n="profile.affiliation">Affiliation/Organization</label>
                             <input id="affiliation" required />
                         </div>
                     </div>
@@ -306,7 +275,7 @@
                     <h3 data-i18n="profile.contact_info">Contact Information</h3>
                     <div class="form-grid">
                         <div class="form-field required col-span-2">
-                            <label for="workEmail" data-i18n="profile.work_email">Work Email *</label>
+                            <label for="workEmail" data-i18n="profile.work_email">Work Email</label>
                             <input id="workEmail" type="email" required />
                         </div>
                     </div>
@@ -358,7 +327,7 @@
 
         <!-- Public Profile View -->
         <section id="publicProfileView" class="card" style="display: none;">
-            <button class="btn-ghost" id="backFromPublicProfile" style="margin-bottom: var(--space-3);">
+            <button class="btn-ghost" id="backFromPublicProfile" style="margin-bottom: var(--space-3); align-self: flex-start;">
                  ← <span data-i18n="back.general">Back</span>
             </button>
             <div class="public-profile-header">
@@ -382,9 +351,7 @@
             <div class="public-profile-body">
                 <div class="form-section">
                     <h3 data-i18n="profile.professional_links">Professional Links</h3>
-                    <ul id="publicProfileLinks" class="link-list">
-                        <!-- Links injected here -->
-                    </ul>
+                    <ul id="publicProfileLinks" class="link-list"></ul>
                 </div>
                 <div class="form-section">
                     <h3 data-i18n="profile.fields_section">Research Interests</h3>
@@ -412,16 +379,14 @@
     </footer>
 
     <script type="module">
-        import { 
-            supabase, 
-            authState, 
-            initAuth, 
-            fetchProfile, 
-            renderHeader,
-            signOut
-        } from "./auth.js";
+        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+        const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true }});
 
         const state = {
+            session: null, profile: null, profileCache: new Map(),
             language: localStorage.getItem("lang") || "en",
         };
         
@@ -444,12 +409,20 @@
             },
         };
 
-        function tr(key, fallback = "") { const lang = state.language; const parts = key.split("."); let obj = t[lang]; for (const p of parts) obj = obj?.[p]; return obj ?? fallback; }
         const $ = (sel) => document.querySelector(sel);
+        function tr(key, fallback = "") { const lang = state.language; const parts = key.split("."); let obj = t[lang]; for (const p of parts) obj = obj?.[p]; return obj ?? fallback; }
         function setFlash(msg, timeout = 3000) { const el = $("#flash"); if (!el) return; el.textContent = msg; el.style.display = "block"; clearTimeout(setFlash._t); if (timeout > 0) setFlash._t = setTimeout(() => (el.style.display = "none"), timeout); }
         function escapeHtml(s = "") { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
-        function applyI18n() { document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); }); document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); }); const langSwitch = $("#langSwitch"); if (langSwitch) langSwitch.dataset.lang = state.language; }
+        function applyI18n() { document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); }); document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); }); document.querySelectorAll(".lang-switch-slider").forEach(el => el.dataset.lang = state.language); }
         
+        async function fetchProfile(userId, { refresh = false } = {}) {
+            if (!userId) return null;
+            if (!refresh && state.profileCache.has(userId)) return state.profileCache.get(userId);
+            const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
+            if (data) state.profileCache.set(userId, data);
+            return data;
+        }
+
         function showView(which) {
             $("#profile").style.display = 'none';
             $("#publicProfileView").style.display = 'none';
@@ -458,21 +431,22 @@
         }
 
         function populateProfileForm() {
-            if (!authState.profile) return;
-            $("#fullName").value = authState.profile.full_name || "";
-            $("#username").value = authState.profile.username || "";
-            $("#affiliation").value = authState.profile.affiliation || "";
-            $("#workEmail").value = authState.profile.work_email || authState.session?.user?.email || "";
-            $("#personalWebsite").value = authState.profile.personal_website || "";
-            $("#professionalWebsite").value = authState.profile.professional_website || "";
-            $("#googleScholar").value = authState.profile.google_scholar || "";
-            $("#fieldsOfStudy").value = authState.profile.fields_of_study || "";
+            if (!state.profile) return;
+            $("#fullName").value = state.profile.full_name || "";
+            $("#username").value = state.profile.username || "";
+            $("#affiliation").value = state.profile.affiliation || "";
+            $("#workEmail").value = state.profile.work_email || state.session?.user?.email || "";
+            $("#personalWebsite").value = state.profile.personal_website || "";
+            $("#professionalWebsite").value = state.profile.professional_website || "";
+            $("#googleScholar").value = state.profile.google_scholar || "";
+            $("#fieldsOfStudy").value = state.profile.fields_of_study || "";
         }
 
         async function renderPublicProfile(userId) {
             const profile = await fetchProfile(userId, { refresh: true });
             if (!profile) {
                 $("#publicProfileView").innerHTML = `<div class="empty">User not found.</div>`;
+                showView('publicProfileView');
                 return;
             }
             $("#publicProfileInitial").textContent = (profile.full_name || "?").charAt(0).toUpperCase();
@@ -482,27 +456,118 @@
             $("#publicProfileUsername").style.display = profile.username ? 'inline-flex' : 'none';
             $("#publicProfileRole .txt").textContent = profile.role;
             $("#publicProfileRole").style.display = profile.role ? 'inline-flex' : 'none';
-            
             const emailElement = $("#publicProfileEmail .txt");
             emailElement.textContent = profile.work_email;
             emailElement.href = `mailto:${profile.work_email}`;
             $("#publicProfileEmail").style.display = profile.work_email ? 'inline-flex' : 'none';
-            
             const linksList = $("#publicProfileLinks");
             linksList.innerHTML = "";
-            const linkItem = (url, label, emoji) => `<li><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><span class="link-icon">${emoji}</span><span>${escapeHtml(label)}</span></a></li>`;
-            if (profile.personal_website) linksList.innerHTML += linkItem(profile.personal_website, tr('profile.personal_website'), "🏠");
-            if (profile.professional_website) linksList.innerHTML += linkItem(profile.professional_website, tr('profile.professional_website'), "🏛️");
-            if (profile.google_scholar) linksList.innerHTML += linkItem(profile.google_scholar, tr('profile.google_scholar'), "🎓");
-            if (!linksList.innerHTML) linksList.innerHTML = `<li>No links provided.</li>`;
+            const linkItem = (url, labelKey, emoji) => `<li><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><span class="link-icon">${emoji}</span><span>${escapeHtml(tr(labelKey))}</span></a></li>`;
+            if (profile.personal_website) linksList.innerHTML += linkItem(profile.personal_website, 'profile.personal_website', "🏠");
+            if (profile.professional_website) linksList.innerHTML += linkItem(profile.professional_website, 'profile.professional_website', "🏛️");
+            if (profile.google_scholar) linksList.innerHTML += linkItem(profile.google_scholar, 'profile.google_scholar', "🎓");
+            if (!linksList.innerHTML) linksList.innerHTML = `<li class="text-muted">No links provided.</li>`;
             const fields = (profile.fields_of_study || "").split(",").map(s => s.trim()).filter(Boolean);
             $("#publicProfileFields").innerHTML = fields.length ? fields.map(f => `<span class="chip">${escapeHtml(f)}</span>`).join("") : `<span class="text-muted">No research interests.</span>`;
+            showView('publicProfileView');
+        }
+        
+        // --- Mobile Menu & Header Logic ---
+        function openMenu() {
+            $("#mobileNavOverlay")?.classList.add("is-open");
+            document.body.classList.add("menu-open");
+            const btn = $("#mobileMenuBtn");
+            if(btn) {
+                btn.setAttribute("aria-expanded", "true");
+                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+            }
+        }
+        function closeMenu() {
+            $("#mobileNavOverlay")?.classList.remove("is-open");
+            document.body.classList.remove("menu-open");
+            const btn = $("#mobileMenuBtn");
+            if(btn) {
+                btn.setAttribute("aria-expanded", "false");
+                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
+            }
+        }
+        function handleLangSwitch() {
+            state.language = state.language === "en" ? "es" : "en";
+            localStorage.setItem("lang", state.language);
+            applyI18n();
+        }
+        function setupMobileMenu() {
+            const mobileNavOverlay = $("#mobileNavOverlay");
+            const desktopNav = document.querySelector('.header-grid .nav');
+            if (!mobileNavOverlay || !desktopNav) return;
+            mobileNavOverlay.innerHTML = '';
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'mobile-nav-close-btn';
+            closeBtn.setAttribute('aria-label', 'Close menu');
+            closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+            const content = desktopNav.cloneNode(true);
+            content.id = '';
+            const langSwitchMobile = content.querySelector('#langSwitchDesktop');
+            if (langSwitchMobile) langSwitchMobile.id = 'langSwitchMobile';
+            mobileNavOverlay.appendChild(closeBtn);
+            mobileNavOverlay.appendChild(content);
+            closeBtn.addEventListener('click', closeMenu);
+            mobileNavOverlay.addEventListener('click', (e) => { if (e.target === mobileNavOverlay) closeMenu(); });
+            langSwitchMobile?.addEventListener('click', handleLangSwitch);
+            content.querySelector("#btnSignIn")?.addEventListener("click", () => window.location.href = 'index.html');
+            content.querySelector("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
+            content.querySelector("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
+        }
+        function renderHeader() {
+            const isOrganizer = ["organizer", "admin"].includes(state.profile?.role);
+            if (state.session) {
+                $("#btnSignIn").style.display = "none"; $("#btnSignOut").style.display = "inline-block";
+                $("#btnProfile").style.display = "grid"; $("#userName").style.display = "inline";
+                $("#userName").textContent = state.profile?.full_name || state.profile?.username || "";
+                $("#userInitial").textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
+                $("#btnAdmin").style.display = isOrganizer ? "inline-block" : "none";
+            } else {
+                $("#btnSignIn").style.display = "inline-block"; $("#btnSignOut").style.display = "none";
+                $("#btnProfile").style.display = "none"; $("#userName").style.display = "none";
+                $("#btnAdmin").style.display = "none";
+            }
+            setupMobileMenu();
+        }
+        async function initAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            state.session = session;
+            if (session) state.profile = await fetchProfile(session.user.id);
+            supabase.auth.onAuthStateChange(async (_event, newSession) => {
+                state.session = newSession;
+                state.profile = newSession ? await fetchProfile(newSession.user.id) : null;
+                renderHeader();
+                handlePageLogic();
+            });
+        }
+        
+        function handlePageLogic() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewUserId = urlParams.get('id');
+
+            if (viewUserId) {
+                renderPublicProfile(viewUserId);
+            } else if (state.session) {
+                populateProfileForm();
+                showView('profile');
+            } else {
+                showView('signInPrompt');
+            }
         }
         
         function wireUI() {
-            $("#btnSignOut")?.addEventListener("click", () => signOut());
+            $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
             $("#btnSignIn")?.addEventListener("click", () => window.location.href = `index.html`);
             $("#btnProfile")?.addEventListener("click", () => window.location.href = `profile.html`);
+            $("#langSwitchDesktop")?.addEventListener('click', handleLangSwitch);
+            $("#mobileMenuBtn")?.addEventListener("click", () => {
+                const overlay = $("#mobileNavOverlay");
+                if (overlay && !overlay.classList.contains('is-open')) openMenu(); else closeMenu();
+            });
             
             $("#backButton")?.addEventListener("click", () => history.back());
             $("#backFromPublicProfile")?.addEventListener("click", () => history.back());
@@ -512,48 +577,35 @@
             const forceCompletion = urlParams.get('force') === 'true';
 
             if (forceCompletion) {
-                const backButton = $("#backButton");
-                const skipButton = $("#skipProfile");
-                if (backButton) backButton.style.display = 'none';
-                if (skipButton) skipButton.style.display = 'none';
+                if ($("#backButton")) $("#backButton").style.display = 'none';
+                if ($("#skipProfile")) $("#skipProfile").style.display = 'none';
             } else {
-                const skipButton = $("#skipProfile");
-                if (skipButton) skipButton.style.display = 'inline-block';
+                if ($("#skipProfile")) $("#skipProfile").style.display = 'inline-block';
             }
 
             $("#skipProfile")?.addEventListener("click", () => {
-                if (returnTo) window.location.href = returnTo;
-                else history.back();
+                if (returnTo) window.location.href = returnTo; else history.back();
             });
 
             $("#profileForm")?.addEventListener("submit", async (e) => {
                 e.preventDefault();
-                if (!authState.session) return;
+                if (!state.session) return;
                 const profileData = {
-                    full_name: $("#fullName").value.trim(), 
-                    username: $("#username").value.trim(),
-                    affiliation: $("#affiliation").value.trim(), 
-                    work_email: $("#workEmail").value.trim(),
+                    full_name: $("#fullName").value.trim(), username: $("#username").value.trim(),
+                    affiliation: $("#affiliation").value.trim(), work_email: $("#workEmail").value.trim(),
                     personal_website: $("#personalWebsite").value.trim() || null,
                     professional_website: $("#professionalWebsite").value.trim() || null,
                     google_scholar: $("#googleScholar").value.trim() || null,
                     fields_of_study: $("#fieldsOfStudy").value.trim() || null,
                 };
-                const { error } = await supabase.from("profiles").update(profileData).eq("id", authState.session.user.id);
+                const { error } = await supabase.from("profiles").update(profileData).eq("id", state.session.user.id);
                 if (!error) {
                     setFlash(tr("profile.saved"));
-                    authState.profileCache.delete(authState.session.user.id);
-                    // Re-fetch the profile to update authState
-                    authState.profile = await fetchProfile(authState.session.user.id, { refresh: true });
-                    authState.profileComplete = !!(
-                        authState.profile?.full_name &&
-                        authState.profile?.username &&
-                        authState.profile?.affiliation &&
-                        authState.profile?.work_email
-                    );
+                    state.profile = await fetchProfile(state.session.user.id, { refresh: true });
+                    const profileComplete = !!(state.profile?.full_name && state.profile?.username && state.profile?.affiliation && state.profile?.work_email);
                     populateProfileForm();
                     renderHeader();
-                    if(authState.profileComplete && returnTo) {
+                    if(profileComplete && returnTo) {
                         setTimeout(() => window.location.href = returnTo, 1000);
                     }
                 } else {
@@ -561,45 +613,15 @@
                 }
             });
 
-            $("#langSwitch")?.addEventListener('click', () => {
-                state.language = state.language === 'en' ? 'es' : 'en';
-                localStorage.setItem("lang", state.language);
-                applyI18n();
-            });
             $("#year").textContent = new Date().getFullYear();
         }
 
         (async function main() {
             applyI18n();
             wireUI();
-            
-            await initAuth({
-                onAuthReady: (authState, viewUserId) => {
-                    renderHeader();
-                    
-                    if (viewUserId) {
-                        showView('publicProfileView');
-                        renderPublicProfile(viewUserId);
-                    } else if (authState.session) {
-                        populateProfileForm();
-                        showView('profile');
-                    } else {
-                        showView('signInPrompt');
-                    }
-                },
-                onAuthChange: (authState, viewUserId) => {
-                    renderHeader();
-                    
-                    if (!viewUserId) {
-                        if (authState.session) {
-                            populateProfileForm();
-                            showView('profile');
-                        } else {
-                            showView('signInPrompt');
-                        }
-                    }
-                }
-            });
+            await initAuth();
+            renderHeader();
+            handlePageLogic();
         })();
     </script>
 </body>
