@@ -21,7 +21,7 @@
         body {
             display: flex;
             flex-direction: column;
-            min-height: 100vh; /* Good mobile-first fallback */
+            min-height: 100vh;
             background-color: var(--background, #121317);
             color: var(--text, #f1f1f1);
             margin: 0;
@@ -42,7 +42,7 @@
             padding: var(--space-3);
             box-sizing: border-box;
             width: 100%;
-            max-width: 100% !important; /* FIX: Override external .container styles */
+            max-width: 100% !important;
             margin: 0;
         }
 
@@ -50,11 +50,9 @@
         #publicProfileView,
         #signInPrompt {
             width: 100%;
-            max-width: 900px; /* Constrain content width */
-            margin: 0 auto; /* Center horizontally in the flex container */
+            max-width: 900px;
+            margin: 0 auto;
             padding: var(--space-4);
-            
-            /* Key changes for vertical fill and internal scroll */
             flex-grow: 1;
             min-height: 0;
             overflow-y: auto;
@@ -102,7 +100,6 @@
             color: var(--color-danger);
         }
         
-        /* Apply consistent input/textarea styling from the design system */
         .form-field input,
         .form-field textarea {
             background-color: var(--card-2);
@@ -137,6 +134,71 @@
             border-top: 1px solid var(--border);
         }
 
+        /* --- Avatar Upload Section --- */
+        .avatar-upload-section {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--card-2);
+            display: grid;
+            place-content: center;
+            font-weight: 600;
+            font-size: 2.5rem;
+            overflow: hidden;
+            position: relative;
+            border: 3px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-upload-controls {
+            flex: 1;
+        }
+
+        .avatar-upload-controls h4 {
+            margin: 0 0 var(--space-2) 0;
+            font-size: 1rem;
+        }
+
+        .avatar-buttons {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+
+        .file-input-label {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            background-color: var(--brand-2);
+            color: white;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .file-input-label:hover {
+            background-color: var(--brand-2-hover);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
         /* --- Public Profile View --- */
         #publicProfileView .public-profile-header {
             display: grid; grid-template-columns: auto 1fr; align-items: center;
@@ -146,6 +208,12 @@
         #publicProfileView .avatar-circle-large {
             width: 80px; height: 80px; border-radius: 50%; background-color: var(--card-2);
             display: grid; place-content: center; font-weight: 600; font-size: 2.2rem;
+            overflow: hidden;
+        }
+        #publicProfileView .avatar-circle-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         #publicProfileView h2 { margin: 0; font-size: 1.4rem; }
         #publicProfileView .public-profile-meta { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
@@ -172,7 +240,6 @@
             .form-grid { grid-template-columns: 1fr; gap: var(--space-3); }
             .form-field.col-span-2 { grid-column: 1; }
 
-            /* Mobile Header Styles */
             .mobile-menu-btn {
                 display: block; background: none; border: none; color: var(--text);
                 font-size: 2rem; cursor: pointer; z-index: 1001; padding: 0; line-height: 0;
@@ -220,6 +287,7 @@
                 <div class="auth-area">
                     <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
                         <span id="userInitial"></span>
+                        <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
                     </button>
                     <span id="userName"></span>
                     <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
@@ -248,6 +316,29 @@
                 continue. Fields marked with * are required.</p>
 
             <form id="profileForm" class="profile-form">
+                <!-- Avatar Upload Section -->
+                <div class="form-section">
+                    <h3 data-i18n="profile.avatar">Profile Picture</h3>
+                    <div class="avatar-upload-section">
+                        <div class="avatar-preview" id="avatarPreview">
+                            <span id="avatarInitial">U</span>
+                            <img id="avatarImage" style="display: none;" />
+                        </div>
+                        <div class="avatar-upload-controls">
+                            <h4 data-i18n="profile.avatar_upload">Upload a profile picture</h4>
+                            <p class="field-hint" data-i18n="profile.avatar_hint">JPG, PNG or GIF. Max 2MB.</p>
+                            <div class="avatar-buttons">
+                                <label class="file-input-label">
+                                    <span>📷</span>
+                                    <span data-i18n="profile.choose_image">Choose Image</span>
+                                    <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/gif" />
+                                </label>
+                                <button type="button" class="btn-ghost" id="removeAvatar" style="display: none;" data-i18n="profile.remove_image">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Basic Information -->
                 <div class="form-section">
                     <h3 data-i18n="profile.basic_info">Basic Information</h3>
@@ -331,7 +422,10 @@
                  ← <span data-i18n="back.general">Back</span>
             </button>
             <div class="public-profile-header">
-                <div class="avatar-circle-large" id="publicProfileInitial"></div>
+                <div class="avatar-circle-large" id="publicProfileAvatar">
+                    <span id="publicProfileInitial"></span>
+                    <img id="publicProfileImage" style="display: none;" />
+                </div>
                 <div>
                     <h2 id="publicProfileName"></h2>
                     <p id="publicProfileAffiliation" class="text-muted"></p>
@@ -388,6 +482,8 @@
         const state = {
             session: null, profile: null, profileCache: new Map(),
             language: localStorage.getItem("lang") || "en",
+            avatarFile: null,
+            currentAvatarUrl: null
         };
         
         const t = {
@@ -395,7 +491,33 @@
                 tagline: "An informal seminar series to share advances in agrivoltaics in Latin America",
                 nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin" },
                 auth: { signin: "Sign in", signout: "Sign out", signin_prompt_title: "Please Sign In", signin_prompt_body: "You need to be signed in to view and edit your profile.", signin_prompt_button: "Sign in on main page"},
-                profile: { title: "Complete Your Profile", intro: "Please complete your profile to continue. Fields marked with * are required.", basic_info: "Basic Information", contact_info: "Contact Information", professional_links: "Professional Links", fields_section: "Research Interests", full_name: "Full Name", username: "Username", username_hint: "Used for @mentions and profile URL", affiliation: "Affiliation/Organization", work_email: "Work Email", personal_website: "Personal Website", professional_website: "Professional/Lab Website", google_scholar: "Google Scholar Profile", fields_of_study: "Fields of Study", fields_hint: "Separate multiple fields with commas", save: "Save Profile", saved: "Profile updated", skip: "Skip for now" },
+                profile: { 
+                    title: "Complete Your Profile", 
+                    intro: "Please complete your profile to continue. Fields marked with * are required.", 
+                    avatar: "Profile Picture",
+                    avatar_upload: "Upload a profile picture",
+                    avatar_hint: "JPG, PNG or GIF. Max 2MB.",
+                    choose_image: "Choose Image",
+                    remove_image: "Remove",
+                    basic_info: "Basic Information", 
+                    contact_info: "Contact Information", 
+                    professional_links: "Professional Links", 
+                    fields_section: "Research Interests", 
+                    full_name: "Full Name", 
+                    username: "Username", 
+                    username_hint: "Used for @mentions and profile URL", 
+                    affiliation: "Affiliation/Organization", 
+                    work_email: "Work Email", 
+                    personal_website: "Personal Website", 
+                    professional_website: "Professional/Lab Website", 
+                    google_scholar: "Google Scholar Profile", 
+                    fields_of_study: "Fields of Study", 
+                    fields_hint: "Separate multiple fields with commas", 
+                    save: "Save Profile", 
+                    saved: "Profile updated", 
+                    skip: "Skip for now",
+                    upload_error: "Failed to upload image. Please try again."
+                },
                 back: { general: "Back" },
                 footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
             },
@@ -403,7 +525,33 @@
                 tagline: "Serie de seminarios informales para compartir avances en agrofotovoltaica en América Latina",
                 nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin" },
                 auth: { signin: "Iniciar sesión", signout: "Cerrar sesión", signin_prompt_title: "Por favor, inicia sesión", signin_prompt_body: "Necesitas iniciar sesión para ver y editar tu perfil.", signin_prompt_button: "Iniciar sesión en la página principal"},
-                profile: { title: "Completa tu Perfil", intro: "Por favor completa tu perfil para continuar. Los campos marcados con * son obligatorios.", basic_info: "Información Básica", contact_info: "Información de Contacto", professional_links: "Enlaces Profesionales", fields_section: "Intereses de Investigación", full_name: "Nombre Completo", username: "Usuario", username_hint: "Usado para @menciones y URL del perfil", affiliation: "Afiliación/Organización", work_email: "Correo de Trabajo", personal_website: "Sitio Web Personal", professional_website: "Sitio Web Profesional/Laboratorio", google_scholar: "Perfil de Google Scholar", fields_of_study: "Campos de Estudio", fields_hint: "Separa múltiples campos con comas", save: "Guardar Perfil", saved: "Perfil actualizado", skip: "Omitir por ahora" },
+                profile: { 
+                    title: "Completa tu Perfil", 
+                    intro: "Por favor completa tu perfil para continuar. Los campos marcados con * son obligatorios.", 
+                    avatar: "Foto de Perfil",
+                    avatar_upload: "Subir una foto de perfil",
+                    avatar_hint: "JPG, PNG o GIF. Máximo 2MB.",
+                    choose_image: "Elegir Imagen",
+                    remove_image: "Eliminar",
+                    basic_info: "Información Básica", 
+                    contact_info: "Información de Contacto", 
+                    professional_links: "Enlaces Profesionales", 
+                    fields_section: "Intereses de Investigación", 
+                    full_name: "Nombre Completo", 
+                    username: "Usuario", 
+                    username_hint: "Usado para @menciones y URL del perfil", 
+                    affiliation: "Afiliación/Organización", 
+                    work_email: "Correo de Trabajo", 
+                    personal_website: "Sitio Web Personal", 
+                    professional_website: "Sitio Web Profesional/Laboratorio", 
+                    google_scholar: "Perfil de Google Scholar", 
+                    fields_of_study: "Campos de Estudio", 
+                    fields_hint: "Separa múltiples campos con comas", 
+                    save: "Guardar Perfil", 
+                    saved: "Perfil actualizado", 
+                    skip: "Omitir por ahora",
+                    upload_error: "Error al subir la imagen. Por favor intenta de nuevo."
+                },
                 back: { general: "Atrás" },
                 footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
             },
@@ -423,6 +571,12 @@
             return data;
         }
 
+        async function getAvatarUrl(avatarPath) {
+            if (!avatarPath) return null;
+            const { data } = await supabase.storage.from("avatars").createSignedUrl(avatarPath, 3600);
+            return data?.signedUrl;
+        }
+
         function showView(which) {
             $("#profile").style.display = 'none';
             $("#publicProfileView").style.display = 'none';
@@ -430,7 +584,24 @@
             if(which) $(`#${which}`).style.display = 'block';
         }
 
-        function populateProfileForm() {
+        function updateAvatarPreview(url, initial) {
+            const avatarImage = $("#avatarImage");
+            const avatarInitial = $("#avatarInitial");
+            
+            if (url) {
+                avatarImage.src = url;
+                avatarImage.style.display = "block";
+                avatarInitial.style.display = "none";
+                $("#removeAvatar").style.display = "inline-block";
+            } else {
+                avatarImage.style.display = "none";
+                avatarInitial.style.display = "block";
+                avatarInitial.textContent = initial || "U";
+                $("#removeAvatar").style.display = "none";
+            }
+        }
+
+        async function populateProfileForm() {
             if (!state.profile) return;
             $("#fullName").value = state.profile.full_name || "";
             $("#username").value = state.profile.username || "";
@@ -440,6 +611,16 @@
             $("#professionalWebsite").value = state.profile.professional_website || "";
             $("#googleScholar").value = state.profile.google_scholar || "";
             $("#fieldsOfStudy").value = state.profile.fields_of_study || "";
+            
+            // Handle avatar
+            const initial = (state.profile.full_name || "U").charAt(0).toUpperCase();
+            if (state.profile.avatar_url) {
+                const avatarUrl = await getAvatarUrl(state.profile.avatar_url);
+                state.currentAvatarUrl = avatarUrl;
+                updateAvatarPreview(avatarUrl, initial);
+            } else {
+                updateAvatarPreview(null, initial);
+            }
         }
 
         async function renderPublicProfile(userId) {
@@ -449,7 +630,29 @@
                 showView('publicProfileView');
                 return;
             }
-            $("#publicProfileInitial").textContent = (profile.full_name || "?").charAt(0).toUpperCase();
+            
+            // Handle avatar in public profile
+            const publicInitial = $("#publicProfileInitial");
+            const publicImage = $("#publicProfileImage");
+            const initial = (profile.full_name || "?").charAt(0).toUpperCase();
+            
+            publicInitial.textContent = initial;
+            
+            if (profile.avatar_url) {
+                const avatarUrl = await getAvatarUrl(profile.avatar_url);
+                if (avatarUrl) {
+                    publicImage.src = avatarUrl;
+                    publicImage.style.display = "block";
+                    publicInitial.style.display = "none";
+                } else {
+                    publicImage.style.display = "none";
+                    publicInitial.style.display = "block";
+                }
+            } else {
+                publicImage.style.display = "none";
+                publicInitial.style.display = "block";
+            }
+            
             $("#publicProfileName").textContent = profile.full_name || "Unnamed User";
             $("#publicProfileAffiliation").textContent = profile.affiliation || "No affiliation provided.";
             $("#publicProfileUsername .txt").textContent = `@${profile.username}`;
@@ -472,7 +675,6 @@
             showView('publicProfileView');
         }
         
-        // --- Mobile Menu & Header Logic ---
         function openMenu() {
             $("#mobileNavOverlay")?.classList.add("is-open");
             document.body.classList.add("menu-open");
@@ -518,13 +720,34 @@
             content.querySelector("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
             content.querySelector("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
         }
-        function renderHeader() {
+        async function renderHeader() {
             const isOrganizer = ["organizer", "admin"].includes(state.profile?.role);
             if (state.session) {
                 $("#btnSignIn").style.display = "none"; $("#btnSignOut").style.display = "inline-block";
                 $("#btnProfile").style.display = "grid"; $("#userName").style.display = "inline";
                 $("#userName").textContent = state.profile?.full_name || state.profile?.username || "";
-                $("#userInitial").textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
+                
+                // Handle avatar in header button
+                const userInitial = $("#userInitial");
+                const userAvatar = $("#userAvatar");
+                
+                if (state.profile?.avatar_url) {
+                    const avatarUrl = await getAvatarUrl(state.profile.avatar_url);
+                    if (avatarUrl) {
+                        userAvatar.src = avatarUrl;
+                        userAvatar.style.display = "block";
+                        userInitial.style.display = "none";
+                    } else {
+                        userAvatar.style.display = "none";
+                        userInitial.style.display = "block";
+                        userInitial.textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
+                    }
+                } else {
+                    userAvatar.style.display = "none";
+                    userInitial.style.display = "block";
+                    userInitial.textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
+                }
+                
                 $("#btnAdmin").style.display = isOrganizer ? "inline-block" : "none";
             } else {
                 $("#btnSignIn").style.display = "inline-block"; $("#btnSignOut").style.display = "none";
@@ -547,7 +770,7 @@
         
         function handlePageLogic() {
             const urlParams = new URLSearchParams(window.location.search);
-            const viewUserId = urlParams.get('id');
+            const viewUserId = urlParams.get('id') || urlParams.get('user');
 
             if (viewUserId) {
                 renderPublicProfile(viewUserId);
@@ -557,6 +780,41 @@
             } else {
                 showView('signInPrompt');
             }
+        }
+        
+        async function uploadAvatar(file) {
+            if (!file || !state.session) return null;
+            
+            // Check file size (2MB limit)
+            if (file.size > 2 * 1024 * 1024) {
+                setFlash("Image must be less than 2MB");
+                return null;
+            }
+            
+            const userId = state.session.user.id;
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${userId}-${Date.now()}.${fileExt}`;
+            const filePath = `avatars/${fileName}`;
+            
+            // Upload to storage
+            const { data, error } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file, {
+                    upsert: false,
+                    contentType: file.type
+                });
+            
+            if (error) {
+                console.error('Upload error:', error);
+                return null;
+            }
+            
+            return data.path;
+        }
+        
+        async function deleteOldAvatar(path) {
+            if (!path) return;
+            await supabase.storage.from('avatars').remove([path]);
         }
         
         function wireUI() {
@@ -587,21 +845,81 @@
                 if (returnTo) window.location.href = returnTo; else history.back();
             });
 
+            // Avatar upload handling
+            $("#avatarInput")?.addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file type
+                    if (!file.type.startsWith('image/')) {
+                        setFlash("Please select an image file");
+                        return;
+                    }
+                    
+                    state.avatarFile = file;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const initial = ($("#fullName").value || "U").charAt(0).toUpperCase();
+                        updateAvatarPreview(e.target.result, initial);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            $("#removeAvatar")?.addEventListener("click", () => {
+                state.avatarFile = null;
+                state.currentAvatarUrl = null;
+                const initial = ($("#fullName").value || "U").charAt(0).toUpperCase();
+                updateAvatarPreview(null, initial);
+            });
+
+            // Update avatar initial when name changes
+            $("#fullName")?.addEventListener("input", (e) => {
+                const initial = (e.target.value || "U").charAt(0).toUpperCase();
+                $("#avatarInitial").textContent = initial;
+            });
+
             $("#profileForm")?.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 if (!state.session) return;
+                
+                let avatarPath = state.profile?.avatar_url;
+                
+                // Handle avatar upload if there's a new file
+                if (state.avatarFile) {
+                    const newAvatarPath = await uploadAvatar(state.avatarFile);
+                    if (newAvatarPath) {
+                        // Delete old avatar if it exists
+                        if (state.profile?.avatar_url) {
+                            await deleteOldAvatar(state.profile.avatar_url);
+                        }
+                        avatarPath = newAvatarPath;
+                    } else {
+                        setFlash(tr("profile.upload_error"));
+                        return;
+                    }
+                } else if (state.currentAvatarUrl === null && state.profile?.avatar_url) {
+                    // User removed their avatar
+                    await deleteOldAvatar(state.profile.avatar_url);
+                    avatarPath = null;
+                }
+                
                 const profileData = {
-                    full_name: $("#fullName").value.trim(), username: $("#username").value.trim(),
-                    affiliation: $("#affiliation").value.trim(), work_email: $("#workEmail").value.trim(),
+                    full_name: $("#fullName").value.trim(), 
+                    username: $("#username").value.trim(),
+                    affiliation: $("#affiliation").value.trim(), 
+                    work_email: $("#workEmail").value.trim(),
                     personal_website: $("#personalWebsite").value.trim() || null,
                     professional_website: $("#professionalWebsite").value.trim() || null,
                     google_scholar: $("#googleScholar").value.trim() || null,
                     fields_of_study: $("#fieldsOfStudy").value.trim() || null,
+                    avatar_url: avatarPath
                 };
+                
                 const { error } = await supabase.from("profiles").update(profileData).eq("id", state.session.user.id);
                 if (!error) {
                     setFlash(tr("profile.saved"));
                     state.profile = await fetchProfile(state.session.user.id, { refresh: true });
+                    state.avatarFile = null; // Clear the file after successful save
                     const profileComplete = !!(state.profile?.full_name && state.profile?.username && state.profile?.affiliation && state.profile?.work_email);
                     populateProfileForm();
                     renderHeader();
@@ -615,7 +933,7 @@
 
             $("#year").textContent = new Date().getFullYear();
         }
-
+        
         (async function main() {
             applyI18n();
             wireUI();

@@ -94,21 +94,18 @@ a:hover {
   justify-content: space-between;
   min-height: 64px;
 }
+.logo-image {
+  height: 50px; /* Controls the height of the header */
+  width: auto; /* Maintains the image's aspect ratio */
+  border-radius: 8px; /* The rounded edges you wanted */
+  object-fit: contain; /* Ensures the image scales correctly */
+}
+
+/* Adjust parent container for proper alignment */
 .brand {
   display: flex;
-  gap: var(--space-2);
   align-items: center;
-}
-.logo-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: conic-gradient(from 180deg at 50% 50%, var(--brand), var(--brand-2));
-  display: grid;
-  place-items: center;
-  color: #001115;
-  font-weight: 800;
-  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.15), 0 6px 16px rgba(0, 0, 0, 0.35);
+  gap: 16px; /* Space between logo and text */
 }
 .brand-text .title {
   font-weight: 800;
@@ -209,29 +206,34 @@ a.link:focus-visible {
 
 /* Profile button */
 .profile-button {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: conic-gradient(from 180deg at 50% 50%, var(--brand), var(--brand-2));
-  border: 1px solid var(--border-2);
-  display: grid;
-  place-items: center;
-  color: #001115;
-  font-weight: 700;
-  font-size: 1rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* Makes it a perfect circle */
+  background-color: var(--card-2); /* A fallback background */
+  border: 2px solid var(--border);
+  color: var(--text);
   cursor: pointer;
   padding: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
-  transition: transform 0.1s ease, box-shadow 0.15s ease;
-  flex-shrink: 0;
+  overflow: hidden; /* This is key to making the inner image conform to the circle */
+  
+  /* Flexbox/Grid centering for the initial */
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  flex-shrink: 0; /* Prevents it from shrinking in the flex container */
 }
+
 .profile-button:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+  border-color: var(--brand-2);
 }
-.profile-button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ring);
+
+/* The user's uploaded avatar image inside the button */
+.profile-button #userAvatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the image covers the circle without distortion */
+  /* Note: The border-radius is on the parent button with overflow:hidden */
 }
 
 /* Buttons & Chips */

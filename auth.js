@@ -23,24 +23,22 @@ export const authState = {
   pendingDeepLinkEventId: null,
 };
 
-export async function fetchProfile(uid, { refresh = false } = {}) {
-  if (!uid) return null;
-
-  const cached = authState.profileCache.get(uid);
-  if (!refresh && cached) return cached;
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", uid)
-    .maybeSingle();
-
-  if (error) {
-    console.error(`Error fetching profile for ${uid}:`, error);
-    return cached || null;
-  }
-  if (data) authState.profileCache.set(uid, data);
-  return data;
+// Export fetchProfile so it can be imported in other files
+export async function fetchProfile(userId, { refresh = false } = {}) {
+    if (!userId) return null;
+    if (!refresh && authState.profileCache.has(userId)) return authState.profileCache.get(userId);
+    const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
+    
+    // If profile has avatar_url, get the signed URL
+    if (data?.avatar_url) {
+        const { data: urlData } = await supabase.storage.from("avatars").createSignedUrl(data.avatar_url, 3600);
+        if (urlData?.signedUrl) {
+            data.avatar_url = urlData.signedUrl;
+        }
+    }
+    
+    if (data) authState.profileCache.set(userId, data);
+    return data;
 }
 
 export async function ensureProfile() {
@@ -78,13 +76,15 @@ export async function ensureProfile() {
   }
 }
 
-export function renderHeader() {
+export async function renderHeader() {
   const $ = (sel) => document.querySelector(sel);
   const btnSignIn = $("#btnSignIn"), 
         btnSignOut = $("#btnSignOut"), 
         btnAdmin = $("#btnAdmin"), 
         userName = $("#userName"), 
-        btnProfile = $("#btnProfile");
+        btnProfile = $("#btnProfile"),
+        userInitial = $("#userInitial"),
+        userAvatar = $("#userAvatar");
         
   if (authState.session && authState.profile) {
     btnSignIn.style.display = "none"; 
@@ -92,7 +92,21 @@ export function renderHeader() {
     btnProfile.style.display = "grid"; 
     userName.style.display = "inline";
     userName.textContent = authState.profile?.full_name || authState.profile?.username || "";
-    $("#userInitial").textContent = (authState.profile?.full_name || "U").charAt(0).toUpperCase();
+    
+    // Handle avatar in header button
+    if (authState.profile?.avatar_url && userAvatar) {
+      // avatar_url should already be a signed URL from fetchProfile
+      userAvatar.src = authState.profile.avatar_url;
+      userAvatar.style.display = "block";
+      if (userInitial) userInitial.style.display = "none";
+    } else {
+      if (userAvatar) userAvatar.style.display = "none";
+      if (userInitial) {
+        userInitial.style.display = "block";
+        userInitial.textContent = (authState.profile?.full_name || "U").charAt(0).toUpperCase();
+      }
+    }
+    
     if (btnAdmin) btnAdmin.style.display = authState.profile?.role === "admin" ? "inline-block" : "none";
   } else {
     btnSignIn.style.display = "inline-block"; 
@@ -164,4 +178,97 @@ export async function signInWithEmail(email, tr) {
 
 export async function signOut() {
   await supabase.auth.signOut();
+}
+
+/**
+ * Initializes all shared UI components and their event listeners.
+ * This should be called on every page.
+ * @param {object} i18n - An object containing i18n functions { applyI18n, handleLangSwitch }
+ */
+export function initSharedUI(i18n) {
+  const { applyI18n, handleLangSwitch } = i18n;
+
+  // --- Mobile Menu Logic ---
+  const mobileNavOverlay = document.querySelector("#mobileNavOverlay");
+  const mobileMenuBtn = document.querySelector("#mobileMenuBtn");
+
+  function openMenu() {
+    if (!mobileNavOverlay || !mobileMenuBtn) return;
+    mobileNavOverlay.classList.add("is-open");
+    document.body.classList.add("menu-open");
+    mobileMenuBtn.setAttribute("aria-expanded", "true");
+    mobileMenuBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+  }
+
+  function closeMenu() {
+    if (!mobileNavOverlay || !mobileMenuBtn) return;
+    mobileNavOverlay.classList.remove("is-open");
+    document.body.classList.remove("menu-open");
+    mobileMenuBtn.setAttribute("aria-expanded", "false");
+    mobileMenuBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
+  }
+
+  function setupMobileMenu() {
+    const desktopNav = document.querySelector('.header-grid .nav');
+    if (!mobileNavOverlay || !desktopNav) return;
+
+    mobileNavOverlay.innerHTML = ''; // Clear previous content
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'mobile-nav-close-btn';
+    closeBtn.setAttribute('aria-label', 'Close menu');
+    closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+    
+    const content = desktopNav.cloneNode(true);
+    content.id = ''; // Avoid duplicate IDs
+    
+    mobileNavOverlay.appendChild(closeBtn);
+    mobileNavOverlay.appendChild(content);
+
+    closeBtn.addEventListener('click', closeMenu);
+  }
+
+  // --- Wire up all event listeners ---
+  
+  // Mobile Menu Toggle
+  mobileMenuBtn?.addEventListener("click", () => {
+    if (mobileNavOverlay && !mobileNavOverlay.classList.contains('is-open')) openMenu();
+    else closeMenu();
+  });
+
+  // Universal event listener on body for dynamic elements (mobile nav, language switch)
+  document.body.addEventListener('click', (e) => {
+    // Language Switcher (works for desktop and mobile)
+    if (e.target.closest('.lang-switch-slider')) {
+      handleLangSwitch();
+      setupMobileMenu(); // Re-render mobile menu to update link text
+      renderHeader(); // Re-render header to update auth button text
+    }
+
+    // Profile button (works for desktop and mobile)
+    if (e.target.closest("#btnProfile")) {
+      window.location.href = 'profile.html';
+    }
+
+    // Sign Out button (works for desktop and mobile)
+    if (e.target.closest("#btnSignOut")) {
+      signOut();
+    }
+    
+    // Sign In button (works for desktop and mobile)
+    if (e.target.closest("#btnSignIn")) {
+      window.location.href = 'index.html';
+    }
+    
+    // Close mobile overlay if clicking outside the content
+    if (e.target === mobileNavOverlay) {
+      closeMenu();
+    }
+  });
+
+  // Footer Year
+  const yearEl = document.querySelector("#year");
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+  
+  // Initial setup call
+  setupMobileMenu();
 }
