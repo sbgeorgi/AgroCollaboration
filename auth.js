@@ -4,7 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
-const REDIRECT_TO = window.location.origin + window.location.pathname;
+// MODIFIED: This is now the DEFAULT redirect, but can be overridden.
+const DEFAULT_REDIRECT_TO = window.location.origin + window.location.pathname;
 /* ============================================ */
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -72,7 +73,8 @@ export async function ensureProfile() {
 
   if (sessionStorage.getItem('justLoggedIn') && !authState.profileComplete) {
     sessionStorage.removeItem('justLoggedIn');
-    window.location.href = `profile.html?force=true&return_to=${encodeURIComponent(window.location.href)}`;
+    const returnTo = window.location.href.includes('signin.html') ? window.location.origin + '/index.html' : window.location.href;
+    window.location.href = `profile.html?force=true&return_to=${encodeURIComponent(returnTo)}`;
   }
 }
 
@@ -95,7 +97,6 @@ export async function renderHeader() {
     
     // Handle avatar in header button
     if (authState.profile?.avatar_url && userAvatar) {
-      // avatar_url should already be a signed URL from fetchProfile
       userAvatar.src = authState.profile.avatar_url;
       userAvatar.style.display = "block";
       if (userInitial) userInitial.style.display = "none";
@@ -142,11 +143,18 @@ export async function initAuth(callbacks = {}) {
   
   // Listen for auth changes
   supabase.auth.onAuthStateChange(async (_event, newSession) => {
+    // IMPROVED: More robust check for a new sign-in vs. a token refresh
+    const isInitialSignIn = !authState.session && newSession;
     authState.session = newSession;
+
     if (newSession) {
+      if (isInitialSignIn) {
+        sessionStorage.setItem('justLoggedIn', 'true');
+      }
       await ensureProfile();
     } else {
       authState.profile = null;
+      sessionStorage.removeItem('justLoggedIn');
     }
     renderHeader();
     
@@ -157,22 +165,29 @@ export async function initAuth(callbacks = {}) {
   });
 }
 
-export async function signInWithGoogle() {
-  sessionStorage.setItem('justLoggedIn', 'true');
+// MODIFIED: Function now accepts an options object to override the redirect
+export async function signInWithGoogle(options = {}) {
   await supabase.auth.signInWithOAuth({ 
     provider: "google", 
-    options: { redirectTo: REDIRECT_TO } 
+    options: { 
+      redirectTo: DEFAULT_REDIRECT_TO, // Use default...
+      ...options                      // ...unless overridden by options
+    } 
   });
 }
 
-export async function signInWithEmail(email, tr) {
+// MODIFIED: Function now accepts an options object to override the redirect
+export async function signInWithEmail(email, options = {}) {
   if (email) {
-    sessionStorage.setItem('justLoggedIn', 'true');
-    await supabase.auth.signInWithOtp({ 
+    const { error } = await supabase.auth.signInWithOtp({ 
       email, 
-      options: { emailRedirectTo: REDIRECT_TO } 
+      options: { 
+        emailRedirectTo: DEFAULT_REDIRECT_TO, // Use default...
+        ...options                           // ...unless overridden by options
+      } 
     });
-    return tr ? tr("auth.magic_hint") : "We'll email you a sign-in link. Check your inbox.";
+    if (error) return error.message;
+    return "We'll email you a sign-in link. Check your inbox.";
   }
 }
 
@@ -256,7 +271,7 @@ export function initSharedUI(i18n) {
     
     // Sign In button (works for desktop and mobile)
     if (e.target.closest("#btnSignIn")) {
-      window.location.href = 'index.html';
+      window.location.href = 'signin.html';
     }
     
     // Close mobile overlay if clicking outside the content

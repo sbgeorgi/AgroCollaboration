@@ -35,6 +35,14 @@ function subscribeToEventChanges(eventId) {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'attachments', filter: `event_id=eq.${eventId}` }, () => loadFiles(eventId))
     .on('postgres_changes', { event: '*', schema: 'public', table: 'event_follows', filter: `event_id=eq.${eventId}` }, () => loadRSVPFollow(eventId))
     .on('postgres_changes', { event: '*', schema: 'public', table: 'event_rsvps', filter: `event_id=eq.${eventId}` }, () => loadRSVPFollow(eventId))
+    // ADD THESE TWO LINES FOR REAL-TIME THREADS AND COMMENTS
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'threads', filter: `event_id=eq.${eventId}` }, () => loadThreads(eventId))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` }, () => {
+      // Only reload comments if we're currently viewing a thread
+      if (state.selectedThreadId) {
+        loadComments(state.selectedThreadId);
+      }
+    })
     .subscribe();
 }
 
@@ -76,11 +84,21 @@ async function loadThreads(eventId) {
 
 async function loadComments(threadId) {
     if (!threadId) return;
+    
+    // Save scroll position before update
+    const commentsContainer = $("#commentsList");
+    const scrollPos = commentsContainer ? commentsContainer.scrollTop : 0;
+    
     const { data } = await supabase.from("comments").select("*").eq("thread_id", threadId).order("created_at", { ascending: true });
     state.comments = data || [];
     const userIds = [...new Set(state.comments.map(c => c.created_by))];
     await Promise.all(userIds.map(id => fetchProfile(id)));
     renderComments();
+    
+    // Restore scroll position after update
+    if (commentsContainer) {
+        commentsContainer.scrollTop = scrollPos;
+    }
 }
 
 async function loadFiles(eventId) {
@@ -312,11 +330,34 @@ async function renderFiles() {
   if (!grid || !empty) return;
   grid.innerHTML = "";
   empty.style.display = state.files.length ? "none" : "block";
+
   for (const f of state.files) {
     const div = document.createElement("div");
     div.className = "file";
+    div.dataset.fileId = f.id; // Add data-file-id for the download button logic
+
     const url = await getSignedUrl(f.object_path);
-    div.innerHTML = `<div class="meta"><div class="name">${escapeHtml(f.file_name)}</div><div class="size">${bytesToSize(f.file_size)}</div></div><div class="actions"><a class="btn-secondary" href="${url}" target="_blank" rel="noopener">${tr('open')}</a>${authState.profile?.role === 'admin' ? `<button class="btn-danger" data-del-file-id="${f.id}" data-del-file-path="${f.object_path}">Delete</button>` : ""}</div>`;
+
+    // --- MODIFICATION START: Show delete button for file owner or admin/organizer ---
+    const user = authState.session?.user;
+    const profile = authState.profile;
+    const canDelete = user && (['admin', 'organizer'].includes(profile?.role) || f.created_by === user.id);
+    const deleteButtonHtml = canDelete 
+      ? `<button class="btn-danger" data-del-file-id="${f.id}">Delete</button>` 
+      : "";
+    // --- MODIFICATION END ---
+
+    // Note: The download button is added by the logic in index.html, which wraps this function.
+    div.innerHTML = `
+      <div class="meta">
+        <div class="name">${escapeHtml(f.file_name)}</div>
+        <div class="size">${bytesToSize(f.file_size)}</div>
+      </div>
+      <div class="file-actions">
+        <a class="btn-secondary" href="${url}" target="_blank" rel="noopener">${tr('open')}</a>
+        ${deleteButtonHtml}
+      </div>
+    `;
     grid.appendChild(div);
   }
 }
@@ -346,11 +387,21 @@ async function getSignedUrl(path) {
   return data?.signedUrl;
 }
 
-async function deleteFile(id, path) {
+// --- MODIFICATION START: Use the new RPC function to delete a file ---
+async function deleteFile(id) {
   if (!confirm('Delete file permanently?')) return;
-  await supabase.storage.from("attachments").remove([path]);
-  await supabase.from("attachments").delete().eq("id", id);
+  
+  const { error } = await supabase.rpc('delete_event_file', { file_id: id });
+  
+  if (error) {
+    console.error('Error deleting file:', error.message);
+    setFlash(`Failed to delete file: ${error.message}`);
+  } else {
+    setFlash('File deleted successfully.');
+    // The realtime subscription will automatically call loadFiles() to refresh the list.
+  }
 }
+// --- MODIFICATION END ---
 
 async function toggleFollow() {
   if (!authState.session || !state.selectedEvent) return;
@@ -477,7 +528,10 @@ function wireEventDetailUI() {
         }
         const followBtn = e.target.closest('#btnFollowCompact'); if (followBtn) { toggleFollow(); return; }
         const rsvpBtn = e.target.closest('[data-rsvp]'); if (rsvpBtn) { setRSVP(rsvpBtn.dataset.rsvp); return; }
-        const delFileBtn = e.target.closest('[data-del-file-id]'); if (delFileBtn) { deleteFile(delFileBtn.dataset.delFileId, delFileBtn.dataset.delFilePath); return; }
+        
+        // --- MODIFICATION: Update the delete file button click handler ---
+        const delFileBtn = e.target.closest('[data-del-file-id]'); if (delFileBtn) { deleteFile(delFileBtn.dataset.delFileId); return; }
+        
         const copyBtn = e.target.closest('[data-copy-link]'); if (copyBtn) { navigator.clipboard.writeText(copyBtn.dataset.copyLink); setFlash(tr('copied')); return; }
 
         const profileEl = e.target.closest('[data-open-profile-id], .comment-avatar[data-user-id]');

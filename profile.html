@@ -4,12 +4,14 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Your Profile • Almuerzo Agrivoltaico</title>
-    <meta name="description" content="Manage your profile for the Almuerzo Agrivoltaico seminar series." />
+    <title>Your Profile • Agrovoltaicos sin Fronteras</title>
+    <meta name="description" content="Manage your profile for the Agrovoltaicos sin Fronteras seminar series." />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com"> <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Lato:wght@400;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
     <style>
         /* --- CORE LAYOUT --- */
         @media (min-width: 961px) {
+
             html,
             body {
                 height: 100vh;
@@ -17,12 +19,12 @@
                 overflow: hidden;
             }
         }
-        
+
         body {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            background-color: var(--background, #121317);
+background: var(--bg);
             color: var(--text, #f1f1f1);
             margin: 0;
             padding: 0;
@@ -69,7 +71,11 @@
             padding-bottom: var(--space-4);
             border-bottom: 1px solid var(--border);
         }
-        .form-section:last-of-type { border-bottom: none; margin-bottom: 0; }
+
+        .form-section:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
 
         .form-section h3 {
             font-size: 1.2rem;
@@ -88,18 +94,22 @@
             flex-direction: column;
             gap: var(--space-1);
         }
-        .form-field.col-span-2 { grid-column: 1 / -1; }
-        
+
+        .form-field.col-span-2 {
+            grid-column: 1 / -1;
+        }
+
         .form-field label {
             font-size: 0.85rem;
             font-weight: 500;
             opacity: 0.9;
         }
+
         .form-field.required label::after {
             content: " *";
             color: var(--color-danger);
         }
-        
+
         .form-field input,
         .form-field textarea {
             background-color: var(--card-2);
@@ -112,13 +122,18 @@
             box-sizing: border-box;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
+
         .form-field input:focus,
         .form-field textarea:focus {
             border-color: var(--brand-2);
             outline: none;
             box-shadow: 0 0 0 3px var(--brand-2-muted);
         }
-        .form-field textarea { resize: vertical; min-height: 100px; }
+
+        .form-field textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
 
         .field-hint {
             font-size: 0.85rem;
@@ -201,103 +216,246 @@
 
         /* --- Public Profile View --- */
         #publicProfileView .public-profile-header {
-            display: grid; grid-template-columns: auto 1fr; align-items: center;
-            gap: var(--space-4); margin-bottom: var(--space-4);
-            padding-bottom: var(--space-4); border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: center;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+            padding-bottom: var(--space-4);
+            border-bottom: 1px solid var(--border);
         }
+
         #publicProfileView .avatar-circle-large {
-            width: 80px; height: 80px; border-radius: 50%; background-color: var(--card-2);
-            display: grid; place-content: center; font-weight: 600; font-size: 2.2rem;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--card-2);
+            display: grid;
+            place-content: center;
+            font-weight: 600;
+            font-size: 2.2rem;
             overflow: hidden;
         }
+
         #publicProfileView .avatar-circle-large img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        #publicProfileView h2 { margin: 0; font-size: 1.4rem; }
-        #publicProfileView .public-profile-meta { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
-        #publicProfileView .meta-chip { display: inline-flex; align-items: center; gap: .4rem; padding: .2rem .5rem; border-radius: 999px; background: var(--card-2); font-size: .8rem; }
-        #publicProfileView .email a { color: var(--brand-2); text-decoration: none; }
-        #publicProfileView .link-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
-        #publicProfileView .link-list a { text-decoration: none; color: var(--brand-2); display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 500; }
-        #publicProfileView .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+        #publicProfileView h2 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        #publicProfileView .public-profile-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+
+        #publicProfileView .meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .2rem .5rem;
+            border-radius: 999px;
+            background: var(--card-2);
+            font-size: .8rem;
+        }
+
+        #publicProfileView .email a {
+            color: var(--brand-2);
+            text-decoration: none;
+        }
+
+        #publicProfileView .link-list {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        #publicProfileView .link-list a {
+            text-decoration: none;
+            color: var(--brand-2);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-weight: 500;
+        }
+
+        #publicProfileView .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+        }
 
         /* --- HEADER & NAVIGATION --- */
-        .mobile-menu-btn { display: none; }
-        .nav { display: flex; align-items: center; gap: var(--space-2); }
-        .mobile-nav-overlay {
-          display: none; flex-direction: column; justify-content: center; align-items: center;
-          gap: var(--space-4); position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
-          background: rgba(18, 19, 23, 0.9); backdrop-filter: blur(10px);
-          z-index: 1000; opacity: 0; transition: opacity 0.3s ease-in-out;
+        .mobile-menu-btn {
+            display: none;
         }
-        .mobile-nav-overlay.is-open { display: flex; opacity: 1; }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .mobile-nav-overlay {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: var(--space-4);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100dvh;
+            background: rgba(18, 19, 23, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .mobile-nav-overlay.is-open {
+            display: flex;
+            opacity: 1;
+        }
 
         /* --- RESPONSIVE ADJUSTMENTS --- */
         @media (max-width: 960px) {
-            main.container { padding: var(--space-2); }
-            .form-grid { grid-template-columns: 1fr; gap: var(--space-3); }
-            .form-field.col-span-2 { grid-column: 1; }
+            main.container {
+                padding: var(--space-2);
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-3);
+            }
+
+            .form-field.col-span-2 {
+                grid-column: 1;
+            }
 
             .mobile-menu-btn {
-                display: block; background: none; border: none; color: var(--text);
-                font-size: 2rem; cursor: pointer; z-index: 1001; padding: 0; line-height: 0;
+                display: block;
+                background: none;
+                border: none;
+                color: var(--text);
+                font-size: 2rem;
+                cursor: pointer;
+                z-index: 1001;
+                padding: 0;
+                line-height: 0;
             }
-            .header-grid > .nav { display: none; }
-            .mobile-nav-overlay .nav { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); }
-            .mobile-nav-overlay .link { font-size: 1.8rem; font-weight: 500; }
-            .mobile-nav-overlay .divider { display: none; }
-            .mobile-nav-overlay .auth-area { margin-top: var(--space-2); display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
-            .mobile-nav-close-btn { position: absolute; top: var(--space-3); right: var(--space-3); background: none; border: none; color: var(--text); cursor: pointer; line-height: 1; padding: 0; }
-            body.menu-open { overflow: hidden; }
+
+            .header-grid>.nav {
+                display: none;
+            }
+
+            .mobile-nav-overlay .nav {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: var(--space-4);
+            }
+
+            .mobile-nav-overlay .link {
+                font-size: 1.8rem;
+                font-weight: 500;
+            }
+
+            .mobile-nav-overlay .divider {
+                display: none;
+            }
+
+            .mobile-nav-overlay .auth-area {
+                margin-top: var(--space-2);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: var(--space-3);
+            }
+
+            .mobile-nav-close-btn {
+                position: absolute;
+                top: var(--space-3);
+                right: var(--space-3);
+                background: none;
+                border: none;
+                color: var(--text);
+                cursor: pointer;
+                line-height: 1;
+                padding: 0;
+            }
+
+            body.menu-open {
+                overflow: hidden;
+            }
         }
     </style>
 </head>
 
 <body>
     <header class="site-header">
-        <div class="container header-grid">
-            <div class="brand">
-                <a href="index.html" style="display: contents; text-decoration: none;">
-                    <div class="logo-circle">A</div>
-                    <div class="brand-text">
-                        <div class="title">Almuerzo Agrivoltaico</div>
-                        <div class="subtitle" data-i18n="tagline">
-                            An informal seminar series to share advances in agrivoltaics in Latin America
-                        </div>
-                    </div>
-                </a>
-            </div>
-            
-            <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </button>
+    <div class="container header-grid">
+      <div class="brand">
+        <a href="index.html" style="display: contents; text-decoration: none;">
 
-            <nav class="nav">
-                <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-                <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-                <a href="about.html" class="link" data-i18n="nav.about">About</a>
-                <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-                <div class="divider"></div>
-                <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-                    <span>EN</span>
-                    <span>ES</span>
-                </div>
-                <div class="auth-area">
-                    <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
-                        <span id="userInitial"></span>
-                        <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
-                    </button>
-                    <span id="userName"></span>
-                    <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
-                    <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
-                        Sign out
-                    </button>
-                </div>
-            </nav>
+          <!-- MODIFICATION: Replaced the old logo div with your new image -->
+          <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
+
+          <div class="brand-text">
+            <div class="title">Agrovoltaicos sin Fronteras</div>
+            <div class="subtitle" data-i18n="tagline">
+              A seminar series to share advances in agrivoltaics in the Americas
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Desktop Nav -->
+      <nav class="nav">
+        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
+        <a href="about.html" class="link" data-i18n="nav.about">About</a>
+        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+        <div class="divider"></div>
+        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
+          <span>EN</span>
+          <span>ES</span>
         </div>
-    </header>
+        <div class="auth-area">
+          <!-- PRESERVED: This is the user profile button, which is handled by your JS -->
+          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
+            <span id="userInitial"></span>
+            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
+          </button>
+          <span id="userName"></span>
+          <!-- MODIFIED: Button is now a link to the signin page -->
+          <a href="signin.html" id="btnSignIn" class="btn-primary" data-i18n="auth.signin"
+            style="text-decoration: none; display: inline-block;">Sign in</a>
+          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+            Sign out
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
 
     <div id="mobileNavOverlay" class="mobile-nav-overlay">
         <!-- Content will be injected by JS -->
@@ -333,7 +491,8 @@
                                     <span data-i18n="profile.choose_image">Choose Image</span>
                                     <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/gif" />
                                 </label>
-                                <button type="button" class="btn-ghost" id="removeAvatar" style="display: none;" data-i18n="profile.remove_image">Remove</button>
+                                <button type="button" class="btn-ghost" id="removeAvatar" style="display: none;"
+                                    data-i18n="profile.remove_image">Remove</button>
                             </div>
                         </div>
                     </div>
@@ -418,8 +577,9 @@
 
         <!-- Public Profile View -->
         <section id="publicProfileView" class="card" style="display: none;">
-            <button class="btn-ghost" id="backFromPublicProfile" style="margin-bottom: var(--space-3); align-self: flex-start;">
-                 ← <span data-i18n="back.general">Back</span>
+            <button class="btn-ghost" id="backFromPublicProfile"
+                style="margin-bottom: var(--space-3); align-self: flex-start;">
+                ← <span data-i18n="back.general">Back</span>
             </button>
             <div class="public-profile-header">
                 <div class="avatar-circle-large" id="publicProfileAvatar">
@@ -456,18 +616,32 @@
 
         <!-- Sign-in prompt if not logged in and trying to view own profile -->
         <section id="signInPrompt" class="card" style="display: none; text-align: center;">
-             <h2 data-i18n="auth.signin_prompt_title">Please Sign In</h2>
-             <p data-i18n="auth.signin_prompt_body">You need to be signed in to view and edit your profile.</p>
-             <a href="index.html" class="btn-primary" data-i18n="auth.signin_prompt_button">Sign in on main page</a>
+            <h2 data-i18n="auth.signin_prompt_title">Please Sign In</h2>
+            <p data-i18n="auth.signin_prompt_body">You need to be signed in to view and edit your profile.</p>
+            <a href="index.html" class="btn-primary" data-i18n="auth.signin_prompt_button">Sign in on main page</a>
         </section>
     </main>
 
     <footer class="site-footer">
         <div class="container">
-            <small>
-                © <span id="year"></span> Almuerzo Agrivoltaico •
-                <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin
-                    America.</span>
+            <small style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center;">
+                    © <span id="year"></span> Agrovoltaicos sin Fronteras •
+                    <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin
+                        America.</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank"
+                        rel="noopener noreferrer" style="margin-left: 8px;">
+                        <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                    </a>
+                    <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer"
+                        style="margin-left: 8px;">
+                        <img src="static/unam.png" alt="UNAM"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                    </a>
+                </div>
             </small>
         </div>
     </footer>
@@ -477,7 +651,7 @@
 
         const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true }});
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true } });
 
         const state = {
             session: null, profile: null, profileCache: new Map(),
@@ -485,36 +659,36 @@
             avatarFile: null,
             currentAvatarUrl: null
         };
-        
+
         const t = {
             en: {
-                tagline: "An informal seminar series to share advances in agrivoltaics in Latin America",
+                tagline: "A seminar series to share advances in agrivoltaics in the Americas",
                 nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin" },
-                auth: { signin: "Sign in", signout: "Sign out", signin_prompt_title: "Please Sign In", signin_prompt_body: "You need to be signed in to view and edit your profile.", signin_prompt_button: "Sign in on main page"},
-                profile: { 
-                    title: "Complete Your Profile", 
-                    intro: "Please complete your profile to continue. Fields marked with * are required.", 
+                auth: { signin: "Sign in", signout: "Sign out", signin_prompt_title: "Please Sign In", signin_prompt_body: "You need to be signed in to view and edit your profile.", signin_prompt_button: "Sign in on main page" },
+                profile: {
+                    title: "Complete Your Profile",
+                    intro: "Please complete your profile to continue. Fields marked with * are required.",
                     avatar: "Profile Picture",
                     avatar_upload: "Upload a profile picture",
                     avatar_hint: "JPG, PNG or GIF. Max 2MB.",
                     choose_image: "Choose Image",
                     remove_image: "Remove",
-                    basic_info: "Basic Information", 
-                    contact_info: "Contact Information", 
-                    professional_links: "Professional Links", 
-                    fields_section: "Research Interests", 
-                    full_name: "Full Name", 
-                    username: "Username", 
-                    username_hint: "Used for @mentions and profile URL", 
-                    affiliation: "Affiliation/Organization", 
-                    work_email: "Work Email", 
-                    personal_website: "Personal Website", 
-                    professional_website: "Professional/Lab Website", 
-                    google_scholar: "Google Scholar Profile", 
-                    fields_of_study: "Fields of Study", 
-                    fields_hint: "Separate multiple fields with commas", 
-                    save: "Save Profile", 
-                    saved: "Profile updated", 
+                    basic_info: "Basic Information",
+                    contact_info: "Contact Information",
+                    professional_links: "Professional Links",
+                    fields_section: "Research Interests",
+                    full_name: "Full Name",
+                    username: "Username",
+                    username_hint: "Used for @mentions and profile URL",
+                    affiliation: "Affiliation/Organization",
+                    work_email: "Work Email",
+                    personal_website: "Personal Website",
+                    professional_website: "Professional/Lab Website",
+                    google_scholar: "Google Scholar Profile",
+                    fields_of_study: "Fields of Study",
+                    fields_hint: "Separate multiple fields with commas",
+                    save: "Save Profile",
+                    saved: "Profile updated",
                     skip: "Skip for now",
                     upload_error: "Failed to upload image. Please try again."
                 },
@@ -522,33 +696,33 @@
                 footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
             },
             es: {
-                tagline: "Serie de seminarios informales para compartir avances en agrofotovoltaica en América Latina",
+                tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas",
                 nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin" },
-                auth: { signin: "Iniciar sesión", signout: "Cerrar sesión", signin_prompt_title: "Por favor, inicia sesión", signin_prompt_body: "Necesitas iniciar sesión para ver y editar tu perfil.", signin_prompt_button: "Iniciar sesión en la página principal"},
-                profile: { 
-                    title: "Completa tu Perfil", 
-                    intro: "Por favor completa tu perfil para continuar. Los campos marcados con * son obligatorios.", 
+                auth: { signin: "Iniciar sesión", signout: "Cerrar sesión", signin_prompt_title: "Por favor, inicia sesión", signin_prompt_body: "Necesitas iniciar sesión para ver y editar tu perfil.", signin_prompt_button: "Iniciar sesión en la página principal" },
+                profile: {
+                    title: "Completa tu Perfil",
+                    intro: "Por favor completa tu perfil para continuar. Los campos marcados con * son obligatorios.",
                     avatar: "Foto de Perfil",
                     avatar_upload: "Subir una foto de perfil",
                     avatar_hint: "JPG, PNG o GIF. Máximo 2MB.",
                     choose_image: "Elegir Imagen",
                     remove_image: "Eliminar",
-                    basic_info: "Información Básica", 
-                    contact_info: "Información de Contacto", 
-                    professional_links: "Enlaces Profesionales", 
-                    fields_section: "Intereses de Investigación", 
-                    full_name: "Nombre Completo", 
-                    username: "Usuario", 
-                    username_hint: "Usado para @menciones y URL del perfil", 
-                    affiliation: "Afiliación/Organización", 
-                    work_email: "Correo de Trabajo", 
-                    personal_website: "Sitio Web Personal", 
-                    professional_website: "Sitio Web Profesional/Laboratorio", 
-                    google_scholar: "Perfil de Google Scholar", 
-                    fields_of_study: "Campos de Estudio", 
-                    fields_hint: "Separa múltiples campos con comas", 
-                    save: "Guardar Perfil", 
-                    saved: "Perfil actualizado", 
+                    basic_info: "Información Básica",
+                    contact_info: "Información de Contacto",
+                    professional_links: "Enlaces Profesionales",
+                    fields_section: "Intereses de Investigación",
+                    full_name: "Nombre Completo",
+                    username: "Usuario",
+                    username_hint: "Usado para @menciones y URL del perfil",
+                    affiliation: "Afiliación/Organización",
+                    work_email: "Correo de Trabajo",
+                    personal_website: "Sitio Web Personal",
+                    professional_website: "Sitio Web Profesional/Laboratorio",
+                    google_scholar: "Perfil de Google Scholar",
+                    fields_of_study: "Campos de Estudio",
+                    fields_hint: "Separa múltiples campos con comas",
+                    save: "Guardar Perfil",
+                    saved: "Perfil actualizado",
                     skip: "Omitir por ahora",
                     upload_error: "Error al subir la imagen. Por favor intenta de nuevo."
                 },
@@ -562,7 +736,7 @@
         function setFlash(msg, timeout = 3000) { const el = $("#flash"); if (!el) return; el.textContent = msg; el.style.display = "block"; clearTimeout(setFlash._t); if (timeout > 0) setFlash._t = setTimeout(() => (el.style.display = "none"), timeout); }
         function escapeHtml(s = "") { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
         function applyI18n() { document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); }); document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); }); document.querySelectorAll(".lang-switch-slider").forEach(el => el.dataset.lang = state.language); }
-        
+
         async function fetchProfile(userId, { refresh = false } = {}) {
             if (!userId) return null;
             if (!refresh && state.profileCache.has(userId)) return state.profileCache.get(userId);
@@ -581,13 +755,13 @@
             $("#profile").style.display = 'none';
             $("#publicProfileView").style.display = 'none';
             $("#signInPrompt").style.display = 'none';
-            if(which) $(`#${which}`).style.display = 'block';
+            if (which) $(`#${which}`).style.display = 'block';
         }
 
         function updateAvatarPreview(url, initial) {
             const avatarImage = $("#avatarImage");
             const avatarInitial = $("#avatarInitial");
-            
+
             if (url) {
                 avatarImage.src = url;
                 avatarImage.style.display = "block";
@@ -611,7 +785,7 @@
             $("#professionalWebsite").value = state.profile.professional_website || "";
             $("#googleScholar").value = state.profile.google_scholar || "";
             $("#fieldsOfStudy").value = state.profile.fields_of_study || "";
-            
+
             // Handle avatar
             const initial = (state.profile.full_name || "U").charAt(0).toUpperCase();
             if (state.profile.avatar_url) {
@@ -630,14 +804,14 @@
                 showView('publicProfileView');
                 return;
             }
-            
+
             // Handle avatar in public profile
             const publicInitial = $("#publicProfileInitial");
             const publicImage = $("#publicProfileImage");
             const initial = (profile.full_name || "?").charAt(0).toUpperCase();
-            
+
             publicInitial.textContent = initial;
-            
+
             if (profile.avatar_url) {
                 const avatarUrl = await getAvatarUrl(profile.avatar_url);
                 if (avatarUrl) {
@@ -652,7 +826,7 @@
                 publicImage.style.display = "none";
                 publicInitial.style.display = "block";
             }
-            
+
             $("#publicProfileName").textContent = profile.full_name || "Unnamed User";
             $("#publicProfileAffiliation").textContent = profile.affiliation || "No affiliation provided.";
             $("#publicProfileUsername .txt").textContent = `@${profile.username}`;
@@ -674,12 +848,12 @@
             $("#publicProfileFields").innerHTML = fields.length ? fields.map(f => `<span class="chip">${escapeHtml(f)}</span>`).join("") : `<span class="text-muted">No research interests.</span>`;
             showView('publicProfileView');
         }
-        
+
         function openMenu() {
             $("#mobileNavOverlay")?.classList.add("is-open");
             document.body.classList.add("menu-open");
             const btn = $("#mobileMenuBtn");
-            if(btn) {
+            if (btn) {
                 btn.setAttribute("aria-expanded", "true");
                 btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
             }
@@ -688,7 +862,7 @@
             $("#mobileNavOverlay")?.classList.remove("is-open");
             document.body.classList.remove("menu-open");
             const btn = $("#mobileMenuBtn");
-            if(btn) {
+            if (btn) {
                 btn.setAttribute("aria-expanded", "false");
                 btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
             }
@@ -726,11 +900,11 @@
                 $("#btnSignIn").style.display = "none"; $("#btnSignOut").style.display = "inline-block";
                 $("#btnProfile").style.display = "grid"; $("#userName").style.display = "inline";
                 $("#userName").textContent = state.profile?.full_name || state.profile?.username || "";
-                
+
                 // Handle avatar in header button
                 const userInitial = $("#userInitial");
                 const userAvatar = $("#userAvatar");
-                
+
                 if (state.profile?.avatar_url) {
                     const avatarUrl = await getAvatarUrl(state.profile.avatar_url);
                     if (avatarUrl) {
@@ -747,7 +921,7 @@
                     userInitial.style.display = "block";
                     userInitial.textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
                 }
-                
+
                 $("#btnAdmin").style.display = isOrganizer ? "inline-block" : "none";
             } else {
                 $("#btnSignIn").style.display = "inline-block"; $("#btnSignOut").style.display = "none";
@@ -767,7 +941,7 @@
                 handlePageLogic();
             });
         }
-        
+
         function handlePageLogic() {
             const urlParams = new URLSearchParams(window.location.search);
             const viewUserId = urlParams.get('id') || urlParams.get('user');
@@ -781,21 +955,21 @@
                 showView('signInPrompt');
             }
         }
-        
+
         async function uploadAvatar(file) {
             if (!file || !state.session) return null;
-            
+
             // Check file size (2MB limit)
             if (file.size > 2 * 1024 * 1024) {
                 setFlash("Image must be less than 2MB");
                 return null;
             }
-            
+
             const userId = state.session.user.id;
             const fileExt = file.name.split('.').pop();
             const fileName = `${userId}-${Date.now()}.${fileExt}`;
             const filePath = `avatars/${fileName}`;
-            
+
             // Upload to storage
             const { data, error } = await supabase.storage
                 .from('avatars')
@@ -803,20 +977,20 @@
                     upsert: false,
                     contentType: file.type
                 });
-            
+
             if (error) {
                 console.error('Upload error:', error);
                 return null;
             }
-            
+
             return data.path;
         }
-        
+
         async function deleteOldAvatar(path) {
             if (!path) return;
             await supabase.storage.from('avatars').remove([path]);
         }
-        
+
         function wireUI() {
             $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
             $("#btnSignIn")?.addEventListener("click", () => window.location.href = `index.html`);
@@ -826,7 +1000,7 @@
                 const overlay = $("#mobileNavOverlay");
                 if (overlay && !overlay.classList.contains('is-open')) openMenu(); else closeMenu();
             });
-            
+
             $("#backButton")?.addEventListener("click", () => history.back());
             $("#backFromPublicProfile")?.addEventListener("click", () => history.back());
 
@@ -854,7 +1028,7 @@
                         setFlash("Please select an image file");
                         return;
                     }
-                    
+
                     state.avatarFile = file;
                     const reader = new FileReader();
                     reader.onload = (e) => {
@@ -881,9 +1055,9 @@
             $("#profileForm")?.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 if (!state.session) return;
-                
+
                 let avatarPath = state.profile?.avatar_url;
-                
+
                 // Handle avatar upload if there's a new file
                 if (state.avatarFile) {
                     const newAvatarPath = await uploadAvatar(state.avatarFile);
@@ -902,11 +1076,11 @@
                     await deleteOldAvatar(state.profile.avatar_url);
                     avatarPath = null;
                 }
-                
+
                 const profileData = {
-                    full_name: $("#fullName").value.trim(), 
+                    full_name: $("#fullName").value.trim(),
                     username: $("#username").value.trim(),
-                    affiliation: $("#affiliation").value.trim(), 
+                    affiliation: $("#affiliation").value.trim(),
                     work_email: $("#workEmail").value.trim(),
                     personal_website: $("#personalWebsite").value.trim() || null,
                     professional_website: $("#professionalWebsite").value.trim() || null,
@@ -914,7 +1088,7 @@
                     fields_of_study: $("#fieldsOfStudy").value.trim() || null,
                     avatar_url: avatarPath
                 };
-                
+
                 const { error } = await supabase.from("profiles").update(profileData).eq("id", state.session.user.id);
                 if (!error) {
                     setFlash(tr("profile.saved"));
@@ -923,7 +1097,7 @@
                     const profileComplete = !!(state.profile?.full_name && state.profile?.username && state.profile?.affiliation && state.profile?.work_email);
                     populateProfileForm();
                     renderHeader();
-                    if(profileComplete && returnTo) {
+                    if (profileComplete && returnTo) {
                         setTimeout(() => window.location.href = returnTo, 1000);
                     }
                 } else {
@@ -933,7 +1107,7 @@
 
             $("#year").textContent = new Date().getFullYear();
         }
-        
+
         (async function main() {
             applyI18n();
             wireUI();

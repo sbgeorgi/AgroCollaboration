@@ -4,9 +4,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin • Almuerzo Agrivoltaico</title>
-  <meta name="description" content="Organizer tools for managing the Almuerzo Agrivoltaico seminar series." />
+  <title>Admin • Agrovoltaicos sin Fronteras</title>
+  <meta name="description" content="Organizer tools for managing the Agrovoltaicos sin Fronteras seminar series." />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"> <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Lato:wght@400;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
 
   <!-- FullCalendar (global build + locales) -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
@@ -14,7 +15,8 @@
 
   <style>
     /* --- CORE LAYOUT: Full viewport, no page scrolling --- */
-    html, body {
+    html,
+    body {
       height: 100vh;
       max-height: 100vh;
       overflow: hidden;
@@ -26,14 +28,15 @@
     body {
       display: flex;
       flex-direction: column;
-      background-color: var(--background, #121317);
+      background: var(--bg);
       color: var(--text, #f1f1f1);
     }
 
     .site-header {
-      flex-shrink: 0; /* Prevent header from shrinking */
+      flex-shrink: 0;
+      /* Prevent header from shrinking */
       z-index: 10;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
     /* Main container takes all remaining vertical space */
@@ -41,7 +44,8 @@
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      min-height: 0; /* Crucial for flex children overflow */
+      min-height: 0;
+      /* Crucial for flex children overflow */
       padding: var(--space-2);
       box-sizing: border-box;
       width: 100%;
@@ -59,7 +63,8 @@
       margin: 0;
       padding: var(--space-2);
       box-sizing: border-box;
-      overflow: hidden; /* Hide any accidental overflow */
+      overflow: hidden;
+      /* Hide any accidental overflow */
     }
 
     /* The two-column grid layout for the admin tools */
@@ -78,14 +83,17 @@
     .admin-side {
       display: flex;
       flex-direction: column;
-      min-height: 0; /* Prevent content from expanding the container */
-      overflow: hidden; /* Contains children */
+      min-height: 0;
+      /* Prevent content from expanding the container */
+      overflow: hidden;
+      /* Contains children */
     }
 
     .organizer-form-container h2,
     .admin-side h2 {
       margin: 0 0 var(--space-2) 0;
-      flex-shrink: 0; /* Prevent title from shrinking */
+      flex-shrink: 0;
+      /* Prevent title from shrinking */
       font-size: 1.3rem;
       border-bottom: 1px solid var(--border, #333);
       padding-bottom: var(--space-1);
@@ -95,9 +103,11 @@
     /* Make the form itself scrollable, not the whole column */
     #createEventForm {
       flex-grow: 1;
-      overflow-y: auto; /* The magic for the form panel */
+      overflow-y: auto;
+      /* The magic for the form panel */
       overflow-x: hidden;
-      padding-right: var(--space-1); /* Space for scrollbar */
+      padding-right: var(--space-1);
+      /* Space for scrollbar */
       display: flex;
       flex-direction: column;
     }
@@ -109,9 +119,21 @@
       align-items: start;
     }
 
-    .grid-form .col-span-2 { grid-column: span 2; }
-    .grid-form label { font-size: 0.8rem; margin-bottom: 4px; display: block; opacity: 0.8; }
-    .grid-form textarea { min-height: 80px; resize: vertical; }
+    .grid-form .col-span-2 {
+      grid-column: span 2;
+    }
+
+    .grid-form label {
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+      display: block;
+      opacity: 0.8;
+    }
+
+    .grid-form textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
 
     /* Speakers section - with its own scroll if needed */
     .speakers-fieldset {
@@ -120,11 +142,17 @@
       padding: var(--space-1) var(--space-2);
       margin-top: var(--space-1);
       background: var(--card-2, #1d1f24);
-      max-height: 200px; /* Limit height and allow scrolling */
+      max-height: 200px;
+      /* Limit height and allow scrolling */
       overflow-y: auto;
     }
 
-    .speakers-fieldset legend { font-weight: 600; padding: 0 6px; font-size: 0.9rem; }
+    .speakers-fieldset legend {
+      font-weight: 600;
+      padding: 0 6px;
+      font-size: 0.9rem;
+    }
+
     .speaker-row {
       display: grid;
       grid-template-columns: 1fr 1fr auto auto;
@@ -134,16 +162,37 @@
       padding-bottom: var(--space-1);
       border-bottom: 1px solid var(--color-surface-strong, rgba(255, 255, 255, 0.08));
     }
-    .speaker-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .speaker-row label { font-size: 0.7rem; margin-bottom: 2px; }
-    .speaker-row .checkbox-field { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; }
+
+    .speaker-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .speaker-row label {
+      font-size: 0.7rem;
+      margin-bottom: 2px;
+    }
+
+    .speaker-row .checkbox-field {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 2px;
+    }
 
     .btn-danger-ghost {
-        padding: 4px 8px; font-size: 1rem; line-height: 1; height: fit-content; align-self: end;
+      padding: 4px 8px;
+      font-size: 1rem;
+      line-height: 1;
+      height: fit-content;
+      align-self: end;
     }
-    
-    #createEventForm > .col-span-2:last-of-type {
-      margin-top: auto; /* Pushes the create button to the bottom */
+
+    #createEventForm>.col-span-2:last-of-type {
+      margin-top: auto;
+      /* Pushes the create button to the bottom */
       padding-top: var(--space-2);
     }
 
@@ -155,6 +204,7 @@
       margin-bottom: var(--space-2);
       flex-shrink: 0;
     }
+
     .calendar-tools .tool {
       display: flex;
       align-items: center;
@@ -163,14 +213,19 @@
       background: var(--card-2, #1d1f24);
       padding: 0 var(--space-1);
     }
+
     .calendar-tools input {
-      border: none; outline: none; background: transparent; color: var(--text);
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
       height: 36px;
     }
 
     #calendar {
       flex-grow: 1;
-      min-height: 0; /* Critical for FullCalendar sizing */
+      min-height: 0;
+      /* Critical for FullCalendar sizing */
       position: relative;
     }
 
@@ -191,10 +246,20 @@
       --fc-button-active-border-color: var(--brand-2, #5bd6a0);
       --fc-button-hover-bg-color: var(--border, #333);
     }
-    #calendar .fc { height: 100%; }
-    .fc-col-header-cell-cushion { text-decoration: none; color: var(--text) !important; }
-    .fc-daygrid-day-number { text-decoration: none; }
-    
+
+    #calendar .fc {
+      height: 100%;
+    }
+
+    .fc-col-header-cell-cushion {
+      text-decoration: none;
+      color: var(--text) !important;
+    }
+
+    .fc-daygrid-day-number {
+      text-decoration: none;
+    }
+
     /* Calendar event tags */
     .ev-tags {
       margin-top: 4px;
@@ -202,6 +267,7 @@
       flex-wrap: wrap;
       gap: 3px;
     }
+
     .mini-chip {
       display: inline-block;
       padding: 1px 6px;
@@ -216,124 +282,213 @@
 
     /* --- MODAL & MISC --- */
     #edit-event-modal {
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-      color: var(--text); box-shadow: var(--shadow-lg);
-      width: 90%; max-width: 700px; max-height: 90vh;
-      padding: var(--space-3); overflow-y: auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      box-shadow: var(--shadow-lg);
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      padding: var(--space-3);
+      overflow-y: auto;
     }
-    .conflict-row { font-size: 0.8rem; color: #ffbe0b; line-height: 1.4; }
-    #accessDenied.card { max-width: 600px; margin: var(--space-4) auto; }
+
+    .conflict-row {
+      font-size: 0.8rem;
+      color: #ffbe0b;
+      line-height: 1.4;
+    }
+
+    #accessDenied.card {
+      max-width: 600px;
+      margin: var(--space-4) auto;
+    }
 
     /* --- HEADER & NAVIGATION --- */
-    .mobile-menu-btn { display: none; }
-    .nav { display: flex; align-items: center; gap: var(--space-2); }
-    .mobile-nav-overlay {
-      display: none; flex-direction: column; justify-content: center; align-items: center;
-      gap: var(--space-4); position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
-      background: rgba(18, 19, 23, 0.9); backdrop-filter: blur(10px);
-      z-index: 1000; opacity: 0; transition: opacity 0.3s ease-in-out;
+    .mobile-menu-btn {
+      display: none;
     }
-    .mobile-nav-overlay.is-open { display: flex; opacity: 1; }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .mobile-nav-overlay {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: var(--space-4);
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100dvh;
+      background: rgba(18, 19, 23, 0.9);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .mobile-nav-overlay.is-open {
+      display: flex;
+      opacity: 1;
+    }
 
     /* --- RESPONSIVE: Tablet & Mobile --- */
     @media (max-width: 960px) {
-      html, body {
-        overflow-y: auto; /* Allow page scrolling on mobile */
+
+      html,
+      body {
+        overflow-y: auto;
+        /* Allow page scrolling on mobile */
         height: auto;
         max-height: none;
       }
+
       main.container {
         padding: var(--space-1);
         min-height: auto;
       }
+
       .admin-layout-inner {
-        grid-template-columns: 1fr; /* Stack columns */
-        grid-template-rows: auto auto; /* Let them size naturally */
+        grid-template-columns: 1fr;
+        /* Stack columns */
+        grid-template-rows: auto auto;
+        /* Let them size naturally */
         gap: var(--space-3);
       }
+
       .organizer-form-container {
-         max-height: 70vh; /* Give form a max height */
+        max-height: 70vh;
+        /* Give form a max height */
       }
+
       .admin-side {
-        min-height: 70vh; /* Ensure calendar has enough space */
+        min-height: 70vh;
+        /* Ensure calendar has enough space */
       }
 
       /* Mobile Header Styles */
       .mobile-menu-btn {
-        display: block; background: none; border: none; color: var(--text);
-        font-size: 2rem; cursor: pointer; z-index: 1001; padding: 0; line-height: 0;
+        display: block;
+        background: none;
+        border: none;
+        color: var(--text);
+        font-size: 2rem;
+        cursor: pointer;
+        z-index: 1001;
+        padding: 0;
+        line-height: 0;
       }
-      .header-grid > .nav { display: none; }
-      
+
+      .header-grid>.nav {
+        display: none;
+      }
+
       .mobile-nav-overlay .nav {
-        display: flex; flex-direction: column; align-items: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         gap: var(--space-4);
       }
-      .mobile-nav-overlay .link { font-size: 1.8rem; font-weight: 500; }
-      .mobile-nav-overlay .divider { display: none; }
+
+      .mobile-nav-overlay .link {
+        font-size: 1.8rem;
+        font-weight: 500;
+      }
+
+      .mobile-nav-overlay .divider {
+        display: none;
+      }
+
       .mobile-nav-overlay .auth-area {
-        margin-top: var(--space-2); display: flex; flex-direction: column;
-        align-items: center; gap: var(--space-3);
+        margin-top: var(--space-2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-3);
       }
+
       .mobile-nav-close-btn {
-        position: absolute; top: var(--space-3); right: var(--space-3);
-        background: none; border: none; color: var(--text);
-        cursor: pointer; line-height: 1; padding: 0;
+        position: absolute;
+        top: var(--space-3);
+        right: var(--space-3);
+        background: none;
+        border: none;
+        color: var(--text);
+        cursor: pointer;
+        line-height: 1;
+        padding: 0;
       }
-      body.menu-open { overflow: hidden; }
+
+      body.menu-open {
+        overflow: hidden;
+      }
     }
   </style>
 </head>
 
 <body>
   <header class="site-header">
-  <div class="container header-grid">
-    <div class="brand">
-      <a href="index.html" style="display: contents; text-decoration: none;">
-        
-        <!-- MODIFICATION: Replaced the old logo div with your new image -->
-        <img src="static/icon.png" alt="Almuerzo Agrivoltaico logo" class="logo-image">
-        
-        <div class="brand-text">
-          <div class="title">Almuerzo Agrivoltaico</div>
-          <div class="subtitle" data-i18n="tagline">
-            An informal seminar series to share advances in agrivoltaics in Latin America
-          </div>
-        </div>
-      </a>
-    </div>
-    
-    <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-    </button>
+    <div class="container header-grid">
+      <div class="brand">
+        <a href="index.html" style="display: contents; text-decoration: none;">
 
-    <!-- Desktop Nav -->
-    <nav class="nav">
-      <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-      <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-      <a href="about.html" class="link" data-i18n="nav.about">About</a>
-      <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-      <div class="divider"></div>
-      <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-        <span>EN</span>
-        <span>ES</span>
+          <!-- MODIFICATION: Replaced the old logo div with your new image -->
+          <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
+
+          <div class="brand-text">
+            <div class="title">Agrovoltaicos sin Fronteras</div>
+            <div class="subtitle" data-i18n="tagline">
+              A seminar series to share advances in agrivoltaics in the Americas
+            </div>
+          </div>
+        </a>
       </div>
-      <div class="auth-area">
-        <!-- PRESERVED: This is the user profile button, which is handled by your JS -->
-        <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
-          <span id="userInitial"></span>
-          <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
-        </button>
-        <span id="userName"></span>
-        <button id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</button>
-        <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
-          Sign out
-        </button>
-      </div>
-    </nav>
-  </div>
-</header>
-  
+
+      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Desktop Nav -->
+      <nav class="nav">
+        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
+        <a href="about.html" class="link" data-i18n="nav.about">About</a>
+        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+        <div class="divider"></div>
+        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
+          <span>EN</span>
+          <span>ES</span>
+        </div>
+        <div class="auth-area">
+          <!-- PRESERVED: This is the user profile button, which is handled by your JS -->
+          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
+            <span id="userInitial"></span>
+            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
+          </button>
+          <span id="userName"></span>
+          <!-- MODIFIED: Button is now a link to the signin page -->
+          <a href="signin.html" id="btnSignIn" class="btn-primary" data-i18n="auth.signin"
+            style="text-decoration: none; display: inline-block;">Sign in</a>
+          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+            Sign out
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
   <div id="mobileNavOverlay" class="mobile-nav-overlay">
     <!-- Content will be injected by JS -->
   </div>
@@ -347,36 +502,42 @@
         <div class="organizer-form-container">
           <h2 data-i18n="admin.title">Organizer Tools</h2>
           <!-- Banner Management Section -->
-<div class="banner-management" style="background: var(--card-2); border: 1px solid var(--color-primary); border-radius: var(--radius-2); padding: var(--space-2); margin-bottom: var(--space-3);">
-  <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
-    <span style="font-size: 1.5rem;">📢</span>
-    <strong style="flex: 1;">Site Announcement Banner</strong>
-    <button type="button" id="toggleBannerBtn" class="btn-ghost" style="padding: 4px 12px; font-size: 0.85rem;">
-      <span id="bannerStatusText">No Active Banner</span>
-    </button>
-  </div>
-  <div class="grid-form" style="gap: var(--space-1);">
-    <div>
-      <label style="font-size: 0.75rem; opacity: 0.8;">Banner Text (EN)</label>
-      <input id="bannerTextEn" placeholder="Important announcement in English..." />
-    </div>
-    <div>
-      <label style="font-size: 0.75rem; opacity: 0.8;">Banner Text (ES)</label>
-      <input id="bannerTextEs" placeholder="Anuncio importante en español..." />
-    </div>
-    <div class="col-span-2" style="display: flex; gap: var(--space-2); align-items: center;">
-      <button type="button" id="saveBannerBtn" class="btn-primary" style="padding: 6px 16px; font-size: 0.9rem;">
-        <span id="saveBannerBtnText">Save & Activate</span>
-      </button>
-      <button type="button" id="saveDraftBtn" class="btn-secondary" style="padding: 6px 16px; font-size: 0.9rem;">Save as Draft</button>
-      <button type="button" id="clearBannerBtn" class="btn-ghost" style="padding: 6px 16px; font-size: 0.9rem;">Deactivate All</button>
-      <label style="display: flex; align-items: center; gap: var(--space-1); margin-left: auto; font-size: 0.85rem; cursor: pointer; color: var(--color-success);">
-        <input type="checkbox" id="bannerActiveCheck" checked />
-        <span id="activeCheckLabel">Activate on Save</span>
-      </label>
-    </div>
-  </div>
-</div>
+          <div class="banner-management"
+            style="background: var(--card-2); border: 1px solid var(--color-primary); border-radius: var(--radius-2); padding: var(--space-2); margin-bottom: var(--space-3);">
+            <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+              <span style="font-size: 1.5rem;">📢</span>
+              <strong style="flex: 1;">Site Announcement Banner</strong>
+              <button type="button" id="toggleBannerBtn" class="btn-ghost"
+                style="padding: 4px 12px; font-size: 0.85rem;">
+                <span id="bannerStatusText">No Active Banner</span>
+              </button>
+            </div>
+            <div class="grid-form" style="gap: var(--space-1);">
+              <div>
+                <label style="font-size: 0.75rem; opacity: 0.8;">Banner Text (EN)</label>
+                <input id="bannerTextEn" placeholder="Important announcement in English..." />
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; opacity: 0.8;">Banner Text (ES)</label>
+                <input id="bannerTextEs" placeholder="Anuncio importante en español..." />
+              </div>
+              <div class="col-span-2" style="display: flex; gap: var(--space-2); align-items: center;">
+                <button type="button" id="saveBannerBtn" class="btn-primary"
+                  style="padding: 6px 16px; font-size: 0.9rem;">
+                  <span id="saveBannerBtnText">Save & Activate</span>
+                </button>
+                <button type="button" id="saveDraftBtn" class="btn-secondary"
+                  style="padding: 6px 16px; font-size: 0.9rem;">Save as Draft</button>
+                <button type="button" id="clearBannerBtn" class="btn-ghost"
+                  style="padding: 6px 16px; font-size: 0.9rem;">Deactivate All</button>
+                <label
+                  style="display: flex; align-items: center; gap: var(--space-1); margin-left: auto; font-size: 0.85rem; cursor: pointer; color: var(--color-success);">
+                  <input type="checkbox" id="bannerActiveCheck" checked />
+                  <span id="activeCheckLabel">Activate on Save</span>
+                </label>
+              </div>
+            </div>
+          </div>
           <form id="createEventForm" class="grid-form">
             <!-- Form fields are wrapped in a div to ensure the final button is pushed to the bottom -->
             <div>
@@ -452,7 +613,24 @@
       <a href="index.html" class="btn-secondary">Back to Schedule</a>
     </div>
   </main>
-
+<footer class="site-footer">
+    <div class="container">
+      <small style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center;">
+          © <span id="year"></span> Agrovoltaicos sin Fronteras •
+          <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer" style="margin-left: 8px;">
+            <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+          </a>
+          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer" style="margin-left: 8px;">
+            <img src="static/unam.png" alt="UNAM" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+          </a>
+        </div>
+      </small>
+    </div>
+  </footer>
   <!-- Modal for Editing Events -->
   <dialog id="edit-event-modal">
     <div class="modal-header">
@@ -511,7 +689,7 @@
   <!-- JS Logic -->
   <script type="module">
     // Import all shared logic from the central auth.js file
-    import { 
+    import {
       supabase,
       initAuth,
       initSharedUI,
@@ -530,7 +708,7 @@
     // Basic i18n
     const t = {
       en: {
-        tagline: "An informal seminar series to share advances in agrivoltaics in Latin America",
+        tagline: "A seminar series to share advances in agrivoltaics in the Americas",
         nav: { schedule: "Schedule", about: "About", admin: "Admin", archive: "Archive" },
         auth: { signin: "Sign in", signout: "Sign out" },
         admin: { title: "Organizer Tools" },
@@ -561,7 +739,7 @@
         },
       },
       es: {
-        tagline: "Serie de seminarios informales para compartir avances en agrofotovoltaica en América Latina",
+        tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas",
         nav: { schedule: "Calendario", about: "Acerca de", admin: "Admin", archive: "Archivo" },
         auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
         admin: { title: "Herramientas para organizadores" },
@@ -643,12 +821,12 @@
       document.querySelectorAll(".lang-switch-slider").forEach(el => el.dataset.lang = state.language);
       if (calendar) calendar.setOption('locale', state.language === 'es' ? 'es' : 'en');
     };
-    
+
     const handleLangSwitch = () => {
-        state.language = state.language === "en" ? "es" : "en";
-        localStorage.setItem("lang", state.language);
-        applyI18n();
-        if (calendar) calendar.render();
+      state.language = state.language === "en" ? "es" : "en";
+      localStorage.setItem("lang", state.language);
+      applyI18n();
+      if (calendar) calendar.render();
     };
 
     const checkAccess = async (authState) => {
@@ -1018,122 +1196,122 @@
     };
 
     /* ============= Banner Management ============= */
-const initBanner = async () => {
-  const loadBanner = async () => {
-    const { data } = await supabase.from('banners').select('*').eq('is_active', true).single();
-    if (data) {
-      $("#bannerTextEn").value = data.text_en || '';
-      $("#bannerTextEs").value = data.text_es || '';
-      $("#bannerActiveCheck").checked = true;
-      $("#bannerStatusText").textContent = '🟢 Active';
-      $("#bannerStatusText").style.color = 'var(--color-success)';
-      $("#saveBannerBtnText").textContent = 'Update & Keep Active';
-    } else {
-      $("#bannerStatusText").textContent = 'No Active Banner';
-      $("#bannerStatusText").style.color = 'var(--color-text-muted)';
-      $("#saveBannerBtnText").textContent = 'Save & Activate';
-      $("#bannerActiveCheck").checked = true; // Default to checked for new banners
-    }
-  };
+    const initBanner = async () => {
+      const loadBanner = async () => {
+        const { data } = await supabase.from('banners').select('*').eq('is_active', true).single();
+        if (data) {
+          $("#bannerTextEn").value = data.text_en || '';
+          $("#bannerTextEs").value = data.text_es || '';
+          $("#bannerActiveCheck").checked = true;
+          $("#bannerStatusText").textContent = '🟢 Active';
+          $("#bannerStatusText").style.color = 'var(--color-success)';
+          $("#saveBannerBtnText").textContent = 'Update & Keep Active';
+        } else {
+          $("#bannerStatusText").textContent = 'No Active Banner';
+          $("#bannerStatusText").style.color = 'var(--color-text-muted)';
+          $("#saveBannerBtnText").textContent = 'Save & Activate';
+          $("#bannerActiveCheck").checked = true; // Default to checked for new banners
+        }
+      };
 
-  // Update button text when checkbox changes
-  $("#bannerActiveCheck")?.addEventListener('change', (e) => {
-    $("#saveBannerBtnText").textContent = e.target.checked ? 'Save & Activate' : 'Save as Draft';
-    $("#activeCheckLabel").textContent = e.target.checked ? 'Activate on Save' : 'Save as Draft';
-  });
+      // Update button text when checkbox changes
+      $("#bannerActiveCheck")?.addEventListener('change', (e) => {
+        $("#saveBannerBtnText").textContent = e.target.checked ? 'Save & Activate' : 'Save as Draft';
+        $("#activeCheckLabel").textContent = e.target.checked ? 'Activate on Save' : 'Save as Draft';
+      });
 
-  // Save & Activate (primary button)
-  $("#saveBannerBtn")?.addEventListener('click', async () => {
-    const textEn = $("#bannerTextEn").value.trim();
-    const textEs = $("#bannerTextEs").value.trim();
-    const isActive = $("#bannerActiveCheck").checked;
-    
-    if (!textEn) {
-      setFlash('Banner text (EN) is required', true);
-      return;
-    }
+      // Save & Activate (primary button)
+      $("#saveBannerBtn")?.addEventListener('click', async () => {
+        const textEn = $("#bannerTextEn").value.trim();
+        const textEs = $("#bannerTextEs").value.trim();
+        const isActive = $("#bannerActiveCheck").checked;
 
-    if (isActive) {
-      await supabase.from('banners').update({ is_active: false }).eq('is_active', true);
-    }
+        if (!textEn) {
+          setFlash('Banner text (EN) is required', true);
+          return;
+        }
 
-    const { error } = await supabase.from('banners').insert([{
-      text_en: textEn,
-      text_es: textEs || null,
-      is_active: isActive
-    }]);
+        if (isActive) {
+          await supabase.from('banners').update({ is_active: false }).eq('is_active', true);
+        }
 
-    if (error) {
-      setFlash('Failed to save banner', true);
-    } else {
-      setFlash(isActive ? 'Banner saved and activated!' : 'Banner saved as draft');
+        const { error } = await supabase.from('banners').insert([{
+          text_en: textEn,
+          text_es: textEs || null,
+          is_active: isActive
+        }]);
+
+        if (error) {
+          setFlash('Failed to save banner', true);
+        } else {
+          setFlash(isActive ? 'Banner saved and activated!' : 'Banner saved as draft');
+          await loadBanner();
+        }
+      });
+
+      // Save as Draft (secondary button)
+      $("#saveDraftBtn")?.addEventListener('click', async () => {
+        const textEn = $("#bannerTextEn").value.trim();
+        const textEs = $("#bannerTextEs").value.trim();
+
+        if (!textEn) {
+          setFlash('Banner text (EN) is required', true);
+          return;
+        }
+
+        const { error } = await supabase.from('banners').insert([{
+          text_en: textEn,
+          text_es: textEs || null,
+          is_active: false
+        }]);
+
+        if (error) {
+          setFlash('Failed to save draft', true);
+        } else {
+          setFlash('Banner saved as draft (not active)');
+        }
+      });
+
+      $("#clearBannerBtn")?.addEventListener('click', async () => {
+        if (confirm('Deactivate all banners?')) {
+          await supabase.from('banners').update({ is_active: false }).eq('is_active', true);
+          $("#bannerTextEn").value = '';
+          $("#bannerTextEs").value = '';
+          $("#bannerActiveCheck").checked = true; // Reset to checked for next time
+          setFlash('All banners deactivated');
+          await loadBanner();
+        }
+      });
+
+      $("#toggleBannerBtn")?.addEventListener('click', () => {
+        $("#bannerActiveCheck").checked = !$("#bannerActiveCheck").checked;
+        $("#bannerActiveCheck").dispatchEvent(new Event('change'));
+      });
+
       await loadBanner();
-    }
-  });
-
-  // Save as Draft (secondary button)
-  $("#saveDraftBtn")?.addEventListener('click', async () => {
-    const textEn = $("#bannerTextEn").value.trim();
-    const textEs = $("#bannerTextEs").value.trim();
-    
-    if (!textEn) {
-      setFlash('Banner text (EN) is required', true);
-      return;
-    }
-
-    const { error } = await supabase.from('banners').insert([{
-      text_en: textEn,
-      text_es: textEs || null,
-      is_active: false
-    }]);
-
-    if (error) {
-      setFlash('Failed to save draft', true);
-    } else {
-      setFlash('Banner saved as draft (not active)');
-    }
-  });
-
-  $("#clearBannerBtn")?.addEventListener('click', async () => {
-    if (confirm('Deactivate all banners?')) {
-      await supabase.from('banners').update({ is_active: false }).eq('is_active', true);
-      $("#bannerTextEn").value = '';
-      $("#bannerTextEs").value = '';
-      $("#bannerActiveCheck").checked = true; // Reset to checked for next time
-      setFlash('All banners deactivated');
-      await loadBanner();
-    }
-  });
-
-  $("#toggleBannerBtn")?.addEventListener('click', () => {
-    $("#bannerActiveCheck").checked = !$("#bannerActiveCheck").checked;
-    $("#bannerActiveCheck").dispatchEvent(new Event('change'));
-  });
-
-  await loadBanner();
-};
+    };
 
     /* ============= Bootstrap ============= */
     (async function main() {
-  applyI18n();
-  
-  // Initialize all shared UI elements (mobile menu, buttons, footer)
-  initSharedUI({ applyI18n, handleLangSwitch });
-  
-  // Initialize authentication, which will handle access checks and render the header
-  await initAuth({
-    onAuthReady: (authState) => checkAccess(authState),
-    onAuthChange: (authState) => checkAccess(authState)
-  });
-  
-  // Wire up page-specific UI listeners after auth has run
-  wireUI();
-  
-  // ADD THIS LINE HERE:
-  await initBanner();
-  
-  renderSpeakerFields('createSpeakersContainer'); // Init with one field
-})();
+      applyI18n();
+
+      // Initialize all shared UI elements (mobile menu, buttons, footer)
+      initSharedUI({ applyI18n, handleLangSwitch });
+
+      // Initialize authentication, which will handle access checks and render the header
+      await initAuth({
+        onAuthReady: (authState) => checkAccess(authState),
+        onAuthChange: (authState) => checkAccess(authState)
+      });
+
+      // Wire up page-specific UI listeners after auth has run
+      wireUI();
+
+      // ADD THIS LINE HERE:
+      await initBanner();
+
+      renderSpeakerFields('createSpeakersContainer'); // Init with one field
+    })();
   </script>
 </body>
 

@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign In • Agrovoltaicos sin Fronteras</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Fix for footer spacing */
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    main.auth-page-container {
+      flex-grow: 1;
+    }
+
+    /* Styles for new sign-in/sign-up forms */
+    .auth-form-vertical {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      width: 100%;
+      margin-top: var(--space-3);
+    }
+
+    .auth-form-vertical label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: -0.25rem;
+    }
+
+    .auth-form-vertical input {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--card-2);
+      color: var(--text);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .auth-form-vertical input:hover {
+      border-color: color-mix(in oklab, var(--border) 60%, var(--brand) 20%);
+    }
+    .auth-form-vertical input:focus-visible {
+      outline: none;
+      border-color: var(--ring);
+      box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ring);
+    }
+
+    .auth-form-vertical button {
+      margin-top: var(--space-2);
+      width: 100%;
+    }
+
+    .auth-form-vertical a {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: var(--space-2);
+      color: var(--muted);
+    }
+    .auth-form-vertical a:hover {
+      color: var(--brand-2);
+    }
+
+    .auth-tabs {
+      display: flex;
+      width: 100%;
+      border-radius: var(--radius-sm);
+      background: var(--card-2);
+      padding: 4px;
+      margin-top: var(--space-3);
+      border: 1px solid var(--border);
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .auth-tab.active {
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-grid">
+      <div class="brand">
+        <a href="index.html" style="display: contents; text-decoration: none;">
+          <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
+          <div class="brand-text">
+            <div class="title">Agrovoltaicos sin Fronteras</div>
+            <div class="subtitle" data-i18n="tagline">
+              A seminar series to share advances in agrivoltaics in the Americas
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div id="flash" class="flash" role="status" aria-live="polite"></div>
+
+  <main class="container auth-page-container">
+    <section class="card auth-card">
+      <h1>Sign in to Participate</h1>
+
+      <button id="btnGoogle" class="btn-social btn-google">
+        <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
+          <path
+            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            fill="#4285F4"></path>
+          <path
+            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            fill="#34A853"></path>
+          <path
+            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+            fill="#FBBC05"></path>
+          <path
+            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+            fill="#EA4335"></path>
+          <path d="M1 1h22v22H1z" fill="none"></path>
+        </svg>
+        <span>Sign in with Google</span>
+      </button>
+
+      <div class="separator">or</div>
+
+      <form id="magicLinkForm" class="auth-form-secondary">
+        <label for="magicLinkEmail" class="sr-only">Email</label>
+        <input id="magicLinkEmail" type="email" placeholder="you@example.com" required />
+        <button class="btn-secondary" type="submit">Send magic link</button>
+      </form>
+
+      <div class="auth-tabs">
+        <button id="tabSignIn" class="auth-tab active">Sign In</button>
+        <button id="tabSignUp" class="auth-tab">Sign Up</button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="signInForm" class="auth-form-vertical">
+        <label for="signInEmail" class="sr-only">Email</label>
+        <input id="signInEmail" type="email" placeholder="Email" required autocomplete="email">
+        <label for="signInPassword" class="sr-only">Password</label>
+        <input id="signInPassword" type="password" placeholder="Password" required autocomplete="current-password">
+        <button type="submit" class="btn-primary">Sign In</button>
+        <a href="#" id="forgotPasswordLink">Forgot your password?</a>
+      </form>
+
+      <!-- Sign Up Form -->
+      <form id="signUpForm" class="auth-form-vertical" style="display: none;">
+        <label for="signUpEmail" class="sr-only">Email</label>
+        <input id="signUpEmail" type="email" placeholder="Email" required autocomplete="email">
+        <label for="signUpPassword" class="sr-only">Password</label>
+        <input id="signUpPassword" type="password" placeholder="Password" required autocomplete="new-password">
+        <button type="submit" class="btn-primary">Sign Up</button>
+      </form>
+
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center;">
+          © <span id="year"></span> Agrovoltaicos sin Fronteras •
+          <span>Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank"
+            rel="noopener noreferrer" style="margin-left: 8px;">
+            <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics"
+              style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+          </a>
+          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer"
+            style="margin-left: 8px;">
+            <img src="static/unam.png" alt="UNAM"
+              style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+          </a>
+        </div>
+      </small>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { supabase, initAuth, signInWithGoogle, signInWithEmail } from "./auth.js";
+
+    const $ = (sel) => document.querySelector(sel);
+
+    function setFlash(msg, timeout = 5000) {
+      const el = $("#flash");
+      if (!el) return;
+      el.textContent = msg;
+      el.style.display = "block";
+      clearTimeout(setFlash._t);
+      if (timeout > 0) {
+        setFlash._t = setTimeout(() => (el.style.display = "none"), timeout);
+      }
+    }
+
+    async function handleSignIn(email, password) {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setFlash(error.message);
+      // Success is handled by onAuthChange, which redirects
+    }
+
+    async function handleSignUp(email, password) {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        setFlash(error.message);
+      } else {
+        setFlash("Success! Please check your email to verify your account.");
+        $('#signUpForm').reset();
+      }
+    }
+
+    async function handlePasswordReset(email) {
+      if (!email) {
+        setFlash("Please enter your email address in the sign-in form first.");
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/profile.html'
+      });
+      if (error) {
+        setFlash(error.message);
+      } else {
+        setFlash("Password reset link sent! Check your email.");
+      }
+    }
+
+    function wireUI() {
+      // MODIFIED: Dynamically construct the redirect URL
+      const currentPath = window.location.pathname;
+      // This finds the directory the app is in, e.g., "/AgroCollaboration/" or just "/"
+      const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+      // This creates the full, correct URL to index.html
+      const targetRedirectUrl = window.location.origin + basePath + 'index.html';
+
+      $("#btnGoogle")?.addEventListener("click", () => signInWithGoogle({ 
+        redirectTo: targetRedirectUrl 
+      }));
+
+      $("#magicLinkForm")?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = $("#magicLinkEmail")?.value.trim();
+        if (email) {
+          const msg = await signInWithEmail(email, { 
+            emailRedirectTo: targetRedirectUrl 
+          });
+          setFlash(msg);
+          e.target.reset();
+        }
+      });
+
+      $('#signInForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const email = $('#signInEmail').value;
+        const password = $('#signInPassword').value;
+        handleSignIn(email, password);
+      });
+
+      $('#signUpForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const email = $('#signUpEmail').value;
+        const password = $('#signUpPassword').value;
+        handleSignUp(email, password);
+      });
+
+      $('#forgotPasswordLink').addEventListener('click', e => {
+        e.preventDefault();
+        const email = $('#signInEmail').value.trim();
+        handlePasswordReset(email);
+      });
+
+      // Tab switching logic
+      const tabSignIn = $('#tabSignIn');
+      const tabSignUp = $('#tabSignUp');
+      const signInForm = $('#signInForm');
+      const signUpForm = $('#signUpForm');
+
+      tabSignIn.addEventListener('click', () => {
+        tabSignIn.classList.add('active');
+        tabSignUp.classList.remove('active');
+        signInForm.style.display = 'flex';
+        signUpForm.style.display = 'none';
+      });
+
+      tabSignUp.addEventListener('click', () => {
+        tabSignUp.classList.add('active');
+        tabSignIn.classList.remove('active');
+        signUpForm.style.display = 'flex';
+        signInForm.style.display = 'none';
+      });
+
+      $("#year").textContent = new Date().getFullYear();
+    }
+
+    (async function main() {
+      wireUI();
+
+      await initAuth({
+        onAuthReady: (authState) => {
+          if (authState.session) {
+            // Use replace to prevent the signin page from being in the browser history
+            window.location.replace('index.html'); 
+          }
+        },
+        onAuthChange: (authState) => {
+          if (authState.session) {
+            window.location.replace('index.html');
+          }
+        }
+      });
+    })();
+  </script>
+
+</body>
+
+</html>
