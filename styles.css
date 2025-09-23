@@ -1172,3 +1172,22 @@ main.container {
     animation-iteration-count: 1 !important;
   }
 }
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.02); opacity: 0.9; }
+}
+
+@media (max-width: 768px) {
+  .title { 
+    flex-direction: column; 
+    align-items: flex-start !important;
+    gap: var(--space-1) !important;
+  }
+  #siteBanner {
+    font-size: 0.7rem !important;
+    padding: 3px 10px !important;
+    white-space: normal !important;
+    max-width: 100%;
+  }
+}

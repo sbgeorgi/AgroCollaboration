@@ -346,6 +346,37 @@
         <!-- Left Side: Create Form -->
         <div class="organizer-form-container">
           <h2 data-i18n="admin.title">Organizer Tools</h2>
+          <!-- Banner Management Section -->
+<div class="banner-management" style="background: var(--card-2); border: 1px solid var(--color-primary); border-radius: var(--radius-2); padding: var(--space-2); margin-bottom: var(--space-3);">
+  <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+    <span style="font-size: 1.5rem;">📢</span>
+    <strong style="flex: 1;">Site Announcement Banner</strong>
+    <button type="button" id="toggleBannerBtn" class="btn-ghost" style="padding: 4px 12px; font-size: 0.85rem;">
+      <span id="bannerStatusText">No Active Banner</span>
+    </button>
+  </div>
+  <div class="grid-form" style="gap: var(--space-1);">
+    <div>
+      <label style="font-size: 0.75rem; opacity: 0.8;">Banner Text (EN)</label>
+      <input id="bannerTextEn" placeholder="Important announcement in English..." />
+    </div>
+    <div>
+      <label style="font-size: 0.75rem; opacity: 0.8;">Banner Text (ES)</label>
+      <input id="bannerTextEs" placeholder="Anuncio importante en español..." />
+    </div>
+    <div class="col-span-2" style="display: flex; gap: var(--space-2); align-items: center;">
+      <button type="button" id="saveBannerBtn" class="btn-primary" style="padding: 6px 16px; font-size: 0.9rem;">
+        <span id="saveBannerBtnText">Save & Activate</span>
+      </button>
+      <button type="button" id="saveDraftBtn" class="btn-secondary" style="padding: 6px 16px; font-size: 0.9rem;">Save as Draft</button>
+      <button type="button" id="clearBannerBtn" class="btn-ghost" style="padding: 6px 16px; font-size: 0.9rem;">Deactivate All</button>
+      <label style="display: flex; align-items: center; gap: var(--space-1); margin-left: auto; font-size: 0.85rem; cursor: pointer; color: var(--color-success);">
+        <input type="checkbox" id="bannerActiveCheck" checked />
+        <span id="activeCheckLabel">Activate on Save</span>
+      </label>
+    </div>
+  </div>
+</div>
           <form id="createEventForm" class="grid-form">
             <!-- Form fields are wrapped in a div to ensure the final button is pushed to the bottom -->
             <div>
@@ -986,24 +1017,123 @@
       initTagsInput('createTagsInput', 'createTagsField', []);
     };
 
+    /* ============= Banner Management ============= */
+const initBanner = async () => {
+  const loadBanner = async () => {
+    const { data } = await supabase.from('banners').select('*').eq('is_active', true).single();
+    if (data) {
+      $("#bannerTextEn").value = data.text_en || '';
+      $("#bannerTextEs").value = data.text_es || '';
+      $("#bannerActiveCheck").checked = true;
+      $("#bannerStatusText").textContent = '🟢 Active';
+      $("#bannerStatusText").style.color = 'var(--color-success)';
+      $("#saveBannerBtnText").textContent = 'Update & Keep Active';
+    } else {
+      $("#bannerStatusText").textContent = 'No Active Banner';
+      $("#bannerStatusText").style.color = 'var(--color-text-muted)';
+      $("#saveBannerBtnText").textContent = 'Save & Activate';
+      $("#bannerActiveCheck").checked = true; // Default to checked for new banners
+    }
+  };
+
+  // Update button text when checkbox changes
+  $("#bannerActiveCheck")?.addEventListener('change', (e) => {
+    $("#saveBannerBtnText").textContent = e.target.checked ? 'Save & Activate' : 'Save as Draft';
+    $("#activeCheckLabel").textContent = e.target.checked ? 'Activate on Save' : 'Save as Draft';
+  });
+
+  // Save & Activate (primary button)
+  $("#saveBannerBtn")?.addEventListener('click', async () => {
+    const textEn = $("#bannerTextEn").value.trim();
+    const textEs = $("#bannerTextEs").value.trim();
+    const isActive = $("#bannerActiveCheck").checked;
+    
+    if (!textEn) {
+      setFlash('Banner text (EN) is required', true);
+      return;
+    }
+
+    if (isActive) {
+      await supabase.from('banners').update({ is_active: false }).eq('is_active', true);
+    }
+
+    const { error } = await supabase.from('banners').insert([{
+      text_en: textEn,
+      text_es: textEs || null,
+      is_active: isActive
+    }]);
+
+    if (error) {
+      setFlash('Failed to save banner', true);
+    } else {
+      setFlash(isActive ? 'Banner saved and activated!' : 'Banner saved as draft');
+      await loadBanner();
+    }
+  });
+
+  // Save as Draft (secondary button)
+  $("#saveDraftBtn")?.addEventListener('click', async () => {
+    const textEn = $("#bannerTextEn").value.trim();
+    const textEs = $("#bannerTextEs").value.trim();
+    
+    if (!textEn) {
+      setFlash('Banner text (EN) is required', true);
+      return;
+    }
+
+    const { error } = await supabase.from('banners').insert([{
+      text_en: textEn,
+      text_es: textEs || null,
+      is_active: false
+    }]);
+
+    if (error) {
+      setFlash('Failed to save draft', true);
+    } else {
+      setFlash('Banner saved as draft (not active)');
+    }
+  });
+
+  $("#clearBannerBtn")?.addEventListener('click', async () => {
+    if (confirm('Deactivate all banners?')) {
+      await supabase.from('banners').update({ is_active: false }).eq('is_active', true);
+      $("#bannerTextEn").value = '';
+      $("#bannerTextEs").value = '';
+      $("#bannerActiveCheck").checked = true; // Reset to checked for next time
+      setFlash('All banners deactivated');
+      await loadBanner();
+    }
+  });
+
+  $("#toggleBannerBtn")?.addEventListener('click', () => {
+    $("#bannerActiveCheck").checked = !$("#bannerActiveCheck").checked;
+    $("#bannerActiveCheck").dispatchEvent(new Event('change'));
+  });
+
+  await loadBanner();
+};
+
     /* ============= Bootstrap ============= */
     (async function main() {
-      applyI18n();
-      
-      // Initialize all shared UI elements (mobile menu, buttons, footer)
-      initSharedUI({ applyI18n, handleLangSwitch });
-      
-      // Initialize authentication, which will handle access checks and render the header
-      await initAuth({
-        onAuthReady: (authState) => checkAccess(authState),
-        onAuthChange: (authState) => checkAccess(authState)
-      });
-      
-      // Wire up page-specific UI listeners after auth has run
-      wireUI();
-      
-      renderSpeakerFields('createSpeakersContainer'); // Init with one field
-    })();
+  applyI18n();
+  
+  // Initialize all shared UI elements (mobile menu, buttons, footer)
+  initSharedUI({ applyI18n, handleLangSwitch });
+  
+  // Initialize authentication, which will handle access checks and render the header
+  await initAuth({
+    onAuthReady: (authState) => checkAccess(authState),
+    onAuthChange: (authState) => checkAccess(authState)
+  });
+  
+  // Wire up page-specific UI listeners after auth has run
+  wireUI();
+  
+  // ADD THIS LINE HERE:
+  await initBanner();
+  
+  renderSpeakerFields('createSpeakersContainer'); // Init with one field
+})();
   </script>
 </body>
 
