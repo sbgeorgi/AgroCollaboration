@@ -20,6 +20,41 @@ function accentFromId(id = "") {
     return `hsl(${hue} 70% 50%)`;
 }
 
+// --- PERMISSION CHECKING FUNCTIONS ---
+function canEditThread(thread) {
+  const uid = authState.session?.user?.id;
+  if (!uid) return false;
+  if (thread.created_by === uid) return true;
+  return ["organizer", "admin"].includes(authState.profile?.role);
+}
+
+function canDeleteThread(thread) {
+  const uid = authState.session?.user?.id;
+  if (!uid) return false;
+  if (thread.created_by === uid) return true;
+  return ["organizer", "admin"].includes(authState.profile?.role);
+}
+
+function canEditComment(comment) {
+  const uid = authState.session?.user?.id;
+  if (!uid) return false;
+  if (comment.created_by === uid) return true;
+  return ["organizer", "admin"].includes(authState.profile?.role);
+}
+
+function canDeleteComment(comment) {
+  const uid = authState.session?.user?.id;
+  if (!uid) return false;
+  if (comment.created_by === uid) return true;
+  return ["organizer", "admin"].includes(authState.profile?.role);
+}
+
+function canDeleteFile(file) {
+  const uid = authState.session?.user?.id;
+  if (!uid) return false;
+  if (file.created_by === uid) return true;
+  return ["organizer", "admin"].includes(authState.profile?.role);
+}
 
 // --- DATA & REALTIME ---
 function cleanupSubscriptions() {
@@ -35,10 +70,8 @@ function subscribeToEventChanges(eventId) {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'attachments', filter: `event_id=eq.${eventId}` }, () => loadFiles(eventId))
     .on('postgres_changes', { event: '*', schema: 'public', table: 'event_follows', filter: `event_id=eq.${eventId}` }, () => loadRSVPFollow(eventId))
     .on('postgres_changes', { event: '*', schema: 'public', table: 'event_rsvps', filter: `event_id=eq.${eventId}` }, () => loadRSVPFollow(eventId))
-    // ADD THESE TWO LINES FOR REAL-TIME THREADS AND COMMENTS
     .on('postgres_changes', { event: '*', schema: 'public', table: 'threads', filter: `event_id=eq.${eventId}` }, () => loadThreads(eventId))
     .on('postgres_changes', { event: '*', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` }, () => {
-      // Only reload comments if we're currently viewing a thread
       if (state.selectedThreadId) {
         loadComments(state.selectedThreadId);
       }
@@ -47,9 +80,17 @@ function subscribeToEventChanges(eventId) {
 }
 
 async function loadRSVPFollow(eventId) {
-  state.rsvpStatus = null; state.isFollowing = false; state.counts = { followers: 0, going: 0, interested: 0 };
+  state.rsvpStatus = null; 
+  state.isFollowing = false; 
+  state.counts = { followers: 0, going: 0, interested: 0 };
+  
   const { data: countsData } = await supabase.rpc('get_event_counts', { event_id_param: eventId });
-  if (countsData) { state.counts.followers = countsData.followers_count; state.counts.going = countsData.going_count; state.counts.interested = countsData.interested_count; }
+  if (countsData) { 
+    state.counts.followers = countsData.followers_count; 
+    state.counts.going = countsData.going_count; 
+    state.counts.interested = countsData.interested_count; 
+  }
+  
   if (authState.session) {
     const uid = authState.session.user.id;
     const [{ data: myFollow }, { data: myRsvp }] = await Promise.all([
@@ -63,11 +104,17 @@ async function loadRSVPFollow(eventId) {
 }
 
 async function loadThreads(eventId) {
-  const { data } = await supabase.from("threads").select("*, comments(count), profiles(*)").eq("event_id", eventId).order("created_at", { ascending: false });
+  const { data } = await supabase
+    .from("threads")
+    .select("*, comments(count), profiles(*)")
+    .eq("event_id", eventId)
+    .order("pinned", { ascending: false })
+    .order("created_at", { ascending: false });
+    
   state.threads = data || [];
+  
   for (const th of state.threads) {
     if (th.profiles) {
-      // Process the profile to get signed avatar URL
       if (th.profiles.avatar_url) {
         const { data: urlData } = await supabase.storage.from("avatars").createSignedUrl(th.profiles.avatar_url, 3600);
         if (urlData?.signedUrl) {
@@ -85,32 +132,40 @@ async function loadThreads(eventId) {
 async function loadComments(threadId) {
     if (!threadId) return;
     
-    // Save scroll position before update
     const commentsContainer = $("#commentsList");
     const scrollPos = commentsContainer ? commentsContainer.scrollTop : 0;
     
-    const { data } = await supabase.from("comments").select("*").eq("thread_id", threadId).order("created_at", { ascending: true });
+    const { data } = await supabase
+      .from("comments")
+      .select("*")
+      .eq("thread_id", threadId)
+      .order("created_at", { ascending: true });
+      
     state.comments = data || [];
     const userIds = [...new Set(state.comments.map(c => c.created_by))];
     await Promise.all(userIds.map(id => fetchProfile(id)));
     renderComments();
     
-    // Restore scroll position after update
     if (commentsContainer) {
         commentsContainer.scrollTop = scrollPos;
     }
 }
 
 async function loadFiles(eventId) {
-  const { data } = await supabase.from("attachments").select("*").eq("event_id", eventId).order("created_at", { ascending: false });
+  const { data } = await supabase
+    .from("attachments")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+    
   state.files = data || [];
   renderFiles();
 }
 
-
 // --- RENDERING ---
 function renderEventHeader() {
-  const ev = state.selectedEvent; if (!ev) return;
+  const ev = state.selectedEvent; 
+  if (!ev) return;
   const container = $("#compactEventHeaderContainer");
   if (!container) return;
 
@@ -213,19 +268,132 @@ function renderThreads() {
     const author = authState.profileCache.get(th.created_by);
     const authorName = author?.full_name || author?.username || '...';
     const initial = authorName.charAt(0).toUpperCase();
+    const canEdit = canEditThread(th);
+    const canDelete = canDeleteThread(th);
+    const isOrganizer = ["organizer", "admin"].includes(authState.profile?.role);
 
     const item = document.createElement("div");
     item.className = "thread-list-item";
     if (th.id === state.selectedThreadId) item.classList.add('active');
 
     item.innerHTML = `
-      <div class="avatar-circle">${initial}</div>
-      <div>
-        <div class="title">${th.pinned ? "📌 " : ""}${escapeHtml(th.title)}</div>
-        <div class="meta">${th.comments[0].count} replies • by ${escapeHtml(authorName)}</div>
+      <div class="thread-content" data-thread-open="${th.id}">
+        <div class="avatar-circle">${initial}</div>
+        <div class="thread-info">
+          <div class="title" id="thread-title-${th.id}">${th.pinned ? "📌 " : ""}${escapeHtml(th.title)}</div>
+          <div class="meta">${th.comments[0].count} replies • by ${escapeHtml(authorName)}</div>
+        </div>
+      </div>
+      <div class="thread-actions">
+        ${canEdit ? `<button class="btn-icon" data-edit-thread="${th.id}" title="${state.language === 'es' ? 'Editar' : 'Edit'}">✏️</button>` : ""}
+        ${canDelete ? `<button class="btn-icon" data-del-thread="${th.id}" title="${state.language === 'es' ? 'Eliminar' : 'Delete'}">🗑️</button>` : ""}
+        ${isOrganizer ? `<button class="btn-icon" data-pin-thread="${th.id}" data-pinned="${th.pinned ? "1" : "0"}" title="${th.pinned ? (state.language === 'es' ? 'Desfijar' : 'Unpin') : (state.language === 'es' ? 'Fijar' : 'Pin')}">📌</button>` : ""}
       </div>
     `;
-    item.addEventListener('click', () => openThread(th.id));
+    
+    // Open thread on content click
+    item.querySelector('[data-thread-open]').addEventListener('click', () => openThread(th.id));
+    
+    // Edit thread
+    item.querySelectorAll("[data-edit-thread]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const titleEl = item.querySelector(`#thread-title-${th.id}`);
+        const currentTitle = th.title;
+        
+        // Create inline edit form
+        const editForm = document.createElement('div');
+        editForm.className = 'inline-edit-form';
+        editForm.innerHTML = `
+          <input type="text" value="${escapeHtml(currentTitle)}" class="edit-input" />
+          <button class="btn-icon save-btn">✅</button>
+          <button class="btn-icon cancel-btn">❌</button>
+        `;
+        
+        titleEl.style.display = 'none';
+        titleEl.parentNode.insertBefore(editForm, titleEl.nextSibling);
+        
+        const input = editForm.querySelector('.edit-input');
+        input.focus();
+        input.select();
+        
+        const saveEdit = async () => {
+          const newTitle = input.value.trim();
+          if (newTitle && newTitle !== currentTitle) {
+            const { error } = await supabase
+              .from("threads")
+              .update({ title: newTitle })
+              .eq("id", th.id);
+              
+            if (error) {
+              setFlash(state.language === "es" ? "Error al actualizar" : "Update error");
+            } else {
+              await loadThreads(state.selectedEvent.id);
+            }
+          } else {
+            editForm.remove();
+            titleEl.style.display = '';
+          }
+        };
+        
+        editForm.querySelector('.save-btn').addEventListener('click', saveEdit);
+        editForm.querySelector('.cancel-btn').addEventListener('click', () => {
+          editForm.remove();
+          titleEl.style.display = '';
+        });
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') saveEdit();
+          if (e.key === 'Escape') {
+            editForm.remove();
+            titleEl.style.display = '';
+          }
+        });
+      });
+    });
+    
+    // Delete thread
+    item.querySelectorAll("[data-del-thread]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const confirmMsg = state.language === "es" 
+          ? "¿Eliminar este tema y todos sus comentarios?"
+          : "Delete this topic and all its comments?";
+        
+        if (!confirm(confirmMsg)) return;
+        
+        const { error } = await supabase
+          .from("threads")
+          .delete()
+          .eq("id", btn.dataset.delThread);
+          
+        if (error) {
+          console.error("Delete thread error:", error);
+          setFlash(state.language === "es" ? "Error al eliminar" : "Delete error");
+        } else {
+          if (state.selectedThreadId === btn.dataset.delThread) {
+            state.selectedThreadId = null;
+            showDiscussionView('welcome');
+          }
+          await loadThreads(state.selectedEvent.id);
+        }
+      });
+    });
+    
+    // Pin/unpin thread
+    item.querySelectorAll("[data-pin-thread]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.pinThread;
+        const next = btn.dataset.pinned !== "1";
+        const { error } = await supabase
+          .from("threads")
+          .update({ pinned: next })
+          .eq("id", id);
+        if (error) {
+          setFlash(error.message);
+        } else {
+          await loadThreads(state.selectedEvent.id);
+        }
+      });
+    });
+    
     list.appendChild(item);
   }
 }
@@ -236,6 +404,8 @@ function createCommentNode(comment, commentsByParentId, depth = 0) {
     const initial = authorName.charAt(0).toUpperCase();
     const children = commentsByParentId.get(comment.id) || [];
     const accent = accentFromId(comment.created_by);
+    const canEdit = canEditComment(comment);
+    const canDelete = canDeleteComment(comment);
 
     const node = document.createElement('div');
     node.className = `comment-node depth-${depth}`;
@@ -254,10 +424,14 @@ function createCommentNode(comment, commentsByParentId, depth = 0) {
                 </div>
                 <strong class="author-name" data-open-profile-id="${comment.created_by}" title="Open profile">${escapeHtml(authorName)}</strong>
                 <span class="timestamp">• ${fmtDateTime(comment.created_at)}</span>
+                <div class="comment-action-buttons">
+                  ${canEdit ? `<button class="btn-icon" data-edit-comment="${comment.id}" title="${state.language === 'es' ? 'Editar' : 'Edit'}">✏️</button>` : ''}
+                  ${canDelete ? `<button class="btn-icon" data-del-comment="${comment.id}" title="${state.language === 'es' ? 'Eliminar' : 'Delete'}">🗑️</button>` : ''}
+                </div>
             </div>
             <div class="comment-body-wrapper">
                 <div class="comment-bubble">
-                    <div class="comment-text">${comment.is_deleted ? "<em>(deleted)</em>" : linkify(comment.content)}</div>
+                    <div class="comment-text" id="comment-text-${comment.id}">${linkify(comment.content)}</div>
                 </div>
                 <div class="comment-actions">
                     <button class="btn-ghost" data-reply-id="${comment.id}">💬 ${tr('reply', 'Reply')}</button>
@@ -267,12 +441,90 @@ function createCommentNode(comment, commentsByParentId, depth = 0) {
         </div>
     `;
 
-    const repliesContainer = node.querySelector('.comment-replies');
-    for (const child of children) {
-        repliesContainer.appendChild(createCommentNode(child, commentsByParentId, depth + 1));
-    }
+    // Edit comment handler
+    node.querySelectorAll('[data-edit-comment]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const textEl = node.querySelector(`#comment-text-${comment.id}`);
+        const currentContent = comment.content;
+        
+        // Create inline edit form
+        const editForm = document.createElement('div');
+        editForm.className = 'inline-edit-form';
+        editForm.innerHTML = `
+          <textarea class="edit-textarea">${escapeHtml(currentContent)}</textarea>
+          <div class="edit-buttons">
+            <button class="btn-icon save-btn">✅</button>
+            <button class="btn-icon cancel-btn">❌</button>
+          </div>
+        `;
+        
+        textEl.style.display = 'none';
+        textEl.parentNode.insertBefore(editForm, textEl.nextSibling);
+        
+        const textarea = editForm.querySelector('.edit-textarea');
+        textarea.focus();
+        textarea.select();
+        
+        const saveEdit = async () => {
+          const newContent = textarea.value.trim();
+          if (newContent && newContent !== currentContent) {
+            const { error } = await supabase
+              .from("comments")
+              .update({ content: newContent })
+              .eq("id", comment.id);
+              
+            if (error) {
+              setFlash(state.language === "es" ? "Error al actualizar" : "Update error");
+            } else {
+              await loadComments(state.selectedThreadId);
+            }
+          } else {
+            editForm.remove();
+            textEl.style.display = '';
+          }
+        };
+        
+        editForm.querySelector('.save-btn').addEventListener('click', saveEdit);
+        editForm.querySelector('.cancel-btn').addEventListener('click', () => {
+          editForm.remove();
+          textEl.style.display = '';
+        });
+        textarea.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            editForm.remove();
+            textEl.style.display = '';
+          }
+        });
+      });
+    });
 
-    node.querySelector(`[data-reply-id]`).addEventListener('click', (e) => {
+    // Delete comment handler
+    node.querySelectorAll('[data-del-comment]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const confirmMsg = state.language === 'es' 
+          ? '¿Eliminar este comentario?'
+          : 'Delete this comment?';
+        
+        if (!confirm(confirmMsg)) return;
+        
+        const { error } = await supabase
+          .from('comments')
+          .delete()
+          .eq('id', btn.dataset.delComment);
+          
+        if (error) {
+          console.error('Delete comment error:', error);
+          setFlash(state.language === 'es' ? "Error al eliminar" : "Delete error");
+        } else {
+          await loadComments(state.selectedThreadId);
+        }
+      });
+    });
+
+    // Reply handler
+    const replyBtn = node.querySelector(`[data-reply-id]`);
+    if (replyBtn) {
+      replyBtn.addEventListener('click', (e) => {
         const parentId = e.target.closest('[data-reply-id]').dataset.replyId;
         const existingForm = node.querySelector('.inline-reply-form');
         if (existingForm) {
@@ -284,7 +536,7 @@ function createCommentNode(comment, commentsByParentId, depth = 0) {
         formContainer.className = 'inline-reply-form';
         formContainer.innerHTML = `
           <form class="inline-form">
-              <input type="text" placeholder="Replying to ${escapeHtml(authorName)}..." required />
+              <input type="text" placeholder="${state.language === 'es' ? `Respondiendo a ${escapeHtml(authorName)}...` : `Replying to ${escapeHtml(authorName)}...`}" required />
               <button type="submit" class="btn-primary">${tr('reply', 'Reply')}</button>
           </form>
         `;
@@ -300,7 +552,13 @@ function createCommentNode(comment, commentsByParentId, depth = 0) {
         });
         node.querySelector('.comment-body-wrapper').insertAdjacentElement('afterend', formContainer);
         formContainer.querySelector('input').focus();
-    });
+      });
+    }
+
+    const repliesContainer = node.querySelector('.comment-replies');
+    for (const child of children) {
+        repliesContainer.appendChild(createCommentNode(child, commentsByParentId, depth + 1));
+    }
 
     return node;
 }
@@ -334,30 +592,39 @@ async function renderFiles() {
   for (const f of state.files) {
     const div = document.createElement("div");
     div.className = "file";
-    div.dataset.fileId = f.id; // Add data-file-id for the download button logic
+    div.dataset.fileId = f.id;
 
     const url = await getSignedUrl(f.object_path);
+    const canDelete = canDeleteFile(f);
+    const profile = authState.profileCache.get(f.created_by);
+    const uploaderName = profile?.full_name || profile?.username || 'User';
 
-    // --- MODIFICATION START: Show delete button for file owner or admin/organizer ---
-    const user = authState.session?.user;
-    const profile = authState.profile;
-    const canDelete = user && (['admin', 'organizer'].includes(profile?.role) || f.created_by === user.id);
-    const deleteButtonHtml = canDelete 
-      ? `<button class="btn-danger" data-del-file-id="${f.id}">Delete</button>` 
-      : "";
-    // --- MODIFICATION END ---
-
-    // Note: The download button is added by the logic in index.html, which wraps this function.
     div.innerHTML = `
-      <div class="meta">
-        <div class="name">${escapeHtml(f.file_name)}</div>
-        <div class="size">${bytesToSize(f.file_size)}</div>
-      </div>
-      <div class="file-actions">
-        <a class="btn-secondary" href="${url}" target="_blank" rel="noopener">${tr('open')}</a>
-        ${deleteButtonHtml}
+      <div class="file-card">
+        <div class="file-icon">📎</div>
+        <div class="file-info">
+          <div class="file-name">${escapeHtml(f.file_name)}</div>
+          <div class="file-meta">
+            <span class="file-size">${bytesToSize(f.file_size)}</span>
+            <span class="file-uploader">• ${uploaderName}</span>
+            <span class="file-date">• ${fmtDateTime(f.created_at)}</span>
+          </div>
+        </div>
+        <div class="file-actions">
+          ${url ? `
+            <a class="btn-secondary" href="${url}" target="_blank" rel="noopener">
+              ${state.language === "es" ? "Descargar" : "Download"}
+            </a>
+          ` : ''}
+          ${canDelete ? `
+            <button class="btn-icon" data-del-file-id="${f.id}" title="${state.language === 'es' ? 'Eliminar' : 'Delete'}">
+              🗑️
+            </button>
+          ` : ""}
+        </div>
       </div>
     `;
+    
     grid.appendChild(div);
   }
 }
@@ -365,50 +632,136 @@ async function renderFiles() {
 // --- ACTIONS & INTERACTIONS ---
 async function createThread(title) {
   if (!title || !state.selectedEvent) return;
-  const { data } = await supabase.from("threads").insert({ event_id: state.selectedEvent.id, title, created_by: authState.session.user.id }).select().single();
+  const { data } = await supabase
+    .from("threads")
+    .insert({ 
+      event_id: state.selectedEvent.id, 
+      title, 
+      created_by: authState.session.user.id 
+    })
+    .select()
+    .single();
   await loadThreads(state.selectedEvent.id);
   if (data) openThread(data.id);
 }
 
 async function createComment(thread_id, parent_id, content) {
-  await supabase.from("comments").insert({ event_id: state.selectedEvent.id, thread_id, parent_id, content, created_by: authState.session.user.id });
+  await supabase
+    .from("comments")
+    .insert({ 
+      event_id: state.selectedEvent.id, 
+      thread_id, 
+      parent_id, 
+      content, 
+      created_by: authState.session.user.id 
+    });
 }
 
 async function uploadFile(file) {
   if (!file || !state.selectedEvent) return;
   const eventId = state.selectedEvent.id;
-  const object_path = `events/${eventId}/${Date.now()}-${file.name}`;
-  await supabase.storage.from("attachments").upload(object_path, file);
-  await supabase.from("attachments").insert({ event_id: eventId, bucket_id: "attachments", object_path, file_name: file.name, file_type: file.type, file_size: file.size, created_by: authState.session.user.id });
+  const userId = authState.session.user.id;
+  
+  const uniqueName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+  const object_path = `events/${eventId}/${userId}/${uniqueName}`;
+
+  const { data: uploadData, error: upErr } = await supabase.storage
+    .from("attachments")
+    .upload(object_path, file, { 
+      upsert: false,
+      cacheControl: '3600'
+    });
+    
+  if (upErr) {
+    console.error("Upload error:", upErr);
+    setFlash(
+      state.language === "es" 
+        ? `Error al subir archivo: ${upErr.message}`
+        : `Upload failed: ${upErr.message}`
+    );
+    return;
+  }
+
+  const { error: dbErr } = await supabase
+    .from("attachments")
+    .insert({ 
+      event_id: eventId, 
+      bucket_id: "attachments", 
+      object_path, 
+      file_name: file.name, 
+      file_type: file.type, 
+      file_size: file.size, 
+      created_by: userId 
+    });
+    
+  if (dbErr) {
+    await supabase.storage.from("attachments").remove([object_path]);
+    setFlash(
+      state.language === "es" 
+        ? `Error al guardar archivo: ${dbErr.message}`
+        : `Error saving file: ${dbErr.message}`
+    );
+    return;
+  }
+  
+  setFlash(state.language === "es" ? "Archivo subido" : "File uploaded");
+  await loadFiles(eventId);
 }
 
 async function getSignedUrl(path) {
-  const { data } = await supabase.storage.from("attachments").createSignedUrl(path, 3600);
+  const { data, error } = await supabase.storage
+    .from("attachments")
+    .createSignedUrl(path, 3600);
+  if (error) {
+    console.error("Error getting signed URL:", error);
+    return null;
+  }
   return data?.signedUrl;
 }
 
-// --- MODIFICATION START: Use the new RPC function to delete a file ---
 async function deleteFile(id) {
-  if (!confirm('Delete file permanently?')) return;
+  const file = state.files.find(f => f.id === id);
+  if (!file) return;
   
-  const { error } = await supabase.rpc('delete_event_file', { file_id: id });
+  const confirmMsg = state.language === "es" 
+    ? "¿Eliminar este archivo?"
+    : "Delete this file?";
   
-  if (error) {
-    console.error('Error deleting file:', error.message);
-    setFlash(`Failed to delete file: ${error.message}`);
-  } else {
-    setFlash('File deleted successfully.');
-    // The realtime subscription will automatically call loadFiles() to refresh the list.
+  if (!confirm(confirmMsg)) return;
+  
+  try {
+    const { error: storageErr } = await supabase.storage
+      .from("attachments")
+      .remove([file.object_path]);
+    
+    if (storageErr) {
+      console.error("Storage deletion error:", storageErr);
+    }
+    
+    const { error: dbErr } = await supabase
+      .from("attachments")
+      .delete()
+      .eq("id", id);
+    
+    if (dbErr) {
+      console.error("Database deletion error:", dbErr);
+      setFlash(state.language === "es" ? "Error al eliminar" : "Delete error");
+      return;
+    }
+    
+    await loadFiles(state.selectedEvent.id);
+    
+  } catch (error) {
+    console.error("Delete file error:", error);
+    setFlash(state.language === "es" ? "Error al eliminar" : "Delete error");
   }
 }
-// --- MODIFICATION END ---
 
 async function toggleFollow() {
   if (!authState.session || !state.selectedEvent) return;
   const uid = authState.session.user.id;
   const eventId = state.selectedEvent.id;
   
-  // Immediately update UI for responsiveness
   state.isFollowing = !state.isFollowing;
   renderEventHeader();
   
@@ -418,7 +771,6 @@ async function toggleFollow() {
     await supabase.from("event_follows").insert({ event_id: eventId, profile_id: uid });
   }
   
-  // Fetch accurate counts from database
   await loadRSVPFollow(eventId);
 }
 
@@ -427,29 +779,23 @@ async function setRSVP(status) {
   const uid = authState.session.user.id;
   const eventId = state.selectedEvent.id;
   
-  // Store the previous status before updating
   const previousStatus = state.rsvpStatus;
   
-  // If clicking the same status, do nothing
   if (previousStatus === status) return;
   
-  // Immediately update UI for responsiveness
   state.rsvpStatus = status;
   renderEventHeader();
   
-  // Save to database
   await supabase.from("event_rsvps").upsert({ 
     event_id: eventId, 
     profile_id: uid, 
     status 
   }, { onConflict: "event_id,profile_id" });
   
-  // Fetch accurate counts from database
   await loadRSVPFollow(eventId);
   
   setFlash(tr('rsvp.saved'));
 }
-
 
 // --- VIEW MANAGEMENT ---
 function setActiveTab(name) {
@@ -512,7 +858,6 @@ async function openEvent(eventId) {
   history.replaceState(null, "", url.toString());
 }
 
-
 // --- UI WIRING ---
 function wireEventDetailUI() {
     $("#eventDetail").addEventListener('click', (e) => {
@@ -526,13 +871,31 @@ function wireEventDetailUI() {
           history.replaceState(null, "", url.toString());
           return;
         }
-        const followBtn = e.target.closest('#btnFollowCompact'); if (followBtn) { toggleFollow(); return; }
-        const rsvpBtn = e.target.closest('[data-rsvp]'); if (rsvpBtn) { setRSVP(rsvpBtn.dataset.rsvp); return; }
         
-        // --- MODIFICATION: Update the delete file button click handler ---
-        const delFileBtn = e.target.closest('[data-del-file-id]'); if (delFileBtn) { deleteFile(delFileBtn.dataset.delFileId); return; }
+        const followBtn = e.target.closest('#btnFollowCompact'); 
+        if (followBtn) { 
+          toggleFollow(); 
+          return; 
+        }
         
-        const copyBtn = e.target.closest('[data-copy-link]'); if (copyBtn) { navigator.clipboard.writeText(copyBtn.dataset.copyLink); setFlash(tr('copied')); return; }
+        const rsvpBtn = e.target.closest('[data-rsvp]'); 
+        if (rsvpBtn) { 
+          setRSVP(rsvpBtn.dataset.rsvp); 
+          return; 
+        }
+        
+        const delFileBtn = e.target.closest('[data-del-file-id]'); 
+        if (delFileBtn) { 
+          deleteFile(delFileBtn.dataset.delFileId); 
+          return; 
+        }
+        
+        const copyBtn = e.target.closest('[data-copy-link]'); 
+        if (copyBtn) { 
+          navigator.clipboard.writeText(copyBtn.dataset.copyLink); 
+          setFlash(tr('copied')); 
+          return; 
+        }
 
         const profileEl = e.target.closest('[data-open-profile-id], .comment-avatar[data-user-id]');
         if (profileEl) {
@@ -545,21 +908,41 @@ function wireEventDetailUI() {
         setActiveTab(tab.dataset.tab);
     }));
 
-    $("#newThreadForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const title = $("#threadTitle")?.value.trim(); if (title) { await createThread(title); $("#threadTitle").value = ""; } });
-    $("#replyToThreadForm")?.addEventListener("submit", async (e) => {
-        e.preventDefault(); const textarea = e.target.querySelector("textarea"); const content = textarea.value.trim();
-        if (content && state.selectedThreadId) { await createComment(state.selectedThreadId, null, content); textarea.value = ""; await loadComments(state.selectedThreadId); }
+    $("#newThreadForm")?.addEventListener("submit", async (e) => { 
+      e.preventDefault(); 
+      const title = $("#threadTitle")?.value.trim(); 
+      if (title) { 
+        await createThread(title); 
+        $("#threadTitle").value = ""; 
+      } 
     });
-    $("#uploadForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const f = $("#fileInput")?.files[0]; if (f) { await uploadFile(f); $("#fileInput").value = ""; } });
+    
+    $("#replyToThreadForm")?.addEventListener("submit", async (e) => {
+        e.preventDefault(); 
+        const textarea = e.target.querySelector("textarea"); 
+        const content = textarea.value.trim();
+        if (content && state.selectedThreadId) { 
+          await createComment(state.selectedThreadId, null, content); 
+          textarea.value = ""; 
+          await loadComments(state.selectedThreadId); 
+        }
+    });
+    
+    $("#uploadForm")?.addEventListener("submit", async (e) => { 
+      e.preventDefault(); 
+      const f = $("#fileInput")?.files[0]; 
+      if (f) { 
+        await uploadFile(f); 
+        $("#fileInput").value = ""; 
+      } 
+    });
 }
-
 
 // --- INITIALIZATION ---
 export function initEventLogic(dependencies) {
-  // Assign dependencies to module-level variables
   supabase = dependencies.supabase;
   authState = dependencies.authState;
-  fetchProfile = dependencies.fetchProfile; // <-- CORRECTED: Added fetchProfile
+  fetchProfile = dependencies.fetchProfile;
   tr = dependencies.tr;
   state = dependencies.state;
   $ = dependencies.$;
@@ -573,7 +956,6 @@ export function initEventLogic(dependencies) {
 
   wireEventDetailUI();
 
-  // Return public API for the host page
   return {
     openEvent,
     cleanupSubscriptions,

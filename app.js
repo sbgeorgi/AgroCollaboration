@@ -985,6 +985,10 @@ function renderComment(comment, byParent, level) {
   // Delete handler
   el.querySelectorAll("[data-del]").forEach((btn) => {
     btn.addEventListener("click", async () => {
+      const confirmationText = state.language === "es" 
+        ? "¿Estás seguro de que quieres eliminar este comentario?" 
+        : "Are you sure you want to delete this comment?";
+      if (!confirm(confirmationText)) return;
       await deleteComment(btn.dataset.del, comment.thread_id);
     });
   });
@@ -1168,7 +1172,11 @@ function canDeleteFile(f) {
 }
 
 async function deleteFile(f) {
-  const { error: sErr } = await supabase.storage.from("attachments").remove([f.object_path]);
+  // ========= FIX STARTS HERE =========
+  // The .remove() method expects an array of paths.
+const { error: sErr } = await supabase.storage.from("attachments").remove([f.object_path]);
+  // ========= FIX ENDS HERE =========
+
   if (sErr) {
     setFlash(sErr.message);
     return;
@@ -1185,6 +1193,7 @@ async function deleteFile(f) {
   setFlash(state.language === "es" ? "Archivo eliminado" : "File deleted");
   await loadFiles(state.selectedEvent.id);
 }
+
 
 /* ===== RSVPs, Follows, Speakers ===== */
 async function loadRSVPFollow(eventId) {

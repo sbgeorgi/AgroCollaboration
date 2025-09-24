@@ -1690,3 +1690,255 @@ main.main-content {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.02); opacity: 0.95; }
 }
+
+
+/* Add to your styles.css or in a <style> tag */
+.thread-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.thread-list-item:hover {
+  background-color: var(--color-surface);
+}
+
+.thread-content {
+  display: flex;
+  gap: var(--space-2);
+  flex-grow: 1;
+}
+
+.thread-actions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.delete-thread-btn,
+.delete-comment-btn {
+  color: var(--color-danger, #dc3545);
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.delete-thread-btn:hover,
+.delete-comment-btn:hover {
+  opacity: 1;
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.btn-danger {
+  background: var(--color-danger, #dc3545);
+  color: white;
+  border: none;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+}
+
+.file-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-2);
+}
+
+.file-icon {
+  font-size: 2em;
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.file-meta {
+  font-size: 0.9em;
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+.file-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+/* Small icon buttons for edit/delete */
+.btn-icon {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Thread list item styling */
+.thread-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2);
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-radius: var(--radius);
+}
+
+.thread-list-item:hover {
+  background-color: var(--color-surface);
+}
+
+.thread-content {
+  display: flex;
+  gap: var(--space-2);
+  flex-grow: 1;
+  align-items: center;
+}
+
+.thread-info {
+  flex-grow: 1;
+}
+
+.thread-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.thread-list-item:hover .thread-actions {
+  opacity: 1;
+}
+
+/* Comment action buttons */
+.comment-action-buttons {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.comment-node:hover .comment-action-buttons {
+  opacity: 1;
+}
+
+/* Inline edit forms */
+.inline-edit-form {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+  margin: var(--space-1) 0;
+}
+
+.edit-input {
+  flex-grow: 1;
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.edit-textarea {
+  width: 100%;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: inherit;
+  font-family: inherit;
+  min-height: 60px;
+  resize: vertical;
+}
+
+.edit-buttons {
+  display: flex;
+  gap: 4px;
+  margin-top: var(--space-1);
+}
+
+/* File card with small delete button */
+.file-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-2);
+}
+
+.file-icon {
+  font-size: 2em;
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.file-meta {
+  font-size: 0.9em;
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+.file-actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .file-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .file-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .thread-actions,
+  .comment-action-buttons {
+    opacity: 1; /* Always show on mobile */
+  }
+}
