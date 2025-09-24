@@ -233,24 +233,26 @@
     </footer>
 
     <script type="module">
-        import { initAuth, initSharedUI, renderHeader } from './auth.js';
+        // MODIFIED: Imports changed to match the working pages' pattern
+        import { initAuth, signOut, authState } from './auth.js';
 
         const state = { language: localStorage.getItem("lang") || "en" };
         const t = {
             en: {
-                tagline: "A seminar series to share advances in agrivoltaics in the Americas",
+                tagline: "A seminar series to share advances in agrivoltaics in the Americas",
                 nav: { schedule: "Schedule", about: "About", admin: "Admin", archive: "Archive" },
                 auth: { signin: "Sign in", signout: "Sign out" },
                 footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
             },
             es: {
-                tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas",
+                tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas",
                 nav: { schedule: "Calendario", about: "Acerca de", admin: "Admin", archive: "Archivo" },
                 auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
                 footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
             },
         };
 
+        const $ = (sel) => document.querySelector(sel);
         function tr(key, fallback = "") {
             const lang = state.language;
             const parts = key.split(".");
@@ -267,16 +269,87 @@
             document.querySelectorAll(".lang-switch-slider").forEach(el => el.dataset.lang = state.language);
         }
 
+        // --- NEW: Added UI functions locally to ensure correct timing ---
+        function setupMobileMenu() {
+            const mobileNavOverlay = $("#mobileNavOverlay");
+            const desktopNav = document.querySelector('.header-grid .nav');
+            if (!mobileNavOverlay || !desktopNav) return;
+            mobileNavOverlay.innerHTML = '';
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'mobile-nav-close-btn';
+            closeBtn.setAttribute('aria-label', 'Close menu');
+            closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+            const content = desktopNav.cloneNode(true);
+            content.id = '';
+            const langSwitchMobile = content.querySelector('#langSwitchDesktop');
+            if (langSwitchMobile) langSwitchMobile.id = 'langSwitchMobile';
+            mobileNavOverlay.appendChild(closeBtn);
+            mobileNavOverlay.appendChild(content);
+            closeBtn.addEventListener('click', closeMenu);
+            mobileNavOverlay.addEventListener('click', (e) => { if (e.target === mobileNavOverlay) closeMenu(); });
+            langSwitchMobile?.addEventListener('click', handleLangSwitch);
+            content.querySelector("#btnSignOut")?.addEventListener("click", () => signOut());
+            content.querySelector("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
+        }
+
+        function openMenu() {
+            const mobileMenuBtn = $("#mobileMenuBtn"), mobileNavOverlay = $("#mobileNavOverlay");
+            mobileNavOverlay.classList.add("is-open"); document.body.classList.add("menu-open");
+            mobileMenuBtn.setAttribute("aria-expanded", "true");
+            mobileMenuBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+        }
+        function closeMenu() {
+            const mobileMenuBtn = $("#mobileMenuBtn"), mobileNavOverlay = $("#mobileNavOverlay");
+            mobileNavOverlay.classList.remove("is-open"); document.body.classList.remove("menu-open");
+            mobileMenuBtn.setAttribute("aria-expanded", "false");
+            mobileMenuBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
+        }
+
+        function renderHeader() {
+            const btnSignIn = $("#btnSignIn"), btnSignOut = $("#btnSignOut"), btnAdmin = $("#btnAdmin"), userName = $("#userName"), btnProfile = $("#btnProfile");
+            const isOrganizer = ["organizer", "admin"].includes(authState.profile?.role);
+            if (authState.session) {
+                btnSignIn.style.display = "none"; btnSignOut.style.display = "inline-block";
+                btnProfile.style.display = "grid"; userName.style.display = "inline";
+                userName.textContent = authState.profile?.full_name || authState.profile?.username || "";
+                $("#userInitial").textContent = (authState.profile?.full_name || "U").charAt(0).toUpperCase();
+                if (btnAdmin) btnAdmin.style.display = isOrganizer ? "inline-block" : "none";
+            } else {
+                btnSignIn.style.display = "inline-block"; btnSignOut.style.display = "none";
+                btnProfile.style.display = "none"; userName.style.display = "none";
+                if (btnAdmin) btnAdmin.style.display = "none";
+            }
+            // CRITICAL: Rebuild the mobile menu every time the header is rendered.
+            setupMobileMenu();
+        }
+
         function handleLangSwitch() {
             state.language = state.language === "en" ? "es" : "en";
             localStorage.setItem("lang", state.language);
             applyI18n();
+            renderHeader(); // Re-render header to update text and mobile menu
         }
 
+        function wireUI() {
+            $("#langSwitchDesktop")?.addEventListener('click', handleLangSwitch);
+            $("#mobileMenuBtn")?.addEventListener("click", () => {
+                const overlay = $("#mobileNavOverlay");
+                if (overlay && !overlay.classList.contains('is-open')) openMenu();
+                else closeMenu();
+            });
+            $("#btnSignOut")?.addEventListener("click", () => signOut());
+            $("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
+            $("#year").textContent = new Date().getFullYear();
+        }
+
+        // MODIFIED: Main execution logic now matches the working pages.
         (async function main() {
             applyI18n();
-            initSharedUI({ applyI18n, handleLangSwitch });
-            await initAuth({ onAuthChange: renderHeader });
+            wireUI();
+            await initAuth({
+                onAuthReady: renderHeader, // Render header once auth state is initially known
+                onAuthChange: renderHeader // Re-render header if user logs in or out
+            });
         })();
     </script>
 </body>

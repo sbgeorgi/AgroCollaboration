@@ -1614,7 +1614,9 @@ main.main-content {
 }
 
 @media (max-width: 840px) {
-  .events-grid, #archiveList { grid-template-columns: 1fr; }
+  /* CHANGE THIS LINE: from .events-grid to #eventsList */
+  #eventsList, #archiveList { grid-template-columns: 1fr; }
+  
   .alternating-item { grid-template-columns: 1fr; }
   .alternating-item:nth-child(even) .alternating-item__text { order: 0; }
   .search-controls {
