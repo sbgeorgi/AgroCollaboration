@@ -1599,6 +1599,8 @@ main.main-content {
   }
   .mobile-nav-overlay .link { font-size: 1.8rem; font-weight: 700; color: #fff; }
   .mobile-nav-overlay .divider { display: none; }
+  
+  /* PASTE THE NEW STYLES HERE */
   .mobile-nav-overlay .auth-area {
     margin-top: var(--space-2);
     display: flex;
@@ -1606,6 +1608,36 @@ main.main-content {
     align-items: center;
     gap: var(--space-3);
   }
+
+  /* Make the username text white and legible */
+  .mobile-nav-overlay #userName {
+    color: #fff;
+  }
+
+  /* Make the circular profile button stand out */
+  .mobile-nav-overlay .profile-button {
+    border-color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  /* Override BOTH button styles for a consistent, high-contrast look */
+  .mobile-nav-overlay .auth-area .btn-primary,
+  .mobile-nav-overlay .auth-area .btn-ghost {
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    padding: 10px 24px;
+    min-width: 120px; /* Ensure buttons have a nice width */
+  }
+
+  .mobile-nav-overlay .auth-area .btn-primary:hover,
+  .mobile-nav-overlay .auth-area .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #fff;
+  }
+  /* END OF NEW STYLES */
+
   body.menu-open { overflow: hidden; }
 
   /* EVENT DETAIL VIEW */
