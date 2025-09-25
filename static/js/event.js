@@ -424,10 +424,10 @@ function createCommentNode(comment, commentsByParentId, depth = 0) {
                 </div>
                 <strong class="author-name" data-open-profile-id="${comment.created_by}" title="Open profile">${escapeHtml(authorName)}</strong>
                 <span class="timestamp">• ${fmtDateTime(comment.created_at)}</span>
-                <div class="comment-action-buttons">
+                <span class="comment-action-buttons" style="margin-left: 0.5rem; opacity: 1;">
                   ${canEdit ? `<button class="btn-icon" data-edit-comment="${comment.id}" title="${state.language === 'es' ? 'Editar' : 'Edit'}">✏️</button>` : ''}
                   ${canDelete ? `<button class="btn-icon" data-del-comment="${comment.id}" title="${state.language === 'es' ? 'Eliminar' : 'Delete'}">🗑️</button>` : ''}
-                </div>
+                </span>
             </div>
             <div class="comment-body-wrapper">
                 <div class="comment-bubble">
