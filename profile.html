@@ -3,297 +3,308 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Your Profile • Agrovoltaicos sin Fronteras</title>
-    <meta name="description" content="Manage your profile for the Agrovoltaicos sin Fronteras seminar series." />
-    <link rel="stylesheet" href="styles.css" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Profile Dashboard • Agrovoltaicos sin Fronteras</title>
+    
+    <!-- Modern Font Stack -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Lato:wght@400;700&family=Poppins:wght@700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* --- CORE LAYOUT --- */
+        /* --- 2025 DESIGN TOKENS (V1 CORE) --- */
+        :root {
+            --color-brand: #16a34a;
+            --color-brand-dark: #15803d;
+            --color-brand-light: #dcfce7;
+            --color-accent: #f97316;
+
+            --bg-main: #f8fafc;
+            --bg-panel: #ffffff;
+            --bg-input: #f1f5f9;
+
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+            --text-light: #ffffff;
+
+            --border: #e2e8f0;
+            --radius-md: 12px;
+            --radius-lg: 24px;
+            
+            --header-h: 64px;
+            --footer-h: 64px;
+            
+            --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+
+        /* --- BASE RESET & V1 DESKTOP LAYOUT --- */
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; /* Enforce non-scrollable body ON DESKTOP */
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
         body {
-            min-height: 100vh;
-        }
-        main.container {
-            flex-grow: 1;
-            padding: var(--space-3);
-        }
-
-        #profile,
-        #publicProfileView,
-        #signInPrompt {
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: var(--space-4);
-            flex-grow: 1;
-            min-height: 0;
-            overflow-y: auto;
-        }
-
-        /* --- PROFILE FORM STYLING --- */
-        .profile-intro {
-            color: var(--muted);
-            margin-bottom: var(--space-4);
-        }
-
-        .form-section {
-            margin-bottom: var(--space-5);
-            padding-bottom: var(--space-4);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .form-section:last-of-type {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
-        .form-section h3 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: var(--space-3);
-            color: var(--brand-2);
-        }
-
-        .form-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-4);
+            grid-template-rows: auto 1fr auto; /* Header, Main, Footer */
         }
+        a { text-decoration: none; color: inherit; }
+        button { cursor: pointer; font-family: inherit; border: none; background: transparent; padding: 0; }
+        
+        /* --- UTILITIES --- */
+        .hidden { display: none !important; }
 
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-1);
+        /* --- V2 HEADER STYLES (EXACT REPLICA) --- */
+        .site-header {
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
-
-        .form-field.col-span-2 {
-            grid-column: 1 / -1;
-        }
-
-        .form-field label {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--muted);
-        }
-
-        .form-field.required label::after {
-            content: " *";
-            color: var(--danger);
-        }
-
-        .form-field input,
-        .form-field textarea {
-            background-color: var(--card-2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: var(--space-2);
-            color: var(--text);
-            font-size: 1rem;
-            width: 100%;
-            box-sizing: border-box;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .form-field input:focus-visible,
-        .form-field textarea:focus-visible {
-            border-color: var(--ring);
-            outline: none;
-            box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--ring);
-        }
-
-        .form-field textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .field-hint {
-            font-size: 0.85rem;
-            color: var(--muted-2);
-            margin-top: 2px;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: var(--space-3);
-            margin-top: var(--space-4);
-            padding-top: var(--space-4);
-            border-top: 1px solid var(--border);
-        }
-
-        /* --- Avatar Upload Section --- */
-        .avatar-upload-section {
+        .site-header .container.header-grid {
+            height: 72px;
+            max-width: 1800px;
+            margin: 0 auto;
             display: flex;
             align-items: center;
-            gap: var(--space-4);
-            margin-bottom: var(--space-4);
+            justify-content: space-between;
         }
-
-        .avatar-preview {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-color: var(--card-2);
-            display: grid;
-            place-content: center;
-            font-weight: 700;
-            font-size: 2.5rem;
-            overflow: hidden;
-            position: relative;
-            border: 3px solid var(--border);
-            flex-shrink: 0;
-            color: var(--brand-2);
-        }
-
-        .avatar-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .avatar-upload-controls {
-            flex: 1;
-        }
-
-        .avatar-upload-controls h4 {
-            margin: 0 0 var(--space-2) 0;
-            font-size: 1rem;
-        }
-
-        .avatar-buttons {
-            display: flex;
-            gap: var(--space-2);
-            flex-wrap: wrap;
-        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand .logo-image { width: 40px; height: 40px; }
+        .brand-text .title { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); }
+        .brand-text .subtitle { font-family: 'Lato', sans-serif; font-size: 0.8rem; color: var(--text-secondary); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nav { display: none; }
+        @media (min-width: 960px) { .nav { display: flex; align-items: center; gap: 24px; } }
+        .nav .link { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; color: var(--text-secondary); transition: color 0.2s; }
+        .nav .link:hover { color: var(--color-brand); }
+        .nav .divider { width: 1px; height: 20px; background-color: var(--border); }
+        .lang-switch-slider { display: flex; cursor: pointer; background: var(--bg-input); border-radius: 99px; padding: 4px; position: relative; font-size: 12px; font-weight: 700; }
+        .lang-switch-slider span { padding: 4px 12px; z-index: 1; transition: color 0.2s; user-select: none; }
+        .lang-switch-slider::before { content: ''; position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: white; border-radius: 99px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+        .lang-switch-slider[data-lang="es"]::before { transform: translateX(100%); }
+        .lang-switch-slider[data-lang="en"] span:first-child, .lang-switch-slider[data-lang="es"] span:last-child { color: var(--color-brand-dark); }
+        .auth-area { display: flex; align-items: center; gap: 16px; }
+        .profile-button { width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-brand-light); color: var(--color-brand-dark); font-weight: 700; font-family: 'Poppins', sans-serif; display: grid; place-content: center; overflow: hidden; border: 2px solid var(--border); }
+        #userName { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; }
         
-        input[type="file"] {
+        /* --- MOBILE NAVIGATION STYLES (CENTERED & FULL-SPACE LAYOUT) --- */
+        .mobile-menu-btn { display: block; color: var(--text-secondary); }
+        @media (min-width: 960px) { .mobile-menu-btn { display: none; } }
+
+        .mobile-nav-overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 998;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
+        }
+        .mobile-nav-overlay.is-open { opacity: 1; visibility: visible; }
+
+        .mobile-nav-content {
+            position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 320px;
+            background: var(--bg-panel);
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+            display: flex; flex-direction: column; z-index: 999;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+        }
+        .is-open .mobile-nav-content { transform: translateX(0); }
+
+        .mobile-nav-close-btn {
+            position: absolute; top: 16px; right: 16px; color: var(--text-secondary); z-index: 10;
+        }
+
+        /* Style the cloned <nav> container */
+        .mobile-nav-content > nav {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            height: 100%;
+            padding-top: 48px;
+        }
+
+        /* Centered pages options, larger, full width */
+        .mobile-nav-content .link {
+            font-size: 1.75rem;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-primary);
+            width: 100%;
+            padding: 12px 0;
+        }
+
+        /* Hide desktop divider */
+        .mobile-nav-content .divider {
             display: none;
         }
 
-        /* --- Public Profile View --- */
-        #publicProfileView .public-profile-header {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            align-items: center;
-            gap: var(--space-4);
-            margin-bottom: var(--space-4);
-            padding-bottom: var(--space-4);
-            border-bottom: 1px solid var(--border);
+        /* EN/ES toggle centered at the top and larger */
+        .mobile-nav-content .lang-switch-slider {
+            order: -1; /* Move to top */
+            transform: scale(1.15);
+            margin-bottom: 48px; /* Space between toggle and links */
         }
 
-        #publicProfileView .avatar-circle-large {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: var(--card-2);
-            display: grid;
-            place-content: center;
-            font-weight: 700;
-            font-size: 2.2rem;
-            overflow: hidden;
-            color: var(--brand-2);
-        }
-
-        #publicProfileView .avatar-circle-large img {
+        /* Auth area at the bottom */
+        .mobile-nav-content .auth-area {
+            margin-top: auto; /* Push to the bottom */
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        #publicProfileView h2 {
-            margin: 0;
-            font-size: 1.4rem;
-        }
-
-        #publicProfileView .public-profile-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-2);
-            margin-top: var(--space-2);
-        }
-
-        #publicProfileView .meta-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            padding: .2rem .5rem;
-            border-radius: 999px;
-            background: var(--card-2);
-            font-size: .8rem;
-            border: 1px solid var(--border);
-        }
-
-        #publicProfileView .email a {
-            color: var(--brand-2);
-            text-decoration: none;
-        }
-
-        #publicProfileView .link-list {
-            list-style: none;
-            padding: 0;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            gap: var(--space-2);
-        }
-
-        #publicProfileView .link-list a {
-            text-decoration: none;
-            color: var(--brand-2);
-            display: inline-flex;
             align-items: center;
-            gap: var(--space-2);
-            font-weight: 700;
+            gap: 12px;
         }
 
-        #publicProfileView .chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-2);
+        /* User info when logged in */
+        .mobile-nav-content .auth-area .profile-button {
+            width: 64px;
+            height: 64px;
+            font-size: 2rem;
+        }
+        .mobile-nav-content .auth-area #userName {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-primary);
         }
 
-        /* --- RESPONSIVE ADJUSTMENTS --- */
-        @media (max-width: 960px) {
-            main.container {
-                padding: var(--space-2);
-            }
+        /* Full-width buttons in auth area */
+        .mobile-nav-content .auth-area #btnSignOut,
+        .mobile-nav-content .auth-area #btnSignIn {
+            width: 100%;
+            justify-content: center;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: var(--radius-md);
+        }
+        .mobile-nav-content .auth-area #btnSignOut {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .mobile-nav-content .auth-area #btnSignOut:hover {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border-color: var(--text-tertiary);
+        }
 
-            .form-grid {
-                grid-template-columns: 1fr;
-                gap: var(--space-3);
+        /* --- MAIN DASHBOARD (V1 BENTO GRID) --- */
+        .app-main {
+            padding: 16px 24px;
+            overflow: hidden; /* Prevent outer scroll on desktop */
+            height: 100%;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            height: 100%;
+            max-width: 1800px; margin: 0 auto;
+        }
+        .panel { background: var(--bg-panel); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-panel); display: flex; flex-direction: column; overflow: hidden; }
+        .identity-panel { padding: 32px 24px; align-items: center; text-align: center; justify-content: space-between; }
+        .avatar-section { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .avatar-container { width: 180px; height: 180px; border-radius: 50%; background: var(--bg-input); border: 4px solid white; box-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.15); margin-bottom: 24px; position: relative; overflow: hidden; cursor: pointer; display: grid; place-items: center; font-size: 64px; font-weight: 700; color: var(--color-brand-light); }
+        .avatar-container img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-hover { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: white; }
+        .avatar-container:hover .avatar-hover { opacity: 1; }
+        .user-stat { margin-top: 12px; }
+        .user-stat h2 { margin: 0; font-family: 'Poppins', sans-serif; font-size: 20px; }
+        .user-stat p { margin: 4px 0 0; color: var(--text-secondary); font-size: 13px; }
+        .action-stack { width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-top: 32px; }
+        .details-panel { padding: 32px; overflow-y: auto; }
+        .details-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .details-title { font-family: 'Poppins', sans-serif; font-size: 22px; margin: 0; font-weight: 700; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px 32px; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        .input-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); }
+        .input-label.required::after { content: '*'; color: #ef4444; margin-left: 4px; }
+        .input-field { background: var(--bg-input); border: 1px solid transparent; padding: 12px 16px; border-radius: 10px; font-size: 14px; transition: all 0.2s; color: var(--text-primary); width: 100%; }
+        .input-field:focus { background: white; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); outline: none; }
+        .input-field::placeholder { color: var(--text-tertiary); }
+        textarea.input-field { min-height: 120px; resize: none; }
+        .col-span-full { grid-column: 1 / -1; }
+        
+        /* --- BUTTONS --- */
+        .btn { border: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--color-brand-dark); color: white; box-shadow: 0 4px 12px -2px rgba(22, 163, 74, 0.3); }
+        .btn-primary:hover { background: #14532d; }
+        .btn-secondary { background: white; border: 2px solid var(--border); color: var(--text-primary); }
+        .btn-secondary:hover { border-color: var(--text-tertiary); background: var(--bg-input); }
+        .btn-text { background: transparent; color: var(--text-secondary); padding: 8px; }
+        .btn-text:hover { color: var(--text-primary); background: var(--bg-input); }
+        .btn-ghost { background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 700; padding: 8px 12px; border-radius: 8px; }
+        .btn-ghost:hover { background: var(--bg-input); color: var(--text-primary); }
+        #btnSignIn { padding: 8px 16px; font-size: 0.9rem; border-radius: 8px; background: var(--color-brand); color: white;}
+        #btnSignIn:hover { background: var(--color-brand-dark); }
+        
+        /* --- V2 FOOTER STYLES (EXACT REPLICA) --- */
+        .site-footer { background-color: var(--bg-panel); border-top: 1px solid var(--border); padding: 24px; }
+        .site-footer .container { max-width: 1800px; margin: 0 auto; }
+        .site-footer small { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-secondary); }
+        .site-footer .footer-text { display: flex; align-items: center; flex-wrap: wrap; }
+        .site-footer .footer-logos { display: flex; align-items: center; gap: 8px; }
+        .site-footer .footer-logos img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        
+        /* --- NOTIFICATION & PROMPTS --- */
+        #flash { position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--text-primary); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; z-index: 1000; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #flash.visible { transform: translateX(-50%) translateY(0); }
+        .center-card-container { position: absolute; inset: 0; background: rgba(248, 250, 252, 0.8); backdrop-filter: blur(4px); z-index: 5; display: flex; align-items: center; justify-content: center; }
+        .prompt-card { background: white; padding: 48px; border-radius: 32px; text-align: center; box-shadow: 0 20px 40px -10px rgb(0 0 0 / 0.1); max-width: 420px; width: 90%; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spinner { animation: spin 1s linear infinite; color: var(--color-brand); }
+        
+        /* --- RESPONSIVE FIXES --- */
+        @media (max-width: 1200px) { .dashboard-grid { grid-template-columns: 260px 1fr; gap: 16px; } .identity-panel { padding: 24px 16px; } .avatar-container { width: 140px; height: 140px; } .form-grid { gap: 16px 24px; } }
+        @media (max-width: 959px) { .brand-text .subtitle { display: none; } }
+        
+        /* MOBILE SCROLL FIX */
+        @media (max-width: 767px) {
+            html, body {
+                height: auto;
+                overflow: auto; /* Allow scrolling */
             }
-
-            .form-field.col-span-2 {
-                grid-column: 1;
+            body {
+                display: block; /* Break the grid layout */
             }
+            .app-main {
+                overflow: visible;
+                height: auto;
+                padding: 16px;
+            }
+            .dashboard-grid {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+            }
+            .site-header .container.header-grid { height: 64px; }
         }
     </style>
 </head>
 
 <body>
+
+    <!-- Header (from v2) -->
     <header class="site-header">
         <div class="container header-grid">
-            <div class="brand">
-                <a href="index.html" style="display: contents; text-decoration: none;">
-                    <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
-                    <div class="brand-text">
-                        <div class="title">Agrovoltaicos sin Fronteras</div>
-                        <div class="subtitle" data-i18n="tagline">
-                            A seminar series to share advances in agrivoltaics in the Americas
-                        </div>
-                    </div>
-                </a>
-            </div>
+            <a href="index.html" class="brand">
+                <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
+                <div class="brand-text">
+                    <div class="title">Agrovoltaicos sin Fronteras</div>
+                    <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
+                </div>
+            </a>
 
             <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
 
             <!-- Desktop Nav -->
@@ -301,217 +312,147 @@
                 <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
                 <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
                 <a href="about.html" class="link" data-i18n="nav.about">About</a>
-                <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+                <a href="admin.html" id="btnAdmin" class="link hidden" data-i18n="nav.admin">Admin</a>
                 <div class="divider"></div>
                 <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
                     <span>EN</span>
                     <span>ES</span>
                 </div>
                 <div class="auth-area">
-                    <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
+                    <button id="btnProfile" class="profile-button hidden" aria-label="Open profile">
                         <span id="userInitial"></span>
-                        <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
+                        <img id="userAvatar" class="hidden" style="width: 100%; height: 100%; object-fit: cover;" />
                     </button>
-                    <span id="userName"></span>
-                    <a href="signin.html" id="btnSignIn" class="btn-primary" data-i18n="auth.signin"
-                        style="text-decoration: none; display: inline-block;">Sign in</a>
-                    <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
-                        Sign out
-                    </button>
+                    <span id="userName" class="hidden"></span>
+                    <a href="signin.html" id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</a>
+                    <button id="btnSignOut" class="btn-ghost hidden" data-i18n="auth.signout">Sign out</button>
                 </div>
             </nav>
         </div>
     </header>
 
     <div id="mobileNavOverlay" class="mobile-nav-overlay">
-        <!-- Content will be injected by JS -->
+        <div class="mobile-nav-content">
+            <!-- Content injected by JS -->
+        </div>
     </div>
 
-    <div id="flash" class="flash" role="status" aria-live="polite"></div>
+    <!-- Main Dashboard -->
+    <main class="app-main">
+        
+        <div id="loading" class="center-card-container">
+            <svg class="spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        </div>
 
-    <main class="container">
-        <!-- Profile Edit View -->
-        <section id="profile" class="card" aria-labelledby="profileTitle" style="display: none">
-            <button class="btn-ghost" id="backButton"
-                style="margin-bottom: var(--space-3); align-self: flex-start;">
-                ← <span data-i18n="back.general">Back</span>
-            </button>
-            <h2 id="profileTitle" data-i18n="profile.title">Complete Your Profile</h2>
-            <p id="profileIntro" class="profile-intro" data-i18n="profile.intro">Please complete your profile to
-                continue. Fields marked with * are required.</p>
-
-            <form id="profileForm" class="profile-form">
-                <!-- Avatar Upload Section -->
-                <div class="form-section">
-                    <h3 data-i18n="profile.avatar">Profile Picture</h3>
-                    <div class="avatar-upload-section">
-                        <div class="avatar-preview" id="avatarPreview">
-                            <span id="avatarInitial">U</span>
-                            <img id="avatarImage" style="display: none;" />
-                        </div>
-                        <div class="avatar-upload-controls">
-                            <h4 data-i18n="profile.avatar_upload">Upload a profile picture</h4>
-                            <p class="field-hint" data-i18n="profile.avatar_hint">JPG, PNG or GIF. Max 2MB.</p>
-                            <div class="avatar-buttons">
-                                <label class="btn-secondary" style="cursor: pointer;">
-                                    <span>📷</span>
-                                    <span data-i18n="profile.choose_image">Choose Image</span>
-                                    <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/gif" />
-                                </label>
-                                <button type="button" class="btn-ghost" id="removeAvatar" style="display: none;"
-                                    data-i18n="profile.remove_image">Remove</button>
-                            </div>
-                        </div>
-                    </div>
+        <div id="authPrompt" class="center-card-container hidden">
+            <div class="prompt-card">
+                <div style="width: 64px; height: 64px; background: var(--color-brand-light); color: var(--color-brand-dark); border-radius: 50%; display: grid; place-items: center; margin: 0 auto 24px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
                 </div>
+                <h2 style="font-family: Poppins; margin-bottom: 12px;" data-i18n="auth.signin_prompt_title">Please Sign In</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 32px; line-height: 1.5;" data-i18n="auth.signin_prompt_body">Access to your profile dashboard requires authentication.</p>
+                <a href="signin.html" class="btn btn-primary w-full" data-i18n="auth.signin_prompt_button">Go to Sign In</a>
+            </div>
+        </div>
 
-                <!-- Basic Information -->
-                <div class="form-section">
-                    <h3 data-i18n="profile.basic_info">Basic Information</h3>
-                    <div class="form-grid">
-                        <div class="form-field required">
-                            <label for="fullName" data-i18n="profile.full_name">Full Name</label>
-                            <input id="fullName" required />
+        <form id="profileForm" class="dashboard-grid hidden">
+            <div class="panel identity-panel">
+                <div class="avatar-section">
+                    <label class="avatar-container">
+                        <img id="avatarImg" class="hidden" alt="Avatar" />
+                        <span id="avatarInitials">U</span>
+                        <div class="avatar-hover">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
                         </div>
-                        <div class="form-field required">
-                            <label for="username" data-i18n="profile.username">Username</label>
-                            <input id="username" required pattern="[a-zA-Z0-9_-]+"
-                                title="Only letters, numbers, underscores and hyphens allowed" />
-                            <small class="field-hint" data-i18n="profile.username_hint">Used for @mentions and profile
-                                URL</small>
-                        </div>
-                        <div class="form-field required col-span-2">
-                            <label for="affiliation" data-i18n="profile.affiliation">Affiliation/Organization</label>
-                            <input id="affiliation" required />
-                        </div>
+                        <input type="file" id="avatarInput" hidden accept="image/*" />
+                    </label>
+                    <div class="user-stat">
+                        <h2 id="displayUsername">@username</h2>
+                        <p id="displayEmail">user@example.com</p>
                     </div>
+                    <button type="button" id="removeAvatarBtn" class="btn-text hidden" style="color: #ef4444; font-size: 12px; margin-top: 8px;" data-i18n="profile.remove_image">Remove Picture</button>
                 </div>
-
-                <!-- Contact Information -->
-                <div class="form-section">
-                    <h3 data-i18n="profile.contact_info">Contact Information</h3>
-                    <div class="form-grid">
-                        <div class="form-field required col-span-2">
-                            <label for="workEmail" data-i18n="profile.work_email">Work Email</label>
-                            <input id="workEmail" type="email" required />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Professional Links -->
-                <div class="form-section">
-                    <h3 data-i18n="profile.professional_links">Professional Links</h3>
-                    <div class="form-grid">
-                        <div class="form-field">
-                            <label for="personalWebsite" data-i18n="profile.personal_website">Personal Website</label>
-                            <input id="personalWebsite" type="url" placeholder="https://..." />
-                        </div>
-                        <div class="form-field">
-                            <label for="professionalWebsite" data-i18n="profile.professional_website">Professional/Lab
-                                Website</label>
-                            <input id="professionalWebsite" type="url" placeholder="https://..." />
-                        </div>
-                        <div class="form-field col-span-2">
-                            <label for="googleScholar" data-i18n="profile.google_scholar">Google Scholar Profile</label>
-                            <input id="googleScholar" type="url" placeholder="https://scholar.google.com/..." />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Fields of Study -->
-                <div class="form-section">
-                    <h3 data-i18n="profile.fields_section">Research Interests</h3>
-                    <div class="form-field">
-                        <label for="fieldsOfStudy" data-i18n="profile.fields_of_study">Fields of Study</label>
-                        <textarea id="fieldsOfStudy" rows="3"
-                            placeholder="e.g., Solar Energy, Agricultural Systems, Environmental Science..."></textarea>
-                        <small class="field-hint" data-i18n="profile.fields_hint">Separate multiple fields with
-                            commas</small>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button class="btn-primary" type="submit" data-i18n="profile.save">
-                        Save Profile
+                <div class="action-stack">
+                    <button type="submit" id="saveBtn" class="btn btn-primary w-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        <span data-i18n="profile.save">Save Changes</span>
                     </button>
-                    <button class="btn-ghost" type="button" id="skipProfile" style="display: none;"
-                        data-i18n="profile.skip">
-                        Skip for now
+                    <button type="button" id="backBtn" class="btn btn-secondary w-full">
+                        <span data-i18n="back.general">Go Back</span>
                     </button>
                 </div>
-            </form>
-        </section>
-
-        <!-- Public Profile View -->
-        <section id="publicProfileView" class="card" style="display: none;">
-            <button class="btn-ghost" id="backFromPublicProfile"
-                style="margin-bottom: var(--space-3); align-self: flex-start;">
-                ← <span data-i18n="back.general">Back</span>
-            </button>
-            <div class="public-profile-header">
-                <div class="avatar-circle-large" id="publicProfileAvatar">
-                    <span id="publicProfileInitial"></span>
-                    <img id="publicProfileImage" style="display: none;" />
+            </div>
+            <div class="panel details-panel">
+                <div class="details-header">
+                    <h1 class="details-title" data-i18n="profile.title">Edit Profile</h1>
+                    <span style="font-size: 12px; color: var(--text-tertiary);"><span style="color: #ef4444">*</span> Required</span>
                 </div>
-                <div>
-                    <h2 id="publicProfileName"></h2>
-                    <p id="publicProfileAffiliation" style="color: var(--muted)"></p>
-                    <div class="public-profile-meta">
-                        <span id="publicProfileUsername" class="meta-chip" style="display:none;">
-                            <span>👤</span><span class="txt"></span>
-                        </span>
-                        <span id="publicProfileEmail" class="meta-chip email" style="display:none;">
-                            <span>📧</span><a class="txt" href="#"></a>
-                        </span>
-                        <span id="publicProfileRole" class="meta-chip" style="display:none;">
-                            <span>🛡️</span><span class="txt"></span>
-                        </span>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label class="input-label required" for="fullName" data-i18n="profile.full_name">Full Name</label>
+                        <input type="text" id="fullName" class="input-field" required placeholder="e.g. Dr. Jane Doe" />
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label required" for="username" data-i18n="profile.username">Username</label>
+                        <input type="text" id="username" class="input-field" required placeholder="janedoe" pattern="[a-zA-Z0-9_-]+" />
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label required" for="affiliation" data-i18n="profile.affiliation">Affiliation</label>
+                        <input type="text" id="affiliation" class="input-field" required placeholder="University / Organization" />
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label required" for="workEmail" data-i18n="profile.work_email">Work Email</label>
+                        <input type="email" id="workEmail" class="input-field" required placeholder="jane@university.edu" />
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="personalWebsite" data-i18n="profile.personal_website">Personal Website</label>
+                        <input type="url" id="personalWebsite" class="input-field" placeholder="https://" />
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="professionalWebsite" data-i18n="profile.professional_website">Lab Website</label>
+                        <input type="url" id="professionalWebsite" class="input-field" placeholder="https://" />
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="googleScholar" data-i18n="profile.google_scholar">Google Scholar</label>
+                        <input type="url" id="googleScholar" class="input-field" placeholder="https://scholar.google.com/..." />
+                    </div>
+                    <div class="hidden"></div>
+                    <div class="input-group col-span-full">
+                        <label class="input-label" for="fieldsOfStudy" data-i18n="profile.fields_section">Research Interests</label>
+                        <textarea id="fieldsOfStudy" class="input-field" placeholder="Agrivoltaics, Crop Science, Renewable Energy..." data-i18n-placeholder="profile.fields_hint"></textarea>
                     </div>
                 </div>
             </div>
-            <div class="public-profile-body">
-                <div class="form-section">
-                    <h3 data-i18n="profile.professional_links">Professional Links</h3>
-                    <ul id="publicProfileLinks" class="link-list"></ul>
-                </div>
-                <div class="form-section">
-                    <h3 data-i18n="profile.fields_section">Research Interests</h3>
-                    <div id="publicProfileFields" class="chips"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Sign-in prompt if not logged in and trying to view own profile -->
-        <section id="signInPrompt" class="card" style="display: none; text-align: center;">
-            <h2 data-i18n="auth.signin_prompt_title">Please Sign In</h2>
-            <p data-i18n="auth.signin_prompt_body">You need to be signed in to view and edit your profile.</p>
-            <a href="index.html" class="btn-primary" data-i18n="auth.signin_prompt_button">Sign in on main page</a>
-        </section>
+        </form>
     </main>
 
+    <!-- Footer (from v2) -->
     <footer class="site-footer">
         <div class="container">
-            <small style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center;">
-                    © <span id="year"></span> Agrovoltaicos sin Fronteras •
-                    <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin
-                        America.</span>
-                </div>
-                <div style="display: flex; align-items: center;">
-                    <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank"
-                        rel="noopener noreferrer" style="margin-left: 8px;">
-                        <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics"
-                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                    </a>
-                    <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer"
-                        style="margin-left: 8px;">
-                        <img src="static/unam.png" alt="UNAM"
-                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                    </a>
-                </div>
-            </small>
+          <small>
+            <div class="footer-text">
+              © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
+              <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
+            </div>
+            <div class="footer-logos">
+              <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer">
+                <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics">
+              </a>
+              <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer">
+                <img src="static/unam.png" alt="UNAM">
+              </a>
+              <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer">
+                <img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana" style="background-color: white;">
+              </a>
+              <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer">
+                <img src="static/rame.png" alt="Rame - Red Agrivoltaica de México" style="background-color: white;">
+              </a>
+            </div>
+          </small>
         </div>
     </footer>
+
+    <div id="flash"></div>
 
     <script type="module">
         import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -520,257 +461,178 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true } });
 
-        const state = {
-            session: null, profile: null, profileCache: new Map(),
-            language: localStorage.getItem("lang") || "en",
-            avatarFile: null,
-            currentAvatarUrl: null
-        };
+        const state = { session: null, profile: null, lang: localStorage.getItem("lang") || "en", avatarFile: null, avatarRemoved: false };
 
         const t = {
             en: {
-                tagline: "A seminar series to share advances in agrivoltaics in the Americas",
-                nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin" },
-                auth: { signin: "Sign in", signout: "Sign out", signin_prompt_title: "Please Sign In", signin_prompt_body: "You need to be signed in to view and edit your profile.", signin_prompt_button: "Sign in on main page" },
-                profile: {
-                    title: "Complete Your Profile",
-                    intro: "Please complete your profile to continue. Fields marked with * are required.",
-                    avatar: "Profile Picture",
-                    avatar_upload: "Upload a profile picture",
-                    avatar_hint: "JPG, PNG or GIF. Max 2MB.",
-                    choose_image: "Choose Image",
-                    remove_image: "Remove",
-                    basic_info: "Basic Information",
-                    contact_info: "Contact Information",
-                    professional_links: "Professional Links",
-                    fields_section: "Research Interests",
-                    full_name: "Full Name",
-                    username: "Username",
-                    username_hint: "Used for @mentions and profile URL",
-                    affiliation: "Affiliation/Organization",
-                    work_email: "Work Email",
-                    personal_website: "Personal Website",
-                    professional_website: "Professional/Lab Website",
-                    google_scholar: "Google Scholar Profile",
-                    fields_of_study: "Fields of Study",
-                    fields_hint: "Separate multiple fields with commas",
-                    save: "Save Profile",
-                    saved: "Profile updated",
-                    skip: "Skip for now",
-                    upload_error: "Failed to upload image. Please try again."
-                },
-                back: { general: "Back" },
+                tagline: "A seminar series to share advances in agrivoltaics in the Americas", nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin" }, 
+                auth: { signin: "Sign in", signout: "Sign out", signin_prompt_title: "Please Sign In", signin_prompt_body: "Access to your profile dashboard requires authentication.", signin_prompt_button: "Go to Sign In" },
+                profile: { title: "Edit Profile", full_name: "Full Name", username: "Username", affiliation: "Affiliation", work_email: "Work Email", personal_website: "Personal Website", professional_website: "Lab Website", google_scholar: "Google Scholar Profile", fields_section: "Research Interests", fields_hint: "e.g. Solar energy, water conservation...", save: "Save Changes", saving: "Saving...", saved: "Dashboard updated successfully", remove_image: "Remove Picture", upload_error: "Failed to upload image. Please try again." },
+                back: { general: "Go Back" },
                 footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
             },
             es: {
-                tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas",
-                nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin" },
-                auth: { signin: "Iniciar sesión", signout: "Cerrar sesión", signin_prompt_title: "Por favor, inicia sesión", signin_prompt_body: "Necesitas iniciar sesión para ver y editar tu perfil.", signin_prompt_button: "Iniciar sesión en la página principal" },
-                profile: {
-                    title: "Completa tu Perfil",
-                    intro: "Por favor completa tu perfil para continuar. Los campos marcados con * son obligatorios.",
-                    avatar: "Foto de Perfil",
-                    avatar_upload: "Subir una foto de perfil",
-                    avatar_hint: "JPG, PNG o GIF. Máximo 2MB.",
-                    choose_image: "Elegir Imagen",
-                    remove_image: "Eliminar",
-                    basic_info: "Información Básica",
-                    contact_info: "Información de Contacto",
-                    professional_links: "Enlaces Profesionales",
-                    fields_section: "Intereses de Investigación",
-                    full_name: "Nombre Completo",
-                    username: "Usuario",
-                    username_hint: "Usado para @menciones y URL del perfil",
-                    affiliation: "Afiliación/Organización",
-                    work_email: "Correo de Trabajo",
-                    personal_website: "Sitio Web Personal",
-                    professional_website: "Sitio Web Profesional/Laboratorio",
-                    google_scholar: "Perfil de Google Scholar",
-                    fields_of_study: "Campos de Estudio",
-                    fields_hint: "Separa múltiples campos con comas",
-                    save: "Guardar Perfil",
-                    saved: "Perfil actualizado",
-                    skip: "Omitir por ahora",
-                    upload_error: "Error al subir la imagen. Por favor intenta de nuevo."
-                },
-                back: { general: "Atrás" },
+                tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas", nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin" }, 
+                auth: { signin: "Iniciar sesión", signout: "Cerrar sesión", signin_prompt_title: "Inicia Sesión", signin_prompt_body: "El acceso al panel de perfil requiere autenticación.", signin_prompt_button: "Iniciar Sesión" },
+                profile: { title: "Editar Perfil", full_name: "Nombre Completo", username: "Usuario", affiliation: "Afiliación", work_email: "Correo Trabajo", personal_website: "Sitio Personal", professional_website: "Sitio Laboratorio", google_scholar: "Perfil Google Scholar", fields_section: "Intereses de Investigación", fields_hint: "ej. Energía solar, conservación de agua...", save: "Guardar Cambios", saving: "Guardando...", saved: "Panel actualizado con éxito", remove_image: "Eliminar Foto", upload_error: "Error al subir la imagen. Por favor intenta de nuevo." },
+                back: { general: "Regresar" },
                 footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
-            },
+            }
         };
 
         const $ = (sel) => document.querySelector(sel);
-        function tr(key, fallback = "") { const lang = state.language; const parts = key.split("."); let obj = t[lang]; for (const p of parts) obj = obj?.[p]; return obj ?? fallback; }
-        function setFlash(msg, timeout = 3000) { const el = $("#flash"); if (!el) return; el.textContent = msg; el.style.display = "block"; clearTimeout(setFlash._t); if (timeout > 0) setFlash._t = setTimeout(() => (el.style.display = "none"), timeout); }
-        function escapeHtml(s = "") { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
-        function applyI18n() { document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); }); document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); }); document.querySelectorAll(".lang-switch-slider").forEach(el => el.dataset.lang = state.language); }
-
-        async function fetchProfile(userId, { refresh = false } = {}) {
-            if (!userId) return null;
-            if (!refresh && state.profileCache.has(userId)) return state.profileCache.get(userId);
-            const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
-            if (data) state.profileCache.set(userId, data);
-            return data;
+        const $$ = (sel) => document.querySelectorAll(sel);
+        const tr = (key) => key.split('.').reduce((o, i) => o?.[i], t[state.lang]) || key;
+        const show = (el) => el?.classList.remove('hidden');
+        const hide = (el) => el?.classList.add('hidden');
+        const flash = (msg) => { const f = $('#flash'); f.textContent = msg; f.classList.add('visible'); setTimeout(() => f.classList.remove('visible'), 3000); };
+        async function getAvatarUrl(path) { if (!path) return null; const { data } = supabase.storage.from("avatars").getPublicUrl(path); return data?.publicUrl; }
+        
+        function applyI18n() {
+            $$('[data-i18n]').forEach(el => el.textContent = tr(el.dataset.i18n));
+            $$('[data-i18n-placeholder]').forEach(el => el.placeholder = tr(el.dataset.i18nPlaceholder));
+            $$('.lang-switch-slider').forEach(el => el.dataset.lang = state.lang);
         }
 
-        async function getAvatarUrl(avatarPath) {
-            if (!avatarPath) return null;
-            const { data } = await supabase.storage.from("avatars").getPublicUrl(avatarPath);
-            return data?.publicUrl;
-        }
+        function handleLangSwitch() { state.lang = state.lang === "en" ? "es" : "en"; localStorage.setItem("lang", state.lang); applyI18n(); }
 
-        function showView(which) {
-            $("#profile").style.display = 'none';
-            $("#publicProfileView").style.display = 'none';
-            $("#signInPrompt").style.display = 'none';
-            if (which) $(`#${which}`).style.display = 'block';
-        }
-
-        function updateAvatarPreview(url, initial) {
-            const avatarImage = $("#avatarImage");
-            const avatarInitial = $("#avatarInitial");
-
-            if (url) {
-                avatarImage.src = url;
-                avatarImage.style.display = "block";
-                avatarInitial.style.display = "none";
-                $("#removeAvatar").style.display = "inline-flex";
-            } else {
-                avatarImage.style.display = "none";
-                avatarInitial.style.display = "block";
-                avatarInitial.textContent = initial || "U";
-                $("#removeAvatar").style.display = "none";
-            }
-        }
-
-        async function populateProfileForm() {
-            if (!state.profile) return;
-            $("#fullName").value = state.profile.full_name || "";
-            $("#username").value = state.profile.username || "";
-            $("#affiliation").value = state.profile.affiliation || "";
-            $("#workEmail").value = state.profile.work_email || state.session?.user?.email || "";
-            $("#personalWebsite").value = state.profile.personal_website || "";
-            $("#professionalWebsite").value = state.profile.professional_website || "";
-            $("#googleScholar").value = state.profile.google_scholar || "";
-            $("#fieldsOfStudy").value = state.profile.fields_of_study || "";
-
-            const initial = (state.profile.full_name || "U").charAt(0).toUpperCase();
-            if (state.profile.avatar_url) {
-                const avatarUrl = await getAvatarUrl(state.profile.avatar_url);
-                state.currentAvatarUrl = avatarUrl;
-                updateAvatarPreview(avatarUrl, initial);
-            } else {
-                updateAvatarPreview(null, initial);
-            }
-        }
-
-        async function renderPublicProfile(userId) {
-            const profile = await fetchProfile(userId, { refresh: true });
-            if (!profile) {
-                $("#publicProfileView").innerHTML = `<div class="empty">User not found.</div>`;
-                showView('publicProfileView');
-                return;
-            }
-
-            const publicInitial = $("#publicProfileInitial");
-            const publicImage = $("#publicProfileImage");
-            const initial = (profile.full_name || "?").charAt(0).toUpperCase();
-            publicInitial.textContent = initial;
-
-            if (profile.avatar_url) {
-                const avatarUrl = await getAvatarUrl(profile.avatar_url);
-                if (avatarUrl) {
-                    publicImage.src = avatarUrl;
-                    publicImage.style.display = "block";
-                    publicInitial.style.display = "none";
-                } else {
-                    publicImage.style.display = "none";
-                    publicInitial.style.display = "block";
-                }
-            } else {
-                publicImage.style.display = "none";
-                publicInitial.style.display = "block";
-            }
-
-            $("#publicProfileName").textContent = profile.full_name || "Unnamed User";
-            $("#publicProfileAffiliation").textContent = profile.affiliation || "No affiliation provided.";
-            $("#publicProfileUsername .txt").textContent = `@${profile.username}`;
-            $("#publicProfileUsername").style.display = profile.username ? 'inline-flex' : 'none';
-            $("#publicProfileRole .txt").textContent = profile.role;
-            $("#publicProfileRole").style.display = profile.role ? 'inline-flex' : 'none';
-            const emailElement = $("#publicProfileEmail .txt");
-            emailElement.textContent = profile.work_email;
-            emailElement.href = `mailto:${profile.work_email}`;
-            $("#publicProfileEmail").style.display = profile.work_email ? 'inline-flex' : 'none';
-            const linksList = $("#publicProfileLinks");
-            linksList.innerHTML = "";
-            const linkItem = (url, labelKey, emoji) => `<li><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><span>${emoji}</span><span>${escapeHtml(tr(labelKey))}</span></a></li>`;
-            if (profile.personal_website) linksList.innerHTML += linkItem(profile.personal_website, 'profile.personal_website', "🏠");
-            if (profile.professional_website) linksList.innerHTML += linkItem(profile.professional_website, 'profile.professional_website', "🏛️");
-            if (profile.google_scholar) linksList.innerHTML += linkItem(profile.google_scholar, 'profile.google_scholar', "🎓");
-            if (!linksList.innerHTML) linksList.innerHTML = `<li style="color: var(--muted)">No links provided.</li>`;
-            const fields = (profile.fields_of_study || "").split(",").map(s => s.trim()).filter(Boolean);
-            $("#publicProfileFields").innerHTML = fields.length ? fields.map(f => `<span class="chip">${escapeHtml(f)}</span>`).join("") : `<span style="color: var(--muted)">No research interests.</span>`;
-            showView('publicProfileView');
-        }
-
-        function openMenu() { $("#mobileNavOverlay")?.classList.add("is-open"); document.body.classList.add("menu-open"); const btn = $("#mobileMenuBtn"); if (btn) { btn.setAttribute("aria-expanded", "true"); btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`; } }
-        function closeMenu() { $("#mobileNavOverlay")?.classList.remove("is-open"); document.body.classList.remove("menu-open"); const btn = $("#mobileMenuBtn"); if (btn) { btn.setAttribute("aria-expanded", "false"); btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`; } }
-        function handleLangSwitch() { state.language = state.language === "en" ? "es" : "en"; localStorage.setItem("lang", state.language); applyI18n(); }
-        function setupMobileMenu() { const mobileNavOverlay = $("#mobileNavOverlay"); const desktopNav = document.querySelector('.header-grid .nav'); if (!mobileNavOverlay || !desktopNav) return; mobileNavOverlay.innerHTML = ''; const closeBtn = document.createElement('button'); closeBtn.className = 'mobile-nav-close-btn'; closeBtn.setAttribute('aria-label', 'Close menu'); closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'; const content = desktopNav.cloneNode(true); content.id = ''; const langSwitchMobile = content.querySelector('#langSwitchDesktop'); if (langSwitchMobile) langSwitchMobile.id = 'langSwitchMobile'; mobileNavOverlay.appendChild(closeBtn); mobileNavOverlay.appendChild(content); closeBtn.addEventListener('click', closeMenu); mobileNavOverlay.addEventListener('click', (e) => { if (e.target === mobileNavOverlay) closeMenu(); }); langSwitchMobile?.addEventListener('click', handleLangSwitch); content.querySelector("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut()); content.querySelector("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html'); }
         async function renderHeader() {
             const isOrganizer = ["organizer", "admin"].includes(state.profile?.role);
+            const userInitialEl = $("#userInitial");
+            const userAvatarEl = $("#userAvatar");
             if (state.session) {
-                $("#btnSignIn").style.display = "none"; $("#btnSignOut").style.display = "inline-block";
-                $("#btnProfile").style.display = "grid"; $("#userName").style.display = "inline";
+                hide($("#btnSignIn")); show($("#btnSignOut")); show($("#btnProfile")); show($("#userName"));
                 $("#userName").textContent = state.profile?.full_name || state.profile?.username || "";
-                const userInitial = $("#userInitial"); const userAvatar = $("#userAvatar");
                 if (state.profile?.avatar_url) {
-                    const avatarUrl = await getAvatarUrl(state.profile.avatar_url);
-                    if (avatarUrl) { userAvatar.src = avatarUrl; userAvatar.style.display = "block"; userInitial.style.display = "none"; }
-                    else { userAvatar.style.display = "none"; userInitial.style.display = "block"; userInitial.textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase(); }
-                } else { userAvatar.style.display = "none"; userInitial.style.display = "block"; userInitial.textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase(); }
-                $("#btnAdmin").style.display = isOrganizer ? "inline-block" : "none";
-            } else { $("#btnSignIn").style.display = "inline-block"; $("#btnSignOut").style.display = "none"; $("#btnProfile").style.display = "none"; $("#userName").style.display = "none"; $("#btnAdmin").style.display = "none"; }
+                    const url = await getAvatarUrl(state.profile.avatar_url);
+                    if (url) { userAvatarEl.src = url; show(userAvatarEl); hide(userInitialEl); }
+                } else {
+                    hide(userAvatarEl); show(userInitialEl); userInitialEl.textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
+                }
+                if (isOrganizer) show($("#btnAdmin")); else hide($("#btnAdmin"));
+            } else {
+                show($("#btnSignIn")); hide($("#btnSignOut")); hide($("#btnProfile")); hide($("#userName")); hide($("#btnAdmin"));
+            }
             setupMobileMenu();
         }
-        async function initAuth() { const { data: { session } } = await supabase.auth.getSession(); state.session = session; if (session) state.profile = await fetchProfile(session.user.id); supabase.auth.onAuthStateChange(async (_event, newSession) => { state.session = newSession; state.profile = newSession ? await fetchProfile(newSession.user.id) : null; renderHeader(); handlePageLogic(); }); }
 
-        function handlePageLogic() { const urlParams = new URLSearchParams(window.location.search); const viewUserId = urlParams.get('id') || urlParams.get('user'); if (viewUserId) { renderPublicProfile(viewUserId); } else if (state.session) { populateProfileForm(); showView('profile'); } else { showView('signInPrompt'); } }
-        async function uploadAvatar(file) { if (!file || !state.session) return null; if (file.size > 2 * 1024 * 1024) { setFlash("Image must be less than 2MB"); return null; } const userId = state.session.user.id; const fileExt = file.name.split('.').pop(); const filePath = `${userId}/${Date.now()}.${fileExt}`; const { data, error } = await supabase.storage.from('avatars').upload(filePath, file); if (error) { console.error('Upload error:', error); return null; } return data.path; }
-        async function deleteOldAvatar(path) { if (!path) return; await supabase.storage.from('avatars').remove([path]); }
-
-        function wireUI() {
-            $("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
-            $("#langSwitchDesktop")?.addEventListener('click', handleLangSwitch);
-            $("#mobileMenuBtn")?.addEventListener("click", () => { const overlay = $("#mobileNavOverlay"); if (overlay && !overlay.classList.contains('is-open')) openMenu(); else closeMenu(); });
-            $("#backButton")?.addEventListener("click", () => history.back());
-            $("#backFromPublicProfile")?.addEventListener("click", () => history.back());
-
-            const urlParams = new URLSearchParams(window.location.search); const returnTo = urlParams.get('return_to'); const forceCompletion = urlParams.get('force') === 'true';
-            if (forceCompletion) { if ($("#backButton")) $("#backButton").style.display = 'none'; if ($("#skipProfile")) $("#skipProfile").style.display = 'none'; }
-            else { if ($("#skipProfile")) $("#skipProfile").style.display = 'inline-flex'; }
-            $("#skipProfile")?.addEventListener("click", () => { if (returnTo) window.location.href = returnTo; else history.back(); });
-            $("#avatarInput")?.addEventListener("change", (e) => { const file = e.target.files[0]; if (file) { if (!file.type.startsWith('image/')) { setFlash("Please select an image file"); return; } state.avatarFile = file; const reader = new FileReader(); reader.onload = (e) => { const initial = ($("#fullName").value || "U").charAt(0).toUpperCase(); updateAvatarPreview(e.target.result, initial); }; reader.readAsDataURL(file); } });
-            $("#removeAvatar")?.addEventListener("click", () => { state.avatarFile = null; state.currentAvatarUrl = null; const initial = ($("#fullName").value || "U").charAt(0).toUpperCase(); updateAvatarPreview(null, initial); });
-            $("#fullName")?.addEventListener("input", (e) => { $("#avatarInitial").textContent = (e.target.value || "U").charAt(0).toUpperCase(); });
-            $("#profileForm")?.addEventListener("submit", async (e) => {
-                e.preventDefault(); if (!state.session) return; let avatarPath = state.profile?.avatar_url;
-                if (state.avatarFile) { const newAvatarPath = await uploadAvatar(state.avatarFile); if (newAvatarPath) { if (state.profile?.avatar_url) { await deleteOldAvatar(state.profile.avatar_url); } avatarPath = newAvatarPath; } else { setFlash(tr("profile.upload_error")); return; } }
-                else if (state.currentAvatarUrl === null && state.profile?.avatar_url) { await deleteOldAvatar(state.profile.avatar_url); avatarPath = null; }
-                const profileData = { full_name: $("#fullName").value.trim(), username: $("#username").value.trim(), affiliation: $("#affiliation").value.trim(), work_email: $("#workEmail").value.trim(), personal_website: $("#personalWebsite").value.trim() || null, professional_website: $("#professionalWebsite").value.trim() || null, google_scholar: $("#googleScholar").value.trim() || null, fields_of_study: $("#fieldsOfStudy").value.trim() || null, avatar_url: avatarPath };
-                const { error } = await supabase.from("profiles").update(profileData).eq("id", state.session.user.id);
-                if (!error) {
-                    setFlash(tr("profile.saved")); state.profile = await fetchProfile(state.session.user.id, { refresh: true }); state.avatarFile = null;
-                    const profileComplete = !!(state.profile?.full_name && state.profile?.username && state.profile?.affiliation && state.profile?.work_email);
-                    populateProfileForm(); renderHeader();
-                    if (profileComplete && returnTo) { setTimeout(() => window.location.href = returnTo, 1000); }
-                } else { setFlash("Error: " + error.message); }
-            });
-            $("#year").textContent = new Date().getFullYear();
+        function openMenu() { $("#mobileNavOverlay")?.classList.add("is-open"); document.body.style.overflowY = 'hidden'; const btn = $("#mobileMenuBtn"); if (btn) { btn.setAttribute("aria-expanded", "true"); btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`; } }
+        function closeMenu() { $("#mobileNavOverlay")?.classList.remove("is-open"); document.body.style.overflowY = ''; const btn = $("#mobileMenuBtn"); if (btn) { btn.setAttribute("aria-expanded", "false"); btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`; } }
+        
+        function setupMobileMenu() {
+            const mobileNavContent = $("#mobileNavOverlay .mobile-nav-content");
+            const desktopNav = $(".header-grid .nav");
+            if (!mobileNavContent || !desktopNav) return;
+            mobileNavContent.innerHTML = '';
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'mobile-nav-close-btn';
+            closeBtn.setAttribute('aria-label', 'Close menu');
+            closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24" 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 6L6 18M6 6l12 12"/></svg>';
+            const content = desktopNav.cloneNode(true);
+            content.id = '';
+            
+            const langSwitchMobile = content.querySelector('#langSwitchDesktop');
+            if (langSwitchMobile) langSwitchMobile.id = 'langSwitchMobile';
+            mobileNavContent.append(closeBtn, content);
+            closeBtn.onclick = closeMenu;
+            langSwitchMobile?.addEventListener('click', handleLangSwitch);
+            content.querySelector("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
+            content.querySelector("#btnProfile")?.addEventListener("click", () => { window.location.href = 'profile.html'; });
         }
 
-        (async function main() { applyI18n(); wireUI(); await initAuth(); renderHeader(); handlePageLogic(); })();
+        async function handlePageLogic() {
+            if (state.session) { hide($('#authPrompt')); show($('#profileForm')); await loadProfileData(); } 
+            else { hide($('#profileForm')); show($('#authPrompt')); }
+            hide($('#loading'));
+        }
+        
+        async function fetchProfile(userId) { return (await supabase.from("profiles").select("*").eq("id", userId).single()).data; }
+
+        async function initAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            state.session = session;
+            if (session) state.profile = await fetchProfile(session.user.id);
+            await renderHeader();
+            await handlePageLogic();
+            supabase.auth.onAuthStateChange(async (_event, newSession) => {
+                state.session = newSession;
+                state.profile = newSession ? await fetchProfile(newSession.user.id) : null;
+                await renderHeader();
+                await handlePageLogic();
+            });
+        }
+        
+        async function loadProfileData() {
+            if (!state.session) return;
+            state.profile = await fetchProfile(state.session.user.id) || {};
+            ['fullName', 'username', 'affiliation', 'workEmail', 'personalWebsite', 'professionalWebsite', 'googleScholar', 'fieldsOfStudy']
+                .forEach(id => ($(`#${id}`).value = state.profile[id.replace(/[A-Z]/g, m => '_' + m.toLowerCase())] || ''));
+            $('#displayUsername').textContent = '@' + (state.profile.username || state.session.user.email.split('@')[0]);
+            $('#displayEmail').textContent = state.profile.work_email || state.session.user.email;
+            if (state.profile.avatar_url) setAvatar(await getAvatarUrl(state.profile.avatar_url)); else setAvatar(null);
+        }
+
+        function setAvatar(url) {
+            const img = $('#avatarImg'), initials = $('#avatarInitials');
+            if (url) { img.src = url; show(img); hide(initials); show($('#removeAvatarBtn')); } 
+            else { hide(img); show(initials); hide($('#removeAvatarBtn')); initials.textContent = ($('#fullName').value || 'U')[0].toUpperCase(); }
+        }
+
+        async function saveProfile(e) {
+            e.preventDefault();
+            const btn = $('#saveBtn'), originalHTML = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = `<svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> <span data-i18n="profile.saving">${tr('profile.saving')}</span>`;
+            try {
+                let avatar_url = state.profile?.avatar_url;
+                if (state.avatarFile) {
+                    const path = `${state.session.user.id}/${Date.now()}.${state.avatarFile.name.split('.').pop()}`;
+                    const { error } = await supabase.storage.from('avatars').upload(path, state.avatarFile);
+                    if (error) throw new Error(tr('profile.upload_error'));
+                    if (avatar_url) await supabase.storage.from('avatars').remove([avatar_url]);
+                    avatar_url = path;
+                } else if (state.avatarRemoved && avatar_url) {
+                    await supabase.storage.from('avatars').remove([avatar_url]);
+                    avatar_url = null;
+                }
+                const updates = { id: state.session.user.id, updated_at: new Date().toISOString(), avatar_url,
+                    full_name: $('#fullName').value.trim(), username: $('#username').value.trim(), affiliation: $('#affiliation').value.trim(), work_email: $('#workEmail').value.trim(),
+                    personal_website: $('#personalWebsite').value.trim() || null, professional_website: $('#professionalWebsite').value.trim() || null, 
+                    google_scholar: $('#googleScholar').value.trim() || null, fields_of_study: $('#fieldsOfStudy').value.trim() || null,
+                };
+                const { error } = await supabase.from('profiles').upsert(updates);
+                if (error) throw error;
+                state.profile = { ...state.profile, ...updates }; state.avatarFile = null; state.avatarRemoved = false;
+                flash(tr('profile.saved')); await renderHeader();
+                const returnTo = new URLSearchParams(location.search).get('return_to');
+                if (returnTo) setTimeout(() => window.location.href = returnTo, 1000);
+            } catch (err) { console.error(err); flash(err.message || "Error saving profile"); } 
+            finally { btn.disabled = false; btn.innerHTML = originalHTML; }
+        }
+
+        function bindEvents() {
+            $('#langSwitchDesktop').onclick = handleLangSwitch;
+            $('#btnSignOut').onclick = () => supabase.auth.signOut();
+            $('#mobileMenuBtn').onclick = () => $("#mobileNavOverlay").classList.contains('is-open') ? closeMenu() : openMenu();
+            $("#mobileNavOverlay").onclick = (e) => { if (e.target === e.currentTarget) closeMenu(); };
+            $('#backBtn').onclick = () => history.back();
+            $('#avatarInput').onchange = (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                state.avatarFile = file; state.avatarRemoved = false;
+                const reader = new FileReader(); reader.onload = (ev) => setAvatar(ev.target.result); reader.readAsDataURL(file);
+            };
+            $('#removeAvatarBtn').onclick = () => { state.avatarFile = null; state.avatarRemoved = true; setAvatar(null); $('#avatarInput').value = ''; };
+            $('#fullName').oninput = (e) => { if(!state.avatarFile && !state.profile?.avatar_url && !state.avatarRemoved) $('#avatarInitials').textContent = (e.target.value || 'U')[0].toUpperCase(); };
+            $('#username').oninput = (e) => $('#displayUsername').textContent = '@' + (e.target.value || 'username');
+            $('#workEmail').oninput = (e) => $('#displayEmail').textContent = e.target.value || 'user@example.com';
+            $('#profileForm').onsubmit = saveProfile;
+        }
+
+        (function main() {
+            applyI18n();
+            $('#year').textContent = new Date().getFullYear();
+            bindEvents();
+            initAuth();
+        })();
     </script>
 </body>
-
 </html>

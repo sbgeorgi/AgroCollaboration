@@ -287,3 +287,4 @@ export function initSharedUI(i18n) {
   // Initial setup call
   setupMobileMenu();
 }
+

@@ -183,9 +183,10 @@
       <small style="display: flex; justify-content: space-between; align-items: center;">
         <div style="display: flex; align-items: center;">
           © <span id="year"></span> Agrovoltaicos sin Fronteras •
-          <span>Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
+          <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
         </div>
         <div style="display: flex; align-items: center;">
+          <!-- Existing Logos -->
           <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank"
             rel="noopener noreferrer" style="margin-left: 8px;">
             <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics"
@@ -196,10 +197,22 @@
             <img src="static/unam.png" alt="UNAM"
               style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
           </a>
+          
+          <!-- START: Added Logos -->
+          <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana"
+            target="_blank" rel="noopener noreferrer" style="margin-left: 8px;">
+            <img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana"
+              style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background-color: white;">
+          </a>
+          <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer" style="margin-left: 8px;">
+            <img src="static/rame.png" alt="Rame - Red Agrivoltaica de México"
+              style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background-color: white;">
+          </a>
+          <!-- END: Added Logos -->
         </div>
       </small>
     </div>
-  </footer>
+</footer>
 
   <script type="module">
     import { supabase, initAuth, signInWithGoogle, signInWithEmail } from "./auth.js";

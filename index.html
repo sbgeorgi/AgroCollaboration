@@ -1,614 +1,762 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Agrovoltaicos sin Fronteras • Seminar Platform</title>
-  <meta name="description" content="A seminar series to share advances in agrivoltaics in the Americas (EN/ES)." />
-  <!-- Fonts: Headings (Poppins), Body (Lato), Handwritten accents (Caveat) -->
+  <meta name="description" content="A seminar series to share advances in agrivoltaics in the Americas (EN/ES).">
+
+<script>
+  (function() {
+    try {
+      const cached = localStorage.getItem('asf_auth_cache');
+      if (!cached) {
+        document.documentElement.setAttribute('data-auth-ready', 'logged-out');
+        return;
+      }
+      
+      const parsed = JSON.parse(cached);
+      if (Date.now() > parsed.expiry) {
+        localStorage.removeItem('asf_auth_cache');
+        document.documentElement.setAttribute('data-auth-ready', 'logged-out');
+        return;
+      }
+      
+      const isLoggedIn = !!(parsed.data?.session && parsed.data?.profile);
+      
+      // Inject style to hide/show correct auth state before paint
+      const style = document.createElement('style');
+      style.id = 'auth-preload-style';
+      style.textContent = isLoggedIn 
+        ? '#btnSignIn { display: none !important; } #user-menu-desktop { display: flex !important; } #user-menu-desktop.hidden { display: flex !important; }'
+        : '#btnSignIn { display: inline-block !important; } #user-menu-desktop { display: none !important; }';
+      document.head.appendChild(style);
+      
+      // Store fingerprint for comparison
+      const fingerprint = JSON.stringify({
+        hasSession: !!parsed.data?.session,
+        userId: parsed.data?.session?.user?.id || null,
+        profileId: parsed.data?.profile?.id || null,
+        fullName: parsed.data?.profile?.full_name || null,
+        username: parsed.data?.profile?.username || null,
+        avatarUrl: parsed.data?.profile?.avatar_url || null,
+        role: parsed.data?.profile?.role || null,
+        language: localStorage.getItem("lang") || "en"
+      });
+      
+      // Set flag that inline script has configured the initial state
+      document.documentElement.setAttribute('data-auth-ready', isLoggedIn ? 'logged-in' : 'logged-out');
+      document.documentElement.setAttribute('data-auth-fingerprint', fingerprint);
+      
+    } catch(e) {
+      document.documentElement.setAttribute('data-auth-ready', 'error');
+    }
+  })();
+</script>
+  
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Lato:wght@400;700&family=Poppins:wght@700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    /* --- Page-Specific Layout --- */
-    #hero,
-    #auth {
-      flex-shrink: 0;
-    }
 
-    .hero {
-      padding: var(--space-3) var(--space-4) !important;
-    }
-
-    #schedule.card {
-      padding-top: var(--space-1);
-      padding-bottom: var(--space-1);
-    }
-
-    #schedule,
-    #eventDetail {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    #eventsList,
-    #calendar {
-      flex-grow: 1;
-      min-height: 0;
-    }
-
-    #eventsList {
-      overflow-y: auto;
-    }
-
-    #eventsList {
-      display: none; /* Hide by default to prevent jarring load */
-    }
-
-    #calendar {
-      display: none; /* Hide by default */
-      flex-direction: column;
-    }
-
-    #calendarGrid {
-      flex-grow: 1;
-      overflow-y: auto;
-    }
-
-    /* --- Hero Layout --- */
-    .hero {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: var(--space-4);
-    }
-
-    .hero-main {
-      flex: 1 1 60%;
-      min-width: 350px;
-    }
-
-    .hero-main>h1 {
-      margin-top: 0;
-      margin-bottom: var(--space-2);
-    }
-
-    .hero-main>p {
-      margin: 0;
-    }
-
-    .hero .meta {
-      flex: 0 1 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: var(--space-1);
-    }
-
-    /* --- Calendar & Schedule Header Rework --- */
-    #schedule .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: var(--space-3);
-      margin-bottom: 0;
-      /* Removed bottom margin to reduce space */
-    }
-
-    .section-header .calendar-header {
-      display: none;
-      align-items: center;
-      gap: var(--space-2);
-      flex-grow: 1;
-      justify-content: center;
-    }
-
-    #schedule.calendar-view .section-header .calendar-header {
-      display: flex;
-    }
-
-    #schedule .calendar-header-standalone {
-      display: none;
-    }
-    
-    .section-title-group {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      flex-wrap: wrap;
-    }
-
-    #schedule .section-header h2 {
-      margin: 0;
-    }
-    
-    /* --- Responsive Adjustments for This Page --- */
-    @media (max-width: 960px) {
-      .hero {
-        text-align: center;
-        flex-direction: column;
-      }
-
-      .hero-main {
-        min-width: 0;
-      }
-
-      .hero .meta {
-        text-align: center;
-        align-items: center;
-      }
-
-      #schedule .section-header {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      #schedule .search-bar {
-        width: 100%;
-      }
-
-      #schedule .search-bar input {
-        width: 100%;
-        box-sizing: border-box;
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f7f5',
+              100: '#e1efeb',
+              200: '#c3e0d8',
+              300: '#a5d0c4',
+              400: '#6aae9d',
+              500: '#4A8C82', // Teal from time box
+              600: '#3b7d71',
+              700: '#186D50', // Dark Green from title
+              800: '#145942',
+              900: '#114a37'
+            },
+            accent: {
+              yellow: '#FDEB71'
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-out',
+            'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+            slideUp: { '0%': { transform: 'translateY(20px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } }
+          }
+        }
       }
     }
-  </style>
-
+  </script>
+  <!-- Custom CSS -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+            .no-scrollbar::-webkit-scrollbar { display: none; }
+            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+            .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+            .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+            .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #a8b2c1; }
+        }
+        html, body { height: 100%; overflow: hidden; }
+        @supports (-webkit-touch-callout: none) {
+            .h-screen { height: -webkit-fill-available; }
+        }
+        .cubic-bezier { transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1); }
+        #flash {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-150%);
+            background-color: #0f172a; /* slate-900 */
+            color: white;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            font-weight: 600;
+            z-index: 1000;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        #flash.visible {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body>
-  <header class="site-header">
-    <div class="container header-grid">
-      <div class="brand">
-        <a href="index.html" style="display: contents; text-decoration: none;">
-          <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
-          <div class="brand-text">
-            <div class="title">Agrovoltaicos sin Fronteras</div>
-            <div class="subtitle" data-i18n="tagline">
-              A seminar series to share advances in agrivoltaics in the Americas
-            </div>
+<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-200 selection:text-brand-900">
+
+  <!-- ================= HEADER ================= -->
+  <header class="flex-none bg-white border-b border-gray-200 z-30 relative">
+    <div class="container mx-auto px-4 h-16 md:h-18 flex items-center justify-between">
+      <a href="#" id="brand-logo" class="flex items-center gap-3 group">
+        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo"
+          class="w-10 h-10 rounded-xl shadow-lg shadow-brand-500/10 group-hover:scale-105 transition-transform duration-300">
+        <div class="leading-tight">
+          <h1 class="font-display font-bold text-brand-700 text-lg tracking-tight">Agrovoltaicos sin Fronteras</h1>
+          <p class="text-xs text-slate-500 font-medium hidden sm:block truncate max-w-[180px] md:max-w-none"
+            data-i18n="tagline">
+            Seminar series on agrivoltaics in the Americas
+          </p>
+        </div>
+      </a>
+      <div class="flex items-center gap-3">
+        <nav
+          class="hidden md:flex items-center gap-1 bg-gray-100/80 p-1 rounded-full border border-gray-200/50 font-medium text-sm text-slate-600">
+          <a href="index.html"
+            class="nav-link px-4 py-2 rounded-full transition-all duration-300 bg-white shadow-sm text-brand-700"
+            data-i18n="nav.schedule">Schedule</a>
+          <a href="archive.html"
+            class="nav-link px-4 py-2 rounded-full transition-all duration-300 hover:text-brand-700"
+            data-i18n="nav.archive">Archive</a>
+          <a href="about.html" class="nav-link px-4 py-2 rounded-full transition-all duration-300 hover:text-brand-700"
+            data-i18n="nav.about">About</a>
+          <!-- Added network link -->
+          <a href="network.html" class="nav-link px-4 py-2 rounded-full transition-all duration-300 hover:text-brand-700"
+            data-i18n="nav.network">Network</a>
+          <a href="admin.html" id="btnAdmin"
+            class="hidden nav-link px-4 py-2 rounded-full transition-all duration-300 hover:text-brand-700"
+            data-i18n="nav.admin">Admin</a>
+        </nav>
+        <button id="lang-toggle"
+          class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-xl text-xs font-bold transition-colors"
+          aria-label="Toggle Language">
+          <i data-lucide="globe" class="w-4 h-4 text-slate-500"></i>
+          <span id="current-lang-label">EN</span>
+        </button>
+        <div id="auth-area-desktop" class="hidden md:flex items-center gap-3">
+          <a href="signin.html" id="btnSignIn"
+            class="bg-brand-700 hover:bg-brand-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-95 items-center gap-2">
+            <span data-i18n="auth.signin">Sign in</span>
+          </a>
+          <div id="user-menu-desktop" class="hidden flex items-center gap-3">
+            <span id="userName" class="text-sm font-semibold text-slate-700 hidden lg:block"></span>
+            <button id="btnProfile"
+              class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center font-bold text-brand-700 text-lg border-2 border-white shadow-sm overflow-hidden">
+              <span id="userInitial" class="flex items-center justify-center"></span>
+              <img id="userAvatar" class="hidden w-full h-full object-cover" alt="" />
+            </button>
+            <button id="btnSignOut" class="p-2.5 text-slate-500 hover:bg-gray-200 rounded-xl transition-colors">
+              <i data-lucide="log-out" class="w-5 h-5"></i>
+            </button>
           </div>
-        </a>
+        </div>
+        <button id="mobile-menu-btn"
+          class="md:hidden p-2 text-slate-600 bg-gray-100 rounded-xl active:bg-gray-200 transition-colors">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
       </div>
-
-      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
-
-      <!-- Desktop Nav -->
-      <nav class="nav">
-        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-        <a href="about.html" class="link" data-i18n="nav.about">About</a>
-        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-        <div class="divider"></div>
-        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-          <span>EN</span>
-          <span>ES</span>
-        </div>
-        <div class="auth-area">
-          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile">
-            <span id="userInitial"></span>
-            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
-          </button>
-          <span id="userName"></span>
-          <a href="signin.html" id="btnSignIn" class="btn-primary" data-i18n="auth.signin"
-            style="text-decoration: none; display: inline-block;">Sign in</a>
-          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
-            Sign out
-          </button>
-        </div>
-      </nav>
     </div>
   </header>
 
-  <div id="mobileNavOverlay" class="mobile-nav-overlay">
-    <!-- Content will be injected by JS -->
+  <!-- ================= MOBILE MENU OVERLAY ================= -->
+  <div id="mobile-menu" class="fixed inset-0 z-50 pointer-events-none transition-all duration-500 opacity-0">
+    <div id="mobile-menu-backdrop" class="absolute inset-0 bg-slate-900/30 backdrop-blur-sm"></div>
+    <div id="mobile-drawer"
+      class="absolute top-0 right-0 bottom-0 w-[300px] bg-white shadow-2xl flex flex-col p-6 translate-x-full transition-transform duration-500 cubic-bezier">
+      <div class="flex justify-end mb-8">
+        <button id="mobile-menu-close"
+          class="p-2 text-slate-400 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <nav id="mobile-nav-links" class="flex flex-col gap-4">
+        <!-- Links will be injected here -->
+      </nav>
+      <div id="auth-area-mobile" class="mt-auto pt-8 border-t border-gray-100">
+        <!-- Auth state will be injected here -->
+      </div>
+    </div>
   </div>
 
-  <div id="flash" class="flash" role="status" aria-live="polite"></div>
+  <!-- ================= MAIN APP CONTAINER ================= -->
+  <main class="flex-1 relative overflow-hidden bg-gray-50">
 
-  <main class="container">
-    <!-- Hero -->
-    <section id="hero" class="card hero">
-      <div class="hero-main">
-        <h1 style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;">
-          <span>Agrovoltaicos sin Fronteras</span>
-          <div id="siteBanner"
-            style="display: none; background: linear-gradient(135deg, var(--color-primary), var(--brand-2)); color: white; padding: 4px 12px; border-radius: 999px; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 8px rgba(0, 33, 71, 0.2); animation: pulse 2s ease-in-out infinite; white-space: nowrap; font-family: 'Caveat', cursive;">
-            <span>📢</span>
-            <span id="bannerText"></span>
-          </div>
-        </h1>
-        <p data-i18n="intro">
-          Agrivoltaics (agrivoltaics) is an emerging field that integrates solar energy with
-          crop/livestock production. This bilingual seminar focuses on Latin America. Hosted by
-          UNAM and University of Arizona.
-        </p>
-      </div>
-      <div class="meta">
-        <span class="meta-item" data-i18n="format">Online • Bi-monthly • 1 hour</span>
-        <span class="meta-item" data-i18n="hosted">Hosted by UNAM & University of Arizona</span>
-      </div>
-    </section>
+    <!-- ================= VIEW: SCHEDULE (Default) ================= -->
+    <div id="view-schedule"
+      class="absolute inset-0 flex flex-col overflow-hidden transition-all duration-500 cubic-bezier">
+      <div class="flex-1 overflow-y-auto custom-scrollbar">
+        <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-6 py-6">
 
-    <!-- Schedule -->
-    <section id="schedule" class="card" aria-labelledby="scheduleTitle">
-      <div class="section-header">
-        <div class="section-title-group">
-          <h2 id="scheduleTitle" data-i18n="schedule.title">Upcoming Talks</h2>
-          <div class="view-switch">
-            <button id="viewList" class="chip chip-toggle active" data-i18n="schedule.list">List</button>
-            <button id="viewCalendar" class="chip chip-toggle" data-i18n="schedule.calendar">Calendar</button>
-          </div>
-        </div>
-        <div class="calendar-header">
-          <button id="calPrev" class="btn-ghost" aria-label="Previous month">◀</button>
-          <div id="calLabel" class="cal-label">Month</div>
-          <button id="calNext" class="btn-ghost" aria-label="Next month">▶</button>
-        </div>
-        <div class="search-controls">
-          <div class="calendar-legend">
-            <span class="legend scheduled" data-i18n="legend.scheduled">Scheduled</span>
-            <span class="legend completed" data-i18n="legend.completed">Completed</span>
-            <span class="legend canceled" data-i18n="legend.canceled">Canceled</span>
-          </div>
-          <div class="search-bar">
-            <input id="search" type="search" placeholder="Search..." data-i18n-placeholder="search.placeholder" />
-          </div>
-        </div>
-      </div>
+          <!-- ================= HERO SECTION ================= -->
+          <section id="hero-section"
+            class="relative overflow-hidden rounded-3xl bg-white p-6 border border-gray-200/80 shadow-sm">
+            <div class="relative z-10 flex flex-col gap-y-2">
+              <!-- Top row for Banner and Host Info -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <a id="siteBanner" href="#"
+                  class="hidden items-center gap-2 bg-brand-50 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-medium text-brand-700 border border-brand-100 animate-fade-in w-fit max-w-full transition-colors hover:bg-brand-100">
+                  <span class="relative flex-none flex h-2.5 w-2.5"><span
+                      class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span><span
+                      class="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500"></span></span>
+                  <span id="bannerText" class="truncate"></span>
+                </a>
+                <div
+                  class="flex-none p-2 bg-gray-50 backdrop-blur-lg rounded-xl border border-gray-200 text-xs w-full md:w-auto">
+                  <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <div class="flex items-center gap-2 whitespace-nowrap">
+                      <div class="flex -space-x-2">
+                        <img src="static/b2ua.jpg" class="w-6 h-6 rounded-full object-cover border-2 border-white"
+                          alt="UA Logo">
+                        <img src="static/unam.png" class="w-6 h-6 rounded-full object-cover border-2 border-white"
+                          alt="UNAM Logo">
+                      </div>
+                      <span class="text-slate-600 font-medium">Hosted by UA & UNAM</span>
+                    </div>
+                    <div class="flex items-center gap-x-3 text-slate-500">
+                      <span class="flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="clock"
+                          class="w-3.5 h-3.5"></i> Bi-monthly Seminars</span>
+                      <span class="flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="video"
+                          class="w-3.5 h-3.5"></i> Online via Zoom</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-      <div id="eventsLoader" class="loader-container">
-        <div class="spinner"></div>
-      </div>
+              <h2 class="font-display font-bold text-2xl md:text-3xl leading-tight text-brand-700"
+                data-i18n="intro.title">
+                Agrovoltaicos sin Fronteras
+              </h2>
+              <p class="text-slate-700 text-sm leading-relaxed">
+                Agrovoltaicos sin Fronteras is a participatory seminar series presenting the latest advances in
+                agrivoltaics research and development across the Americas and beyond. We welcome researchers,
+                practitioners, students and anyone interested in agrivoltaics to join us for bi-weekly seminars and
+                discussions. Seminars are bilingual (English and/or Spanish) and take place on zoom. Register to join
+                the seminars or continue the discussion in the members forum!
+              </p>
+            </div>
+          </section>
+          <!-- ================= END HERO SECTION ================= -->
 
-      <!-- This grid is now fixed by the change in styles.css -->
-      <div id="eventsList" class="events-grid"></div>
 
-      <div id="calendar" class="calendar">
-        <div class="calendar-grid" id="calendarGrid"></div>
-      </div>
+          <section class="bg-white rounded-[2.5rem] border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+            <div
+              class="p-3 md:px-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-20">
+              <h3 class="font-display font-bold text-2xl text-brand-700 self-start md:self-center"
+                data-i18n="schedule.title">Upcoming Talks</h3>
 
-      <div id="emptyEvents" class="empty" style="display: none" data-i18n="schedule.empty">
-        No events yet. Check back soon.
-      </div>
-    </section>
-
-    <!-- Event Detail -->
-    <section id="eventDetail" class="card" style="display: none">
-      <div id="discussion-layout">
-        <!-- LEFT SIDEBAR -->
-        <div class="sidebar-container">
-          <div id="compactEventHeaderContainer">
-            <!-- JS Renders Event Details Here -->
-          </div>
-
-          <form id="newThreadForm" class="inline-form">
-            <input id="threadTitle" type="text" placeholder="Start a new topic..." required
-              data-i18n-placeholder="thread.placeholder" />
-            <button class="btn-primary" type="submit" data-i18n="thread.create">Create</button>
-          </form>
-          <div id="threadsList">
-            <!-- JS Renders Threads Here -->
-          </div>
-        </div>
-
-        <!-- RIGHT MAIN AREA -->
-        <div id="discussion-main">
-          <div class="tabs">
-            <button class="tab active" data-tab="description" data-i18n="tabs.description">Description</button>
-            <button class="tab" data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
-            <button class="tab" data-tab="files" data-i18n="tabs.files">Files</button>
-          </div>
-
-          <!-- Description Panel -->
-          <div id="tab_description" class="tab-panel">
-            <div id="descriptionContent" class="prose"></div>
-          </div>
-
-          <!-- Discussion Panel -->
-          <div id="tab_discussion" class="tab-panel" style="display: none;">
-            <div id="thread-welcome">
-              <div>
-                <h3 data-i18n="discussion.welcome_title">Welcome to the discussion!</h3>
-                <p data-i18n="discussion.welcome_body">Select a topic from the left to view the
-                  conversation, or start a new one.</p>
+              <div class="flex items-center gap-3 w-full md:w-auto">
+                <div class="flex bg-gray-100 p-1.5 rounded-2xl">
+                  <button id="btn-view-list" class="p-2.5 rounded-xl bg-white text-brand-600 shadow-sm transition-all"
+                    aria-label="List View">
+                    <i data-lucide="list" class="w-5 h-5"></i>
+                  </button>
+                  <button id="btn-view-cal" class="p-2.5 rounded-xl text-slate-400 hover:text-slate-600 transition-all"
+                    aria-label="Calendar View">
+                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                  </button>
+                </div>
+                <div class="relative flex-1 md:w-72">
+                  <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                  <input id="search" type="search"
+                    class="w-full pl-12 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                    data-i18n-placeholder="search.placeholder">
+                </div>
               </div>
             </div>
-            <div id="threadDetailView" style="display: none;">
-              <div id="commentsList"></div>
-              <form id="replyToThreadForm">
-                <textarea placeholder="Write a comment..." required
-                  data-i18n-placeholder="comment.placeholder"></textarea>
-                <button class="btn-primary" type="submit" data-i18n="comment.send">Send</button>
-              </form>
+
+            <div id="eventsLoader" class="p-8 flex-1 flex items-center justify-center">
+              <div class="w-12 h-12 border-4 border-gray-200 border-t-brand-700 rounded-full animate-spin"></div>
+            </div>
+
+            <div id="content-area" class="p-3 md:p-4 bg-gray-50/50 flex-1 hidden">
+              <div id="schedule-list" class="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in"></div>
+              <div id="schedule-calendar"
+                class="hidden h-full flex flex-col bg-white rounded-3xl border border-gray-200 overflow-hidden animate-fade-in">
+                <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                  <button id="calPrev" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="chevron-left"
+                      class="w-5 h-5"></i></button>
+                  <h4 id="calLabel" class="font-display font-bold text-lg">Month Year</h4>
+                  <button id="calNext" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="chevron-right"
+                      class="w-5 h-5"></i></button>
+                </div>
+                <div class="grid grid-cols-7 bg-gray-50 border-b border-gray-100">
+                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Mon</div>
+                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Tue</div>
+                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Wed</div>
+                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Thu</div>
+                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Fri</div>
+                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Sat</div>
+                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Sun</div>
+                </div>
+                <div id="calendarGrid" class="flex-1 grid grid-cols-7 bg-gray-100 gap-px"></div>
+              </div>
+            </div>
+            <div id="emptyEvents" class="p-8 hidden flex-1 items-center justify-center text-slate-500"
+              data-i18n="schedule.empty">No events found.</div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= VIEW: DETAIL ================= -->
+    <div id="view-detail"
+      class="absolute inset-0 flex flex-col bg-gray-50/50 translate-x-full transition-transform duration-500 cubic-bezier z-20">
+      <div
+        class="flex-1 m-0 md:m-6 bg-white md:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border border-gray-200">
+
+        <div id="compactEventHeaderContainer"
+          class="flex-none p-4 md:p-6 border-b border-gray-100 bg-white flex items-center gap-6 sticky top-0 z-10">
+          <!-- Dynamic Event Header will be injected here -->
+        </div>
+
+        <div class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
+          <div class="flex-1 flex flex-col min-h-0 lg:flex-[2]">
+            <div class="flex-none px-6 border-b border-gray-100 flex gap-6 overflow-x-auto no-scrollbar bg-white">
+              <button class="tab-link py-4 font-semibold text-brand-700 border-b-[3px] border-brand-500"
+                data-tab="description" data-i18n="tabs.description">Description</button>
+              <button class="tab-link py-4 font-semibold text-slate-400 border-b-[3px] border-transparent"
+                data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
+              <button class="tab-link py-4 font-semibold text-slate-400 border-b-[3px] border-transparent"
+                data-tab="files" data-i18n="tabs.files">Files</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30 p-6 md:p-10 relative">
+              <div id="tab_description"
+                class="tab-panel prose prose-lg prose-slate prose-headings:font-display prose-a:text-brand-700 max-w-3xl animate-fade-in">
+              </div>
+
+              <div id="tab_discussion" class="tab-panel hidden h-full flex flex-col animate-fade-in">
+                <div id="thread-welcome" class="text-center p-8">
+                  <h3 class="font-bold text-lg" data-i18n="discussion.welcome_title">Welcome!</h3>
+                  <p class="text-slate-600" data-i18n="discussion.welcome_body">Select a topic to begin.</p>
+                </div>
+                <div id="threadDetailView"
+                  class="hidden h-full flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div id="commentsList" class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-gray-50">
+                  </div>
+                  <div class="p-4 bg-white border-t border-gray-100">
+                    <form id="replyToThreadForm" class="flex gap-2">
+                      <input type="text" placeholder="Write a comment..."
+                        class="flex-1 bg-gray-100 border-0 focus:ring-2 focus:ring-brand-500 rounded-xl px-4 py-3 transition-all"
+                        data-i18n-placeholder="comment.placeholder" required>
+                      <button type="submit"
+                        class="bg-brand-700 hover:bg-brand-800 text-white p-3 rounded-xl transition-colors active:scale-95"><i
+                          data-lucide="send" class="w-5 h-5"></i></button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <div id="tab_files" class="tab-panel hidden animate-fade-in max-w-3xl space-y-6">
+                <form id="uploadFormContainer">
+                  <label
+                    class="border-2 border-dashed border-gray-300 rounded-2xl p-10 flex flex-col items-center justify-center text-slate-500 hover:bg-gray-100/50 hover:border-brand-400 transition-all cursor-pointer group">
+                    <div
+                      class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <i data-lucide="upload-cloud"
+                        class="w-8 h-8 text-slate-400 group-hover:text-brand-500 transition-colors"></i>
+                    </div>
+                    <p class="font-medium text-slate-900" data-i18n="files.upload_label">Click to upload or drag & drop
+                    </p>
+                    <p class="text-sm" data-i18n="files.upload_hint">Max 10MB per file</p>
+                    <input id="fileInput" type="file" class="hidden" />
+                  </label>
+                </form>
+                <div id="filesList" class="space-y-3"></div>
+                <div id="emptyFiles" class="hidden p-8 text-center text-slate-500" data-i18n="files.empty">No files
+                  uploaded.</div>
+              </div>
             </div>
           </div>
 
-          <!-- Files Panel -->
-          <div id="tab_files" class="tab-panel" style="display: none">
-            <form id="uploadForm" class="inline-form">
-              <input id="fileInput" type="file" />
-              <button class="btn-primary" type="submit" data-i18n="files.upload">Upload</button>
-            </form>
-            <div id="filesList" class="files"></div>
-            <div id="emptyFiles" class="empty" style="display: none" data-i18n="files.empty">
-              No files yet.
+          <div class="hidden lg:flex flex-col w-96 border-l border-gray-200 bg-white">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+              <h3 class="font-display font-bold text-slate-900" data-i18n="discussion.topics">Discussion Topics</h3>
             </div>
+            <div class="p-4">
+              <form id="newThreadForm" class="flex gap-2">
+                <input id="threadTitle" type="text" required
+                  class="flex-1 bg-gray-100 border-0 focus:ring-2 focus:ring-brand-500 rounded-xl px-4 py-2 text-sm"
+                  data-i18n-placeholder="thread.placeholder">
+                <button type="submit"
+                  class="text-xs font-bold text-brand-700 bg-brand-50 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-colors"
+                  data-i18n="thread.create">+ New</button>
+              </form>
+            </div>
+            <div id="threadsList" class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2"></div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <small style="display: flex; justify-content: space-between; align-items: center;">
-        <div style="display: flex; align-items: center;">
-          © <span id="year"></span> Agrovoltaicos sin Fronteras •
-          <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
-        </div>
-        <div style="display: flex; align-items: center;">
-          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank"
-            rel="noopener noreferrer" style="margin-left: 8px;">
-            <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics"
-              style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-          </a>
-          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer"
-            style="margin-left: 8px;">
-            <img src="static/unam.png" alt="UNAM"
-              style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-          </a>
-        </div>
-      </small>
+  <!-- ================= FOOTER ================= -->
+  <footer class="flex-none py-4 bg-white border-t border-gray-200 text-xs text-slate-500">
+    <div class="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2 font-medium">
+        <span>© <span id="year"></span> Agrovoltaicos sin Fronteras</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank"
+          class="block rounded-full border border-gray-200 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition"><img
+            src="static/b2ua.jpg" class="h-8 w-8 object-cover rounded-full" alt="Biosphere 2"></a>
+        <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank"
+          class="block rounded-full border border-gray-200 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition"><img
+            src="static/unam.png" class="h-8 w-8 object-cover rounded-full" alt="UNAM"></a>
+        <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana"
+          target="_blank"
+          class="block rounded-full border border-gray-200 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition"><img
+            src="static/aal.png" class="h-8 w-8 object-cover rounded-full bg-white" alt="AAL"></a>
+        <a href="https://redagvmx.com" target="_blank"
+          class="block rounded-full border border-gray-200 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition"><img
+            src="static/rame.png" class="h-8 w-8 object-cover rounded-full bg-white" alt="Rame"></a>
+      </div>
     </div>
   </footer>
 
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
   <script type="module">
-    import {
-      supabase,
-      authState,
-      initAuth,
-      fetchProfile, // <-- CORRECTED: Import fetchProfile
-      signInWithGoogle,
-      signInWithEmail,
-      signOut
-    } from "./auth.js";
-    import { initEventLogic } from "./static/js/event.js";
-
+    import { supabase, authState, initAuth, signOut } from './auth.js';
+    import { initEventLogic } from './event.js';
     let eventLogic;
 
-    const state = {
-      language: localStorage.getItem("lang") || "en",
-      events: [],
-      selectedEvent: null,
-      threads: [],
-      selectedThreadId: null,
-      comments: [],
-      files: [],
-      rsvpStatus: null,
-      isFollowing: false,
-      counts: { followers: 0, going: 0, interested: 0 },
-      calendarMonth: new Date(),
-    };
+    // --- STATE & I18N DICTIONARY ---
+    const state = { language: localStorage.getItem("lang") || "en", events: [], selectedEvent: null, threads: [], selectedThreadId: null, comments: [], files: [], calendarMonth: new Date(), };
+    const t = { en: { tagline: "A seminar series to share advances in agrivoltaics in the Americas", intro: "Join leading researchers and farmers across the Americas exploring dual-use land for food and energy.", intro_title: "Agrovoltaicos sin Fronteras", format: "Online • Bi-monthly • 1 hour", hosted: "Hosted by UNAM & University of Arizona", nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin" }, auth: { title: "Sign in to participate", signin: "Sign in", signout: "Sign out", email: "Email", magic: "Send magic link", magic_hint: "We'll email you a sign-in link. Check your inbox.", or: "or", required: "Please sign in to view event details.", }, profile: { incomplete: "Please complete your profile to access all features" }, schedule: { title: "Upcoming Talks", empty: "No upcoming events found. Check back soon!", list: "List", calendar: "Calendar" }, search: { placeholder: "Search by title, speaker, topic..." }, back: { schedule: "Back to schedule" }, tabs: { description: "Description", discussion: "Discussion", files: "Files" }, discussion: { welcome_title: "Welcome to the discussion!", welcome_body: "Select a topic from the left to view the conversation, or start a new one.", topics: "Discussion Topics" }, thread: { placeholder: "Start a new topic...", create: "New", empty: "No topics yet. Start the discussion!" }, comment: { placeholder: "Write a comment...", send: "Send" }, files: { upload: "Upload", empty: "No files uploaded.", download: "Download", upload_label: "Click to upload or drag & drop", upload_hint: "Max 10MB per file", deleting: "Deleting...", delete_confirm: "Are you sure you want to delete this file?" }, footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }, legend: { scheduled: "Scheduled", completed: "Completed", canceled: "Canceled" }, save: "Save", cancel: "Cancel", errors: { upload: "Upload failed", delete: "Delete failed" }, open: "View Details", copied: "Copied!", tags: "Tags", speakers: "Speaker(s)" }, es: { tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas", intro: "Únase a los principales investigadores y agricultores de las Américas que exploran el uso dual de la tierra para alimentos y energía.", intro_title: "Agrovoltaicos sin Fronteras", format: "En línea • Bimestral • 1 hora", hosted: "Organizado por UNAM y University of Arizona", nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin" }, auth: { title: "Inicia sesión para participar", signin: "Iniciar sesión", signout: "Cerrar sesión", email: "Correo", magic: "Enviar enlace mágico", magic_hint: "Te enviaremos un enlace de acceso. Revisa tu bandeja.", or: "o", required: "Por favor, inicia sesión para ver los detalles del evento.", }, profile: { incomplete: "Por favor completa tu perfil para acceder a todas las funciones" }, schedule: { title: "Próximas Charlas", empty: "No se encontraron eventos. Vuelve pronto.", list: "Lista", calendar: "Calendario" }, search: { placeholder: "Buscar por título, ponente, tema..." }, back: { schedule: "Volver al calendario" }, tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" }, discussion: { welcome_title: "¡Bienvenido/a a la discusión!", welcome_body: "Selecciona un tema de la izquierda o crea uno nuevo.", topics: "Temas de Discusión" }, thread: { placeholder: "Iniciar un nuevo tema...", create: "Nuevo", empty: "Aún no hay temas. ¡Comienza la discusión!" }, comment: { placeholder: "Escribe un comentario...", send: "Enviar" }, files: { upload: "Subir", empty: "No hay archivos subidos.", download: "Descargar", upload_label: "Haz clic para subir o arrastra y suelta", upload_hint: "Máximo 10MB por archivo", deleting: "Eliminando...", delete_confirm: "¿Estás seguro de que quieres eliminar este archivo?" }, footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }, legend: { scheduled: "Programado", completed: "Completado", cancelado: "Cancelado" }, save: "Guardar", cancel: "Cancelar", errors: { upload: "Fallo al subir", delete: "Fallo al eliminar" }, open: "Ver Detalles", copied: "¡Copiado!", tags: "Etiquetas", speakers: "Ponente(s)" }, };
 
-    const t = {
-      en: {
-        tagline: "A seminar series to share advances in agrivoltaics in the Americas",
-        intro: "Agrovoltaicos sin Fronteras is a participatory seminar series presenting the latest advances in agrivoltaics research and development across the Americas and beyond. We welcome researchers, practitioners, students and anyone interested in agrivoltaics to join us for bi-weekly seminars and discussions. Seminars are bilingual (English and/or Spanish) and take place on zoom. Register to join the seminars or continue the discussion in the members forum!",
-        format: "Online • Bi-monthly • 1 hour", // MODIFIED
-        hosted: "Hosted by UNAM & University of Arizona",
-        nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin" },
-        auth: {
-          title: "Sign in to participate", signin: "Sign in", signout: "Sign out",
-          email: "Email", magic: "Send magic link", magic_hint: "We'll email you a sign-in link. Check your inbox.", or: "or",
-          required: "Please sign in to view event details.",
-        },
-        profile: { incomplete: "Please complete your profile to access all features" },
-        schedule: { title: "Upcoming Talks", empty: "No events yet. Check back soon.", list: "List", calendar: "Calendar" },
-        search: { placeholder: "Search..." },
-        back: { schedule: "Back to schedule" },
-        tabs: { description: "Description", discussion: "Discussion", files: "Files" },
-        discussion: { welcome_title: "Welcome to the discussion!", welcome_body: "Select a topic from the left to view the conversation, or start a new one." },
-        thread: { placeholder: "Start a new topic...", create: "Create", empty: "No topics yet. Start the discussion!" },
-        comment: { placeholder: "Write a comment...", send: "Send" },
-        files: { upload: "Upload", empty: "No files yet.", download: "Download" },
-        footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
-        rsvp: { going: "Going", interested: "Interested", notgoing: "Not going", saved: "RSVP updated" },
-        follow: "Follow",
-        reply: "Reply",
-        legend: { scheduled: "Scheduled", completed: "Completed", canceled: "Canceled" },
-        save: "Save", cancel: "Cancel",
-        errors: { upload: "Upload failed" },
-        labels: { followers: "followers", going: "going", interested: "interested" },
-        open: "Open", join_zoom: "Join Zoom", copy_link: "Copy Zoom link", copied: "Copied!",
-        tags: "Tags",
-        speakers: "Speaker(s)"
-      },
-      es: {
-        tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas",
-        intro: "Agrovoltaicos sin Fronteras es una serie de seminarios participativos que presenta los últimos avances en investigación y desarrollo de agrovoltaicos en América y el resto del mundo. Invitamos a investigadores, profesionales, estudiantes y a cualquier persona interesada en los agrovoltaicos a unirse a nuestros seminarios y debates quincenales. Los seminarios son bilingües (inglés y/o español) y se realizan por Zoom. ¡Regístrese para unirse a los seminarios o continúe la discusión en el foro de miembros!",
-        format: "En línea • Bimestral • 1 hora", // MODIFIED
-        hosted: "Organizado por UNAM y University of Arizona",
-        nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin" },
-        auth: {
-          title: "Inicia sesión para participar", signin: "Iniciar sesión", signout: "Cerrar sesión",
-          email: "Correo", magic: "Enviar enlace mágico", magic_hint: "Te enviaremos un enlace de acceso. Revisa tu bandeja.", or: "o",
-          required: "Por favor, inicia sesión para ver los detalles del evento.",
-        },
-        profile: { incomplete: "Por favor completa tu perfil para acceder a todas las funciones" },
-        schedule: { title: "Charlas", empty: "Aún no hay eventos. Vuelve pronto.", list: "Lista", calendar: "Calendario" },
-        search: { placeholder: "Buscar..." },
-        back: { schedule: "Volver al calendario" },
-        tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" },
-        discussion: { welcome_title: "¡Bienvenido/a a la discusión!", welcome_body: "Selecciona un tema de la izquierda o crea uno nuevo." },
-        thread: { placeholder: "Iniciar un nuevo tema...", create: "Crear", empty: "Aún no hay temas. ¡Comienza la discusión!" },
-        comment: { placeholder: "Escribe un comentario...", send: "Enviar" },
-        files: { upload: "Subir", empty: "No hay archivos.", download: "Descargar" },
-        footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
-        rsvp: { going: "Asistiré", interested: "Interesado/a", notgoing: "No asistiré", saved: "Asistencia actualizada" },
-        follow: "Seguir",
-        reply: "Responder",
-        legend: { scheduled: "Programado", completed: "Completado", cancelado: "Cancelado" },
-        save: "Guardar", cancel: "Cancelar",
-        errors: { upload: "Fallo al subir" },
-        labels: { followers: "seguidores", going: "asisten", interested: "interesados" },
-        open: "Abrir", join_zoom: "Unirse a Zoom", copy_link: "Copiar enlace de Zoom", copied: "¡Copiado!",
-        tags: "Etiquetas",
-        speakers: "Ponente(s)"
-      },
-    };
-
-    // --- UTILITIES & I18N ---
-    function tr(key, fallback = "") { const lang = state.language; const parts = key.split("."); let obj = t[lang]; for (const p of parts) obj = obj?.[p]; return obj ?? fallback; }
+    // --- UTILITIES ---
     const $ = (sel) => document.querySelector(sel);
-    function setFlash(msg, timeout = 3000) {
-      const el = $("#flash"); if (!el) return; el.textContent = msg; el.style.display = "block";
-      clearTimeout(setFlash._t); if (timeout > 0) { setFlash._t = setTimeout(() => (el.style.display = "none"), timeout); }
-    }
-    function fmtDateTime(iso) { try { return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso)); } catch (_) { return iso; } }
-    function bytesToSize(bytes = 0) {
-      if (bytes === 0) return "0 B"; const k = 1024, sizes = ["B", "KB", "MB", "GB", "TB"], i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-    }
+    const $$ = (sel) => document.querySelectorAll(sel);
+    const show = (el) => el?.classList.remove('hidden');
+    const hide = (el) => el?.classList.add('hidden');
+    function tr(key, fallback = "") { const lang = state.language; const parts = key.split("."); let obj = t[lang]; for (const p of parts) obj = obj?.[p]; return obj ?? fallback; }
+    function setFlash(msg, timeout = 3000) { const el = $("#flash"); if (!el) return; el.textContent = msg; el.classList.add("visible"); clearTimeout(setFlash._t); if (timeout > 0) { setFlash._t = setTimeout(() => el.classList.remove("visible"), timeout); } }
+    function fmtDateTime(iso, options = { dateStyle: "medium", timeStyle: "short" }) { try { return new Intl.DateTimeFormat(undefined, options).format(new Date(iso)); } catch (_) { return iso; } }
+    function bytesToSize(bytes = 0) { if (bytes === 0) return "0 B"; const k = 1024, sizes = ["B", "KB", "MB", "GB", "TB"], i = Math.floor(Math.log(bytes) / Math.log(k)); return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]; }
     function escapeHtml(s = "") { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
-    function linkify(text = "") {
-      let safe = escapeHtml(text); const urlRegex = /\b(https?:\/\/[^\s<]+)\b/g;
-      safe = safe.replace(urlRegex, (m) => `<a href="${m}" target="_blank" rel="noopener noreferrer">${m}</a>`);
-      safe = safe.replace(/\n/g, "<br/>"); return safe;
+    function linkify(text = "") { let safe = escapeHtml(text); const urlRegex = /\b(https?:\/\/[^\s<]+)\b/g; safe = safe.replace(urlRegex, (m) => `<a href="${m}" target="_blank" rel="noopener noreferrer" class="hover:underline">${m}</a>`); safe = safe.replace(/\n/g, "<br/>"); return safe; }
+
+    async function getAvatarUrl(path) {
+      if (!path) return null;
+      if (path.startsWith('http://') || path.startsWith('https://')) return path;
+      const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
+      return `${SUPABASE_URL}/storage/v1/object/public/avatars/${path}`;
     }
+
     function applyI18n() {
-      document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); });
-      document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); });
-      document.querySelectorAll(".lang-switch-slider").forEach(el => { if (el) el.dataset.lang = state.language; });
+      $$("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); });
+      $$("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); });
+      $("#current-lang-label").textContent = state.language.toUpperCase();
+    }
+
+    // --- UI & VIEW MANAGEMENT ---
+    function showView(viewName) {
+      const scheduleView = $('#view-schedule');
+      const detailView = $('#view-detail');
+      if (viewName === 'schedule') {
+        detailView.classList.add('translate-x-full');
+        scheduleView.classList.remove('-translate-x-1/4', 'opacity-50', 'pointer-events-none');
+        window.history.pushState({}, '', window.location.pathname);
+      } else if (viewName === 'event') {
+        scheduleView.classList.add('-translate-x-1/4', 'opacity-50', 'pointer-events-none');
+        detailView.classList.remove('translate-x-full');
+      }
+    }
+
+    function switchScheduleView(mode) {
+      if (mode === 'list') {
+        show($('#schedule-list')); hide($('#schedule-calendar'));
+        $('#btn-view-list').classList.add('bg-white', 'text-brand-600', 'shadow-sm');
+        $('#btn-view-list').classList.remove('text-slate-400');
+        $('#btn-view-cal').classList.remove('bg-white', 'text-brand-600', 'shadow-sm');
+        $('#btn-view-cal').classList.add('text-slate-400');
+      } else {
+        hide($('#schedule-list')); show($('#schedule-calendar'));
+        $('#btn-view-cal').classList.add('bg-white', 'text-brand-600', 'shadow-sm');
+        $('#btn-view-cal').classList.remove('text-slate-400');
+        $('#btn-view-list').classList.remove('bg-white', 'text-brand-600', 'shadow-sm');
+        $('#btn-view-list').classList.add('text-slate-400');
+      }
+    }
+
+    function switchTab(tabName, clickedBtn) {
+      $$('.tab-panel').forEach(el => hide(el));
+      show($('#tab_' + tabName));
+      $$('.tab-link').forEach(btn => {
+        btn.classList.remove('text-brand-700', 'border-brand-500');
+        btn.classList.add('text-slate-400', 'border-transparent');
+      });
+      clickedBtn.classList.remove('text-slate-400', 'border-transparent');
+      clickedBtn.classList.add('text-brand-700', 'border-brand-500');
+
+      if (tabName === 'discussion' && state.threads.length > 0 && !state.selectedThreadId) {
+        if (eventLogic && eventLogic.selectThread) {
+          eventLogic.selectThread(state.threads[0].id);
+        }
+      }
     }
 
     // --- HEADER & MENU ---
-    function setupMobileMenu() {
-      const mobileNavOverlay = $("#mobileNavOverlay");
-      const desktopNav = document.querySelector('.header-grid .nav');
-      if (!mobileNavOverlay || !desktopNav) return;
-      mobileNavOverlay.innerHTML = '';
-      const closeBtn = document.createElement('button');
-      closeBtn.className = 'mobile-nav-close-btn';
-      closeBtn.setAttribute('aria-label', 'Close menu');
-      
-      // ========= FIX STARTS HERE =========
-      // This line was causing the SVG parsing error. It has been replaced with a clean version.
-      closeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-      // ========= FIX ENDS HERE =========
+    function toggleMobileMenu(forceState) {
+      const menu = $('#mobile-menu');
+      const drawer = $('#mobile-drawer');
+      const showMenu = forceState !== undefined ? forceState : menu.classList.contains('pointer-events-none');
 
-      const content = desktopNav.cloneNode(true);
-      content.id = '';
-      const langSwitchMobile = content.querySelector('#langSwitchDesktop');
-      if (langSwitchMobile) langSwitchMobile.id = 'langSwitchMobile';
-      mobileNavOverlay.appendChild(closeBtn);
-      mobileNavOverlay.appendChild(content);
-      closeBtn.addEventListener('click', closeMenu);
-      mobileNavOverlay.addEventListener('click', (e) => { if (e.target === mobileNavOverlay) closeMenu(); });
-      langSwitchMobile?.addEventListener('click', handleLangSwitch);
-      content.querySelector("#btnSignOut")?.addEventListener("click", () => signOut());
-      content.querySelector("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
-    }
-    function openMenu() {
-      const mobileMenuBtn = $("#mobileMenuBtn"), mobileNavOverlay = $("#mobileNavOverlay");
-      mobileNavOverlay.classList.add("is-open"); document.body.classList.add("menu-open");
-      mobileMenuBtn.setAttribute("aria-expanded", "true");
-      mobileMenuBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-    }
-    function closeMenu() {
-      const mobileMenuBtn = $("#mobileMenuBtn"), mobileNavOverlay = $("#mobileNavOverlay");
-      mobileNavOverlay.classList.remove("is-open"); document.body.classList.remove("menu-open");
-      mobileMenuBtn.setAttribute("aria-expanded", "false");
-      mobileMenuBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
-    }
-    function renderHeader() {
-      const btnSignIn = $("#btnSignIn"), btnSignOut = $("#btnSignOut"), btnAdmin = $("#btnAdmin"), userName = $("#userName"), btnProfile = $("#btnProfile");
-      const isOrganizer = ["organizer", "admin"].includes(authState.profile?.role);
-      if (authState.session) {
-        btnSignIn.style.display = "none"; btnSignOut.style.display = "inline-block";
-        btnProfile.style.display = "grid"; userName.style.display = "inline";
-        userName.textContent = authState.profile?.full_name || authState.profile?.username || "";
-        $("#userInitial").textContent = (authState.profile?.full_name || "U").charAt(0).toUpperCase();
-        if (btnAdmin) btnAdmin.style.display = isOrganizer ? "inline-block" : "none";
+      if (showMenu) {
+        menu.classList.remove('pointer-events-none', 'opacity-0');
+        setTimeout(() => drawer.classList.remove('translate-x-full'), 10);
       } else {
-        btnSignIn.style.display = "inline-block"; btnSignOut.style.display = "none";
-        btnProfile.style.display = "none"; userName.style.display = "none";
-        if (btnAdmin) btnAdmin.style.display = "none";
+        drawer.classList.add('translate-x-full');
+        setTimeout(() => menu.classList.add('pointer-events-none', 'opacity-0'), 300);
       }
-      setupMobileMenu();
     }
+
+    async function renderHeader() {
+  // Create fingerprint to detect if we actually need to re-render
+  const fingerprint = JSON.stringify({
+    hasSession: !!authState.session,
+    userId: authState.session?.user?.id || null,
+    profileId: authState.profile?.id || null,
+    fullName: authState.profile?.full_name || null,
+    username: authState.profile?.username || null,
+    avatarUrl: authState.profile?.avatar_url || null,
+    role: authState.profile?.role || null,
+    language: state.language
+  });
+
+  // Check if inline script already set up the correct state
+  const preloadFingerprint = document.documentElement.getAttribute('data-auth-fingerprint');
+  const authReady = document.documentElement.getAttribute('data-auth-ready');
+  
+  if (preloadFingerprint === fingerprint && authReady && headerState.lastRenderedFingerprint === null) {
+    // Inline script already configured everything correctly, skip first render
+    headerState.lastRenderedFingerprint = fingerprint;
+    
+    // Just wire up event handlers for mobile menu without rebuilding HTML
+    const btnProfileMobile = $('#btnProfileMobile');
+    const btnSignOutMobile = $('#btnSignOutMobile');
+    if (btnProfileMobile) btnProfileMobile.onclick = () => window.location.href = 'profile.html';
+    if (btnSignOutMobile) btnSignOutMobile.onclick = signOut;
+    
+    // Remove preload style as it's no longer needed
+    document.getElementById('auth-preload-style')?.remove();
+    document.documentElement.removeAttribute('data-auth-fingerprint');
+    
+    return;
+  }
+
+  // Skip render if nothing changed (subsequent calls)
+  if (headerState.lastRenderedFingerprint === fingerprint) {
+    return;
+  }
+  
+  headerState.lastRenderedFingerprint = fingerprint;
+
+  const isOrganizer = ["organizer", "admin"].includes(authState.profile?.role);
+  const userMenu = $('#user-menu-desktop');
+  const signInBtn = $('#btnSignIn');
+  const mobileAuth = $('#auth-area-mobile');
+  const mobileNav = $('#mobile-nav-links');
+
+  if (authState.session && authState.profile) {
+    hide(signInBtn);
+    userMenu?.classList.remove('hidden');
+    show(userMenu);
+    
+    const userName = $('#userName');
+    if (userName) {
+      userName.textContent = authState.profile?.full_name || authState.profile?.username || "";
+    }
+    
+    const avatarPath = authState.profile.avatar_url;
+    const avatarUrl = avatarPath ? await getAvatarUrl(avatarPath) : null;
+    const initial = (authState.profile.full_name || "U").charAt(0).toUpperCase();
+    const userAvatar = $('#userAvatar');
+    const userInitial = $('#userInitial');
+
+    if (userAvatar && userInitial) {
+      if (avatarUrl) {
+        userAvatar.src = avatarUrl;
+        show(userAvatar);
+        hide(userInitial);
+      } else {
+        userInitial.textContent = initial;
+        hide(userAvatar);
+        show(userInitial);
+      }
+    }
+
+    // Mobile menu auth section
+    if (mobileAuth) {
+      mobileAuth.innerHTML = `
+        <div class="flex items-center gap-3 mb-4">
+          <button id="btnProfileMobile" class="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center font-bold text-brand-700 text-xl border-2 border-white shadow-sm overflow-hidden">
+            ${avatarUrl ? `<img src="${avatarUrl}" class="w-full h-full object-cover" alt="User avatar" />` : `<span>${initial}</span>`}
+          </button>
+          <div class="leading-tight">
+            <p class="font-bold text-slate-800">${escapeHtml(authState.profile.full_name || "")}</p>
+            <p class="text-xs text-slate-500">View Profile</p>
+          </div>
+        </div>
+        <button id="btnSignOutMobile" class="w-full bg-gray-100 text-slate-700 py-3 rounded-2xl font-bold text-lg active:scale-95 transition-transform flex justify-center items-center gap-2">
+          <i data-lucide="log-out" class="w-5 h-5"></i>
+          <span data-i18n="auth.signout"></span>
+        </button>
+      `;
+      
+      $('#btnProfileMobile').onclick = () => window.location.href = 'profile.html';
+      $('#btnSignOutMobile').onclick = signOut;
+    }
+    
+    if (isOrganizer) show($("#btnAdmin")); 
+    else hide($("#btnAdmin"));
+  } else {
+    show(signInBtn);
+    hide(userMenu);
+    userMenu?.classList.add('hidden');
+    hide($("#btnAdmin"));
+    
+    if (mobileAuth) {
+      mobileAuth.innerHTML = `
+        <a href="signin.html" class="w-full bg-brand-700 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-brand-700/20 active:scale-95 transition-transform flex justify-center items-center gap-2">
+          <i data-lucide="log-in" class="w-5 h-5"></i>
+          <span data-i18n="auth.signin"></span>
+        </a>
+      `;
+    }
+  }
+
+  // Mobile nav links
+  if (mobileNav) {
+    // For index.html:
+    const currentPage = window.location.pathname.includes('archive.html') ? 'archive' : 'index';
+    
+    mobileNav.innerHTML = `
+      <a href="index.html" class="flex items-center gap-4 p-4 rounded-2xl ${currentPage === 'index' ? 'bg-brand-50 text-brand-900 font-bold' : 'hover:bg-gray-50 text-slate-600 font-semibold'} font-display text-xl">
+        <i data-lucide="calendar" class="w-6 h-6 ${currentPage === 'index' ? 'text-brand-700' : ''}"></i>
+        <span data-i18n="nav.schedule"></span>
+      </a>
+      <a href="archive.html" class="flex items-center gap-4 p-4 rounded-2xl ${currentPage === 'archive' ? 'bg-brand-50 text-brand-900 font-bold' : 'hover:bg-gray-50 text-slate-600 font-semibold'} font-display text-xl">
+        <i data-lucide="archive" class="w-6 h-6 ${currentPage === 'archive' ? 'text-brand-700' : ''}"></i>
+        <span data-i18n="nav.archive"></span>
+      </a>
+      <a href="about.html" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 text-slate-600 font-display font-semibold text-xl">
+        <i data-lucide="info" class="w-6 h-6"></i>
+        <span data-i18n="nav.about"></span>
+      </a>
+      ${isOrganizer ? `<a href="admin.html" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 text-slate-600 font-display font-semibold text-xl"><i data-lucide="shield" class="w-6 h-6"></i><span data-i18n="nav.admin"></span></a>` : ''}
+    `;
+  }
+
+  // Remove preload style once real rendering is done
+  document.getElementById('auth-preload-style')?.remove();
+
+  lucide.createIcons();
+  applyI18n();
+}
+
     function handleLangSwitch() {
       state.language = state.language === 'en' ? 'es' : 'en';
       localStorage.setItem("lang", state.language);
       applyI18n();
-      loadSiteBanner();
+      renderDynamicHeroBanner();
       renderEventsList();
       if (state.selectedEvent && eventLogic) {
-        eventLogic.renderEventHeader();
-        eventLogic.renderThreads();
-        eventLogic.renderDescriptionTab();
-        if (state.selectedThreadId) eventLogic.renderComments();
-        eventLogic.renderFiles();
+        eventLogic.reRender();
       }
       renderScheduleCalendar();
     }
-    async function loadSiteBanner() {
-      const { data } = await supabase.from('banners').select('*').eq('is_active', true).single();
-      const bannerEl = document.getElementById('siteBanner');
-      const textEl = document.getElementById('bannerText');
 
-      if (data && bannerEl && textEl) {
-        const text = state.language === 'es' && data.text_es ? data.text_es : data.text_en;
-        textEl.textContent = text;
-        bannerEl.style.display = 'inline-flex';
-      } else if (bannerEl) {
-        bannerEl.style.display = 'none';
+    function renderDynamicHeroBanner() {
+      const bannerEl = $('#siteBanner');
+      const textEl = $('#bannerText');
+      if (!bannerEl || !textEl) return;
+
+      const nextEvent = state.events
+        .filter(e => new Date(e.start_time) > new Date())
+        .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))[0];
+
+      let bannerHTML = '';
+      if (nextEvent) {
+        const title = state.language === 'es' && nextEvent.title_es ? nextEvent.title_es : nextEvent.title_en;
+        const formattedDate = fmtDateTime(nextEvent.start_time, { month: 'short', day: 'numeric', year: 'numeric' });
+        bannerHTML = `Next Session: ${formattedDate} &mdash; ${escapeHtml(title)}`;
+        bannerEl.dataset.openEvent = nextEvent.id;
+        bannerEl.classList.remove('pointer-events-none');
+      } else {
+        bannerHTML = 'Welcome! Check the archive for past event recordings.';
+        delete bannerEl.dataset.openEvent;
+        bannerEl.classList.add('pointer-events-none');
       }
+
+      textEl.innerHTML = bannerHTML;
+      bannerEl.classList.remove('hidden');
+      bannerEl.classList.add('inline-flex');
     }
 
-    // --- PAGE-SPECIFIC LOGIC (SCHEDULE) ---
-    function showView(which) {
-      $("#schedule").style.display = "none";
-      $("#eventDetail").style.display = "none";
-      $("#hero").style.display = "none";
-
-      if (which === "schedule") {
-        $("#hero").style.display = "flex";
-        $("#schedule").style.display = "flex";
-      } else if (which === "event") {
-        $("#eventDetail").style.display = "flex";
-      }
-    }
-
+    // --- CORE PAGE LOGIC ---
     async function loadEvents() {
-      const { data } = await supabase.from("events").select("*, event_speakers(*)").order("start_time", { ascending: true });
+      hide($('#content-area')); show($('#eventsLoader'));
+      const { data } = await supabase
+        .from("events")
+        .select("*, event_speakers(*, profile:profiles(*))")
+        .order("start_time", { ascending: true });
+
       state.events = data || [];
       renderEventsList();
       renderScheduleCalendar();
-
-      const loader = $("#eventsLoader");
-      const list = $("#eventsList");
-      if (loader) loader.style.display = 'none';
-      if (list) list.style.display = 'grid';
+      renderDynamicHeroBanner();
+      hide($('#eventsLoader')); show($('#content-area'));
 
       const urlParams = new URLSearchParams(window.location.search);
       const eid = urlParams.get("event") || urlParams.get("e");
-
       if (eid && eventLogic) {
         if (authState.session) {
           await eventLogic.openEvent(eid);
@@ -622,236 +770,209 @@
       }
     }
 
-    function nowUtcComparable(d) {
-      return new Date(d).getTime();
-    }
-
-    function renderEventsList() {
-      const list = $("#eventsList"), empty = $("#emptyEvents");
+    async function renderEventsList() {
+      const list = $("#schedule-list"), empty = $("#emptyEvents");
       if (!list || !empty) return;
       const term = ($("#search")?.value || "").toLowerCase().trim();
-      const now = Date.now();
+      const now = new Date();
 
-      const futureEvents = state.events.filter(e => nowUtcComparable(e.start_time) >= now);
+      const upcomingEvents = state.events.filter(e => {
+        const endTime = new Date(e.start_time);
+        endTime.setHours(endTime.getHours() + 1);
+        return endTime >= now;
+      });
 
-      const filtered = futureEvents.filter((e) => {
+      const filtered = upcomingEvents.filter(e => {
         if (!term) return true;
         const speakerMatch = (e.event_speakers || []).some(s =>
-          (s.name || "").toLowerCase().includes(term) ||
-          (s.affiliation || "").toLowerCase().includes(term)
+          (s.profile?.full_name || s.name || "").toLowerCase().includes(term) ||
+          (s.profile?.affiliation || s.affiliation || "").toLowerCase().includes(term)
         );
         const tagsMatch = (e.topic_tags || []).some(tag => (tag || "").toLowerCase().includes(term));
-        const eventMatch = [e.title_en, e.title_es, e.description_en, e.description_es, e.host_org]
-          .filter(Boolean)
-          .some((v) => v.toLowerCase().includes(term));
+        const eventMatch = [e.title_en, e.title_es, e.description_en, e.description_es, e.host_org].filter(Boolean).some(v => v.toLowerCase().includes(term));
         return speakerMatch || tagsMatch || eventMatch;
       });
 
-      empty.style.display = filtered.length ? "none" : "block";
-      list.innerHTML = filtered.map(ev => {
+      if (filtered.length > 0) {
+        hide(empty); show(list);
+      } else {
+        show(empty); hide(list);
+      }
+
+      const eventCards = await Promise.all(filtered.map(async (ev) => {
         const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
         const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
+        const eventSpeaker = (ev.event_speakers || []).find(s => s.primary_speaker) || (ev.event_speakers || [])[0];
+        const speakerProfile = eventSpeaker?.profile;
+        const speakerName = speakerProfile?.full_name || eventSpeaker?.name || '';
+        const speakerAffiliation = speakerProfile?.affiliation || eventSpeaker?.affiliation || '';
+        const statusColors = {
+          scheduled: 'bg-brand-50 text-brand-700 border-brand-100',
+          completed: 'bg-gray-50 text-slate-700 border-gray-100',
+          canceled: 'bg-red-50 text-red-700 border-red-100'
+        };
 
-        let speakerLine = '';
-        if (ev.event_speakers && ev.event_speakers.length > 0) {
-          const primarySpeaker = ev.event_speakers.find(s => s.primary_speaker) || ev.event_speakers[0];
-          speakerLine = `<div class="event-speaker">👤 ${escapeHtml(primarySpeaker.name)}${primarySpeaker.affiliation ? ` (${escapeHtml(primarySpeaker.affiliation)})` : ''}</div>`;
+        let avatarHtml = '';
+        if (speakerProfile?.avatar_url) {
+          const avatarUrl = await getAvatarUrl(speakerProfile.avatar_url);
+          if (avatarUrl) {
+            avatarHtml = `<img src="${avatarUrl}" alt="${escapeHtml(speakerName)}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>`;
+          }
         }
+        const initials = speakerName ? speakerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '';
 
-        const tagTopics = (ev.topic_tags || []).map(tag => `<span class="tag-topic">#${escapeHtml(tag)}</span>`).join("");
+        const tagsHtml = (ev.topic_tags || [])
+          .slice(0, 3)
+          .map(tag => `<span class="px-2.5 py-1 bg-gray-100 text-slate-600 rounded-full text-xs font-semibold whitespace-nowrap">#${escapeHtml(tag)}</span>`)
+          .join('');
 
         return `
-        <div class="event-card">
-            <div class="event-header">
-              <div class="event-info">
-                <div class="when">${fmtDateTime(ev.start_time)}</div>
-                <h3 class="event-title">${escapeHtml(title)}</h3>
-                ${speakerLine}
+      <article class="group bg-white rounded-3xl p-4 border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-brand-200 transition-all duration-300 flex flex-col" data-open-event="${ev.id}">
+        <div class="flex-grow">
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex flex-col">
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-700 mb-1">${fmtDateTime(ev.start_time)}</span>
+              <h4 class="font-display font-bold text-lg text-slate-800 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h4>
+            </div>
+            <span class="flex-shrink-0 ml-4 px-3 py-1 ${statusColors[ev.status] || statusColors.scheduled} text-[10px] font-bold uppercase tracking-widest rounded-full border">${escapeHtml(ev.status)}</span>
+          </div>
+          ${desc ? `<p class="text-slate-600 mb-3 text-sm line-clamp-2">${escapeHtml(desc)}</p>` : ''}
+        </div>
+        
+        <div class="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-4 min-w-0">
+            ${eventSpeaker ? `
+            <div class="flex items-center gap-3 flex-shrink-0">
+              <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center text-gray-600 font-semibold text-sm">
+                ${avatarHtml}
+                <span ${avatarHtml ? `style="display:none;"` : ''}>${initials}</span>
               </div>
-              <div class="actions">
-                  <button class="btn-primary" data-open="${String(ev.id)}">${tr('open')}</button>
+              <div>
+                <p class="text-sm font-bold text-slate-800 truncate">${escapeHtml(speakerName)}</p>
+                <p class="text-xs text-slate-500 truncate">${escapeHtml(speakerAffiliation)}</p>
               </div>
             </div>
-            ${desc ? `<div class="event-desc">${linkify(desc)}</div>` : '<div style="flex-grow: 1;"></div>'}
-            <div class="tags">
-              ${tagTopics}
-              <span class="tag">${(ev.language || "bi").toUpperCase()}</span>
-              ${ev.host_org ? `<span class="tag">${escapeHtml(ev.host_org)}</span>` : ""}
+            ` : '<div></div>'}
+            
+            ${tagsHtml ? `
+            <div class="hidden lg:flex items-center gap-2">
+              ${tagsHtml}
             </div>
-        </div>`;
-      }).join('');
+            ` : ''}
+          </div>
+          
+          <button class="flex-shrink-0 w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-slate-400 group-hover:bg-brand-700 group-hover:text-white group-hover:border-transparent transition-all">
+            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </article>
+      `;
+      }));
+
+      list.innerHTML = eventCards.join('');
+      lucide.createIcons();
     }
 
     function renderScheduleCalendar() {
-      const grid = $("#calendarGrid"), label = $("#calLabel"); if (!grid || !label) return;
-      const m = state.calendarMonth; label.textContent = m.toLocaleString(state.language, { month: "long", year: "numeric" });
-      const start = new Date(m.getFullYear(), m.getMonth(), 1), end = new Date(m.getFullYear(), m.getMonth() + 1, 0);
-      const firstDayIndex = (start.getDay() + 6) % 7, daysInMonth = end.getDate(); grid.innerHTML = ``;
+      const grid = $("#calendarGrid"), label = $("#calLabel");
+      if (!grid || !label) return;
+      const m = state.calendarMonth;
+      label.textContent = m.toLocaleString(state.language, { month: "long", year: "numeric" });
 
-      for (let i = 0; i < firstDayIndex; i++) grid.appendChild(document.createElement("div"));
-      const byDay = state.events.reduce((acc, ev) => {
-        const d = new Date(ev.start_time); if (d.getMonth() !== m.getMonth() || d.getFullYear() !== m.getFullYear()) return acc;
-        const day = d.getDate(); if (!acc.has(day)) acc.set(day, []); acc.get(day).push(ev); return acc;
-      }, new Map());
+      const startOfMonth = new Date(m.getFullYear(), m.getMonth(), 1);
+      const endOfMonth = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+      const firstDayIndex = (startOfMonth.getDay() + 6) % 7; // Monday is 0
+      const daysInMonth = endOfMonth.getDate();
+
+      grid.innerHTML = ``;
+      for (let i = 0; i < firstDayIndex; i++) grid.insertAdjacentHTML('beforeend', `<div class="bg-gray-50/50"></div>`);
+
+      const eventsByDay = state.events.reduce((acc, ev) => {
+        const d = new Date(ev.start_time);
+        if (d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear()) {
+          const day = d.getDate();
+          if (!acc[day]) acc[day] = [];
+          acc[day].push(ev);
+        }
+        return acc;
+      }, {});
 
       for (let day = 1; day <= daysInMonth; day++) {
-        const cell = document.createElement("div"); cell.className = "cal-cell"; cell.innerHTML = `<div class="cal-day">${day}</div>`;
-        (byDay.get(day) || []).forEach((ev) => {
+        const today = new Date();
+        const isToday = day === today.getDate() && m.getMonth() === today.getMonth() && m.getFullYear() === today.getFullYear();
+        const dayEvents = eventsByDay[day] || [];
+        const eventsHtml = dayEvents.map(ev => {
           const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
-          const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
+          return `<div class="bg-brand-100 border-l-2 border-brand-500 p-1.5 rounded text-[10px] text-brand-900 truncate font-medium cursor-pointer" data-open-event="${ev.id}">${fmtDateTime(ev.start_time, { timeStyle: 'short' })} ${escapeHtml(title)}</div>`;
+        }).join('');
 
-          let speakerName = '';
-          if (ev.event_speakers && ev.event_speakers.length > 0) {
-            const primarySpeaker = ev.event_speakers.find(s => s.primary_speaker) || ev.event_speakers[0];
-            speakerName = `<div class="cal-event-speaker">👤 ${escapeHtml(primarySpeaker.name)}</div>`;
-          }
-
-          const eventDiv = document.createElement("button");
-          eventDiv.className = `cal-event status-${ev.status}`;
-          eventDiv.innerHTML = `
-                <div class="cal-event-title">${escapeHtml(title)}</div>
-                ${desc ? `<div class="cal-event-desc">${escapeHtml(desc).substring(0, 60)}...</div>` : ''}
-                ${speakerName}
-            `;
-          eventDiv.addEventListener("click", () => { if (eventLogic) eventLogic.openEvent(ev.id) });
-
-          cell.appendChild(eventDiv);
-        });
-        grid.appendChild(cell);
+        grid.insertAdjacentHTML('beforeend', `
+                    <div class="bg-white p-1 flex flex-col gap-1 min-h-[56px] overflow-y-auto custom-scrollbar">
+                        <span class="text-sm font-bold w-6 h-6 rounded-full flex items-center justify-center self-end mb-1 ${isToday ? 'bg-brand-700 text-white' : 'text-slate-600'}">${day}</span>
+                        ${eventsHtml}
+                    </div>`);
       }
     }
 
     // --- WIRING & INITIALIZATION ---
     function wireUI() {
-      $("#btnSignOut")?.addEventListener("click", () => signOut());
-      $("#btnProfile")?.addEventListener("click", () => window.location.href = 'profile.html');
-
-      $("#eventsList").addEventListener("click", e => {
-        const openBtn = e.target.closest('[data-open]');
-        if (openBtn && eventLogic) { eventLogic.openEvent(openBtn.dataset.open); return; }
+      $('#brand-logo').addEventListener('click', e => { e.preventDefault(); showView('schedule'); });
+      $('#lang-toggle').addEventListener('click', handleLangSwitch);
+      $('#mobile-menu-btn').addEventListener('click', () => toggleMobileMenu(true));
+      $('#mobile-menu-close').addEventListener('click', () => toggleMobileMenu(false));
+      $('#mobile-menu-backdrop').addEventListener('click', () => toggleMobileMenu(false));
+      document.body.addEventListener('click', e => {
+        if (e.target.closest('#btnSignOut')) signOut();
+        if (e.target.closest('#btnProfile')) window.location.href = 'profile.html';
       });
 
-      $("#search")?.addEventListener("input", renderEventsList);
-      $("#viewList")?.addEventListener("click", () => { $("#schedule").classList.remove("calendar-view"); $("#viewList").classList.add("active"); $("#viewCalendar").classList.remove("active"); $("#eventsList").style.display = "grid"; $("#calendar").style.display = "none"; });
-      $("#viewCalendar")?.addEventListener("click", () => { $("#schedule").classList.add("calendar-view"); $("#viewCalendar").classList.add("active"); $("#viewList").classList.remove("active"); $("#eventsList").style.display = "none"; $("#calendar").style.display = "flex"; });
-      $("#calPrev")?.addEventListener("click", () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() - 1); renderScheduleCalendar(); });
-      $("#calNext")?.addEventListener("click", () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() + 1); renderScheduleCalendar(); });
+      $('#search').addEventListener('input', renderEventsList);
+      $('#btn-view-list').addEventListener('click', () => switchScheduleView('list'));
+      $('#btn-view-cal').addEventListener('click', () => switchScheduleView('calendar'));
+      $('#calPrev').addEventListener("click", () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() - 1); renderScheduleCalendar(); });
+      $('#calNext').addEventListener("click", () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() + 1); renderScheduleCalendar(); });
 
-      $("#langSwitchDesktop")?.addEventListener('click', handleLangSwitch);
-      $("#mobileMenuBtn")?.addEventListener("click", () => {
-        const overlay = $("#mobileNavOverlay");
-        if (overlay && !overlay.classList.contains('is-open')) {
-          openMenu();
-        } else {
-          closeMenu();
+      document.body.addEventListener('click', e => {
+        const card = e.target.closest('[data-open-event]');
+        if (card && eventLogic) {
+          e.preventDefault();
+          eventLogic.openEvent(card.dataset.openEvent);
         }
       });
+
+      $$('.tab-link').forEach(tab => tab.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab, e.currentTarget)));
 
       $("#year").textContent = new Date().getFullYear();
+      lucide.createIcons();
     }
 
+    // --- MAIN EXECUTION ---
     (async function main() {
+      if (!supabase || !initAuth) {
+        console.error("Supabase or Auth helpers not found. Please ensure auth.js is loaded.");
+        $('#eventsLoader').innerHTML = '<p class="text-red-500">Error: Platform configuration missing.</p>';
+        return;
+      }
 
-      (async function loadBanner() {
-        const { data } = await supabase.from('banners').select('*').eq('is_active', true).single();
-        if (data) {
-          const bannerEl = document.getElementById('siteBanner');
-          const textEl = document.getElementById('bannerText');
-          if (bannerEl && textEl) {
-            const text = state.language === 'es' && data.text_es ? data.text_es : data.text_en;
-            textEl.textContent = text;
-            bannerEl.style.display = 'inline-flex';
-          }
-        }
-        supabase.channel('public:banners')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'banners' }, async () => {
-            const { data } = await supabase.from('banners').select('*').eq('is_active', true).single();
-            const bannerEl = document.getElementById('siteBanner');
-            const textEl = document.getElementById('bannerText');
-            if (data && bannerEl && textEl) {
-              const text = state.language === 'es' && data.text_es ? data.text_es : data.text_en;
-              textEl.textContent = text;
-              bannerEl.style.display = 'inline-flex';
-            } else if (bannerEl) {
-              bannerEl.style.display = 'none';
-            }
-          })
-          .subscribe();
-      })();
+      const deps = { supabase, authState, tr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n, show, hide };
+      eventLogic = initEventLogic(deps);
 
       applyI18n();
       wireUI();
 
       await initAuth({
-        onAuthReady: (authState) => {
-          renderHeader();
-        },
+        onAuthReady: renderHeader,
         onAuthChange: (authState) => {
           renderHeader();
-          if (state.selectedEvent && eventLogic) {
-            eventLogic.loadRSVPFollow(state.selectedEvent.id);
-          }
         }
       });
 
-      eventLogic = initEventLogic({
-        supabase, authState, fetchProfile,
-        tr, state, $, setFlash,
-        fmtDateTime, escapeHtml, linkify, bytesToSize, showView,
-        listViewName: 'schedule'
-      });
-
-      const originalOpenEvent = eventLogic.openEvent;
-      eventLogic.openEvent = async (...args) => {
-        await originalOpenEvent.apply(eventLogic, args);
-        const discussionTab = document.querySelector('.tab[data-tab="discussion"]');
-        if (discussionTab && !discussionTab.dataset.listenerAttached) {
-          discussionTab.dataset.listenerAttached = 'true';
-          discussionTab.addEventListener('click', () => {
-            setTimeout(() => {
-              if (state.threads && state.threads.length > 0 && !state.selectedThreadId) {
-                const firstThreadEl = document.querySelector('#threadsList .thread-list-item');
-                if (firstThreadEl) {
-                  firstThreadEl.click();
-                }
-              }
-            }, 0);
-          });
-        }
-      };
-
-      const originalRenderFiles = eventLogic.renderFiles;
-      eventLogic.renderFiles = async (...args) => {
-        await originalRenderFiles.apply(eventLogic, args);
-        const filesListContainer = $('#filesList');
-        if (!filesListContainer || !state.files || state.files.length === 0) {
-          return;
-        }
-        state.files.forEach(file => {
-          const fileElement = filesListContainer.querySelector(`[data-file-id='${file.id}']`);
-          if (!fileElement) return;
-          const actionsContainer = fileElement.querySelector('.file-actions');
-          if (!actionsContainer) return;
-          if (actionsContainer.querySelector('.btn-download')) return;
-          const { data: urlData } = supabase.storage.from('event_files').getPublicUrl(file.path);
-          if (!urlData || !urlData.publicUrl) {
-            console.error(`Could not get public URL for file: ${file.path}`);
-            return;
-          }
-          const downloadLink = document.createElement('a');
-          downloadLink.href = urlData.publicUrl;
-          downloadLink.setAttribute('download', file.name || '');
-          downloadLink.className = 'chip btn-download';
-          downloadLink.textContent = tr('files.download', 'Download');
-          downloadLink.style.textDecoration = 'none';
-          actionsContainer.appendChild(downloadLink);
-        });
-      };
-      
       await loadEvents();
       supabase.channel('public:events').on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadEvents()).subscribe();
     })();
+
   </script>
 </body>
 
 </html>
+
