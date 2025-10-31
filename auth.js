@@ -82,21 +82,23 @@ export async function ensureProfile() {
 
 export async function renderHeader() {
   const $ = (sel) => document.querySelector(sel);
-  const btnSignIn = $("#btnSignIn"), 
-        btnSignOut = $("#btnSignOut"), 
-        btnAdmin = $("#btnAdmin"), 
-        userName = $("#userName"), 
-        btnProfile = $("#btnProfile"),
-        userInitial = $("#userInitial"),
-        userAvatar = $("#userAvatar");
-        
+  const btnSignIn = $("#btnSignIn"),
+    btnSignOut = $("#btnSignOut"),
+    btnAdmin = $("#btnAdmin"),
+    userName = $("#userName"),
+    btnProfile = $("#btnProfile"),
+    userInitial = $("#userInitial"),
+    userAvatar = $("#userAvatar");
+
   if (authState.session && authState.profile) {
-    btnSignIn.style.display = "none"; 
-    btnSignOut.style.display = "inline-block";
-    btnProfile.style.display = "grid"; 
-    userName.style.display = "inline";
-    userName.textContent = authState.profile?.full_name || authState.profile?.username || "";
-    
+    if (btnSignIn) btnSignIn.style.display = "none";
+    if (btnSignOut) btnSignOut.style.display = "inline-block";
+    if (btnProfile) btnProfile.style.display = "grid";
+    if (userName) {
+      userName.style.display = "inline";
+      userName.textContent = authState.profile?.full_name || authState.profile?.username || "";
+    }
+
     // Handle avatar in header button
     if (authState.profile?.avatar_url && userAvatar) {
       userAvatar.src = authState.profile.avatar_url;
@@ -109,13 +111,14 @@ export async function renderHeader() {
         userInitial.textContent = (authState.profile?.full_name || "U").charAt(0).toUpperCase();
       }
     }
-    
+
     if (btnAdmin) btnAdmin.style.display = authState.profile?.role === "admin" ? "inline-block" : "none";
+
   } else {
-    btnSignIn.style.display = "inline-block"; 
-    btnSignOut.style.display = "none";
-    btnProfile.style.display = "none"; 
-    userName.style.display = "none";
+    if (btnSignIn) btnSignIn.style.display = "inline-block";
+    if (btnSignOut) btnSignOut.style.display = "none";
+    if (btnProfile) btnProfile.style.display = "none";
+    if (userName) userName.style.display = "none";
     if (btnAdmin) btnAdmin.style.display = "none";
   }
 }
@@ -131,7 +134,7 @@ export async function initAuth(callbacks = {}) {
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
   const type = hashParams.get('type');
   const accessToken = hashParams.get('access_token');
-  
+
   if (type === 'recovery' && accessToken) {
     authState.isPasswordRecovery = true;
   }
@@ -139,17 +142,17 @@ export async function initAuth(callbacks = {}) {
   // Get current session
   const { data: { session } } = await supabase.auth.getSession();
   authState.session = session;
-  
+
   // Only fetch profile if not in recovery mode
   if (session && !authState.isPasswordRecovery) {
     await ensureProfile();
   }
-  
+
   // Only render header if not in recovery mode
   if (!authState.isPasswordRecovery) {
     renderHeader();
   }
-  
+
   const urlParams = new URLSearchParams(window.location.search);
   const viewUserId = urlParams.get('user');
 
@@ -157,7 +160,7 @@ export async function initAuth(callbacks = {}) {
   if (callbacks.onAuthReady) {
     callbacks.onAuthReady(authState, viewUserId);
   }
-  
+
   // Listen for auth changes
   supabase.auth.onAuthStateChange(async (_event, newSession) => {
     // Check if this is a password recovery event
@@ -165,18 +168,18 @@ export async function initAuth(callbacks = {}) {
       authState.isPasswordRecovery = true;
       authState.session = newSession;
       
-      // Call the callback to handle password recovery UI
+      // Call the callback with the OLD signature for backward compatibility
       if (callbacks.onAuthChange) {
-        callbacks.onAuthChange({ event: _event, session: newSession }, viewUserId);
+        callbacks.onAuthChange(authState, viewUserId);
       }
       return; // Don't do normal auth flow
     }
-    
+
     // If we were in recovery mode but now have a normal sign in, clear the flag
     if (authState.isPasswordRecovery && _event === 'SIGNED_IN') {
       authState.isPasswordRecovery = false;
     }
-    
+
     // IMPROVED: More robust check for a new sign-in vs. a token refresh
     const isInitialSignIn = !authState.session && newSession && !authState.isPasswordRecovery;
     authState.session = newSession;
@@ -191,15 +194,14 @@ export async function initAuth(callbacks = {}) {
       authState.isPasswordRecovery = false;
       sessionStorage.removeItem('justLoggedIn');
     }
-    
+
     if (!authState.isPasswordRecovery) {
       renderHeader();
     }
-    
-    // MODIFIED: Execute change callback if provided, passing the event and session directly.
-    // This is the key fix. We now pass an object with the event data.
+
+    // FIXED: Use OLD callback signature for backward compatibility
     if (callbacks.onAuthChange) {
-      callbacks.onAuthChange({ event: _event, session: newSession }, viewUserId);
+      callbacks.onAuthChange(authState, viewUserId);
     }
   });
 }
