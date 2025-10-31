@@ -1,4 +1,5 @@
 <!doctype html>
+
 <html lang="en">
 
 <head>
@@ -98,6 +99,62 @@
       color: var(--text);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     }
+
+    /* New styles for password reset */
+    .reset-password-info {
+      background: color-mix(in oklab, var(--brand) 10%, var(--card) 90%);
+      border: 1px solid var(--brand);
+      border-radius: var(--radius-sm);
+      padding: var(--space-2);
+      margin-bottom: var(--space-3);
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .forgot-password-hint {
+      background: color-mix(in oklab, var(--warning) 10%, var(--card) 90%);
+      border: 1px solid var(--warning);
+      border-radius: var(--radius-sm);
+      padding: var(--space-2);
+      margin-top: var(--space-2);
+      font-size: 0.85rem;
+      color: var(--text);
+      display: none;
+    }
+
+    .forgot-password-hint.show {
+      display: block;
+    }
+
+    .email-highlight {
+      animation: pulse-border 2s ease-in-out;
+    }
+
+    @keyframes pulse-border {
+      0%, 100% {
+        border-color: var(--border);
+      }
+      50% {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ring);
+      }
+    }
+
+    .back-to-signin {
+      text-align: center;
+      margin-top: var(--space-3);
+    }
+
+    .back-to-signin a {
+      color: var(--brand-2);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .back-to-signin a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 
@@ -110,7 +167,7 @@
           <div class="brand-text">
             <div class="title">Agrovoltaicos sin Fronteras</div>
             <div class="subtitle" data-i18n="tagline">
-              A seminar series to share advances in agrivoltaics in the Americas
+              A seminar series to share advances in agrivoltaics in the Americas
             </div>
           </div>
         </a>
@@ -122,58 +179,81 @@
 
   <main class="container auth-page-container">
     <section class="card auth-card">
-      <h1>Sign in to Participate</h1>
+      <h1 id="authTitle">Sign in to Participate</h1>
 
-      <button id="btnGoogle" class="btn-social btn-google">
-        <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
-          <path
-            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-            fill="#4285F4"></path>
-          <path
-            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-            fill="#34A853"></path>
-          <path
-            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-            fill="#FBBC05"></path>
-          <path
-            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-            fill="#EA4335"></path>
-          <path d="M1 1h22v22H1z" fill="none"></path>
-        </svg>
-        <span>Sign in with Google</span>
-      </button>
-
-      <div class="separator">or</div>
-
-      <form id="magicLinkForm" class="auth-form-secondary">
-        <label for="magicLinkEmail" class="sr-only">Email</label>
-        <input id="magicLinkEmail" type="email" placeholder="you@example.com" required />
-        <button class="btn-secondary" type="submit">Send magic link</button>
-      </form>
-
-      <div class="auth-tabs">
-        <button id="tabSignIn" class="auth-tab active">Sign In</button>
-        <button id="tabSignUp" class="auth-tab">Sign Up</button>
+      <!-- Password Reset Form (initially hidden) -->
+      <div id="resetPasswordSection" style="display: none;">
+        <div class="reset-password-info">
+          Enter your new password below to reset your account password.
+        </div>
+        <form id="resetPasswordForm" class="auth-form-vertical">
+          <label for="newPassword">New Password</label>
+          <input id="newPassword" type="password" placeholder="Enter new password" required autocomplete="new-password" minlength="6">
+          <label for="confirmPassword">Confirm Password</label>
+          <input id="confirmPassword" type="password" placeholder="Confirm new password" required autocomplete="new-password" minlength="6">
+          <button type="submit" class="btn-primary">Reset Password</button>
+        </form>
+        <div class="back-to-signin">
+          <a href="#" id="backToSignInLink">Cancel</a>
+        </div>
       </div>
 
-      <!-- Sign In Form -->
-      <form id="signInForm" class="auth-form-vertical">
-        <label for="signInEmail" class="sr-only">Email</label>
-        <input id="signInEmail" type="email" placeholder="Email" required autocomplete="email">
-        <label for="signInPassword" class="sr-only">Password</label>
-        <input id="signInPassword" type="password" placeholder="Password" required autocomplete="current-password">
-        <button type="submit" class="btn-primary">Sign In</button>
-        <a href="#" id="forgotPasswordLink">Forgot your password?</a>
-      </form>
+      <!-- Normal Sign In/Sign Up Section -->
+      <div id="normalAuthSection">
+        <button id="btnGoogle" class="btn-social btn-google">
+          <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
+            <path
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              fill="#4285F4"></path>
+            <path
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              fill="#34A853"></path>
+            <path
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              fill="#FBBC05"></path>
+            <path
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              fill="#EA4335"></path>
+            <path d="M1 1h22v22H1z" fill="none"></path>
+          </svg>
+          <span>Sign in with Google</span>
+        </button>
 
-      <!-- Sign Up Form -->
-      <form id="signUpForm" class="auth-form-vertical" style="display: none;">
-        <label for="signUpEmail" class="sr-only">Email</label>
-        <input id="signUpEmail" type="email" placeholder="Email" required autocomplete="email">
-        <label for="signUpPassword" class="sr-only">Password</label>
-        <input id="signUpPassword" type="password" placeholder="Password" required autocomplete="new-password">
-        <button type="submit" class="btn-primary">Sign Up</button>
-      </form>
+        <div class="separator">or</div>
+
+        <form id="magicLinkForm" class="auth-form-secondary">
+          <label for="magicLinkEmail" class="sr-only">Email</label>
+          <input id="magicLinkEmail" type="email" placeholder="you@example.com" required />
+          <button class="btn-secondary" type="submit">Send magic link</button>
+        </form>
+
+        <div class="auth-tabs">
+          <button id="tabSignIn" class="auth-tab active">Sign In</button>
+          <button id="tabSignUp" class="auth-tab">Sign Up</button>
+        </div>
+
+        <!-- Sign In Form -->
+        <form id="signInForm" class="auth-form-vertical">
+          <label for="signInEmail" class="sr-only">Email</label>
+          <input id="signInEmail" type="email" placeholder="Email" required autocomplete="email">
+          <label for="signInPassword" class="sr-only">Password</label>
+          <input id="signInPassword" type="password" placeholder="Password" required autocomplete="current-password">
+          <button type="submit" class="btn-primary">Sign In</button>
+          <a href="#" id="forgotPasswordLink">Forgot your password?</a>
+          <div id="forgotPasswordHint" class="forgot-password-hint">
+            ⚠️ Please enter your email address above first, then click "Forgot your password?" to receive a reset link.
+          </div>
+        </form>
+
+        <!-- Sign Up Form -->
+        <form id="signUpForm" class="auth-form-vertical" style="display: none;">
+          <label for="signUpEmail" class="sr-only">Email</label>
+          <input id="signUpEmail" type="email" placeholder="Email" required autocomplete="email">
+          <label for="signUpPassword" class="sr-only">Password</label>
+          <input id="signUpPassword" type="password" placeholder="Password" required autocomplete="new-password">
+          <button type="submit" class="btn-primary">Sign Up</button>
+        </form>
+      </div>
 
     </section>
   </main>
@@ -197,7 +277,6 @@
             <img src="static/unam.png" alt="UNAM"
               style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
           </a>
-          
           <!-- START: Added Logos -->
           <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana"
             target="_blank" rel="noopener noreferrer" style="margin-left: 8px;">
@@ -212,9 +291,18 @@
         </div>
       </small>
     </div>
-</footer>
+  </footer>
 
   <script type="module">
+    // CRITICAL: Check for recovery mode IMMEDIATELY before any imports
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const isRecoveryMode = hashParams.get('type') === 'recovery';
+    
+    // Store recovery mode immediately
+    if (isRecoveryMode) {
+      sessionStorage.setItem('password_recovery_mode', 'true');
+    }
+
     import { supabase, initAuth, signInWithGoogle, signInWithEmail } from "./auth.js";
 
     const $ = (sel) => document.querySelector(sel);
@@ -248,25 +336,99 @@
 
     async function handlePasswordReset(email) {
       if (!email) {
-        setFlash("Please enter your email address in the sign-in form first.");
+        // Show hint and highlight email field
+        $('#forgotPasswordHint').classList.add('show');
+        $('#signInEmail').classList.add('email-highlight');
+        $('#signInEmail').focus();
+        setFlash("Please enter your email address first to receive a password reset link.");
+        
+        // Remove highlight after animation
+        setTimeout(() => {
+          $('#signInEmail').classList.remove('email-highlight');
+        }, 2000);
+        
         return;
       }
+      
+      // Hide the hint if email is provided
+      $('#forgotPasswordHint').classList.remove('show');
+      
+      // Get the correct redirect URL for password reset
+      const currentPath = window.location.pathname;
+      const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+      const resetRedirectUrl = window.location.origin + basePath + 'signin.html';
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/profile.html'
+        redirectTo: resetRedirectUrl
       });
+      
       if (error) {
         setFlash(error.message);
       } else {
-        setFlash("Password reset link sent! Check your email.");
+        setFlash("Password reset link sent! Check your email. When you click the link, you'll be redirected back here to set your new password.");
       }
+    }
+
+    async function handleNewPasswordSubmit(newPassword) {
+      const { error } = await supabase.auth.updateUser({ 
+        password: newPassword 
+      });
+      
+      if (error) {
+        setFlash(error.message);
+      } else {
+        setFlash("Password successfully reset! Redirecting to home page...");
+        // Clear the recovery mode
+        sessionStorage.removeItem('password_recovery_mode');
+        
+        // Clear the URL hash
+        window.location.hash = '';
+        
+        // Sign out first to ensure clean state
+        await supabase.auth.signOut();
+        
+        // Redirect after a short delay
+        setTimeout(() => {
+          window.location.href = 'signin.html';
+        }, 2000);
+      }
+    }
+
+    function showPasswordReset() {
+      $('#normalAuthSection').style.display = 'none';
+      $('#resetPasswordSection').style.display = 'block';
+      $('#authTitle').textContent = 'Reset Your Password';
+    }
+
+    function showNormalAuth() {
+      $('#normalAuthSection').style.display = 'block';
+      $('#resetPasswordSection').style.display = 'none';
+      $('#authTitle').textContent = 'Sign in to Participate';
+      sessionStorage.removeItem('password_recovery_mode');
+      // Clear hash
+      if (window.location.hash) {
+        window.location.hash = '';
+      }
+    }
+
+    function checkAndShowPasswordReset() {
+      // Check both hash params and session storage
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const hasRecoveryHash = hashParams.get('type') === 'recovery';
+      const savedRecoveryMode = sessionStorage.getItem('password_recovery_mode') === 'true';
+      
+      if (hasRecoveryHash || savedRecoveryMode) {
+        showPasswordReset();
+        return true;
+      }
+      
+      return false;
     }
 
     function wireUI() {
       // MODIFIED: Dynamically construct the redirect URL
       const currentPath = window.location.pathname;
-      // This finds the directory the app is in, e.g., "/AgroCollaboration/" or just "/"
       const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
-      // This creates the full, correct URL to index.html
       const targetRedirectUrl = window.location.origin + basePath + 'index.html';
 
       $("#btnGoogle")?.addEventListener("click", () => signInWithGoogle({ 
@@ -285,24 +447,51 @@
         }
       });
 
-      $('#signInForm').addEventListener('submit', e => {
+      $('#signInForm')?.addEventListener('submit', e => {
         e.preventDefault();
         const email = $('#signInEmail').value;
         const password = $('#signInPassword').value;
         handleSignIn(email, password);
       });
 
-      $('#signUpForm').addEventListener('submit', e => {
+      $('#signUpForm')?.addEventListener('submit', e => {
         e.preventDefault();
         const email = $('#signUpEmail').value;
         const password = $('#signUpPassword').value;
         handleSignUp(email, password);
       });
 
-      $('#forgotPasswordLink').addEventListener('click', e => {
+      $('#forgotPasswordLink')?.addEventListener('click', e => {
         e.preventDefault();
         const email = $('#signInEmail').value.trim();
         handlePasswordReset(email);
+      });
+
+      // Password reset form handler
+      $('#resetPasswordForm')?.addEventListener('submit', async e => {
+        e.preventDefault();
+        const newPassword = $('#newPassword').value;
+        const confirmPassword = $('#confirmPassword').value;
+        
+        if (newPassword !== confirmPassword) {
+          setFlash("Passwords do not match. Please try again.");
+          return;
+        }
+        
+        if (newPassword.length < 6) {
+          setFlash("Password must be at least 6 characters long.");
+          return;
+        }
+        
+        await handleNewPasswordSubmit(newPassword);
+      });
+
+      // Back to sign in link
+      $('#backToSignInLink')?.addEventListener('click', async e => {
+        e.preventDefault();
+        // Sign out to clear the recovery session
+        await supabase.auth.signOut();
+        showNormalAuth();
       });
 
       // Tab switching logic
@@ -311,18 +500,22 @@
       const signInForm = $('#signInForm');
       const signUpForm = $('#signUpForm');
 
-      tabSignIn.addEventListener('click', () => {
+      tabSignIn?.addEventListener('click', () => {
         tabSignIn.classList.add('active');
         tabSignUp.classList.remove('active');
         signInForm.style.display = 'flex';
         signUpForm.style.display = 'none';
+        // Hide hint when switching tabs
+        $('#forgotPasswordHint')?.classList.remove('show');
       });
 
-      tabSignUp.addEventListener('click', () => {
+      tabSignUp?.addEventListener('click', () => {
         tabSignUp.classList.add('active');
         tabSignIn.classList.remove('active');
         signUpForm.style.display = 'flex';
         signInForm.style.display = 'none';
+        // Hide hint when switching tabs
+        $('#forgotPasswordHint')?.classList.remove('show');
       });
 
       $("#year").textContent = new Date().getFullYear();
@@ -331,15 +524,39 @@
     (async function main() {
       wireUI();
 
+      // Check and show password reset UI if needed
+      const inPasswordReset = checkAndShowPasswordReset();
+
       await initAuth({
         onAuthReady: (authState) => {
-          if (authState.session) {
-            // Use replace to prevent the signin page from being in the browser history
+          // Check again after auth is ready
+          const stillInRecovery = sessionStorage.getItem('password_recovery_mode') === 'true';
+          
+          // Only redirect if we have a session and we're NOT in recovery mode
+          if (authState.session && !stillInRecovery && !authState.isPasswordRecovery) {
             window.location.replace('index.html'); 
           }
         },
-        onAuthChange: (authState) => {
-          if (authState.session) {
+        onAuthChange: (authData) => {
+          const { event, session } = authData;
+          
+          // Check if we're in recovery mode
+          const inRecoveryMode = sessionStorage.getItem('password_recovery_mode') === 'true';
+          
+          // If we're in recovery mode, don't redirect
+          if (inRecoveryMode) {
+            return;
+          }
+          
+          // Handle password recovery event
+          if (event === 'PASSWORD_RECOVERY') {
+            sessionStorage.setItem('password_recovery_mode', 'true');
+            showPasswordReset();
+            return;
+          }
+          
+          // Normal auth flow - only redirect if signed in and not in recovery
+          if (session && event === 'SIGNED_IN' && !inRecoveryMode) {
             window.location.replace('index.html');
           }
         }

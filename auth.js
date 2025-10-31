@@ -22,6 +22,7 @@ export const authState = {
   profileComplete: false,
   profileCache: new Map(),
   pendingDeepLinkEventId: null,
+  isPasswordRecovery: false, // NEW: Track if we're in password recovery mode
 };
 
 // Export fetchProfile so it can be imported in other files
@@ -71,7 +72,8 @@ export async function ensureProfile() {
     profile?.work_email
   );
 
-  if (sessionStorage.getItem('justLoggedIn') && !authState.profileComplete) {
+  // Don't redirect to profile during password recovery
+  if (!authState.isPasswordRecovery && sessionStorage.getItem('justLoggedIn') && !authState.profileComplete) {
     sessionStorage.removeItem('justLoggedIn');
     const returnTo = window.location.href.includes('signin.html') ? window.location.origin + '/index.html' : window.location.href;
     window.location.href = `profile.html?force=true&return_to=${encodeURIComponent(returnTo)}`;
@@ -125,13 +127,28 @@ export function renderAuthUI() {
 }
 
 export async function initAuth(callbacks = {}) {
+  // Check if we're in password recovery mode BEFORE getting session
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const type = hashParams.get('type');
+  const accessToken = hashParams.get('access_token');
+  
+  if (type === 'recovery' && accessToken) {
+    authState.isPasswordRecovery = true;
+  }
+
   // Get current session
   const { data: { session } } = await supabase.auth.getSession();
   authState.session = session;
-  if (session) {
+  
+  // Only fetch profile if not in recovery mode
+  if (session && !authState.isPasswordRecovery) {
     await ensureProfile();
   }
-  renderHeader();
+  
+  // Only render header if not in recovery mode
+  if (!authState.isPasswordRecovery) {
+    renderHeader();
+  }
   
   const urlParams = new URLSearchParams(window.location.search);
   const viewUserId = urlParams.get('user');
@@ -143,24 +160,46 @@ export async function initAuth(callbacks = {}) {
   
   // Listen for auth changes
   supabase.auth.onAuthStateChange(async (_event, newSession) => {
+    // Check if this is a password recovery event
+    if (_event === 'PASSWORD_RECOVERY') {
+      authState.isPasswordRecovery = true;
+      authState.session = newSession;
+      
+      // Call the callback to handle password recovery UI
+      if (callbacks.onAuthChange) {
+        callbacks.onAuthChange({ event: _event, session: newSession }, viewUserId);
+      }
+      return; // Don't do normal auth flow
+    }
+    
+    // If we were in recovery mode but now have a normal sign in, clear the flag
+    if (authState.isPasswordRecovery && _event === 'SIGNED_IN') {
+      authState.isPasswordRecovery = false;
+    }
+    
     // IMPROVED: More robust check for a new sign-in vs. a token refresh
-    const isInitialSignIn = !authState.session && newSession;
+    const isInitialSignIn = !authState.session && newSession && !authState.isPasswordRecovery;
     authState.session = newSession;
 
-    if (newSession) {
+    if (newSession && !authState.isPasswordRecovery) {
       if (isInitialSignIn) {
         sessionStorage.setItem('justLoggedIn', 'true');
       }
       await ensureProfile();
-    } else {
+    } else if (!newSession) {
       authState.profile = null;
+      authState.isPasswordRecovery = false;
       sessionStorage.removeItem('justLoggedIn');
     }
-    renderHeader();
     
-    // Execute change callback if provided
+    if (!authState.isPasswordRecovery) {
+      renderHeader();
+    }
+    
+    // MODIFIED: Execute change callback if provided, passing the event and session directly.
+    // This is the key fix. We now pass an object with the event data.
     if (callbacks.onAuthChange) {
-      callbacks.onAuthChange(authState, viewUserId);
+      callbacks.onAuthChange({ event: _event, session: newSession }, viewUserId);
     }
   });
 }
@@ -287,4 +326,3 @@ export function initSharedUI(i18n) {
   // Initial setup call
   setupMobileMenu();
 }
-
