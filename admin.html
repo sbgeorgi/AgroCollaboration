@@ -296,44 +296,43 @@
 
 <body>
     <header class="site-header">
-        <div class="container header-grid">
-            <a href="index.html" class="brand">
-                <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
-                <div class="brand-text">
-                    <div class="title">Agrovoltaicos sin Fronteras</div>
-                    <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
-                </div>
-            </a>
-    
-            <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </button>
-    
-            <!-- Desktop Nav -->
-            <nav class="nav">
-                <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-                <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-                <a href="about.html" class="link" data-i18n="nav.about">About</a>
-                <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-                <div class="divider"></div>
-                <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-                    <span>EN</span>
-                    <span>ES</span>
-                </div>
-                <div class="auth-area">
-                    <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile" onclick="window.location.href='profile.html'">
-                        <span id="userInitial"></span>
-                        <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
-                    </button>
-                    <span id="userName"></span>
-                    <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
-                    <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
-                        Sign out
-                    </button>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <div class="container header-grid">
+        <a href="index.html" class="brand">
+            <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
+            <div class="brand-text">
+                <div class="title">Agrovoltaicos sin Fronteras</div>
+                <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
+            </div>
+        </a>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <!-- Desktop Nav -->
+        <nav class="nav">
+            <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+            <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
+            <a href="about.html" class="link" data-i18n="nav.about">About</a>
+            <a href="network.html" class="link" data-i18n="nav.network">Network</a>
+            <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+            <div class="divider"></div>
+            <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
+                <span>EN</span>
+                <span>ES</span>
+            </div>
+            <div class="auth-area">
+                <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile" onclick="window.location.href='profile.html'">
+                    <span id="userInitial"></span>
+                    <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />
+                </button>
+                <span id="userName" style="display: none;"></span>
+                <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
+                <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+                    Sign out
+                </button>
+            </div>
+        </nav>
+    </div>
+  </header>
 
     <div id="mobileNavOverlay" class="mobile-nav-overlay">
         <div class="mobile-nav-content"><!-- Injected by JS --></div>
@@ -486,19 +485,18 @@
         const toIsoOrNull = (v) => { if (!v) return null; const d = new Date(v); return isNaN(d.getTime()) ? null : d.toISOString(); }; const toLocalInputValue = (d) => { if (!d) return ""; d = new Date(d); const p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; }; const overlaps = (aStart, aEnd, bStart, bEnd) => { if (!aStart || !bStart) return false; const aS = new Date(aStart).getTime(); const aE = aEnd ? new Date(aEnd).getTime() : aS + 3600000; const bS = new Date(bStart).getTime(); const bE = bEnd ? new Date(bEnd).getTime() : bS + 3600000; return Math.max(aS, bS) < Math.min(aE, bE); }; const findConflicts = (startIso, endIso, excludeId = null) => { if (!startIso) return []; return state.events.filter(ev => { if (ev.status === 'canceled' || (excludeId != null && String(ev.id) === String(excludeId))) return false; return overlaps(startIso, endIso, ev.start_time, ev.end_time); }); }; const escapeHtml = (s) => (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); const normalizeTags = (s) => String(s || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
         const applyI18n = () => { document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = tr(e.dataset.i18n, e.textContent)); document.querySelectorAll("[data-i18n-placeholder]").forEach(e => e.placeholder = tr(e.dataset.i18nPlaceholder, e.placeholder)); document.querySelectorAll(".lang-switch-slider").forEach(el => el.dataset.lang = state.language); if (calendar) calendar.setOption('locale', state.language === 'es' ? 'es' : 'en'); }; const handleLangSwitch = () => { state.language = state.language === "en" ? "es" : "en"; localStorage.setItem("lang", state.language); applyI18n(); if (calendar) calendar.render(); };
         const checkAccess = async (authState) => {
-            const isAllowed = ["organizer", "admin"].includes(authState.profile?.role);
-            // FIX: Set display to "" to allow CSS to control the layout (grid on desktop, flex on mobile)
-            // The original code used "grid", which created an inline style that overrode the mobile CSS.
-            $("#admin").style.display = isAllowed ? "" : "none";
-            $("#accessDenied").style.display = isAllowed ? 'none' : 'block';
-            if (isAllowed) {
-                await loadProfiles();
-                if (!calendar) initializeCalendar();
-                await loadEvents();
-            }
-        };
+    const isAllowed = ["organizer", "admin"].includes(authState.profile?.role);
+    $("#admin").style.display = isAllowed ? "" : "none";
+    $("#accessDenied").style.display = isAllowed ? 'none' : 'block';
+    if (isAllowed) {
+        await loadProfiles();
+        renderSpeakerFields('speakersContainer'); // Add this line here
+        if (!calendar) initializeCalendar();
+        await loadEvents();
+    }
+};
         const loadProfiles = async () => { const { data, error } = await supabase.from('profiles').select('id, full_name, affiliation').order('full_name'); if (error) { setFlash(tr('errors.load_profiles'), true); state.profiles = []; } else { state.profiles = data || []; } }; const createProfileOptions = (selectedId) => `<option value="">--</option>${state.profiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.full_name || '')}</option>`).join('')}`; const addSpeakerField = (containerId, speaker = {}) => { const container = $(`#${containerId}`); const row = document.createElement('div'); row.className = 'speaker-row'; row.innerHTML = `<div><label>${tr('speakers.name')}</label><input type="text" class="speaker-name" value="${escapeHtml(speaker.name || '')}" required></div><div><label>${tr('speakers.affiliation')}</label><input type="text" class="speaker-affiliation" value="${escapeHtml(speaker.affiliation || '')}"></div><div><label>${tr('speakers.link_profile')}</label><select class="speaker-profile">${createProfileOptions(speaker.profile_id)}</select></div><div style="display:flex;gap:1rem;align-items:flex-end;"><div class="checkbox-field"><label>${tr('speakers.primary')}</label><input type="checkbox" class="speaker-primary" ${speaker.primary_speaker ? 'checked' : ''}></div><button type="button" class="remove-speaker-btn btn-danger-ghost" title="${tr('speakers.remove')}">✕</button></div>`; container.appendChild(row); }; const renderSpeakerFields = (containerId, speakers = []) => { const container = $(`#${containerId}`); container.innerHTML = ''; if (speakers.length === 0) { addSpeakerField(containerId); } else { speakers.forEach(speaker => addSpeakerField(containerId, speaker)); } }; const passesTagFilter = (ev) => { if (!state.tagFilter.length) return true; const tags = normalizeTags((ev.topic_tags || []).join(',')); return state.tagFilter.every(t => tags.includes(t)); }; const loadEvents = async () => { const { data, error } = await supabase.from("events").select("*").order("start_time"); if (error) console.error(error); else { state.events = data || []; if (calendar) calendar.refetchEvents(); } }; const formatEventsForCalendar = () => state.events.filter(passesTagFilter).map(ev => ({ id: ev.id, title: state.language === 'es' ? (ev.title_es || ev.title_en) : (ev.title_en || ev.title_es), start: ev.start_time, end: ev.end_time, backgroundColor: ev.status === 'canceled' ? '#555' : 'var(--color-brand)', borderColor: ev.status === 'canceled' ? '#555' : 'var(--color-brand)', extendedProps: ev })); const handleEventClick = async ({ event }) => { const ev = event.extendedProps; $("#editEventId").value = String(ev.id); $("#editTitleEn").value = ev.title_en || ""; $("#editTitleEs").value = ev.title_es || ""; $("#editDescEn").value = ev.description_en || ""; $("#editDescEs").value = ev.description_es || ""; $("#editStartTime").value = toLocalInputValue(ev.start_time); $("#editEndTime").value = toLocalInputValue(ev.end_time); $("#editEventLang").value = ev.language || "bi"; $("#editHostOrg").value = ev.host_org || ""; $("#editZoomUrl").value = ev.zoom_url || ""; $("#editRecordingUrl").value = ev.recording_url || ""; $("#editTags").value = (ev.topic_tags || []).join(', '); $("#editConflicts").innerHTML = ''; const { data: speakers } = await supabase.from('event_speakers').select('*').eq('event_id', ev.id); renderSpeakerFields('editSpeakersContainer', speakers || []); $("#edit-event-modal").showModal(); }; const handleTimeSelect = ({ start, end }) => { $("#startTime").value = toLocalInputValue(start); $('#startTime').type = 'datetime-local'; $("#endTime").value = toLocalInputValue(end); $('#endTime').type = 'datetime-local'; calendar.unselect(); checkCreateFormConflicts(); $("#titleEn").focus(); }; const handleDateClick = (info) => { let start = new Date(info.date); if (info.allDay) start.setHours(12, 0, 0, 0); const end = new Date(start.getTime() + 60 * 60 * 1000); $("#startTime").value = toLocalInputValue(start); $("#endTime").value = toLocalInputValue(end); $('#startTime').type = 'datetime-local'; $('#endTime').type = 'datetime-local'; checkCreateFormConflicts(); $("#titleEn").focus(); }; const handleEventMove = async ({ event, revert }) => { const conflicts = findConflicts(event.start.toISOString(), event.end?.toISOString(), event.id); if (conflicts.length > 0) { setFlash(tr('errors.overlap'), true); revert(); return; } if (!confirm(`Move "${event.title}"?`)) { revert(); return; } const { error } = await supabase.from("events").update({ start_time: event.start.toISOString(), end_time: event.end ? event.end.toISOString() : null }).eq("id", event.id); if (error) { setFlash(tr('errors.update_event'), true); revert(); } else { setFlash("Event time updated!"); await loadEvents(); } }; const initializeCalendar = () => { const el = $('#calendar'); if (!el || !window.FullCalendar) return; calendar = new FullCalendar.Calendar(el, { initialView: 'timeGridWeek', headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' }, editable: true, selectable: true, selectMirror: true, slotMinTime: '08:00:00', slotMaxTime: '20:00:00', height: '100%', eventClick: handleEventClick, select: handleTimeSelect, dateClick: handleDateClick, eventDrop: handleEventMove, eventResize: handleEventMove, events: (_f, s, _fail) => s(formatEventsForCalendar()), eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' }, locale: state.language === 'es' ? 'es' : 'en' }); calendar.render(); }; const checkCreateFormConflicts = () => { const startIso = toIsoOrNull($("#startTime").value); const endIso = toIsoOrNull($("#endTime").value); const conflicts = findConflicts(startIso, endIso, null); $("#slotConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${(ev.title_en || ev.title_es || '').replace(/</g, '&lt;')}</div>`).join("") : ''; return conflicts.length > 0; }; const checkEditFormConflicts = () => { const id = $("#editEventId").value; const startIso = toIsoOrNull($("#editStartTime").value); const endIso = toIsoOrNull($("#editEndTime").value); const conflicts = findConflicts(startIso, endIso, id); $("#editConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${(ev.title_en || ev.title_es || '').replace(/</g, '&lt;')}</div>`).join("") : ''; return conflicts.length > 0; }; const getSpeakersFromForm = (containerId) => { return Array.from($(`#${containerId}`).querySelectorAll('.speaker-row')).map(row => ({ name: row.querySelector('.speaker-name').value.trim(), affiliation: row.querySelector('.speaker-affiliation').value.trim() || null, profile_id: row.querySelector('.speaker-profile').value || null, primary_speaker: row.querySelector('.speaker-primary').checked, })).filter(s => s.name); }; const createEvent = async (payload) => { if (!payload.title_en || !payload.start_time) { setFlash("Title (EN) and Start Time are required.", true); return; } if (checkCreateFormConflicts()) { setFlash(tr('errors.overlap'), true); return; } const { data, error } = await supabase.from("events").insert([{ ...payload, status: "scheduled" }]).select().single(); if (error) { setFlash(tr("errors.create_event"), true); console.error(error); return; } const speakers = getSpeakersFromForm('speakersContainer'); if (speakers.length > 0) { const { error: spErr } = await supabase.from('event_speakers').insert(speakers.map(s => ({ ...s, event_id: data.id }))); if (spErr) { setFlash('Event created, but failed to add speakers.', true); console.error(spErr); } } setFlash("Event created!"); $("#createEventForm").reset(); $('#startTime').type = 'text'; $('#endTime').type = 'text'; $("#slotConflicts").innerHTML = ''; renderSpeakerFields('speakersContainer'); await loadEvents(); }; const updateEvent = async (id, payload) => { const { error } = await supabase.from("events").update(payload).eq("id", id); if (error) { setFlash(tr('errors.update_event'), true); console.error(error); return; } await supabase.from('event_speakers').delete().eq('event_id', id); const speakers = getSpeakersFromForm('editSpeakersContainer'); if (speakers.length > 0) { const { error: spErr } = await supabase.from('event_speakers').insert(speakers.map(s => ({ ...s, event_id: id }))); if (spErr) { setFlash('Event updated, but failed to update speakers.', true); console.error(spErr); } } setFlash("Event details saved!"); await loadEvents(); $("#edit-event-modal").close(); }; const deleteEvent = async (id) => { if (!confirm("Permanently delete this event? This cannot be undone.")) return; try { await supabase.rpc('delete_event_and_dependencies', { event_id_to_delete: id }); setFlash("Event deleted."); await loadEvents(); $("#edit-event-modal").close(); } catch (error) { setFlash(tr('errors.delete_event'), true); console.error(error); } }; const wireUI = () => { const setupDateTime = (s, e) => { const hf = (el) => el.type = 'datetime-local'; const hb = (el) => { if (!el.value) el.type = 'text' }; s.addEventListener('focus', () => hf(s)); s.addEventListener('blur', () => hb(s)); if (!s.value) s.type = 'text'; if (e) { e.addEventListener('focus', () => hf(e)); e.addEventListener('blur', () => hb(e)); if (!e.value) e.type = 'text'; } }; setupDateTime($('#startTime'), $('#endTime')); $("#createEventForm")?.addEventListener("input", checkCreateFormConflicts); $("#createEventForm").addEventListener('submit', async (e) => { e.preventDefault(); await createEvent({ title_en: $("#titleEn")?.value.trim(), title_es: $("#titleEs")?.value.trim() || null, description_en: $("#descEn")?.value.trim() || null, description_es: $("#descEs")?.value.trim() || null, start_time: toIsoOrNull($("#startTime")?.value), end_time: toIsoOrNull($("#endTime")?.value), language: $("#eventLang")?.value || "bi", host_org: $("#hostOrg")?.value.trim() || null, zoom_url: $("#zoomUrl")?.value.trim() || null, recording_url: $("#recordingUrl")?.value.trim() || null, topic_tags: normalizeTags($("#tags")?.value), }); }); $("#tagFilterInput")?.addEventListener('keyup', (e) => { state.tagFilter = normalizeTags(e.target.value || ''); if (calendar) calendar.refetchEvents(); }); $("#close-modal-btn")?.addEventListener("click", () => { $("#edit-event-modal").close(); }); $("#editStartTime")?.addEventListener("input", checkEditFormConflicts); $("#editEndTime")?.addEventListener("input", checkEditFormConflicts); $("#editEventForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const id = $("#editEventId").value; const start_time = toIsoOrNull($("#editStartTime").value); const end_time = toIsoOrNull($("#editEndTime").value); if (findConflicts(start_time, end_time, id).length > 0) { setFlash(tr('errors.overlap'), true); return; } await updateEvent(id, { title_en: $("#editTitleEn").value?.trim(), title_es: $("#editTitleEs").value?.trim() || null, description_en: $("#editDescEn").value?.trim() || null, description_es: $("#editDescEs").value?.trim() || null, language: $("#editEventLang").value, host_org: $("#editHostOrg").value?.trim() || null, zoom_url: $("#editZoomUrl").value?.trim() || null, recording_url: $("#editRecordingUrl").value?.trim() || null, start_time, end_time, topic_tags: normalizeTags($("#editTags").value) }); }); $("#btnDeleteEvent")?.addEventListener("click", () => deleteEvent($("#editEventId").value)); $('#addSpeakerBtn')?.addEventListener('click', () => { addSpeakerField('speakersContainer'); }); $('#addEditSpeakerBtn')?.addEventListener('click', () => { addSpeakerField('editSpeakersContainer'); }); document.body.addEventListener('click', e => { if (e.target.classList.contains('remove-speaker-btn')) { e.target.closest('.speaker-row').remove(); } }); };
-        (async function main() { applyI18n(); initSharedUI({ applyI18n, handleLangSwitch }); await initAuth({ onAuthReady: checkAccess, onAuthChange: checkAccess }); wireUI(); renderSpeakerFields('speakersContainer'); })();
+        (async function main() { applyI18n(); initSharedUI({ applyI18n, handleLangSwitch }); await initAuth({ onAuthReady: checkAccess, onAuthChange: checkAccess }); wireUI(); })();
     </script>
 </body>
 

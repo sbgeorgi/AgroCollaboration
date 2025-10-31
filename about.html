@@ -1,824 +1,507 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <title>About • Agrovoltaicos sin Fronteras</title>
-    <meta name="description" content="Learn about the Agrovoltaicos sin Fronteras seminar series." />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>About • Agrovoltaicos sin Fronteras</title>
+  <meta name="description" content="Learn about the Agrovoltaicos sin Fronteras seminar series.">
 
-    <!-- Modern Font Stack -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&family=Lato:wght@400;700&display=swap"
-        rel="stylesheet">
-
-    <style>
-        /* --- 2025 DESIGN TOKENS (V1 CORE) --- */
-        :root {
-            --color-brand: #16a34a;
-            --color-brand-dark: #15803d;
-            --color-brand-light: #dcfce7;
-            --color-accent: #f97316;
-
-            --bg-main: #f8fafc;
-            --bg-panel: #ffffff;
-            --bg-input: #f1f5f9;
-
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --text-tertiary: #94a3b8;
-            --text-light: #ffffff;
-
-            --border: #e2e8f0;
-            --radius-md: 12px;
-            --radius-lg: 24px;
-
-            --header-h: 64px;
-            --footer-h: 64px;
-
-            --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-        }
-
-        /* --- BASE RESET & V1 DESKTOP LAYOUT --- */
-        * {
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        html,
-        body {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            /* Enforce non-scrollable body ON DESKTOP */
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-primary);
-            font-size: 14px;
-        }
-
-        body {
-            display: grid;
-            grid-template-rows: auto 1fr auto;
-            /* Header, Main, Footer */
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        button {
-            cursor: pointer;
-            font-family: inherit;
-            border: none;
-            background: transparent;
-            padding: 0;
-        }
-
-        /* --- UTILITIES --- */
-        .hidden {
-            display: none !important;
-        }
-
-        /* --- V2 HEADER STYLES (EXACT REPLICA) --- */
-        .site-header {
-            background-color: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            padding: 0 24px;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .site-header .container.header-grid {
-            height: 72px;
-            max-width: 1800px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .brand .logo-image {
-            width: 40px;
-            height: 40px;
-        }
-
-        .brand-text .title {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            font-size: 1.1rem;
-            color: var(--text-primary);
-        }
-
-        .brand-text .subtitle {
-            font-family: 'Lato', sans-serif;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            max-width: 350px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .nav {
-            display: none;
-        }
-
-        @media (min-width: 960px) {
-            .nav {
-                display: flex;
-                align-items: center;
-                gap: 24px;
-            }
-        }
-
-        .nav .link {
-            font-weight: 700;
-            font-size: 0.9rem;
-            font-family: 'Lato', sans-serif;
-            color: var(--text-secondary);
-            transition: color 0.2s;
-        }
-
-        .nav .link:hover {
-            color: var(--color-brand);
-        }
-
-        .nav .divider {
-            width: 1px;
-            height: 20px;
-            background-color: var(--border);
-        }
-
-        .lang-switch-slider {
-            display: flex;
-            cursor: pointer;
-            background: var(--bg-input);
-            border-radius: 99px;
-            padding: 4px;
-            position: relative;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .lang-switch-slider span {
-            padding: 4px 12px;
-            z-index: 1;
-            transition: color 0.2s;
-            user-select: none;
-        }
-
-        .lang-switch-slider::before {
-            content: '';
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            width: calc(50% - 4px);
-            height: calc(100% - 8px);
-            background: white;
-            border-radius: 99px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        .lang-switch-slider[data-lang="es"]::before {
-            transform: translateX(100%);
-        }
-
-        .lang-switch-slider[data-lang="en"] span:first-child,
-        .lang-switch-slider[data-lang="es"] span:last-child {
-            color: var(--color-brand-dark);
-        }
-
-        .auth-area {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .profile-button {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background-color: var(--color-brand-light);
-            color: var(--color-brand-dark);
-            font-weight: 700;
-            font-family: 'Poppins', sans-serif;
-            display: grid;
-            place-content: center;
-            overflow: hidden;
-            border: 2px solid var(--border);
-        }
-
-        #userName {
-            font-weight: 700;
-            font-size: 0.9rem;
-            font-family: 'Lato', sans-serif;
-        }
-
-        /* --- MOBILE NAVIGATION STYLES (CENTERED & FULL-SPACE LAYOUT) --- */
-        .mobile-menu-btn {
-            display: block;
-            color: var(--text-secondary);
-        }
-
-        @media (min-width: 960px) {
-            .mobile-menu-btn {
-                display: none;
-            }
-        }
-
-        .mobile-nav-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 998;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-
-        .mobile-nav-overlay.is-open {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .mobile-nav-content {
-            position: fixed;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            max-width: 320px;
-            background: var(--bg-panel);
-            transform: translateX(100%);
-            transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1);
-            display: flex;
-            flex-direction: column;
-            z-index: 999;
-            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-            padding: 24px;
-        }
-
-        .is-open .mobile-nav-content {
-            transform: translateX(0);
-        }
-
-        .mobile-nav-close-btn {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            color: var(--text-secondary);
-            z-index: 10;
-        }
-
-        /* Style the cloned <nav> container */
-        .mobile-nav-content>nav {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            height: 100%;
-            padding-top: 48px;
-        }
-
-        /* Centered pages options, larger, full width */
-        .mobile-nav-content .link {
-            font-size: 1.75rem;
-            font-weight: 700;
-            font-family: 'Poppins', sans-serif;
-            color: var(--text-primary);
-            width: 100%;
-            padding: 12px 0;
-        }
-
-        /* Hide desktop divider */
-        .mobile-nav-content .divider {
-            display: none;
-        }
-
-        /* EN/ES toggle centered at the top and larger */
-        .mobile-nav-content .lang-switch-slider {
-            order: -1;
-            /* Move to top */
-            transform: scale(1.15);
-            margin-bottom: 48px;
-            /* Space between toggle and links */
-        }
-
-        /* Auth area at the bottom */
-        .mobile-nav-content .auth-area {
-            margin-top: auto;
-            /* Push to the bottom */
-            width: 100%;
-            padding-top: 24px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-        }
-
-        /* User info when logged in */
-        .mobile-nav-content .auth-area .profile-button {
-            width: 64px;
-            height: 64px;
-            font-size: 2rem;
-        }
-
-        .mobile-nav-content .auth-area #userName {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: var(--text-primary);
-        }
-
-        /* Full-width buttons in auth area */
-        .mobile-nav-content .auth-area #btnSignOut,
-        .mobile-nav-content .auth-area #btnSignIn {
-            width: 100%;
-            justify-content: center;
-            padding: 12px 24px;
-            font-size: 1rem;
-            border-radius: var(--radius-md);
-        }
-
-        .mobile-nav-content .auth-area #btnSignOut {
-            background: transparent;
-            border: 2px solid var(--border);
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-
-        .mobile-nav-content .auth-area #btnSignOut:hover {
-            background: var(--bg-input);
-            color: var(--text-primary);
-            border-color: var(--text-tertiary);
+  <script>
+    (function() {
+      try {
+        const cached = localStorage.getItem('asf_auth_cache');
+        if (!cached) {
+          document.documentElement.setAttribute('data-auth-ready', 'logged-out');
+          return;
         }
         
-        /* --- BUTTONS --- */
-        .btn-primary { 
-            background: var(--color-brand); color: white;
-            padding: 8px 16px; font-size: 0.9rem; border-radius: 8px; font-weight: 600;
-            transition: background-color 0.2s;
-        }
-        .btn-primary:hover { background: var(--color-brand-dark); }
-        .btn-ghost { background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 700; padding: 8px 12px; border-radius: 8px; transition: all 0.2s; }
-        .btn-ghost:hover { background: var(--bg-input); color: var(--text-primary); }
-
-        /* --- V2 FOOTER STYLES (EXACT REPLICA) --- */
-        .site-footer {
-            background-color: var(--bg-panel);
-            border-top: 1px solid var(--border);
-            padding: 24px;
-        }
-
-        .site-footer .container {
-            max-width: 1800px;
-            margin: 0 auto;
-        }
-
-        .site-footer small {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .site-footer .footer-text {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .site-footer .footer-logos {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .site-footer .footer-logos img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        /* --- NOTIFICATION --- */
-        #flash {
-            position: fixed;
-            top: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: var(--text-primary);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-weight: 600;
-            z-index: 1000;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        #flash.visible {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /* --- ABOUT PAGE STYLES --- */
-        .app-main {
-            padding: 24px;
-            overflow-y: auto;
-            /* Allow scrolling on this specific page */
-        }
-
-        .about-wrapper {
-            max-width: 960px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .about-header-image {
-            width: 100%;
-            height: auto;
-            max-height: 400px;
-            object-fit: cover;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-panel);
-        }
-
-        .about-content-panel {
-            background: var(--bg-panel);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-panel);
-            padding: 32px;
-        }
-
-        .about-content-panel h2 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--color-brand-dark);
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-            border-bottom: 2px solid var(--color-brand-light);
-            padding-bottom: 0.5rem;
-        }
-
-        .about-content-panel .lang-content h2:first-of-type {
-            margin-top: 0;
+        const parsed = JSON.parse(cached);
+        if (Date.now() > parsed.expiry) {
+          localStorage.removeItem('asf_auth_cache');
+          document.documentElement.setAttribute('data-auth-ready', 'logged-out');
+          return;
         }
         
-        .about-content-panel p,
-        .about-content-panel div>div { /* target inner div */
-            line-height: 1.7;
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
+        const isLoggedIn = !!(parsed.data?.session && parsed.data?.profile);
+        
+        const style = document.createElement('style');
+        style.id = 'auth-preload-style';
+        style.textContent = isLoggedIn 
+          ? '#btnSignIn { display: none !important; } #btnProfile, #btnSignOut { display: inline-flex !important; } #btnProfile { display: grid !important; } #userName { display: inline !important; }' 
+          : '#btnSignIn { display: inline-flex !important; } #btnProfile, #userName, #btnSignOut { display: none !important; }';
+        document.head.appendChild(style);
+        
+        const fingerprint = JSON.stringify({
+          hasSession: !!parsed.data?.session,
+          userId: parsed.data?.session?.user?.id || null,
+          profileId: parsed.data?.profile?.id || null,
+          fullName: parsed.data?.profile?.full_name || null,
+          username: parsed.data?.profile?.username || null,
+          avatarUrl: parsed.data?.profile?.avatar_url || null,
+          role: parsed.data?.profile?.role || null,
+          language: localStorage.getItem("lang") || "en"
+        });
+        
+        document.documentElement.setAttribute('data-auth-ready', isLoggedIn ? 'logged-in' : 'logged-out');
+        document.documentElement.setAttribute('data-auth-fingerprint', fingerprint);
+        
+      } catch(e) {
+        document.documentElement.setAttribute('data-auth-ready', 'error');
+      }
+    })();
+  </script>
 
-        .about-content-panel a {
-            color: var(--color-brand);
-            font-weight: 600;
-            text-decoration: none;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 
-        .about-content-panel a:hover {
-            border-bottom-color: var(--color-brand-light);
-            background-color: var(--color-brand-light);
-        }
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-        /* Language content visibility toggle */
-        html[lang="en"] .lang-content[lang="en"],
-        html[lang="es"] .lang-content[lang="es"] {
-            display: block;
-        }
-
-        .lang-content[lang="en"],
-        .lang-content[lang="es"] {
-            display: none;
-        }
-
-        /* --- RESPONSIVE FIXES --- */
-        @media (max-width: 959px) {
-            .brand-text .subtitle {
-                display: none;
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f7f5',
+              100: '#e1efeb',
+              200: '#c3e0d8',
+              300: '#a5d0c4',
+              400: '#6aae9d',
+              500: '#4A8C82',
+              600: '#3b7d71',
+              700: '#186D50',
+              800: '#145942',
+              900: '#114a37'
+            },
+            accent: {
+              yellow: '#FDEB71'
             }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-out',
+            'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+            slideUp: { '0%': { transform: 'translateY(20px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } }
+          }
         }
+      }
+    }
+  </script>
 
-        /* MOBILE SCROLL FIX */
-        @media (max-width: 767px) {
-            html, body {
-                height: auto;
-                overflow: auto; /* Allow scrolling */
-            }
-            body {
-                display: block; /* Break the grid layout */
-            }
-            .app-main {
-                overflow: visible;
-                height: auto;
-                padding: 16px;
-            }
-            .site-header .container.header-grid {
-                height: 64px;
-            }
-        }
-    </style>
+  <!-- Custom CSS -->
+  <style>
+    :root { --color-brand: #16a34a; --color-brand-dark: #15803d; --color-brand-light: #dcfce7; --color-accent: #f97316; --color-danger: #ef4444; --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #64748b; --text-tertiary: #94a3b8; --text-light: #ffffff; --border: #e2e8f0; --radius-md: 12px; --radius-lg: 24px; --header-h: 64px; --footer-h: 64px; --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); }
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    .site-header { background-color: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 0 16px; position: sticky; top: 0; z-index: 50; }
+    @media (min-width: 768px) { .site-header { padding: 0 24px; } }
+    .site-header .container.header-grid { height: 72px; max-width: 1800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand .logo-image { width: 40px; height: 40px; }
+    .brand-text .title { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); }
+    .brand-text .subtitle { display: none; }
+    @media (min-width: 768px) { .brand-text .subtitle { display: block; font-family: 'Lato', sans-serif; font-size: 0.8rem; color: var(--text-secondary); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+    .nav { display: none; }
+    @media (min-width: 960px) { .nav { display: flex; align-items: center; gap: 24px; } }
+    .nav .link { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; color: var(--text-secondary); transition: color 0.2s; }
+    .nav .link:hover, .nav .link.active { color: var(--color-brand); }
+    .nav .divider { width: 1px; height: 20px; background-color: var(--border); }
+    .lang-switch-slider { display: flex; cursor: pointer; background: var(--bg-input); border-radius: 99px; padding: 4px; position: relative; font-size: 12px; font-weight: 700; }
+    .lang-switch-slider span { padding: 4px 12px; z-index: 1; transition: color 0.2s; user-select: none; }
+    .lang-switch-slider::before { content: ''; position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: white; border-radius: 99px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+    .lang-switch-slider[data-lang="es"]::before { transform: translateX(100%); }
+    .lang-switch-slider[data-lang="en"] span:first-child, .lang-switch-slider[data-lang="es"] span:last-child { color: var(--color-brand-dark); }
+    .auth-area { display: flex; align-items: center; gap: 16px; }
+    .profile-button { width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-brand-light); color: var(--color-brand-dark); font-weight: 700; font-family: 'Poppins', sans-serif; display: grid; place-content: center; overflow: hidden; border: 2px solid var(--border); }
+    #userName { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; }
+    .mobile-menu-btn { display: block; color: var(--text-secondary); }
+    @media (min-width: 960px) { .mobile-menu-btn { display: none; } }
+    .mobile-nav-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 998; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
+    .mobile-nav-overlay.is-open { opacity: 1; visibility: visible; }
+    .mobile-nav-content { position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 320px; background: var(--bg-panel); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1); display: flex; flex-direction: column; z-index: 999; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1); padding: 24px; }
+    .is-open .mobile-nav-content { transform: translateX(0); }
+    .mobile-nav-close-btn { position: absolute; top: 16px; right: 16px; color: var(--text-secondary); z-index: 10; }
+    .mobile-nav-content > nav { display: flex; flex-direction: column; align-items: center; text-align: center; height: 100%; padding-top: 48px; }
+    .mobile-nav-content .link { font-size: 1.75rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--text-primary); width: 100%; padding: 12px 0; }
+    .mobile-nav-content .link.active { color: var(--color-brand); }
+    .mobile-nav-content .divider { display: none; }
+    .mobile-nav-content .lang-switch-slider { order: -1; transform: scale(1.15); margin-bottom: 48px; }
+    .mobile-nav-content .auth-area { margin-top: auto; width: 100%; padding-top: 24px; border-top: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .mobile-nav-content .auth-area .profile-button { width: 64px; height: 64px; font-size: 2rem; }
+    .mobile-nav-content .auth-area #userNameMobile { font-weight: 600; font-size: 1.1rem; color: var(--text-primary); }
+    .mobile-nav-content .auth-area #btnSignOutMobile, .mobile-nav-content .auth-area #btnSignInMobile { width: 100%; justify-content: center; padding: 12px 24px; font-size: 1rem; border-radius: var(--radius-md); }
+    .btn { border: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--color-brand-dark); color: white; box-shadow: 0 4px 12px -2px rgba(22, 163, 74, 0.3); }
+    .btn-primary:hover { background: #14532d; }
+    .btn-secondary { background: white; border: 2px solid var(--border); color: var(--text-primary); }
+    .btn-secondary:hover { border-color: var(--text-tertiary); background: var(--bg-input); }
+    .btn-ghost { background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 700; padding: 8px 12px; border-radius: 8px; }
+    .btn-ghost:hover { background: var(--bg-input); color: var(--text-primary); }
+    #btnSignIn { padding: 8px 16px; font-size: 0.9rem; border-radius: 8px; background: var(--color-brand); color: white;}
+    #btnSignIn:hover { background: var(--color-brand-dark); }
+    .site-footer { background-color: var(--bg-panel); border-top: 1px solid var(--border); padding: 24px; }
+    .site-footer .container { max-width: 1800px; margin: 0 auto; }
+    .site-footer small { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-secondary); }
+    .site-footer .footer-text { display: flex; align-items: center; flex-wrap: wrap; }
+    .site-footer .footer-logos { display: flex; align-items: center; gap: 8px; }
+    .site-footer .footer-logos img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    @media (max-width: 767px) { .site-footer small { flex-direction: column; text-align: center; } }
+  </style>
+
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+      .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #a8b2c1; }
+    }
+    #flash {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-150%);
+      background-color: #0f172a;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 9999px;
+      font-weight: 600;
+      z-index: 1000;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+    #flash.visible {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body>
-    <!-- Header (from profile.html) -->
-    <header class="site-header">
-        <div class="container header-grid">
-            <a href="index.html" class="brand">
-                <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
-                <div class="brand-text">
-                    <div class="title">Agrovoltaicos sin Fronteras</div>
-                    <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the
-                        Americas</div>
-                </div>
-            </a>
+<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-200 selection:text-brand-900">
 
-            <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-            </button>
-
-            <!-- Desktop Nav -->
-            <nav class="nav">
-                <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-                <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-                <a href="about.html" class="link" data-i18n="nav.about">About</a>
-                <a href="admin.html" id="btnAdmin" class="link hidden" data-i18n="nav.admin">Admin</a>
-                <div class="divider"></div>
-                <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-                    <span>EN</span>
-                    <span>ES</span>
-                </div>
-                <div class="auth-area">
-                    <button id="btnProfile" class="profile-button hidden" aria-label="Open profile" onclick="window.location.href='profile.html'">
-                        <span id="userInitial"></span>
-                        <img id="userAvatar" class="hidden"
-                            style="width: 100%; height: 100%; object-fit: cover;" />
-                    </button>
-                    <span id="userName" class="hidden"></span>
-                    <a href="signin.html" id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</a>
-                    <button id="btnSignOut" class="btn-ghost hidden" data-i18n="auth.signout">Sign out</button>
-                </div>
-            </nav>
+  <!-- ================= HEADER ================= -->
+  <header class="site-header">
+    <div class="container header-grid">
+      <a href="index.html" class="brand">
+        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
+        <div class="brand-text">
+          <div class="title">Agrovoltaicos sin Fronteras</div>
+          <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
         </div>
-    </header>
-
-    <div id="mobileNavOverlay" class="mobile-nav-overlay">
-        <div class="mobile-nav-content">
-            <!-- Content injected by JS -->
+      </a>
+      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <!-- Desktop Nav -->
+      <nav class="nav">
+        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
+        <a href="about.html" class="link active" data-i18n="nav.about">About</a>
+        <a href="network.html" class="link" data-i18n="nav.network">Network</a>
+        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+        <div class="divider"></div>
+        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
+          <span>EN</span>
+          <span>ES</span>
         </div>
+        <div class="auth-area">
+          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile" onclick="window.location.href='profile.html'">
+            <span id="userInitial"></span>
+            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />
+          </button>
+          <span id="userName" style="display: none;"></span>
+          <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
+          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+            Sign out
+          </button>
+        </div>
+      </nav>
     </div>
+  </header>
 
-    <!-- Main Content for About Page -->
-    <main class="app-main">
-        <div class="about-wrapper">
-            <img src="static/agrivUA.jpg"
-                alt="Agrivoltaic solar panels over a field of crops at the University of Arizona"
-                class="about-header-image">
-            <div class="about-content-panel">
+  <!-- ================= MOBILE MENU OVERLAY ================= -->
+  <div id="mobileNavOverlay" class="mobile-nav-overlay">
+    <div class="mobile-nav-content"><!-- Injected by JS --></div>
+  </div>
 
-                <!-- English Content -->
-                <div class="lang-content" lang="en">
-                    <div>
-                        <h2>What is Agrivoltaics?</h2>
-                        <p>Agrivoltaics is the integration of solar photovoltaics with agricultural production in the same
-                        space. Agrivoltaics is a highly diverse field that can include energy production from household to
-                        utility scale, and agricultural production from horticulture to field crops to livestock and more.
-                        Topics covered in this seminar series will include agrivoltaic system design, crop yield and
-                        responses, business models, community engagement, governance and legal frameworks, and much more.</p>
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="flex-1 relative overflow-hidden bg-gray-50">
+    <div class="absolute inset-0 overflow-y-auto custom-scrollbar">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+          <img src="static/agrivUA.jpg" 
+               alt="Agrivoltaic solar panels over a field of crops at the University of Arizona"
+               class="w-full h-64 md:h-96 object-cover">
+          <div class="p-8 md:p-12">
+            <!-- English Content -->
+            <div class="prose prose-lg max-w-none" data-lang-content="en">
+              <h2 class="text-3xl font-bold font-display text-brand-700 mb-4">What is Agrivoltaics?</h2>
+              <p class="text-gray-600 leading-relaxed">
+                Agrivoltaics is the integration of solar photovoltaics with agricultural production in the same space. 
+                Agrivoltaics is a highly diverse field that can include energy production from household to utility scale, 
+                and agricultural production from horticulture to field crops to livestock and more. Topics covered in this 
+                seminar series will include agrivoltaic system design, crop yield and responses, business models, community 
+                engagement, governance and legal frameworks, and much more.
+              </p>
 
-                        <h2>Attend the seminars:</h2>
-                        <p>To attend the seminars, simply <a
-                            href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" target="_blank"
-                            rel="noopener noreferrer">register here</a> and you will receive the zoom meeting link to your
-                        email. This link will work for all future seminars, so you only need to register once.</p>
+              <h2 class="text-3xl font-bold font-display text-brand-700 mb-4 mt-8">Attend the seminars:</h2>
+              <p class="text-gray-600 leading-relaxed">
+                To attend the seminars, simply 
+                <a href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" 
+                   target="_blank" rel="noopener noreferrer" 
+                   class="text-brand-600 hover:text-brand-700 font-semibold underline">register here</a> 
+                and you will receive the zoom meeting link to your email. This link will work for all future seminars, 
+                so you only need to register once.
+              </p>
 
-                        <h2>Contact Us:</h2>
-                        <p>Agrovoltaicos sin Fronteras is jointly hosted by UNAM and the University of Arizona. For more
-                        information, please contact Christine Lamanna <a
-                            href="mailto:clamanna@arizona.edu">clamanna@arizona.edu</a> or XXXX.</p>
-                    </div>
-                </div>
-
-                <!-- Spanish Content -->
-                <div class="lang-content" lang="es">
-                    <div>
-                        <h2>¿Qué son los Agrovoltaicos?</h2>
-                        <p>
-                            Los Agrovoltaicos son la integración de la energía solar fotovoltaica con la producción
-                            agrícola
-                            en un mismo espacio. Es un campo muy diverso que abarca la producción de energía desde el hogar
-                            hasta la escala de servicios públicos, y la producción agrícola desde la horticultura hasta los
-                            cultivos extensivos, la ganadería y más. Los temas que se abordarán en esta serie de seminarios
-                            incluirán el diseño de sistemas agrovoltaicos, el rendimiento y las respuestas de los cultivos,
-                            los modelos de negocio, la participación comunitaria, la gobernanza y los marcos legales, y
-                            mucho más.
-                        </p>
-
-                        <h2>Asista a los seminarios:</h2>
-                        <p>
-                            Para asistir a los seminarios, simplemente <a
-                                href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" target="_blank"
-                                rel="noopener noreferrer">regístrese aquí</a> y recibirá el enlace de la reunión de Zoom en
-                            su correo electrónico. Este enlace funcionará para todos los seminarios futuros, por lo que solo
-                            necesita registrarse una vez.
-                        </p>
-
-                        <h2>Contáctenos:</h2>
-                        <p>
-                            Agrovoltaicos sin Fronteras es un evento conjunto de la UNAM y la Universidad de Arizona. Para
-                            obtener más información, comuníquese con Christine Lamanna <a
-                                href="mailto:clamanna@arizona.edu">clamanna@arizona.edu</a> o XXXX.
-                        </p>
-                    </div>
-                </div>
-
+              <h2 class="text-3xl font-bold font-display text-brand-700 mb-4 mt-8">Contact Us:</h2>
+              <p class="text-gray-600 leading-relaxed">
+                Agrovoltaicos sin Fronteras is jointly hosted by UNAM and the University of Arizona. 
+                For more information, please contact Christine Lamanna 
+                <a href="mailto:clamanna@arizona.edu" class="text-brand-600 hover:text-brand-700 font-semibold underline">clamanna@arizona.edu</a>.
+              </p>
             </div>
+
+            <!-- Spanish Content -->
+            <div class="prose prose-lg max-w-none hidden" data-lang-content="es">
+              <h2 class="text-3xl font-bold font-display text-brand-700 mb-4">¿Qué son los Agrovoltaicos?</h2>
+              <p class="text-gray-600 leading-relaxed">
+                Los Agrovoltaicos son la integración de la energía solar fotovoltaica con la producción agrícola en un mismo espacio. 
+                Es un campo muy diverso que abarca la producción de energía desde el hogar hasta la escala de servicios públicos, 
+                y la producción agrícola desde la horticultura hasta los cultivos extensivos, la ganadería y más. 
+                Los temas que se abordarán en esta serie de seminarios incluirán el diseño de sistemas agrovoltaicos, 
+                el rendimiento y las respuestas de los cultivos, los modelos de negocio, la participación comunitaria, 
+                la gobernanza y los marcos legales, y mucho más.
+              </p>
+
+              <h2 class="text-3xl font-bold font-display text-brand-700 mb-4 mt-8">Asista a los seminarios:</h2>
+              <p class="text-gray-600 leading-relaxed">
+                Para asistir a los seminarios, simplemente 
+                <a href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" 
+                   target="_blank" rel="noopener noreferrer"
+                   class="text-brand-600 hover:text-brand-700 font-semibold underline">regístrese aquí</a> 
+                y recibirá el enlace de la reunión de Zoom en su correo electrónico. 
+                Este enlace funcionará para todos los seminarios futuros, por lo que solo necesita registrarse una vez.
+              </p>
+
+              <h2 class="text-3xl font-bold font-display text-brand-700 mb-4 mt-8">Contáctenos:</h2>
+              <p class="text-gray-600 leading-relaxed">
+                Agrovoltaicos sin Fronteras es un evento conjunto de la UNAM y la Universidad de Arizona. 
+                Para obtener más información, comuníquese con Christine Lamanna 
+                <a href="mailto:clamanna@arizona.edu" class="text-brand-600 hover:text-brand-700 font-semibold underline">clamanna@arizona.edu</a>.
+              </p>
+            </div>
+          </div>
         </div>
-    </main>
+      </div>
+    </div>
+  </main>
 
-    <!-- Footer (from profile.html) -->
-    <footer class="site-footer">
-        <div class="container">
-            <small>
-                <div class="footer-text">
-                    © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
-                    <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin
-                        America.</span>
-                </div>
-                <div class="footer-logos">
-                    <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank"
-                        rel="noopener noreferrer">
-                        <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics">
-                    </a>
-                    <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer">
-                        <img src="static/unam.png" alt="UNAM">
-                    </a>
-                    <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana"
-                        target="_blank" rel="noopener noreferrer">
-                        <img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana"
-                            style="background-color: white;">
-                    </a>
-                    <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer">
-                        <img src="static/rame.png" alt="Rame - Red Agrivoltaica de México"
-                            style="background-color: white;">
-                    </a>
-                </div>
-            </small>
+  <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <small>
+        <div class="footer-text">
+          © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
+          <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
         </div>
-    </footer>
+        <div class="footer-logos">
+          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer">
+            <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics">
+          </a>
+          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer">
+            <img src="static/unam.png" alt="UNAM">
+          </a>
+          <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer">
+            <img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana" style="background-color: white;">
+          </a>
+          <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer">
+            <img src="static/rame.png" alt="Rame - Red Agrivoltaica de México" style="background-color: white;">
+          </a>
+        </div>
+      </small>
+    </div>
+  </footer>
 
-    <div id="flash"></div>
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script type="module">
+    import { supabase, authState, initAuth, signOut } from './auth.js';
+    
+    let headerState = { lastRenderedFingerprint: null };
+    const state = { language: localStorage.getItem("lang") || "en" };
+    
+    const t = {
+      en: {
+        tagline: "Seminar series on agrivoltaics in the Americas",
+        nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", admin: "Admin" },
+        auth: { signin: "Sign in", signout: "Sign out" },
+        footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }
+      },
+      es: {
+        tagline: "Serie de seminarios sobre agrovoltaicos en las Américas",
+        nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", admin: "Admin" },
+        auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
+        footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }
+      }
+    };
 
-    <script type="module">
-        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-        const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true } });
-
-        const state = { session: null, profile: null, lang: localStorage.getItem("lang") || "en" };
-
-        const t = {
-            en: {
-                tagline: "A seminar series to share advances in agrivoltaics in the Americas",
-                nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin" },
-                auth: { signin: "Sign in", signout: "Sign out" },
-                footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
-            },
-            es: {
-                tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas",
-                nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin" },
-                auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
-                footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
-            }
-        };
-
-        const $ = (sel) => document.querySelector(sel);
-        const $$ = (sel) => document.querySelectorAll(sel);
-        const tr = (key) => key.split('.').reduce((o, i) => o?.[i], t[state.lang]) || key;
-        const show = (el) => el?.classList.remove('hidden');
-        const hide = (el) => el?.classList.add('hidden');
-        const flash = (msg) => { const f = $('#flash'); f.textContent = msg; f.classList.add('visible'); setTimeout(() => f.classList.remove('visible'), 3000); };
-        async function getAvatarUrl(path) { if (!path) return null; const { data } = supabase.storage.from("avatars").getPublicUrl(path); return data?.publicUrl; }
-
-        function applyI18n() {
-            document.documentElement.lang = state.lang;
-            $$('[data-i18n]').forEach(el => el.textContent = tr(el.dataset.i18n));
-            $$('.lang-switch-slider').forEach(el => el.dataset.lang = state.lang);
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+    const show = (el) => el?.classList.remove('hidden');
+    const hide = (el) => el?.classList.add('hidden');
+    function tr(key, fallback = "") { const lang = state.language; const parts = key.split("."); let obj = t[lang]; for (const p of parts) obj = obj?.[p]; return obj ?? fallback; }
+    function setFlash(msg, timeout = 3000) { const el = $("#flash"); if (!el) return; el.textContent = msg; el.classList.add("visible"); clearTimeout(setFlash._t); if (timeout > 0) { setFlash._t = setTimeout(() => el.classList.remove("visible"), timeout); } }
+    function escapeHtml(s = "") { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
+    async function getAvatarUrl(path) { if (!path) return null; if (path.startsWith('http')) return path; const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co"; return `${SUPABASE_URL}/storage/v1/object/public/avatars/${path}`; }
+    
+    function applyI18n() {
+      $$("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); });
+      $$("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); });
+      $$(".lang-switch-slider").forEach(el => el.dataset.lang = state.language);
+      // Show/hide language content
+      $$("[data-lang-content]").forEach(el => {
+        if (el.dataset.langContent === state.language) {
+          show(el);
+        } else {
+          hide(el);
         }
-
-        function handleLangSwitch() { state.lang = state.lang === "en" ? "es" : "en"; localStorage.setItem("lang", state.lang); applyI18n(); }
-
-        async function renderHeader() {
-            const isOrganizer = ["organizer", "admin"].includes(state.profile?.role);
-            const userInitialEl = $("#userInitial");
-            const userAvatarEl = $("#userAvatar");
-
-            if (state.session) {
-                hide($("#btnSignIn")); show($("#btnSignOut")); show($("#btnProfile")); show($("#userName"));
-                $("#userName").textContent = state.profile?.full_name || state.profile?.username || "";
-
-                if (state.profile?.avatar_url) {
-                    const url = await getAvatarUrl(state.profile.avatar_url);
-                    if (url) { userAvatarEl.src = url; show(userAvatarEl); hide(userInitialEl); }
-                } else {
-                    hide(userAvatarEl); show(userInitialEl); userInitialEl.textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
-                }
-
-                if (isOrganizer) show($("#btnAdmin")); else hide($("#btnAdmin"));
-            } else {
-                show($("#btnSignIn")); hide($("#btnSignOut")); hide($("#btnProfile")); hide($("#userName")); hide($("#btnAdmin"));
-            }
-            setupMobileMenu(); // Rebuild mobile menu on every header render
+      });
+    }
+    
+    function updateActiveNav() {
+      const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+      $$('.nav .link, .mobile-nav-content .link').forEach(link => {
+        const linkPage = link.getAttribute('href');
+        if (linkPage === currentPage) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
         }
-        
-        function openMenu() { $("#mobileNavOverlay")?.classList.add("is-open"); document.body.style.overflowY = 'hidden'; const btn = $("#mobileMenuBtn"); if (btn) { btn.setAttribute("aria-expanded", "true"); btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`; } }
-        function closeMenu() { $("#mobileNavOverlay")?.classList.remove("is-open"); document.body.style.overflowY = ''; const btn = $("#mobileMenuBtn"); if (btn) { btn.setAttribute("aria-expanded", "false"); btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`; } }
-        
-        function setupMobileMenu() {
-            const mobileNavContent = $("#mobileNavOverlay .mobile-nav-content");
-            const desktopNav = $(".header-grid .nav");
-            if (!mobileNavContent || !desktopNav) return;
+      });
+    }
 
-            mobileNavContent.innerHTML = '';
-            const closeBtn = document.createElement('button');
-            closeBtn.className = 'mobile-nav-close-btn';
-            closeBtn.setAttribute('aria-label', 'Close menu');
-            closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 6L6 18M6 6l12 12"/></svg>';
-            
-            const content = desktopNav.cloneNode(true);
-            content.id = '';
-            
-            const langSwitchMobile = content.querySelector('#langSwitchDesktop');
-            if (langSwitchMobile) langSwitchMobile.id = 'langSwitchMobile';
-            mobileNavContent.append(closeBtn, content);
+    function toggleMobileMenu(forceState) {
+      const overlay = $('#mobileNavOverlay');
+      const showMenu = forceState !== undefined ? forceState : !overlay.classList.contains('is-open');
+      overlay.classList.toggle('is-open', showMenu);
+    }
 
-            closeBtn.onclick = closeMenu;
-            langSwitchMobile?.addEventListener('click', handleLangSwitch);
-            content.querySelector("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
+    async function renderHeader() {
+      const fingerprint = JSON.stringify({
+        hasSession: !!authState.session,
+        userId: authState.session?.user?.id || null,
+        profileId: authState.profile?.id || null,
+        fullName: authState.profile?.full_name || null,
+        avatarUrl: authState.profile?.avatar_url || null,
+        role: authState.profile?.role || null,
+        language: state.language
+      });
+
+      const preloadFingerprint = document.documentElement.getAttribute('data-auth-fingerprint');
+      if (preloadFingerprint === fingerprint && headerState.lastRenderedFingerprint === null) {
+        headerState.lastRenderedFingerprint = fingerprint;
+        document.getElementById('auth-preload-style')?.remove();
+        document.documentElement.removeAttribute('data-auth-fingerprint');
+        applyI18n();
+        updateActiveNav();
+        return;
+      }
+      if (headerState.lastRenderedFingerprint === fingerprint) return;
+      headerState.lastRenderedFingerprint = fingerprint;
+
+      const btnProfile = $('#btnProfile'), userInitial = $('#userInitial'), userAvatar = $('#userAvatar'), userName = $('#userName'), btnSignIn = $('#btnSignIn'), btnSignOut = $('#btnSignOut'), btnAdmin = $('#btnAdmin');
+      const mobileNavContent = $('.mobile-nav-content');
+      const isOrganizer = ["organizer", "admin"].includes(authState.profile?.role);
+      
+      if (authState.session && authState.profile) {
+        show(btnProfile); show(btnSignOut); show(userName); hide(btnSignIn);
+        userName.textContent = authState.profile.full_name || authState.profile.username || '';
+        const avatarPath = authState.profile.avatar_url;
+        const avatarUrl = avatarPath ? await getAvatarUrl(avatarPath) : null;
+        if (avatarUrl) {
+          userAvatar.src = avatarUrl; show(userAvatar); hide(userInitial);
+        } else {
+          userInitial.textContent = (authState.profile.full_name || "U").charAt(0).toUpperCase();
+          hide(userAvatar); show(userInitial);
         }
+        if (isOrganizer) show(btnAdmin); else hide(btnAdmin);
+      } else {
+        hide(btnProfile); hide(btnSignOut); hide(userName); show(btnSignIn);
+        hide(btnAdmin);
+      }
+      
+      if (mobileNavContent) {
+        const avatarPath = authState.profile?.avatar_url;
+        const avatarUrl = avatarPath ? await getAvatarUrl(avatarPath) : null;
+        const initial = (authState.profile?.full_name || "U").charAt(0).toUpperCase();
 
-        async function fetchProfile(userId) {
-             if (!userId) return null;
-             const { data } = await supabase.from("profiles").select("full_name, username, role, avatar_url").eq("id", userId).single();
-             return data;
-        }
+        mobileNavContent.innerHTML = `
+          <button id="mobileNavCloseBtn" class="mobile-nav-close-btn" aria-label="Close menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+          <nav>
+            <div id="langSwitchMobile" class="lang-switch-slider" data-lang="${state.language}"><span>EN</span><span>ES</span></div>
+            <a href="index.html" class="link" data-i18n="nav.schedule"></a>
+            <a href="archive.html" class="link" data-i18n="nav.archive"></a>
+            <a href="about.html" class="link active" data-i18n="nav.about"></a>
+            <a href="network.html" class="link" data-i18n="nav.network"></a>
+            ${isOrganizer ? `<a href="admin.html" class="link" data-i18n="nav.admin"></a>` : ''}
+            <div class="auth-area">
+              ${authState.session && authState.profile ? `
+                <button class="profile-button" onclick="window.location.href='profile.html'">
+                  ${avatarUrl ? `<img src="${avatarUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />` : `<span>${initial}</span>`}
+                </button>
+                <span id="userNameMobile">${escapeHtml(authState.profile.full_name || "")}</span>
+                <button id="btnSignOutMobile" class="btn btn-secondary"><span data-i18n="auth.signout"></span></button>
+              ` : `
+                <a href="signin.html" id="btnSignInMobile" class="btn btn-primary"><span data-i18n="auth.signin"></span></a>
+              `}
+            </div>
+          </nav>
+        `;
+      }
+      
+      document.getElementById('auth-preload-style')?.remove();
+      applyI18n();
+      updateActiveNav();
+    }
+    
+    function handleLangSwitch() { 
+      state.language = state.language === 'en' ? 'es' : 'en'; 
+      localStorage.setItem("lang", state.language); 
+      applyI18n(); 
+    }
 
-        async function initAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
-            state.session = session;
-            if (session) state.profile = await fetchProfile(session.user.id);
-            await renderHeader();
+    function wireUI() {
+      $('#mobileMenuBtn').addEventListener('click', () => toggleMobileMenu(true));
+      document.body.addEventListener('click', e => {
+        if (e.target.closest('#btnSignOut') || e.target.closest('#btnSignOutMobile')) signOut();
+        if (e.target.closest('#langSwitchDesktop') || e.target.closest('#langSwitchMobile')) handleLangSwitch();
+        if (e.target.id === 'mobileNavOverlay' || e.target.closest('#mobileNavCloseBtn')) toggleMobileMenu(false);
+      });
+      $("#year").textContent = new Date().getFullYear();
+    }
 
-            supabase.auth.onAuthStateChange(async (_event, newSession) => {
-                state.session = newSession;
-                state.profile = newSession ? await fetchProfile(newSession.user.id) : null;
-                await renderHeader();
-            });
-        }
+    (async function main() {
+      wireUI();
+      await initAuth({ onAuthReady: renderHeader, onAuthChange: renderHeader });
+      lucide.createIcons();
+    })();
+  </script>
 
-        function bindEvents() {
-            $('#langSwitchDesktop').onclick = handleLangSwitch;
-            $('#btnSignOut').onclick = () => supabase.auth.signOut();
-            $('#mobileMenuBtn').onclick = () => $("#mobileNavOverlay").classList.contains('is-open') ? closeMenu() : openMenu();
-            $("#mobileNavOverlay").onclick = (e) => { if (e.target === e.currentTarget) closeMenu(); };
-        }
-
-        (function main() {
-            applyI18n();
-            $('#year').textContent = new Date().getFullYear();
-            bindEvents();
-            initAuth();
-        })();
-    </script>
 </body>
 </html>

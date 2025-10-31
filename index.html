@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-white">
 
@@ -25,15 +26,13 @@
       
       const isLoggedIn = !!(parsed.data?.session && parsed.data?.profile);
       
-      // Inject style to hide/show correct auth state before paint
       const style = document.createElement('style');
       style.id = 'auth-preload-style';
       style.textContent = isLoggedIn 
-        ? '#btnSignIn { display: none !important; } #user-menu-desktop { display: flex !important; } #user-menu-desktop.hidden { display: flex !important; }'
-        : '#btnSignIn { display: inline-block !important; } #user-menu-desktop { display: none !important; }';
+        ? '#btnSignIn { display: none !important; } #btnProfile, #btnSignOut { display: inline-flex !important; } #btnProfile { display: grid !important; } #userName { display: inline !important; }' 
+        : '#btnSignIn { display: inline-flex !important; } #btnProfile, #userName, #btnSignOut { display: none !important; }';
       document.head.appendChild(style);
       
-      // Store fingerprint for comparison
       const fingerprint = JSON.stringify({
         hasSession: !!parsed.data?.session,
         userId: parsed.data?.session?.user?.id || null,
@@ -45,7 +44,6 @@
         language: localStorage.getItem("lang") || "en"
       });
       
-      // Set flag that inline script has configured the initial state
       document.documentElement.setAttribute('data-auth-ready', isLoggedIn ? 'logged-in' : 'logged-out');
       document.documentElement.setAttribute('data-auth-fingerprint', fingerprint);
       
@@ -58,9 +56,8 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -103,6 +100,64 @@
     }
   </script>
   <!-- Custom CSS -->
+  <style>
+      :root { --color-brand: #16a34a; --color-brand-dark: #15803d; --color-brand-light: #dcfce7; --color-accent: #f97316; --color-danger: #ef4444; --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #64748b; --text-tertiary: #94a3b8; --text-light: #ffffff; --border: #e2e8f0; --radius-md: 12px; --radius-lg: 24px; --header-h: 64px; --footer-h: 64px; --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); }
+      * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+      .site-header { background-color: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 0 16px; position: sticky; top: 0; z-index: 50; }
+      @media (min-width: 768px) { .site-header { padding: 0 24px; } }
+      .site-header .container.header-grid { height: 72px; max-width: 1800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+      .brand { display: flex; align-items: center; gap: 12px; }
+      .brand .logo-image { width: 40px; height: 40px; }
+      .brand-text .title { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); }
+      .brand-text .subtitle { display: none; }
+      @media (min-width: 768px) { .brand-text .subtitle { display: block; font-family: 'Lato', sans-serif; font-size: 0.8rem; color: var(--text-secondary); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+      .nav { display: none; }
+      @media (min-width: 960px) { .nav { display: flex; align-items: center; gap: 24px; } }
+      .nav .link { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; color: var(--text-secondary); transition: color 0.2s; }
+      .nav .link:hover, .nav .link.active { color: var(--color-brand); }
+      .nav .divider { width: 1px; height: 20px; background-color: var(--border); }
+      .lang-switch-slider { display: flex; cursor: pointer; background: var(--bg-input); border-radius: 99px; padding: 4px; position: relative; font-size: 12px; font-weight: 700; }
+      .lang-switch-slider span { padding: 4px 12px; z-index: 1; transition: color 0.2s; user-select: none; }
+      .lang-switch-slider::before { content: ''; position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: white; border-radius: 99px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+      .lang-switch-slider[data-lang="es"]::before { transform: translateX(100%); }
+      .lang-switch-slider[data-lang="en"] span:first-child, .lang-switch-slider[data-lang="es"] span:last-child { color: var(--color-brand-dark); }
+      .auth-area { display: flex; align-items: center; gap: 16px; }
+      .profile-button { width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-brand-light); color: var(--color-brand-dark); font-weight: 700; font-family: 'Poppins', sans-serif; display: grid; place-content: center; overflow: hidden; border: 2px solid var(--border); }
+      #userName { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; }
+      .mobile-menu-btn { display: block; color: var(--text-secondary); }
+      @media (min-width: 960px) { .mobile-menu-btn { display: none; } }
+      .mobile-nav-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 998; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
+      .mobile-nav-overlay.is-open { opacity: 1; visibility: visible; }
+      .mobile-nav-content { position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 320px; background: var(--bg-panel); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1); display: flex; flex-direction: column; z-index: 999; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1); padding: 24px; }
+      .is-open .mobile-nav-content { transform: translateX(0); }
+      .mobile-nav-close-btn { position: absolute; top: 16px; right: 16px; color: var(--text-secondary); z-index: 10; }
+      .mobile-nav-content > nav { display: flex; flex-direction: column; align-items: center; text-align: center; height: 100%; padding-top: 48px; }
+      .mobile-nav-content .link { font-size: 1.75rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--text-primary); width: 100%; padding: 12px 0; }
+      .mobile-nav-content .link.active { color: var(--color-brand); }
+      .mobile-nav-content .divider { display: none; }
+      .mobile-nav-content .lang-switch-slider { order: -1; transform: scale(1.15); margin-bottom: 48px; }
+      .mobile-nav-content .auth-area { margin-top: auto; width: 100%; padding-top: 24px; border-top: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+      .mobile-nav-content .auth-area .profile-button { width: 64px; height: 64px; font-size: 2rem; }
+      .mobile-nav-content .auth-area #userNameMobile { font-weight: 600; font-size: 1.1rem; color: var(--text-primary); }
+      .mobile-nav-content .auth-area #btnSignOutMobile, .mobile-nav-content .auth-area #btnSignInMobile { width: 100%; justify-content: center; padding: 12px 24px; font-size: 1rem; border-radius: var(--radius-md); }
+      .btn { border: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+      .btn:active { transform: scale(0.98); }
+      .btn-primary { background: var(--color-brand-dark); color: white; box-shadow: 0 4px 12px -2px rgba(22, 163, 74, 0.3); }
+      .btn-primary:hover { background: #14532d; }
+      .btn-secondary { background: white; border: 2px solid var(--border); color: var(--text-primary); }
+      .btn-secondary:hover { border-color: var(--text-tertiary); background: var(--bg-input); }
+      .btn-ghost { background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 700; padding: 8px 12px; border-radius: 8px; }
+      .btn-ghost:hover { background: var(--bg-input); color: var(--text-primary); }
+      #btnSignIn { padding: 8px 16px; font-size: 0.9rem; border-radius: 8px; background: var(--color-brand); color: white;}
+      #btnSignIn:hover { background: var(--color-brand-dark); }
+      .site-footer { background-color: var(--bg-panel); border-top: 1px solid var(--border); padding: 24px; }
+      .site-footer .container { max-width: 1800px; margin: 0 auto; }
+      .site-footer small { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-secondary); }
+      .site-footer .footer-text { display: flex; align-items: center; flex-wrap: wrap; }
+      .site-footer .footer-logos { display: flex; align-items: center; gap: 8px; }
+      .site-footer .footer-logos img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+      @media (max-width: 767px) { .site-footer small { flex-direction: column; text-align: center; } }
+  </style>
   <style type="text/tailwindcss">
     @layer utilities {
             .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -142,86 +197,48 @@
 <body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-200 selection:text-brand-900">
 
   <!-- ================= HEADER ================= -->
-  <header class="flex-none bg-white border-b border-gray-200 z-30 relative">
-    <div class="container mx-auto px-4 h-16 md:h-18 flex items-center justify-between">
-      <a href="#" id="brand-logo" class="flex items-center gap-3 group">
-        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo"
-          class="w-10 h-10 rounded-xl shadow-lg shadow-brand-500/10 group-hover:scale-105 transition-transform duration-300">
-        <div class="leading-tight">
-          <h1 class="font-display font-bold text-brand-700 text-lg tracking-tight">Agrovoltaicos sin Fronteras</h1>
-          <p class="text-xs text-slate-500 font-medium hidden sm:block truncate max-w-[180px] md:max-w-none"
-            data-i18n="tagline">
-            Seminar series on agrivoltaics in the Americas
-          </p>
-        </div>
-      </a>
-      <div class="flex items-center gap-3">
-        <nav
-          class="hidden md:flex items-center gap-1 bg-gray-100/80 p-1 rounded-full border border-gray-200/50 font-medium text-sm text-slate-600">
-          <a href="index.html"
-            class="nav-link px-4 py-2 rounded-full transition-all duration-300 bg-white shadow-sm text-brand-700"
-            data-i18n="nav.schedule">Schedule</a>
-          <a href="archive.html"
-            class="nav-link px-4 py-2 rounded-full transition-all duration-300 hover:text-brand-700"
-            data-i18n="nav.archive">Archive</a>
-          <a href="about.html" class="nav-link px-4 py-2 rounded-full transition-all duration-300 hover:text-brand-700"
-            data-i18n="nav.about">About</a>
-          <!-- Added network link -->
-          <a href="network.html" class="nav-link px-4 py-2 rounded-full transition-all duration-300 hover:text-brand-700"
-            data-i18n="nav.network">Network</a>
-          <a href="admin.html" id="btnAdmin"
-            class="hidden nav-link px-4 py-2 rounded-full transition-all duration-300 hover:text-brand-700"
-            data-i18n="nav.admin">Admin</a>
+  <header class="site-header">
+    <div class="container header-grid">
+        <a href="index.html" class="brand">
+            <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
+            <div class="brand-text">
+                <div class="title">Agrovoltaicos sin Fronteras</div>
+                <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
+            </div>
+        </a>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <!-- Desktop Nav -->
+        <nav class="nav">
+            <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+            <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
+            <a href="about.html" class="link" data-i18n="nav.about">About</a>
+            <a href="network.html" class="link" data-i18n="nav.network">Network</a>
+            <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+            <div class="divider"></div>
+            <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
+                <span>EN</span>
+                <span>ES</span>
+            </div>
+            <div class="auth-area">
+                <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile" onclick="window.location.href='profile.html'">
+                    <span id="userInitial"></span>
+                    <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />
+                </button>
+                <span id="userName" style="display: none;"></span>
+                <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
+                <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+                    Sign out
+                </button>
+            </div>
         </nav>
-        <button id="lang-toggle"
-          class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-xl text-xs font-bold transition-colors"
-          aria-label="Toggle Language">
-          <i data-lucide="globe" class="w-4 h-4 text-slate-500"></i>
-          <span id="current-lang-label">EN</span>
-        </button>
-        <div id="auth-area-desktop" class="hidden md:flex items-center gap-3">
-          <a href="signin.html" id="btnSignIn"
-            class="bg-brand-700 hover:bg-brand-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-95 items-center gap-2">
-            <span data-i18n="auth.signin">Sign in</span>
-          </a>
-          <div id="user-menu-desktop" class="hidden flex items-center gap-3">
-            <span id="userName" class="text-sm font-semibold text-slate-700 hidden lg:block"></span>
-            <button id="btnProfile"
-              class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center font-bold text-brand-700 text-lg border-2 border-white shadow-sm overflow-hidden">
-              <span id="userInitial" class="flex items-center justify-center"></span>
-              <img id="userAvatar" class="hidden w-full h-full object-cover" alt="" />
-            </button>
-            <button id="btnSignOut" class="p-2.5 text-slate-500 hover:bg-gray-200 rounded-xl transition-colors">
-              <i data-lucide="log-out" class="w-5 h-5"></i>
-            </button>
-          </div>
-        </div>
-        <button id="mobile-menu-btn"
-          class="md:hidden p-2 text-slate-600 bg-gray-100 rounded-xl active:bg-gray-200 transition-colors">
-          <i data-lucide="menu" class="w-6 h-6"></i>
-        </button>
-      </div>
     </div>
   </header>
 
   <!-- ================= MOBILE MENU OVERLAY ================= -->
-  <div id="mobile-menu" class="fixed inset-0 z-50 pointer-events-none transition-all duration-500 opacity-0">
-    <div id="mobile-menu-backdrop" class="absolute inset-0 bg-slate-900/30 backdrop-blur-sm"></div>
-    <div id="mobile-drawer"
-      class="absolute top-0 right-0 bottom-0 w-[300px] bg-white shadow-2xl flex flex-col p-6 translate-x-full transition-transform duration-500 cubic-bezier">
-      <div class="flex justify-end mb-8">
-        <button id="mobile-menu-close"
-          class="p-2 text-slate-400 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <nav id="mobile-nav-links" class="flex flex-col gap-4">
-        <!-- Links will be injected here -->
-      </nav>
-      <div id="auth-area-mobile" class="mt-auto pt-8 border-t border-gray-100">
-        <!-- Auth state will be injected here -->
-      </div>
-    </div>
+  <div id="mobileNavOverlay" class="mobile-nav-overlay">
+      <div class="mobile-nav-content"><!-- Injected by JS --></div>
   </div>
 
   <!-- ================= MAIN APP CONTAINER ================= -->
@@ -438,26 +455,28 @@
   </main>
 
   <!-- ================= FOOTER ================= -->
-  <footer class="flex-none py-4 bg-white border-t border-gray-200 text-xs text-slate-500">
-    <div class="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-2 font-medium">
-        <span>© <span id="year"></span> Agrovoltaicos sin Fronteras</span>
-      </div>
-      <div class="flex items-center gap-4">
-        <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank"
-          class="block rounded-full border border-gray-200 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition"><img
-            src="static/b2ua.jpg" class="h-8 w-8 object-cover rounded-full" alt="Biosphere 2"></a>
-        <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank"
-          class="block rounded-full border border-gray-200 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition"><img
-            src="static/unam.png" class="h-8 w-8 object-cover rounded-full" alt="UNAM"></a>
-        <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana"
-          target="_blank"
-          class="block rounded-full border border-gray-200 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition"><img
-            src="static/aal.png" class="h-8 w-8 object-cover rounded-full bg-white" alt="AAL"></a>
-        <a href="https://redagvmx.com" target="_blank"
-          class="block rounded-full border border-gray-200 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition"><img
-            src="static/rame.png" class="h-8 w-8 object-cover rounded-full bg-white" alt="Rame"></a>
-      </div>
+  <footer class="site-footer">
+    <div class="container">
+      <small>
+        <div class="footer-text">
+          © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
+          <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
+        </div>
+        <div class="footer-logos">
+          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer">
+            <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics">
+          </a>
+          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer">
+            <img src="static/unam.png" alt="UNAM">
+          </a>
+          <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer">
+            <img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana" style="background-color: white;">
+          </a>
+          <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer">
+            <img src="static/rame.png" alt="Rame - Red Agrivoltaica de México" style="background-color: white;">
+          </a>
+        </div>
+      </small>
     </div>
   </footer>
 
@@ -466,10 +485,11 @@
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
     let eventLogic;
+    let headerState = { lastRenderedFingerprint: null };
 
     // --- STATE & I18N DICTIONARY ---
     const state = { language: localStorage.getItem("lang") || "en", events: [], selectedEvent: null, threads: [], selectedThreadId: null, comments: [], files: [], calendarMonth: new Date(), };
-    const t = { en: { tagline: "A seminar series to share advances in agrivoltaics in the Americas", intro: "Join leading researchers and farmers across the Americas exploring dual-use land for food and energy.", intro_title: "Agrovoltaicos sin Fronteras", format: "Online • Bi-monthly • 1 hour", hosted: "Hosted by UNAM & University of Arizona", nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin" }, auth: { title: "Sign in to participate", signin: "Sign in", signout: "Sign out", email: "Email", magic: "Send magic link", magic_hint: "We'll email you a sign-in link. Check your inbox.", or: "or", required: "Please sign in to view event details.", }, profile: { incomplete: "Please complete your profile to access all features" }, schedule: { title: "Upcoming Talks", empty: "No upcoming events found. Check back soon!", list: "List", calendar: "Calendar" }, search: { placeholder: "Search by title, speaker, topic..." }, back: { schedule: "Back to schedule" }, tabs: { description: "Description", discussion: "Discussion", files: "Files" }, discussion: { welcome_title: "Welcome to the discussion!", welcome_body: "Select a topic from the left to view the conversation, or start a new one.", topics: "Discussion Topics" }, thread: { placeholder: "Start a new topic...", create: "New", empty: "No topics yet. Start the discussion!" }, comment: { placeholder: "Write a comment...", send: "Send" }, files: { upload: "Upload", empty: "No files uploaded.", download: "Download", upload_label: "Click to upload or drag & drop", upload_hint: "Max 10MB per file", deleting: "Deleting...", delete_confirm: "Are you sure you want to delete this file?" }, footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }, legend: { scheduled: "Scheduled", completed: "Completed", canceled: "Canceled" }, save: "Save", cancel: "Cancel", errors: { upload: "Upload failed", delete: "Delete failed" }, open: "View Details", copied: "Copied!", tags: "Tags", speakers: "Speaker(s)" }, es: { tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas", intro: "Únase a los principales investigadores y agricultores de las Américas que exploran el uso dual de la tierra para alimentos y energía.", intro_title: "Agrovoltaicos sin Fronteras", format: "En línea • Bimestral • 1 hora", hosted: "Organizado por UNAM y University of Arizona", nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin" }, auth: { title: "Inicia sesión para participar", signin: "Iniciar sesión", signout: "Cerrar sesión", email: "Correo", magic: "Enviar enlace mágico", magic_hint: "Te enviaremos un enlace de acceso. Revisa tu bandeja.", or: "o", required: "Por favor, inicia sesión para ver los detalles del evento.", }, profile: { incomplete: "Por favor completa tu perfil para acceder a todas las funciones" }, schedule: { title: "Próximas Charlas", empty: "No se encontraron eventos. Vuelve pronto.", list: "Lista", calendar: "Calendario" }, search: { placeholder: "Buscar por título, ponente, tema..." }, back: { schedule: "Volver al calendario" }, tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" }, discussion: { welcome_title: "¡Bienvenido/a a la discusión!", welcome_body: "Selecciona un tema de la izquierda o crea uno nuevo.", topics: "Temas de Discusión" }, thread: { placeholder: "Iniciar un nuevo tema...", create: "Nuevo", empty: "Aún no hay temas. ¡Comienza la discusión!" }, comment: { placeholder: "Escribe un comentario...", send: "Enviar" }, files: { upload: "Subir", empty: "No hay archivos subidos.", download: "Descargar", upload_label: "Haz clic para subir o arrastra y suelta", upload_hint: "Máximo 10MB por archivo", deleting: "Eliminando...", delete_confirm: "¿Estás seguro de que quieres eliminar este archivo?" }, footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }, legend: { scheduled: "Programado", completed: "Completado", cancelado: "Cancelado" }, save: "Guardar", cancel: "Cancelar", errors: { upload: "Fallo al subir", delete: "Fallo al eliminar" }, open: "Ver Detalles", copied: "¡Copiado!", tags: "Etiquetas", speakers: "Ponente(s)" }, };
+    const t = { en: { tagline: "A seminar series to share advances in agrivoltaics in the Americas", intro_title: "Agrovoltaicos sin Fronteras", nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", admin: "Admin" }, auth: { signin: "Sign in", signout: "Sign out", required: "Please sign in to view event details.", }, profile: { incomplete: "Please complete your profile to access all features" }, schedule: { title: "Upcoming Talks", empty: "No upcoming events found. Check back soon!" }, search: { placeholder: "Search by title, speaker, topic..." }, back: { schedule: "Back to schedule" }, tabs: { description: "Description", discussion: "Discussion", files: "Files" }, discussion: { welcome_title: "Welcome to the discussion!", welcome_body: "Select a topic from the left to view the conversation, or start a new one.", topics: "Discussion Topics" }, thread: { placeholder: "Start a new topic...", create: "New", empty: "No topics yet. Start the discussion!" }, comment: { placeholder: "Write a comment..." }, files: { upload_label: "Click to upload or drag & drop", upload_hint: "Max 10MB per file", empty: "No files uploaded.", deleting: "Deleting...", delete_confirm: "Are you sure you want to delete this file?" }, footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }, open: "View Details" }, es: { tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas", intro_title: "Agrovoltaicos sin Fronteras", nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", admin: "Admin" }, auth: { signin: "Iniciar sesión", signout: "Cerrar sesión", required: "Por favor, inicia sesión para ver los detalles del evento.", }, profile: { incomplete: "Por favor completa tu perfil para acceder a todas las funciones" }, schedule: { title: "Próximas Charlas", empty: "No se encontraron eventos. Vuelve pronto." }, search: { placeholder: "Buscar por título, ponente, tema..." }, back: { schedule: "Volver al calendario" }, tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" }, discussion: { welcome_title: "¡Bienvenido/a a la discusión!", welcome_body: "Selecciona un tema de la izquierda o crea uno nuevo.", topics: "Temas de Discusión" }, thread: { placeholder: "Iniciar un nuevo tema...", create: "Nuevo", empty: "Aún no hay temas. ¡Comienza la discusión!" }, comment: { placeholder: "Escribe un comentario..." }, files: { upload_label: "Haz clic para subir o arrastra y suelta", upload_hint: "Máximo 10MB por archivo", empty: "No hay archivos subidos.", deleting: "Eliminando...", delete_confirm: "¿Estás seguro de que quieres eliminar este archivo?" }, footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }, open: "Ver Detalles" }, };
 
     // --- UTILITIES ---
     const $ = (sel) => document.querySelector(sel);
@@ -482,21 +502,22 @@
     function bytesToSize(bytes = 0) { if (bytes === 0) return "0 B"; const k = 1024, sizes = ["B", "KB", "MB", "GB", "TB"], i = Math.floor(Math.log(bytes) / Math.log(k)); return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]; }
     function escapeHtml(s = "") { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
     function linkify(text = "") { let safe = escapeHtml(text); const urlRegex = /\b(https?:\/\/[^\s<]+)\b/g; safe = safe.replace(urlRegex, (m) => `<a href="${m}" target="_blank" rel="noopener noreferrer" class="hover:underline">${m}</a>`); safe = safe.replace(/\n/g, "<br/>"); return safe; }
-
-    async function getAvatarUrl(path) {
-      if (!path) return null;
-      if (path.startsWith('http://') || path.startsWith('https://')) return path;
-      const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
-      return `${SUPABASE_URL}/storage/v1/object/public/avatars/${path}`;
-    }
-
-    function applyI18n() {
-      $$("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); });
-      $$("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); });
-      $("#current-lang-label").textContent = state.language.toUpperCase();
-    }
+    async function getAvatarUrl(path) { if (!path) return null; if (path.startsWith('http')) return path; const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co"; return `${SUPABASE_URL}/storage/v1/object/public/avatars/${path}`; }
+    function applyI18n() { $$("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); }); $$("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); }); $$(".lang-switch-slider").forEach(el => el.dataset.lang = state.language); }
 
     // --- UI & VIEW MANAGEMENT ---
+    function updateActiveNav() {
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        $$('.nav .link, .mobile-nav-content .link').forEach(link => {
+            const linkPage = link.getAttribute('href');
+            if (linkPage === currentPage) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    }
+    
     function showView(viewName) {
       const scheduleView = $('#view-schedule');
       const detailView = $('#view-detail');
@@ -545,162 +566,95 @@
 
     // --- HEADER & MENU ---
     function toggleMobileMenu(forceState) {
-      const menu = $('#mobile-menu');
-      const drawer = $('#mobile-drawer');
-      const showMenu = forceState !== undefined ? forceState : menu.classList.contains('pointer-events-none');
-
-      if (showMenu) {
-        menu.classList.remove('pointer-events-none', 'opacity-0');
-        setTimeout(() => drawer.classList.remove('translate-x-full'), 10);
-      } else {
-        drawer.classList.add('translate-x-full');
-        setTimeout(() => menu.classList.add('pointer-events-none', 'opacity-0'), 300);
-      }
+        const overlay = $('#mobileNavOverlay');
+        const showMenu = forceState !== undefined ? forceState : !overlay.classList.contains('is-open');
+        overlay.classList.toggle('is-open', showMenu);
     }
 
     async function renderHeader() {
-  // Create fingerprint to detect if we actually need to re-render
-  const fingerprint = JSON.stringify({
-    hasSession: !!authState.session,
-    userId: authState.session?.user?.id || null,
-    profileId: authState.profile?.id || null,
-    fullName: authState.profile?.full_name || null,
-    username: authState.profile?.username || null,
-    avatarUrl: authState.profile?.avatar_url || null,
-    role: authState.profile?.role || null,
-    language: state.language
-  });
+      const fingerprint = JSON.stringify({
+        hasSession: !!authState.session,
+        userId: authState.session?.user?.id || null,
+        profileId: authState.profile?.id || null,
+        fullName: authState.profile?.full_name || null,
+        avatarUrl: authState.profile?.avatar_url || null,
+        role: authState.profile?.role || null,
+        language: state.language
+      });
 
-  // Check if inline script already set up the correct state
-  const preloadFingerprint = document.documentElement.getAttribute('data-auth-fingerprint');
-  const authReady = document.documentElement.getAttribute('data-auth-ready');
-  
-  if (preloadFingerprint === fingerprint && authReady && headerState.lastRenderedFingerprint === null) {
-    // Inline script already configured everything correctly, skip first render
-    headerState.lastRenderedFingerprint = fingerprint;
-    
-    // Just wire up event handlers for mobile menu without rebuilding HTML
-    const btnProfileMobile = $('#btnProfileMobile');
-    const btnSignOutMobile = $('#btnSignOutMobile');
-    if (btnProfileMobile) btnProfileMobile.onclick = () => window.location.href = 'profile.html';
-    if (btnSignOutMobile) btnSignOutMobile.onclick = signOut;
-    
-    // Remove preload style as it's no longer needed
-    document.getElementById('auth-preload-style')?.remove();
-    document.documentElement.removeAttribute('data-auth-fingerprint');
-    
-    return;
-  }
-
-  // Skip render if nothing changed (subsequent calls)
-  if (headerState.lastRenderedFingerprint === fingerprint) {
-    return;
-  }
-  
-  headerState.lastRenderedFingerprint = fingerprint;
-
-  const isOrganizer = ["organizer", "admin"].includes(authState.profile?.role);
-  const userMenu = $('#user-menu-desktop');
-  const signInBtn = $('#btnSignIn');
-  const mobileAuth = $('#auth-area-mobile');
-  const mobileNav = $('#mobile-nav-links');
-
-  if (authState.session && authState.profile) {
-    hide(signInBtn);
-    userMenu?.classList.remove('hidden');
-    show(userMenu);
-    
-    const userName = $('#userName');
-    if (userName) {
-      userName.textContent = authState.profile?.full_name || authState.profile?.username || "";
-    }
-    
-    const avatarPath = authState.profile.avatar_url;
-    const avatarUrl = avatarPath ? await getAvatarUrl(avatarPath) : null;
-    const initial = (authState.profile.full_name || "U").charAt(0).toUpperCase();
-    const userAvatar = $('#userAvatar');
-    const userInitial = $('#userInitial');
-
-    if (userAvatar && userInitial) {
-      if (avatarUrl) {
-        userAvatar.src = avatarUrl;
-        show(userAvatar);
-        hide(userInitial);
-      } else {
-        userInitial.textContent = initial;
-        hide(userAvatar);
-        show(userInitial);
+      const preloadFingerprint = document.documentElement.getAttribute('data-auth-fingerprint');
+      if (preloadFingerprint === fingerprint && headerState.lastRenderedFingerprint === null) {
+        headerState.lastRenderedFingerprint = fingerprint;
+        document.getElementById('auth-preload-style')?.remove();
+        document.documentElement.removeAttribute('data-auth-fingerprint');
+        // Initial render was correct, just wire up injected mobile menu if needed
+        applyI18n();
+        updateActiveNav();
+        return;
       }
-    }
+      if (headerState.lastRenderedFingerprint === fingerprint) return;
+      headerState.lastRenderedFingerprint = fingerprint;
 
-    // Mobile menu auth section
-    if (mobileAuth) {
-      mobileAuth.innerHTML = `
-        <div class="flex items-center gap-3 mb-4">
-          <button id="btnProfileMobile" class="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center font-bold text-brand-700 text-xl border-2 border-white shadow-sm overflow-hidden">
-            ${avatarUrl ? `<img src="${avatarUrl}" class="w-full h-full object-cover" alt="User avatar" />` : `<span>${initial}</span>`}
-          </button>
-          <div class="leading-tight">
-            <p class="font-bold text-slate-800">${escapeHtml(authState.profile.full_name || "")}</p>
-            <p class="text-xs text-slate-500">View Profile</p>
-          </div>
-        </div>
-        <button id="btnSignOutMobile" class="w-full bg-gray-100 text-slate-700 py-3 rounded-2xl font-bold text-lg active:scale-95 transition-transform flex justify-center items-center gap-2">
-          <i data-lucide="log-out" class="w-5 h-5"></i>
-          <span data-i18n="auth.signout"></span>
-        </button>
-      `;
+      // --- Desktop Elements ---
+      const btnProfile = $('#btnProfile'), userInitial = $('#userInitial'), userAvatar = $('#userAvatar'), userName = $('#userName'), btnSignIn = $('#btnSignIn'), btnSignOut = $('#btnSignOut'), btnAdmin = $('#btnAdmin');
+      // --- Mobile Container ---
+      const mobileNavContent = $('.mobile-nav-content');
+
+      const isOrganizer = ["organizer", "admin"].includes(authState.profile?.role);
       
-      $('#btnProfileMobile').onclick = () => window.location.href = 'profile.html';
-      $('#btnSignOutMobile').onclick = signOut;
+      if (authState.session && authState.profile) {
+          show(btnProfile); show(btnSignOut); show(userName); hide(btnSignIn);
+          userName.textContent = authState.profile.full_name || authState.profile.username || '';
+          const avatarPath = authState.profile.avatar_url;
+          const avatarUrl = avatarPath ? await getAvatarUrl(avatarPath) : null;
+          if (avatarUrl) {
+              userAvatar.src = avatarUrl; show(userAvatar); hide(userInitial);
+          } else {
+              userInitial.textContent = (authState.profile.full_name || "U").charAt(0).toUpperCase();
+              hide(userAvatar); show(userInitial);
+          }
+          if (isOrganizer) show(btnAdmin); else hide(btnAdmin);
+      } else {
+          hide(btnProfile); hide(btnSignOut); hide(userName); show(btnSignIn);
+          hide(btnAdmin);
+      }
+      
+      // --- Inject Mobile Nav Content ---
+      if (mobileNavContent) {
+          const avatarPath = authState.profile?.avatar_url;
+          const avatarUrl = avatarPath ? await getAvatarUrl(avatarPath) : null;
+          const initial = (authState.profile?.full_name || "U").charAt(0).toUpperCase();
+
+          mobileNavContent.innerHTML = `
+              <button id="mobileNavCloseBtn" class="mobile-nav-close-btn" aria-label="Close menu">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+              <nav>
+                  <div id="langSwitchMobile" class="lang-switch-slider" data-lang="${state.language}"><span>EN</span><span>ES</span></div>
+                  <a href="index.html" class="link" data-i18n="nav.schedule"></a>
+                  <a href="archive.html" class="link" data-i18n="nav.archive"></a>
+                  <a href="about.html" class="link" data-i18n="nav.about"></a>
+                  <a href="network.html" class="link" data-i18n="nav.network"></a>
+                  ${isOrganizer ? `<a href="admin.html" class="link" data-i18n="nav.admin"></a>` : ''}
+                  <div class="auth-area">
+                      ${authState.session && authState.profile ? `
+                          <button class="profile-button" onclick="window.location.href='profile.html'">
+                              ${avatarUrl ? `<img src="${avatarUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />` : `<span>${initial}</span>`}
+                          </button>
+                          <span id="userNameMobile">${escapeHtml(authState.profile.full_name || "")}</span>
+                          <button id="btnSignOutMobile" class="btn btn-secondary"><span data-i18n="auth.signout"></span></button>
+                      ` : `
+                          <a href="signin.html" id="btnSignInMobile" class="btn btn-primary"><span data-i18n="auth.signin"></span></a>
+                      `}
+                  </div>
+              </nav>
+          `;
+      }
+      
+      document.getElementById('auth-preload-style')?.remove();
+      applyI18n();
+      updateActiveNav();
     }
-    
-    if (isOrganizer) show($("#btnAdmin")); 
-    else hide($("#btnAdmin"));
-  } else {
-    show(signInBtn);
-    hide(userMenu);
-    userMenu?.classList.add('hidden');
-    hide($("#btnAdmin"));
-    
-    if (mobileAuth) {
-      mobileAuth.innerHTML = `
-        <a href="signin.html" class="w-full bg-brand-700 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-brand-700/20 active:scale-95 transition-transform flex justify-center items-center gap-2">
-          <i data-lucide="log-in" class="w-5 h-5"></i>
-          <span data-i18n="auth.signin"></span>
-        </a>
-      `;
-    }
-  }
-
-  // Mobile nav links
-  if (mobileNav) {
-    // For index.html:
-    const currentPage = window.location.pathname.includes('archive.html') ? 'archive' : 'index';
-    
-    mobileNav.innerHTML = `
-      <a href="index.html" class="flex items-center gap-4 p-4 rounded-2xl ${currentPage === 'index' ? 'bg-brand-50 text-brand-900 font-bold' : 'hover:bg-gray-50 text-slate-600 font-semibold'} font-display text-xl">
-        <i data-lucide="calendar" class="w-6 h-6 ${currentPage === 'index' ? 'text-brand-700' : ''}"></i>
-        <span data-i18n="nav.schedule"></span>
-      </a>
-      <a href="archive.html" class="flex items-center gap-4 p-4 rounded-2xl ${currentPage === 'archive' ? 'bg-brand-50 text-brand-900 font-bold' : 'hover:bg-gray-50 text-slate-600 font-semibold'} font-display text-xl">
-        <i data-lucide="archive" class="w-6 h-6 ${currentPage === 'archive' ? 'text-brand-700' : ''}"></i>
-        <span data-i18n="nav.archive"></span>
-      </a>
-      <a href="about.html" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 text-slate-600 font-display font-semibold text-xl">
-        <i data-lucide="info" class="w-6 h-6"></i>
-        <span data-i18n="nav.about"></span>
-      </a>
-      ${isOrganizer ? `<a href="admin.html" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 text-slate-600 font-display font-semibold text-xl"><i data-lucide="shield" class="w-6 h-6"></i><span data-i18n="nav.admin"></span></a>` : ''}
-    `;
-  }
-
-  // Remove preload style once real rendering is done
-  document.getElementById('auth-preload-style')?.remove();
-
-  lucide.createIcons();
-  applyI18n();
-}
 
     function handleLangSwitch() {
       state.language = state.language === 'en' ? 'es' : 'en';
@@ -806,67 +760,12 @@
         const speakerProfile = eventSpeaker?.profile;
         const speakerName = speakerProfile?.full_name || eventSpeaker?.name || '';
         const speakerAffiliation = speakerProfile?.affiliation || eventSpeaker?.affiliation || '';
-        const statusColors = {
-          scheduled: 'bg-brand-50 text-brand-700 border-brand-100',
-          completed: 'bg-gray-50 text-slate-700 border-gray-100',
-          canceled: 'bg-red-50 text-red-700 border-red-100'
-        };
-
+        const statusColors = { scheduled: 'bg-brand-50 text-brand-700 border-brand-100', completed: 'bg-gray-50 text-slate-700 border-gray-100', canceled: 'bg-red-50 text-red-700 border-red-100' };
         let avatarHtml = '';
-        if (speakerProfile?.avatar_url) {
-          const avatarUrl = await getAvatarUrl(speakerProfile.avatar_url);
-          if (avatarUrl) {
-            avatarHtml = `<img src="${avatarUrl}" alt="${escapeHtml(speakerName)}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>`;
-          }
-        }
+        if (speakerProfile?.avatar_url) { const avatarUrl = await getAvatarUrl(speakerProfile.avatar_url); if (avatarUrl) avatarHtml = `<img src="${avatarUrl}" alt="${escapeHtml(speakerName)}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>`; }
         const initials = speakerName ? speakerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '';
-
-        const tagsHtml = (ev.topic_tags || [])
-          .slice(0, 3)
-          .map(tag => `<span class="px-2.5 py-1 bg-gray-100 text-slate-600 rounded-full text-xs font-semibold whitespace-nowrap">#${escapeHtml(tag)}</span>`)
-          .join('');
-
-        return `
-      <article class="group bg-white rounded-3xl p-4 border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-brand-200 transition-all duration-300 flex flex-col" data-open-event="${ev.id}">
-        <div class="flex-grow">
-          <div class="flex justify-between items-start mb-3">
-            <div class="flex flex-col">
-              <span class="text-xs font-bold uppercase tracking-wider text-brand-700 mb-1">${fmtDateTime(ev.start_time)}</span>
-              <h4 class="font-display font-bold text-lg text-slate-800 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h4>
-            </div>
-            <span class="flex-shrink-0 ml-4 px-3 py-1 ${statusColors[ev.status] || statusColors.scheduled} text-[10px] font-bold uppercase tracking-widest rounded-full border">${escapeHtml(ev.status)}</span>
-          </div>
-          ${desc ? `<p class="text-slate-600 mb-3 text-sm line-clamp-2">${escapeHtml(desc)}</p>` : ''}
-        </div>
-        
-        <div class="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-4 min-w-0">
-            ${eventSpeaker ? `
-            <div class="flex items-center gap-3 flex-shrink-0">
-              <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center text-gray-600 font-semibold text-sm">
-                ${avatarHtml}
-                <span ${avatarHtml ? `style="display:none;"` : ''}>${initials}</span>
-              </div>
-              <div>
-                <p class="text-sm font-bold text-slate-800 truncate">${escapeHtml(speakerName)}</p>
-                <p class="text-xs text-slate-500 truncate">${escapeHtml(speakerAffiliation)}</p>
-              </div>
-            </div>
-            ` : '<div></div>'}
-            
-            ${tagsHtml ? `
-            <div class="hidden lg:flex items-center gap-2">
-              ${tagsHtml}
-            </div>
-            ` : ''}
-          </div>
-          
-          <button class="flex-shrink-0 w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-slate-400 group-hover:bg-brand-700 group-hover:text-white group-hover:border-transparent transition-all">
-            <i data-lucide="arrow-right" class="w-5 h-5"></i>
-          </button>
-        </div>
-      </article>
-      `;
+        const tagsHtml = (ev.topic_tags || []).slice(0, 3).map(tag => `<span class="px-2.5 py-1 bg-gray-100 text-slate-600 rounded-full text-xs font-semibold whitespace-nowrap">#${escapeHtml(tag)}</span>`).join('');
+        return `<article class="group bg-white rounded-3xl p-4 border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-brand-200 transition-all duration-300 flex flex-col" data-open-event="${ev.id}"><div class="flex-grow"><div class="flex justify-between items-start mb-3"><div class="flex flex-col"><span class="text-xs font-bold uppercase tracking-wider text-brand-700 mb-1">${fmtDateTime(ev.start_time)}</span><h4 class="font-display font-bold text-lg text-slate-800 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h4></div><span class="flex-shrink-0 ml-4 px-3 py-1 ${statusColors[ev.status] || statusColors.scheduled} text-[10px] font-bold uppercase tracking-widest rounded-full border">${escapeHtml(ev.status)}</span></div>${desc ? `<p class="text-slate-600 mb-3 text-sm line-clamp-2">${escapeHtml(desc)}</p>` : ''}</div><div class="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-4"><div class="flex items-center gap-4 min-w-0">${eventSpeaker ? `<div class="flex items-center gap-3 flex-shrink-0"><div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center text-gray-600 font-semibold text-sm">${avatarHtml}<span ${avatarHtml ? `style="display:none;"` : ''}>${initials}</span></div><div><p class="text-sm font-bold text-slate-800 truncate">${escapeHtml(speakerName)}</p><p class="text-xs text-slate-500 truncate">${escapeHtml(speakerAffiliation)}</p></div></div>` : '<div></div>'}${tagsHtml ? `<div class="hidden lg:flex items-center gap-2">${tagsHtml}</div>` : ''}</div><button class="flex-shrink-0 w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-slate-400 group-hover:bg-brand-700 group-hover:text-white group-hover:border-transparent transition-all"><i data-lucide="arrow-right" class="w-5 h-5"></i></button></div></article>`;
       }));
 
       list.innerHTML = eventCards.join('');
@@ -878,72 +777,34 @@
       if (!grid || !label) return;
       const m = state.calendarMonth;
       label.textContent = m.toLocaleString(state.language, { month: "long", year: "numeric" });
-
-      const startOfMonth = new Date(m.getFullYear(), m.getMonth(), 1);
-      const endOfMonth = new Date(m.getFullYear(), m.getMonth() + 1, 0);
-      const firstDayIndex = (startOfMonth.getDay() + 6) % 7; // Monday is 0
-      const daysInMonth = endOfMonth.getDate();
-
+      const startOfMonth = new Date(m.getFullYear(), m.getMonth(), 1); const endOfMonth = new Date(m.getFullYear(), m.getMonth() + 1, 0); const firstDayIndex = (startOfMonth.getDay() + 6) % 7; const daysInMonth = endOfMonth.getDate();
       grid.innerHTML = ``;
       for (let i = 0; i < firstDayIndex; i++) grid.insertAdjacentHTML('beforeend', `<div class="bg-gray-50/50"></div>`);
-
-      const eventsByDay = state.events.reduce((acc, ev) => {
-        const d = new Date(ev.start_time);
-        if (d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear()) {
-          const day = d.getDate();
-          if (!acc[day]) acc[day] = [];
-          acc[day].push(ev);
-        }
-        return acc;
-      }, {});
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const today = new Date();
-        const isToday = day === today.getDate() && m.getMonth() === today.getMonth() && m.getFullYear() === today.getFullYear();
-        const dayEvents = eventsByDay[day] || [];
-        const eventsHtml = dayEvents.map(ev => {
-          const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
-          return `<div class="bg-brand-100 border-l-2 border-brand-500 p-1.5 rounded text-[10px] text-brand-900 truncate font-medium cursor-pointer" data-open-event="${ev.id}">${fmtDateTime(ev.start_time, { timeStyle: 'short' })} ${escapeHtml(title)}</div>`;
-        }).join('');
-
-        grid.insertAdjacentHTML('beforeend', `
-                    <div class="bg-white p-1 flex flex-col gap-1 min-h-[56px] overflow-y-auto custom-scrollbar">
-                        <span class="text-sm font-bold w-6 h-6 rounded-full flex items-center justify-center self-end mb-1 ${isToday ? 'bg-brand-700 text-white' : 'text-slate-600'}">${day}</span>
-                        ${eventsHtml}
-                    </div>`);
-      }
+      const eventsByDay = state.events.reduce((acc, ev) => { const d = new Date(ev.start_time); if (d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear()) { const day = d.getDate(); if (!acc[day]) acc[day] = []; acc[day].push(ev); } return acc; }, {});
+      for (let day = 1; day <= daysInMonth; day++) { const today = new Date(); const isToday = day === today.getDate() && m.getMonth() === today.getMonth() && m.getFullYear() === today.getFullYear(); const dayEvents = eventsByDay[day] || []; const eventsHtml = dayEvents.map(ev => { const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en; return `<div class="bg-brand-100 border-l-2 border-brand-500 p-1.5 rounded text-[10px] text-brand-900 truncate font-medium cursor-pointer" data-open-event="${ev.id}">${fmtDateTime(ev.start_time, { timeStyle: 'short' })} ${escapeHtml(title)}</div>`; }).join(''); grid.insertAdjacentHTML('beforeend', `<div class="bg-white p-1 flex flex-col gap-1 min-h-[56px] overflow-y-auto custom-scrollbar"><span class="text-sm font-bold w-6 h-6 rounded-full flex items-center justify-center self-end mb-1 ${isToday ? 'bg-brand-700 text-white' : 'text-slate-600'}">${day}</span>${eventsHtml}</div>`); }
     }
 
     // --- WIRING & INITIALIZATION ---
     function wireUI() {
-      $('#brand-logo').addEventListener('click', e => { e.preventDefault(); showView('schedule'); });
-      $('#lang-toggle').addEventListener('click', handleLangSwitch);
-      $('#mobile-menu-btn').addEventListener('click', () => toggleMobileMenu(true));
-      $('#mobile-menu-close').addEventListener('click', () => toggleMobileMenu(false));
-      $('#mobile-menu-backdrop').addEventListener('click', () => toggleMobileMenu(false));
+      $('#mobileMenuBtn').addEventListener('click', () => toggleMobileMenu(true));
+      
       document.body.addEventListener('click', e => {
-        if (e.target.closest('#btnSignOut')) signOut();
-        if (e.target.closest('#btnProfile')) window.location.href = 'profile.html';
+        if (e.target.closest('#btnSignOut') || e.target.closest('#btnSignOutMobile')) signOut();
+        if (e.target.closest('#langSwitchDesktop') || e.target.closest('#langSwitchMobile')) handleLangSwitch();
+        if (e.target.id === 'mobileNavOverlay' || e.target.closest('#mobileNavCloseBtn')) toggleMobileMenu(false);
+        const card = e.target.closest('[data-open-event]');
+        if (card && eventLogic) { e.preventDefault(); eventLogic.openEvent(card.dataset.openEvent); }
       });
-
+      
       $('#search').addEventListener('input', renderEventsList);
       $('#btn-view-list').addEventListener('click', () => switchScheduleView('list'));
       $('#btn-view-cal').addEventListener('click', () => switchScheduleView('calendar'));
       $('#calPrev').addEventListener("click", () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() - 1); renderScheduleCalendar(); });
       $('#calNext').addEventListener("click", () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() + 1); renderScheduleCalendar(); });
 
-      document.body.addEventListener('click', e => {
-        const card = e.target.closest('[data-open-event]');
-        if (card && eventLogic) {
-          e.preventDefault();
-          eventLogic.openEvent(card.dataset.openEvent);
-        }
-      });
-
       $$('.tab-link').forEach(tab => tab.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab, e.currentTarget)));
 
       $("#year").textContent = new Date().getFullYear();
-      lucide.createIcons();
     }
 
     // --- MAIN EXECUTION ---
@@ -956,17 +817,14 @@
 
       const deps = { supabase, authState, tr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n, show, hide };
       eventLogic = initEventLogic(deps);
-
-      applyI18n();
+      
       wireUI();
-
+      
       await initAuth({
         onAuthReady: renderHeader,
-        onAuthChange: (authState) => {
-          renderHeader();
-        }
+        onAuthChange: renderHeader
       });
-
+      
       await loadEvents();
       supabase.channel('public:events').on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadEvents()).subscribe();
     })();
@@ -975,4 +833,3 @@
 </body>
 
 </html>
-

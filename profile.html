@@ -62,11 +62,12 @@
         .site-header {
             background-color: var(--bg-panel);
             border-bottom: 1px solid var(--border);
-            padding: 0 24px;
+            padding: 0 16px;
             position: sticky;
             top: 0;
             z-index: 50;
         }
+        @media (min-width: 768px) { .site-header { padding: 0 24px; } }
         .site-header .container.header-grid {
             height: 72px;
             max-width: 1800px;
@@ -78,11 +79,12 @@
         .brand { display: flex; align-items: center; gap: 12px; }
         .brand .logo-image { width: 40px; height: 40px; }
         .brand-text .title { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); }
-        .brand-text .subtitle { font-family: 'Lato', sans-serif; font-size: 0.8rem; color: var(--text-secondary); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .brand-text .subtitle { display: none; }
+        @media (min-width: 768px) { .brand-text .subtitle { display: block; font-family: 'Lato', sans-serif; font-size: 0.8rem; color: var(--text-secondary); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
         .nav { display: none; }
         @media (min-width: 960px) { .nav { display: flex; align-items: center; gap: 24px; } }
         .nav .link { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; color: var(--text-secondary); transition: color 0.2s; }
-        .nav .link:hover { color: var(--color-brand); }
+        .nav .link:hover, .nav .link.active { color: var(--color-brand); }
         .nav .divider { width: 1px; height: 20px; background-color: var(--border); }
         .lang-switch-slider { display: flex; cursor: pointer; background: var(--bg-input); border-radius: 99px; padding: 4px; position: relative; font-size: 12px; font-weight: 700; }
         .lang-switch-slider span { padding: 4px 12px; z-index: 1; transition: color 0.2s; user-select: none; }
@@ -286,6 +288,7 @@
                 height: auto;
             }
             .site-header .container.header-grid { height: 64px; }
+            .site-footer small { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
@@ -294,42 +297,43 @@
 
     <!-- Header (from v2) -->
     <header class="site-header">
-        <div class="container header-grid">
-            <a href="index.html" class="brand">
-                <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
-                <div class="brand-text">
-                    <div class="title">Agrovoltaicos sin Fronteras</div>
-                    <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
-                </div>
-            </a>
-
-            <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </button>
-
-            <!-- Desktop Nav -->
-            <nav class="nav">
-                <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-                <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-                <a href="about.html" class="link" data-i18n="nav.about">About</a>
-                <a href="admin.html" id="btnAdmin" class="link hidden" data-i18n="nav.admin">Admin</a>
-                <div class="divider"></div>
-                <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-                    <span>EN</span>
-                    <span>ES</span>
-                </div>
-                <div class="auth-area">
-                    <button id="btnProfile" class="profile-button hidden" aria-label="Open profile">
-                        <span id="userInitial"></span>
-                        <img id="userAvatar" class="hidden" style="width: 100%; height: 100%; object-fit: cover;" />
-                    </button>
-                    <span id="userName" class="hidden"></span>
-                    <a href="signin.html" id="btnSignIn" class="btn-primary" data-i18n="auth.signin">Sign in</a>
-                    <button id="btnSignOut" class="btn-ghost hidden" data-i18n="auth.signout">Sign out</button>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <div class="container header-grid">
+        <a href="index.html" class="brand">
+            <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
+            <div class="brand-text">
+                <div class="title">Agrovoltaicos sin Fronteras</div>
+                <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
+            </div>
+        </a>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <!-- Desktop Nav -->
+        <nav class="nav">
+            <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+            <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
+            <a href="about.html" class="link" data-i18n="nav.about">About</a>
+            <a href="network.html" class="link" data-i18n="nav.network">Network</a>
+            <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+            <div class="divider"></div>
+            <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
+                <span>EN</span>
+                <span>ES</span>
+            </div>
+            <div class="auth-area">
+                <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile" onclick="window.location.href='profile.html'">
+                    <span id="userInitial"></span>
+                    <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />
+                </button>
+                <span id="userName" style="display: none;"></span>
+                <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
+                <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+                    Sign out
+                </button>
+            </div>
+        </nav>
+    </div>
+  </header>
 
     <div id="mobileNavOverlay" class="mobile-nav-overlay">
         <div class="mobile-nav-content">
@@ -465,14 +469,14 @@
 
         const t = {
             en: {
-                tagline: "A seminar series to share advances in agrivoltaics in the Americas", nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin" }, 
+                tagline: "A seminar series to share advances in agrivoltaics in the Americas", nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", admin: "Admin" }, 
                 auth: { signin: "Sign in", signout: "Sign out", signin_prompt_title: "Please Sign In", signin_prompt_body: "Access to your profile dashboard requires authentication.", signin_prompt_button: "Go to Sign In" },
                 profile: { title: "Edit Profile", full_name: "Full Name", username: "Username", affiliation: "Affiliation", work_email: "Work Email", personal_website: "Personal Website", professional_website: "Lab Website", google_scholar: "Google Scholar Profile", fields_section: "Research Interests", fields_hint: "e.g. Solar energy, water conservation...", save: "Save Changes", saving: "Saving...", saved: "Dashboard updated successfully", remove_image: "Remove Picture", upload_error: "Failed to upload image. Please try again." },
                 back: { general: "Go Back" },
                 footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
             },
             es: {
-                tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas", nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin" }, 
+                tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas", nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", admin: "Admin" }, 
                 auth: { signin: "Iniciar sesión", signout: "Cerrar sesión", signin_prompt_title: "Inicia Sesión", signin_prompt_body: "El acceso al panel de perfil requiere autenticación.", signin_prompt_button: "Iniciar Sesión" },
                 profile: { title: "Editar Perfil", full_name: "Nombre Completo", username: "Usuario", affiliation: "Afiliación", work_email: "Correo Trabajo", personal_website: "Sitio Personal", professional_website: "Sitio Laboratorio", google_scholar: "Perfil Google Scholar", fields_section: "Intereses de Investigación", fields_hint: "ej. Energía solar, conservación de agua...", save: "Guardar Cambios", saving: "Guardando...", saved: "Panel actualizado con éxito", remove_image: "Eliminar Foto", upload_error: "Error al subir la imagen. Por favor intenta de nuevo." },
                 back: { general: "Regresar" },
@@ -501,17 +505,24 @@
             const userInitialEl = $("#userInitial");
             const userAvatarEl = $("#userAvatar");
             if (state.session) {
-                hide($("#btnSignIn")); show($("#btnSignOut")); show($("#btnProfile")); show($("#userName"));
+                hide($("#btnSignIn")); 
+                $("#btnSignOut").style.display = "";
+                $("#btnProfile").style.display = "";
+                $("#userName").style.display = "";
                 $("#userName").textContent = state.profile?.full_name || state.profile?.username || "";
                 if (state.profile?.avatar_url) {
                     const url = await getAvatarUrl(state.profile.avatar_url);
-                    if (url) { userAvatarEl.src = url; show(userAvatarEl); hide(userInitialEl); }
+                    if (url) { userAvatarEl.src = url; userAvatarEl.style.display = ""; userInitialEl.style.display = "none"; }
                 } else {
-                    hide(userAvatarEl); show(userInitialEl); userInitialEl.textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
+                    userAvatarEl.style.display = "none"; userInitialEl.style.display = ""; userInitialEl.textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
                 }
-                if (isOrganizer) show($("#btnAdmin")); else hide($("#btnAdmin"));
+                if (isOrganizer) $("#btnAdmin").style.display = ""; else $("#btnAdmin").style.display = "none";
             } else {
-                show($("#btnSignIn")); hide($("#btnSignOut")); hide($("#btnProfile")); hide($("#userName")); hide($("#btnAdmin"));
+                show($("#btnSignIn")); 
+                $("#btnSignOut").style.display = "none";
+                $("#btnProfile").style.display = "none";
+                $("#userName").style.display = "none";
+                $("#btnAdmin").style.display = "none";
             }
             setupMobileMenu();
         }
