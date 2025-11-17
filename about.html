@@ -7,50 +7,8 @@
   <title>About • Agrovoltaicos sin Fronteras</title>
   <meta name="description" content="Learn about the Agrovoltaicos sin Fronteras seminar series.">
 
-  <script>
-    (function() {
-      try {
-        const cached = localStorage.getItem('asf_auth_cache');
-        if (!cached) {
-          document.documentElement.setAttribute('data-auth-ready', 'logged-out');
-          return;
-        }
-        
-        const parsed = JSON.parse(cached);
-        if (Date.now() > parsed.expiry) {
-          localStorage.removeItem('asf_auth_cache');
-          document.documentElement.setAttribute('data-auth-ready', 'logged-out');
-          return;
-        }
-        
-        const isLoggedIn = !!(parsed.data?.session && parsed.data?.profile);
-        
-        const style = document.createElement('style');
-        style.id = 'auth-preload-style';
-        style.textContent = isLoggedIn 
-          ? '#btnSignIn { display: none !important; } #btnProfile, #btnSignOut { display: inline-flex !important; } #btnProfile { display: grid !important; } #userName { display: inline !important; }' 
-          : '#btnSignIn { display: inline-flex !important; } #btnProfile, #userName, #btnSignOut { display: none !important; }';
-        document.head.appendChild(style);
-        
-        const fingerprint = JSON.stringify({
-          hasSession: !!parsed.data?.session,
-          userId: parsed.data?.session?.user?.id || null,
-          profileId: parsed.data?.profile?.id || null,
-          fullName: parsed.data?.profile?.full_name || null,
-          username: parsed.data?.profile?.username || null,
-          avatarUrl: parsed.data?.profile?.avatar_url || null,
-          role: parsed.data?.profile?.role || null,
-          language: localStorage.getItem("lang") || "en"
-        });
-        
-        document.documentElement.setAttribute('data-auth-ready', isLoggedIn ? 'logged-in' : 'logged-out');
-        document.documentElement.setAttribute('data-auth-fingerprint', fingerprint);
-        
-      } catch(e) {
-        document.documentElement.setAttribute('data-auth-ready', 'error');
-      }
-    })();
-  </script>
+  <!-- Critical pre-render script to prevent UI flicker -->
+  <script src="auth-preloader.js"></script>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,48 +17,13 @@
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            display: ['Poppins', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              50: '#f0f7f5',
-              100: '#e1efeb',
-              200: '#c3e0d8',
-              300: '#a5d0c4',
-              400: '#6aae9d',
-              500: '#4A8C82',
-              600: '#3b7d71',
-              700: '#186D50',
-              800: '#145942',
-              900: '#114a37'
-            },
-            accent: {
-              yellow: '#FDEB71'
-            }
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.3s ease-out',
-            'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-          },
-          keyframes: {
-            fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
-            slideUp: { '0%': { transform: 'translateY(20px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } }
-          }
-        }
-      }
-    }
-  </script>
+  
+  <!-- External Tailwind Config -->
+  <script src="tailwind.config.js"></script>
 
   <!-- Custom CSS -->
   <style>
+    /* These styles are specific to the shared header/footer component */
     :root { --color-brand: #16a34a; --color-brand-dark: #15803d; --color-brand-light: #dcfce7; --color-accent: #f97316; --color-danger: #ef4444; --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #64748b; --text-tertiary: #94a3b8; --text-light: #ffffff; --border: #e2e8f0; --radius-md: 12px; --radius-lg: 24px; --header-h: 64px; --footer-h: 64px; --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); }
     * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
     .site-header { background-color: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 0 16px; position: sticky; top: 0; z-index: 50; }
@@ -168,23 +91,6 @@
       .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
       .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #a8b2c1; }
     }
-    #flash {
-      position: fixed;
-      top: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-150%);
-      background-color: #0f172a;
-      color: white;
-      padding: 12px 24px;
-      border-radius: 9999px;
-      font-weight: 600;
-      z-index: 1000;
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    }
-    #flash.visible {
-      transform: translateX(-50%) translateY(0);
-    }
   </style>
 
   <!-- Lucide Icons -->
@@ -210,8 +116,9 @@
       <nav class="nav">
         <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
         <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-        <a href="about.html" class="link active" data-i18n="nav.about">About</a>
+        <a href="about.html" class="link" data-i18n="nav.about">About</a>
         <a href="network.html" class="link" data-i18n="nav.network">Network</a>
+        <a href="map.html" class="link" data-i18n="nav.map">Map</a>
         <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
         <div class="divider"></div>
         <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
@@ -219,9 +126,11 @@
           <span>ES</span>
         </div>
         <div class="auth-area">
-          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile" onclick="window.location.href='profile.html'">
+          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile"
+            onclick="window.location.href='profile.html'">
             <span id="userInitial"></span>
-            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />
+            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;"
+              alt="User Avatar" />
           </button>
           <span id="userName" style="display: none;"></span>
           <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
@@ -339,166 +248,59 @@
 
   <!-- ================= JAVASCRIPT LOGIC ================= -->
   <script type="module">
-    import { supabase, authState, initAuth, signOut } from './auth.js';
-    
-    let headerState = { lastRenderedFingerprint: null };
+    import { authState, initAuth, signOut } from './auth.js';
+    import { initSharedUI, renderHeader, applyI18n, tr, $$, show, hide } from './ui.js';
+
+    // --- PAGE-SPECIFIC STATE & I18N ---
     const state = { language: localStorage.getItem("lang") || "en" };
-    
     const t = {
       en: {
         tagline: "Seminar series on agrivoltaics in the Americas",
-        nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", admin: "Admin" },
+        nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
         auth: { signin: "Sign in", signout: "Sign out" },
         footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }
       },
       es: {
         tagline: "Serie de seminarios sobre agrovoltaicos en las Américas",
-        nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", admin: "Admin" },
+        nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
         auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
         footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }
       }
     };
-
-    const $ = (sel) => document.querySelector(sel);
-    const $$ = (sel) => document.querySelectorAll(sel);
-    const show = (el) => el?.classList.remove('hidden');
-    const hide = (el) => el?.classList.add('hidden');
-    function tr(key, fallback = "") { const lang = state.language; const parts = key.split("."); let obj = t[lang]; for (const p of parts) obj = obj?.[p]; return obj ?? fallback; }
-    function setFlash(msg, timeout = 3000) { const el = $("#flash"); if (!el) return; el.textContent = msg; el.classList.add("visible"); clearTimeout(setFlash._t); if (timeout > 0) { setFlash._t = setTimeout(() => el.classList.remove("visible"), timeout); } }
-    function escapeHtml(s = "") { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
-    async function getAvatarUrl(path) { if (!path) return null; if (path.startsWith('http')) return path; const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co"; return `${SUPABASE_URL}/storage/v1/object/public/avatars/${path}`; }
     
-    function applyI18n() {
-      $$("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n, el.textContent); });
-      $$("[data-i18n-placeholder]").forEach((el) => { el.placeholder = tr(el.dataset.i18nPlaceholder, el.placeholder); });
-      $$(".lang-switch-slider").forEach(el => el.dataset.lang = state.language);
-      // Show/hide language content
-      $$("[data-lang-content]").forEach(el => {
-        if (el.dataset.langContent === state.language) {
-          show(el);
-        } else {
-          hide(el);
-        }
-      });
-    }
-    
-    function updateActiveNav() {
-      const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-      $$('.nav .link, .mobile-nav-content .link').forEach(link => {
-        const linkPage = link.getAttribute('href');
-        if (linkPage === currentPage) {
-          link.classList.add('active');
-        } else {
-          link.classList.remove('active');
-        }
-      });
+    // --- PAGE-SPECIFIC FUNCTIONS ---
+    function applyPageI18n() {
+        applyI18n(t, state.language); // Apply shared translations
+        // Apply page-specific content visibility
+        $$("[data-lang-content]").forEach(el => {
+            if (el.dataset.langContent === state.language) {
+                show(el);
+            } else {
+                hide(el);
+            }
+        });
     }
 
-    function toggleMobileMenu(forceState) {
-      const overlay = $('#mobileNavOverlay');
-      const showMenu = forceState !== undefined ? forceState : !overlay.classList.contains('is-open');
-      overlay.classList.toggle('is-open', showMenu);
-    }
-
-    async function renderHeader() {
-      const fingerprint = JSON.stringify({
-        hasSession: !!authState.session,
-        userId: authState.session?.user?.id || null,
-        profileId: authState.profile?.id || null,
-        fullName: authState.profile?.full_name || null,
-        avatarUrl: authState.profile?.avatar_url || null,
-        role: authState.profile?.role || null,
-        language: state.language
-      });
-
-      const preloadFingerprint = document.documentElement.getAttribute('data-auth-fingerprint');
-      if (preloadFingerprint === fingerprint && headerState.lastRenderedFingerprint === null) {
-        headerState.lastRenderedFingerprint = fingerprint;
-        document.getElementById('auth-preload-style')?.remove();
-        document.documentElement.removeAttribute('data-auth-fingerprint');
-        applyI18n();
-        updateActiveNav();
-        return;
-      }
-      if (headerState.lastRenderedFingerprint === fingerprint) return;
-      headerState.lastRenderedFingerprint = fingerprint;
-
-      const btnProfile = $('#btnProfile'), userInitial = $('#userInitial'), userAvatar = $('#userAvatar'), userName = $('#userName'), btnSignIn = $('#btnSignIn'), btnSignOut = $('#btnSignOut'), btnAdmin = $('#btnAdmin');
-      const mobileNavContent = $('.mobile-nav-content');
-      const isOrganizer = ["organizer", "admin"].includes(authState.profile?.role);
-      
-      if (authState.session && authState.profile) {
-        show(btnProfile); show(btnSignOut); show(userName); hide(btnSignIn);
-        userName.textContent = authState.profile.full_name || authState.profile.username || '';
-        const avatarPath = authState.profile.avatar_url;
-        const avatarUrl = avatarPath ? await getAvatarUrl(avatarPath) : null;
-        if (avatarUrl) {
-          userAvatar.src = avatarUrl; show(userAvatar); hide(userInitial);
-        } else {
-          userInitial.textContent = (authState.profile.full_name || "U").charAt(0).toUpperCase();
-          hide(userAvatar); show(userInitial);
-        }
-        if (isOrganizer) show(btnAdmin); else hide(btnAdmin);
-      } else {
-        hide(btnProfile); hide(btnSignOut); hide(userName); show(btnSignIn);
-        hide(btnAdmin);
-      }
-      
-      if (mobileNavContent) {
-        const avatarPath = authState.profile?.avatar_url;
-        const avatarUrl = avatarPath ? await getAvatarUrl(avatarPath) : null;
-        const initial = (authState.profile?.full_name || "U").charAt(0).toUpperCase();
-
-        mobileNavContent.innerHTML = `
-          <button id="mobileNavCloseBtn" class="mobile-nav-close-btn" aria-label="Close menu">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-          <nav>
-            <div id="langSwitchMobile" class="lang-switch-slider" data-lang="${state.language}"><span>EN</span><span>ES</span></div>
-            <a href="index.html" class="link" data-i18n="nav.schedule"></a>
-            <a href="archive.html" class="link" data-i18n="nav.archive"></a>
-            <a href="about.html" class="link active" data-i18n="nav.about"></a>
-            <a href="network.html" class="link" data-i18n="nav.network"></a>
-            ${isOrganizer ? `<a href="admin.html" class="link" data-i18n="nav.admin"></a>` : ''}
-            <div class="auth-area">
-              ${authState.session && authState.profile ? `
-                <button class="profile-button" onclick="window.location.href='profile.html'">
-                  ${avatarUrl ? `<img src="${avatarUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />` : `<span>${initial}</span>`}
-                </button>
-                <span id="userNameMobile">${escapeHtml(authState.profile.full_name || "")}</span>
-                <button id="btnSignOutMobile" class="btn btn-secondary"><span data-i18n="auth.signout"></span></button>
-              ` : `
-                <a href="signin.html" id="btnSignInMobile" class="btn btn-primary"><span data-i18n="auth.signin"></span></a>
-              `}
-            </div>
-          </nav>
-        `;
-      }
-      
-      document.getElementById('auth-preload-style')?.remove();
-      applyI18n();
-      updateActiveNav();
-    }
-    
     function handleLangSwitch() { 
       state.language = state.language === 'en' ? 'es' : 'en'; 
       localStorage.setItem("lang", state.language); 
-      applyI18n(); 
+      applyPageI18n();
     }
-
-    function wireUI() {
-      $('#mobileMenuBtn').addEventListener('click', () => toggleMobileMenu(true));
-      document.body.addEventListener('click', e => {
-        if (e.target.closest('#btnSignOut') || e.target.closest('#btnSignOutMobile')) signOut();
-        if (e.target.closest('#langSwitchDesktop') || e.target.closest('#langSwitchMobile')) handleLangSwitch();
-        if (e.target.id === 'mobileNavOverlay' || e.target.closest('#mobileNavCloseBtn')) toggleMobileMenu(false);
-      });
-      $("#year").textContent = new Date().getFullYear();
-    }
-
+    
+    // --- MAIN EXECUTION ---
     (async function main() {
-      wireUI();
-      await initAuth({ onAuthReady: renderHeader, onAuthChange: renderHeader });
+      // Initialize shared UI components (header buttons, mobile menu, etc.)
+      initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
+      
+      // Initialize authentication and render the header when auth state is known
+      await initAuth({ 
+          onAuthReady: () => renderHeader(authState, t, state.language), 
+          onAuthChange: () => renderHeader(authState, t, state.language) 
+      });
+
+      // Apply initial language settings to the page content
+      applyPageI18n();
+
       lucide.createIcons();
     })();
   </script>

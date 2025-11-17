@@ -1,503 +1,898 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <title>Admin • Agrovoltaicos sin Fronteras</title>
-    <meta name="description" content="Organizer tools for managing the Agrovoltaicos sin Fronteras seminar series." />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Admin • Agrovoltaicos sin Fronteras</title>
+  <meta name="description" content="Organizer tools for managing the Agrovoltaicos sin Fronteras seminar series.">
+
+  <!-- Critical pre-render script to prevent UI flicker -->
+  <script src="auth-preloader.js"></script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- External Tailwind Config -->
+  <script src="tailwind.config.js"></script>
+
+  <!-- FullCalendar (global build + locales) -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales-all.global.min.js"></script>
+
+  <!-- Custom CSS -->
+  <style>
+    /* These styles are specific to the shared header/footer component */
+    :root { --color-brand: #16a34a; --color-brand-dark: #15803d; --color-brand-light: #dcfce7; --color-accent: #f97316; --color-danger: #ef4444; --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #64748b; --text-tertiary: #94a3b8; --text-light: #ffffff; --border: #e2e8f0; --radius-md: 12px; --radius-lg: 24px; --header-h: 64px; --footer-h: 64px; --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); }
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    .site-header { background-color: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 0 16px; position: sticky; top: 0; z-index: 50; }
+    @media (min-width: 768px) { .site-header { padding: 0 24px; } }
+    .site-header .container.header-grid { height: 72px; max-width: 1800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand .logo-image { width: 40px; height: 40px; }
+    .brand-text .title { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); }
+    .brand-text .subtitle { display: none; }
+    @media (min-width: 768px) { .brand-text .subtitle { display: block; font-family: 'Lato', sans-serif; font-size: 0.8rem; color: var(--text-secondary); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+    .nav { display: none; }
+    @media (min-width: 960px) { .nav { display: flex; align-items: center; gap: 24px; } }
+    .nav .link { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; color: var(--text-secondary); transition: color 0.2s; }
+    .nav .link:hover, .nav .link.active { color: var(--color-brand); }
+    .nav .divider { width: 1px; height: 20px; background-color: var(--border); }
+    .lang-switch-slider { display: flex; cursor: pointer; background: var(--bg-input); border-radius: 99px; padding: 4px; position: relative; font-size: 12px; font-weight: 700; }
+    .lang-switch-slider span { padding: 4px 12px; z-index: 1; transition: color 0.2s; user-select: none; }
+    .lang-switch-slider::before { content: ''; position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: white; border-radius: 99px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+    .lang-switch-slider[data-lang="es"]::before { transform: translateX(100%); }
+    .lang-switch-slider[data-lang="en"] span:first-child, .lang-switch-slider[data-lang="es"] span:last-child { color: var(--color-brand-dark); }
+    .auth-area { display: flex; align-items: center; gap: 16px; }
+    .profile-button { width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-brand-light); color: var(--color-brand-dark); font-weight: 700; font-family: 'Poppins', sans-serif; display: grid; place-content: center; overflow: hidden; border: 2px solid var(--border); }
+    #userName { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; }
+    .mobile-menu-btn { display: block; color: var(--text-secondary); }
+    @media (min-width: 960px) { .mobile-menu-btn { display: none; } }
+    .mobile-nav-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 998; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
+    .mobile-nav-overlay.is-open { opacity: 1; visibility: visible; }
+    .mobile-nav-content { position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 320px; background: var(--bg-panel); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1); display: flex; flex-direction: column; z-index: 999; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1); padding: 24px; }
+    .is-open .mobile-nav-content { transform: translateX(0); }
+    .mobile-nav-close-btn { position: absolute; top: 16px; right: 16px; color: var(--text-secondary); z-index: 10; }
+    .mobile-nav-content > nav { display: flex; flex-direction: column; align-items: center; text-align: center; height: 100%; padding-top: 48px; }
+    .mobile-nav-content .link { font-size: 1.75rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--text-primary); width: 100%; padding: 12px 0; }
+    .mobile-nav-content .link.active { color: var(--color-brand); }
+    .mobile-nav-content .divider { display: none; }
+    .mobile-nav-content .lang-switch-slider { order: -1; transform: scale(1.15); margin-bottom: 48px; }
+    .mobile-nav-content .auth-area { margin-top: auto; width: 100%; padding-top: 24px; border-top: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .mobile-nav-content .auth-area .profile-button { width: 64px; height: 64px; font-size: 2rem; }
+    .mobile-nav-content .auth-area #userNameMobile { font-weight: 600; font-size: 1.1rem; color: var(--text-primary); }
+    .mobile-nav-content .auth-area #btnSignOutMobile, .mobile-nav-content .auth-area #btnSignInMobile { width: 100%; justify-content: center; padding: 12px 24px; font-size: 1rem; border-radius: var(--radius-md); }
+    .btn { border: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--color-brand-dark); color: white; box-shadow: 0 4px 12px -2px rgba(22, 163, 74, 0.3); }
+    .btn-primary:hover { background: #14532d; }
+    .btn-secondary { background: white; border: 2px solid var(--border); color: var(--text-primary); }
+    .btn-secondary:hover { border-color: var(--text-tertiary); background: var(--bg-input); }
+    .btn-ghost { background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 700; padding: 8px 12px; border-radius: 8px; }
+    .btn-ghost:hover { background: var(--bg-input); color: var(--text-primary); }
+    #btnSignIn { padding: 8px 16px; font-size: 0.9rem; border-radius: 8px; background: var(--color-brand); color: white;}
+    #btnSignIn:hover { background: var(--color-brand-dark); }
+    .site-footer { background-color: var(--bg-panel); border-top: 1px solid var(--border); padding: 24px; }
+    .site-footer .container { max-width: 1800px; margin: 0 auto; }
+    .site-footer small { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-secondary); }
+    .site-footer .footer-text { display: flex; align-items: center; flex-wrap: wrap; }
+    .site-footer .footer-logos { display: flex; align-items: center; gap: 8px; }
+    .site-footer .footer-logos img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    @media (max-width: 767px) { .site-footer small { flex-direction: column; text-align: center; } }
+  </style>
+
+  <!-- Admin-specific styles -->
+  <style>
+    /* --- ADMIN DASHBOARD LAYOUT --- */
+    .app-main { padding: 16px 24px; overflow: hidden; height: 100%; }
+    .panel { background: var(--bg-panel); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-panel); display: flex; flex-direction: column; overflow: hidden; }
     
-    <!-- Modern Font Stack -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    #admin.dashboard-grid {
+        display: grid;
+        grid-template-columns: minmax(450px, 1.2fr) 2fr;
+        gap: 20px;
+        height: 100%;
+        max-width: 1800px; margin: 0 auto;
+    }
+    .organizer-form-container, .admin-side { padding: 24px; }
 
-    <!-- FullCalendar (global build + locales) -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales-all.global.min.js"></script>
+    /* Panel Header Styling */
+    .panel h2 {
+        margin: 0 0 16px 0;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+        font-family: 'Poppins', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
 
-    <style>
-        /* --- 2025 DESIGN TOKENS (V1 CORE) --- */
-        :root {
-            --color-brand: #16a34a;
-            --color-brand-dark: #15803d;
-            --color-brand-light: #dcfce7;
-            --color-accent: #f97316;
-            --color-danger: #ef4444;
+    /* --- LEFT PANEL: FORM --- */
+    #createEventForm {
+        flex-grow: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding-right: 8px;
+        display: flex;
+        flex-direction: column;
+    }
+    #createEventForm > div:first-child { flex-grow: 1; }
+    #createEventForm > div:last-child { margin-top: auto; padding-top: 16px; flex-shrink: 0; }
 
-            --bg-main: #f8fafc;
-            --bg-panel: #ffffff;
-            --bg-input: #f1f5f9;
+    /* Form Styling */
+    .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+    .grid-form .col-span-2 { grid-column: 1 / -1; }
+    .grid-form label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 6px; display: block; }
+    .grid-form input, .grid-form select, .grid-form textarea {
+        background: var(--bg-input); border: 1px solid transparent; padding: 10px 14px;
+        border-radius: 10px; font-size: 14px; transition: all 0.2s; color: var(--text-primary);
+        width: 100%; font-family: inherit;
+    }
+    .grid-form input:focus, .grid-form select:focus, .grid-form textarea:focus {
+        background: white; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); outline: none;
+    }
+    .grid-form textarea { min-height: 90px; resize: vertical; }
 
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --text-tertiary: #94a3b8;
-            --text-light: #ffffff;
+    /* Speakers Fieldset */
+    .speakers-fieldset { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 16px; margin-top: 8px; background: var(--bg-main); }
+    .speakers-fieldset legend { font-weight: 700; padding: 0 8px; font-size: 13px; color: var(--text-secondary); }
+    .speaker-row { display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 12px; align-items: flex-end; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .speaker-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .speaker-row .checkbox-field { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-bottom: 8px;}
+    .speaker-row .checkbox-field label { font-size: 11px; margin: 0; }
+    .remove-speaker-btn { color: var(--color-danger); font-weight: 700; font-size: 18px; line-height: 1; border-radius: 50%; width: 36px; height: 36px; display: grid; place-items: center; }
+    .remove-speaker-btn:hover { background-color: #fee2e2; }
 
-            --border: #e2e8f0;
-            --radius-md: 12px;
-            --radius-lg: 24px;
-            
-            --header-h: 64px;
-            --footer-h: 64px;
-            
-            --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-        }
+    /* Banner Management */
+    .banner-management { background: var(--color-brand-light); border: 1px solid var(--color-brand); border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px; flex-shrink: 0; }
+    .banner-management strong { color: var(--color-brand-dark); }
 
-        /* --- BASE RESET & V1 DESKTOP LAYOUT --- */
-        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    /* --- RIGHT PANEL: CALENDAR --- */
+    .calendar-tools { display: flex; margin-bottom: 16px; flex-shrink: 0; }
+    .calendar-tools input { background: var(--bg-input); border: 1px solid transparent; padding: 10px 14px; border-radius: 10px; font-size: 14px; width: 100%; transition: all 0.2s; }
+    .calendar-tools input:focus { background: white; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); outline: none; }
+    #calendar { flex-grow: 1; min-height: 0; }
+
+    /* FullCalendar Theme Overrides */
+    :root {
+        --fc-bg-color: transparent; --fc-border-color: var(--border); --fc-text-color: var(--text-primary); --fc-neutral-bg-color: var(--bg-input); --fc-today-bg-color: color-mix(in srgb, var(--color-brand) 10%, transparent); --fc-event-bg-color: var(--color-brand); --fc-event-border-color: var(--color-brand); --fc-event-text-color: var(--text-light); --fc-button-bg-color: var(--bg-panel); --fc-button-border-color: var(--border); --fc-button-text-color: var(--text-secondary); --fc-button-active-bg-color: var(--color-brand); --fc-button-active-border-color: var(--color-brand); --fc-button-active-text-color: #fff; --fc-button-hover-bg-color: var(--bg-input);
+    }
+    #calendar .fc { height: 100%; font-size: 13px; }
+    .fc-col-header-cell-cushion, .fc-daygrid-day-number { text-decoration: none; color: var(--text-secondary) !important; font-weight: 600; }
+    .fc .fc-toolbar-title { font-size: 1.25em; font-family: 'Poppins', sans-serif; font-weight: 700; }
+    .fc .fc-button { text-transform: capitalize; box-shadow: none !important; border-radius: 8px; padding: 8px 12px;}
+
+    /* --- MODAL & MISC --- */
+    #edit-event-modal { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); color: var(--text-primary); box-shadow: 0 20px 40px -10px rgb(0 0 0 / 0.15); width: 90%; max-width: 800px; padding: 24px 32px; max-height: 90vh; overflow: hidden; flex-direction: column; }
+    #edit-event-modal[open] { display: flex; }
+    #edit-event-modal::backdrop { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    #edit-event-modal h2 { margin: 0; font-family: 'Poppins', sans-serif; font-size: 20px; }
+    #edit-event-modal form { overflow-y: auto; padding-right: 8px; margin-right: -8px; flex-grow: 1; }
+    .conflict-row { font-size: 0.8rem; color: #f97316; line-height: 1.4; }
+    #accessDenied { background: white; padding: 48px; border-radius: 32px; text-align: center; box-shadow: 0 20px 40px -10px rgb(0 0 0 / 0.1); max-width: 420px; margin: auto; }
+    #accessDenied h2 { font-family: 'Poppins', sans-serif; margin-bottom: 12px; font-size: 24px; }
+    #accessDenied p { color: var(--text-secondary); margin-bottom: 32px; line-height: 1.5; }
+
+    .btn-danger { background: var(--color-danger); color: white; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-danger-ghost { background: transparent; color: var(--color-danger); }
+    .btn-danger-ghost:hover { background-color: #fee2e2; }
+
+    /* --- NOTIFICATION --- */
+    #flash { position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--text-primary); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; z-index: 1000; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    #flash.visible { transform: translateX(-50%) translateY(0); }
+
+    /* --- MOBILE VIEW OVERHAUL --- */
+    @media (max-width: 959px) {
         html, body {
-            height: 100%; width: 100%; margin: 0; padding: 0;
-            overflow: hidden; /* Enforce non-scrollable body ON DESKTOP */
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-primary);
-            font-size: 14px;
+            height: auto;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
         body {
-            display: grid;
-            grid-template-rows: auto 1fr auto; /* Header, Main, Footer */
+            display: block;
         }
-        a { text-decoration: none; color: inherit; }
-        button { cursor: pointer; font-family: inherit; border: none; background: transparent; padding: 0; }
-        
-        /* --- UTILITIES --- */
-        .hidden { display: none !important; }
-
-        /* --- V2 HEADER STYLES (EXACT REPLICA) --- */
+        .app-main {
+            overflow: visible;
+            height: auto;
+            padding: 16px;
+        }
         .site-header {
-            background-color: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            padding: 0 24px;
-            position: sticky;
-            top: 0;
-            z-index: 50;
+            padding: 0 16px;
         }
         .site-header .container.header-grid {
-            height: 72px;
-            max-width: 1800px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            height: 64px;
         }
-        .brand { display: flex; align-items: center; gap: 12px; }
-        .brand .logo-image { width: 40px; height: 40px; }
-        .brand-text .title { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); }
-        .brand-text .subtitle { font-family: 'Lato', sans-serif; font-size: 0.8rem; color: var(--text-secondary); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .nav { display: none; }
-        @media (min-width: 960px) { .nav { display: flex; align-items: center; gap: 24px; } }
-        .nav .link { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; color: var(--text-secondary); transition: color 0.2s; }
-        .nav .link:hover { color: var(--color-brand); }
-        .nav .divider { width: 1px; height: 20px; background-color: var(--border); }
-        .lang-switch-slider { display: flex; cursor: pointer; background: var(--bg-input); border-radius: 99px; padding: 4px; position: relative; font-size: 12px; font-weight: 700; }
-        .lang-switch-slider span { padding: 4px 12px; z-index: 1; transition: color 0.2s; user-select: none; }
-        .lang-switch-slider::before { content: ''; position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: white; border-radius: 99px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
-        .lang-switch-slider[data-lang="es"]::before { transform: translateX(100%); }
-        .lang-switch-slider[data-lang="en"] span:first-child, .lang-switch-slider[data-lang="es"] span:last-child { color: var(--color-brand-dark); }
-        .auth-area { display: flex; align-items: center; gap: 16px; }
-        .profile-button { width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-brand-light); color: var(--color-brand-dark); font-weight: 700; font-family: 'Poppins', sans-serif; display: grid; place-content: center; overflow: hidden; border: 2px solid var(--border); }
-        #userName { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; }
-        
-        /* --- MOBILE NAVIGATION --- */
-        .mobile-menu-btn { display: block; color: var(--text-secondary); }
-        @media (min-width: 960px) { .mobile-menu-btn { display: none; } }
-        .mobile-nav-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 998; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
-        .mobile-nav-overlay.is-open { opacity: 1; visibility: visible; }
-        .mobile-nav-content { position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 320px; background: var(--bg-panel); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1); display: flex; flex-direction: column; z-index: 999; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1); padding: 24px; }
-        .is-open .mobile-nav-content { transform: translateX(0); }
-        .mobile-nav-close-btn { position: absolute; top: 16px; right: 16px; color: var(--text-secondary); z-index: 10; }
-        .mobile-nav-content > nav { display: flex; flex-direction: column; align-items: center; text-align: center; height: 100%; padding-top: 48px; }
-        .mobile-nav-content .link { font-size: 1.75rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--text-primary); width: 100%; padding: 12px 0; }
-        .mobile-nav-content .divider { display: none; }
-        .mobile-nav-content .lang-switch-slider { order: -1; transform: scale(1.15); margin-bottom: 48px; }
-        .mobile-nav-content .auth-area { margin-top: auto; width: 100%; padding-top: 24px; border-top: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .mobile-nav-content .auth-area .profile-button { width: 64px; height: 64px; font-size: 2rem; }
-        .mobile-nav-content .auth-area #userName { font-weight: 600; font-size: 1.1rem; color: var(--text-primary); }
-        .mobile-nav-content .auth-area #btnSignOut, .mobile-nav-content .auth-area #btnSignIn { width: 100%; justify-content: center; padding: 12px 24px; font-size: 1rem; border-radius: var(--radius-md); }
-
-        /* --- BUTTONS --- */
-        .btn { border: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--color-brand-dark); color: white; box-shadow: 0 4px 12px -2px rgba(22, 163, 74, 0.3); }
-        .btn-primary:hover { background: #14532d; }
-        .btn-secondary { background: white; border: 2px solid var(--border); color: var(--text-primary); }
-        .btn-secondary:hover { border-color: var(--text-tertiary); background: var(--bg-input); }
-        .btn-danger { background: var(--color-danger); color: white; }
-        .btn-danger:hover { background: #dc2626; }
-        .btn-danger-ghost { background: transparent; color: var(--color-danger); }
-        .btn-danger-ghost:hover { background-color: #fee2e2; }
-        .btn-ghost { background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 700; padding: 8px 12px; border-radius: 8px; }
-        .btn-ghost:hover { background: var(--bg-input); color: var(--text-primary); }
-        #btnSignIn { padding: 8px 16px; font-size: 0.9rem; border-radius: 8px; background: var(--color-brand); color: white;}
-        #btnSignIn:hover { background: var(--color-brand-dark); }
-
-        /* --- ADMIN DASHBOARD LAYOUT --- */
-        .app-main { padding: 16px 24px; overflow: hidden; height: 100%; }
-        .panel { background: var(--bg-panel); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-panel); display: flex; flex-direction: column; overflow: hidden; }
-        
+        .brand-text .subtitle {
+            display: none;
+        }
         #admin.dashboard-grid {
-            display: grid;
-            grid-template-columns: minmax(450px, 1.2fr) 2fr;
-            gap: 20px;
-            height: 100%;
-            max-width: 1800px; margin: 0 auto;
-        }
-        .organizer-form-container, .admin-side { padding: 24px; }
-
-        /* Panel Header Styling */
-        .panel h2 {
-            margin: 0 0 16px 0;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border);
-            font-family: 'Poppins', sans-serif;
-            font-size: 20px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        /* --- LEFT PANEL: FORM --- */
-        #createEventForm {
-            flex-grow: 1;
-            min-height: 0;
-            overflow-y: auto;
-            padding-right: 8px;
             display: flex;
             flex-direction: column;
+            height: auto;
+            gap: 16px;
         }
-        #createEventForm > div:first-child { flex-grow: 1; }
-        #createEventForm > div:last-child { margin-top: auto; padding-top: 16px; flex-shrink: 0; }
-
-        /* Form Styling */
-        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
-        .grid-form .col-span-2 { grid-column: 1 / -1; }
-        .grid-form label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 6px; display: block; }
-        .grid-form input, .grid-form select, .grid-form textarea {
-            background: var(--bg-input); border: 1px solid transparent; padding: 10px 14px;
-            border-radius: 10px; font-size: 14px; transition: all 0.2s; color: var(--text-primary);
-            width: 100%; font-family: inherit;
+        .organizer-form-container, .admin-side {
+            max-height: none;
+            min-height: auto;
+            padding: 16px;
         }
-        .grid-form input:focus, .grid-form select:focus, .grid-form textarea:focus {
-            background: white; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); outline: none;
+        .admin-side {
+            min-height: 80vh; /* Ensure calendar has height */
         }
-        .grid-form textarea { min-height: 90px; resize: vertical; }
-
-        /* Speakers Fieldset */
-        .speakers-fieldset { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 16px; margin-top: 8px; background: var(--bg-main); }
-        .speakers-fieldset legend { font-weight: 700; padding: 0 8px; font-size: 13px; color: var(--text-secondary); }
-        .speaker-row { display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 12px; align-items: flex-end; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-        .speaker-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .speaker-row .checkbox-field { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-bottom: 8px;}
-        .speaker-row .checkbox-field label { font-size: 11px; margin: 0; }
-        .remove-speaker-btn { color: var(--color-danger); font-weight: 700; font-size: 18px; line-height: 1; border-radius: 50%; width: 36px; height: 36px; display: grid; place-items: center; }
-        .remove-speaker-btn:hover { background-color: #fee2e2; }
-
-        /* Banner Management */
-        .banner-management { background: var(--color-brand-light); border: 1px solid var(--color-brand); border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px; flex-shrink: 0; }
-        .banner-management strong { color: var(--color-brand-dark); }
-
-        /* --- RIGHT PANEL: CALENDAR --- */
-        .calendar-tools { display: flex; margin-bottom: 16px; flex-shrink: 0; }
-        .calendar-tools input { background: var(--bg-input); border: 1px solid transparent; padding: 10px 14px; border-radius: 10px; font-size: 14px; width: 100%; transition: all 0.2s; }
-        .calendar-tools input:focus { background: white; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); outline: none; }
-        #calendar { flex-grow: 1; min-height: 0; }
-
-        /* FullCalendar Theme Overrides */
-        :root {
-            --fc-bg-color: transparent; --fc-border-color: var(--border); --fc-text-color: var(--text-primary); --fc-neutral-bg-color: var(--bg-input); --fc-today-bg-color: color-mix(in srgb, var(--color-brand) 10%, transparent); --fc-event-bg-color: var(--color-brand); --fc-event-border-color: var(--color-brand); --fc-event-text-color: var(--text-light); --fc-button-bg-color: var(--bg-panel); --fc-button-border-color: var(--border); --fc-button-text-color: var(--text-secondary); --fc-button-active-bg-color: var(--color-brand); --fc-button-active-border-color: var(--color-brand); --fc-button-active-text-color: #fff; --fc-button-hover-bg-color: var(--bg-input);
+        .grid-form {
+            grid-template-columns: 1fr;
         }
-        #calendar .fc { height: 100%; font-size: 13px; }
-        .fc-col-header-cell-cushion, .fc-daygrid-day-number { text-decoration: none; color: var(--text-secondary) !important; font-weight: 600; }
-        .fc .fc-toolbar-title { font-size: 1.25em; font-family: 'Poppins', sans-serif; font-weight: 700; }
-        .fc .fc-button { text-transform: capitalize; box-shadow: none !important; border-radius: 8px; padding: 8px 12px;}
-
-        /* --- MODAL & MISC --- */
-        #edit-event-modal { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); color: var(--text-primary); box-shadow: 0 20px 40px -10px rgb(0 0 0 / 0.15); width: 90%; max-width: 800px; padding: 24px 32px; max-height: 90vh; overflow: hidden; flex-direction: column; }
-        #edit-event-modal[open] { display: flex; }
-        #edit-event-modal::backdrop { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        #edit-event-modal h2 { margin: 0; font-family: 'Poppins', sans-serif; font-size: 20px; }
-        #edit-event-modal form { overflow-y: auto; padding-right: 8px; margin-right: -8px; flex-grow: 1; }
-        .conflict-row { font-size: 0.8rem; color: #f97316; line-height: 1.4; }
-        #accessDenied { background: white; padding: 48px; border-radius: 32px; text-align: center; box-shadow: 0 20px 40px -10px rgb(0 0 0 / 0.1); max-width: 420px; margin: auto; }
-        #accessDenied h2 { font-family: 'Poppins', sans-serif; margin-bottom: 12px; font-size: 24px; }
-        #accessDenied p { color: var(--text-secondary); margin-bottom: 32px; line-height: 1.5; }
-
-        /* --- FOOTER STYLES --- */
-        .site-footer { background-color: var(--bg-panel); border-top: 1px solid var(--border); padding: 24px; }
-        .site-footer .container { max-width: 1800px; margin: 0 auto; }
-        .site-footer small { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-secondary); }
-        .site-footer .footer-text { display: flex; align-items: center; flex-wrap: wrap; }
-        .site-footer .footer-logos { display: flex; align-items: center; gap: 8px; }
-        .site-footer .footer-logos img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        
-        /* --- NOTIFICATION --- */
-        #flash { position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--text-primary); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; z-index: 1000; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        #flash.visible { transform: translateX(-50%) translateY(0); }
-
-        /* --- MOBILE VIEW OVERHAUL --- */
-        @media (max-width: 959px) {
-            html, body {
-                height: auto;
-                overflow-y: auto;
-                overflow-x: hidden;
-            }
-            body {
-                display: block;
-            }
-            .app-main {
-                overflow: visible;
-                height: auto;
-                padding: 16px;
-            }
-            .site-header {
-                padding: 0 16px;
-            }
-            .site-header .container.header-grid {
-                height: 64px;
-            }
-            .brand-text .subtitle {
-                display: none;
-            }
-            #admin.dashboard-grid {
-                display: flex;
-                flex-direction: column;
-                height: auto;
-                gap: 16px;
-            }
-            .organizer-form-container, .admin-side {
-                max-height: none;
-                min-height: auto;
-                padding: 16px;
-            }
-            .admin-side {
-                min-height: 80vh; /* Ensure calendar has height */
-            }
-            .grid-form {
-                grid-template-columns: 1fr;
-            }
-            .speaker-row {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-            .banner-management .grid-form {
-                 grid-template-columns: 1fr;
-            }
-            #edit-event-modal {
-                padding: 16px;
-                width: 95%;
-            }
-            #edit-event-modal .grid-form {
-                grid-template-columns: 1fr;
-            }
+        .speaker-row {
+            grid-template-columns: 1fr;
+            gap: 12px;
         }
-    </style>
+        .banner-management .grid-form {
+             grid-template-columns: 1fr;
+        }
+        #edit-event-modal {
+            padding: 16px;
+            width: 95%;
+        }
+        #edit-event-modal .grid-form {
+            grid-template-columns: 1fr;
+        }
+    }
+  </style>
+
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+      .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #a8b2c1; }
+    }
+  </style>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body>
-    <header class="site-header">
+<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-200 selection:text-brand-900">
+
+  <!-- ================= HEADER ================= -->
+  <header class="site-header">
     <div class="container header-grid">
-        <a href="index.html" class="brand">
-            <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
-            <div class="brand-text">
-                <div class="title">Agrovoltaicos sin Fronteras</div>
-                <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
-            </div>
-        </a>
-        <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-        </button>
-        <!-- Desktop Nav -->
-        <nav class="nav">
-            <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-            <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-            <a href="about.html" class="link" data-i18n="nav.about">About</a>
-            <a href="network.html" class="link" data-i18n="nav.network">Network</a>
-            <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-            <div class="divider"></div>
-            <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-                <span>EN</span>
-                <span>ES</span>
-            </div>
-            <div class="auth-area">
-                <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile" onclick="window.location.href='profile.html'">
-                    <span id="userInitial"></span>
-                    <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />
-                </button>
-                <span id="userName" style="display: none;"></span>
-                <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
-                <button id="btnSignOut" class=f"btn-ghost" data-i18n="auth.signout" style="display: none">
-                    Sign out
-                </button>
-            </div>
-        </nav>
+      <a href="index.html" class="brand">
+        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
+        <div class="brand-text">
+          <div class="title">Agrovoltaicos sin Fronteras</div>
+          <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
+        </div>
+      </a>
+      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <!-- Desktop Nav -->
+      <nav class="nav">
+        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
+        <a href="about.html" class="link" data-i18n="nav.about">About</a>
+        <a href="network.html" class="link" data-i18n="nav.network">Network</a>
+        <a href="map.html" class="link" data-i18n="nav.map">Map</a>
+        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
+        <div class="divider"></div>
+        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
+          <span>EN</span>
+          <span>ES</span>
+        </div>
+        <div class="auth-area">
+          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile"
+            onclick="window.location.href='profile.html'">
+            <span id="userInitial"></span>
+            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;"
+              alt="User Avatar" />
+          </button>
+          <span id="userName" style="display: none;"></span>
+          <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
+          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
+            Sign out
+          </button>
+        </div>
+      </nav>
     </div>
   </header>
 
-    <div id="mobileNavOverlay" class="mobile-nav-overlay">
-        <div class="mobile-nav-content"><!-- Injected by JS --></div>
-    </div>
-    
+  <!-- ================= MOBILE MENU OVERLAY ================= -->
+  <div id="mobileNavOverlay" class="mobile-nav-overlay">
+    <div class="mobile-nav-content"><!-- Injected by JS --></div>
+  </div>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="app-main">
     <div id="flash"></div>
 
-    <main class="app-main">
-        <div id="admin" class="dashboard-grid" style="display: none;">
-            <!-- Left Panel: Form -->
-            <div class="organizer-form-container panel">
-                <h2 data-i18n="admin.title">Organizer Tools</h2>
-                <form id="createEventForm">
-                    <div>
-                        <div class="banner-management">
-                          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                            <span style="font-size: 1.5rem;">📢</span>
-                            <strong style="flex: 1; min-width: 150px;">Site Announcement Banner</strong>
-                            <button type="button" id="toggleBannerBtn" class="btn-ghost" style="padding: 4px 12px; font-size: 0.85rem;">
-                              <span id="bannerStatusText">No Active Banner</span>
-                            </button>
-                          </div>
-                          <div class="grid-form" style="gap: 12px;">
-                            <div><label style="font-size: 0.75rem; opacity: 0.8;">Banner Text (EN)</label><input id="bannerTextEn" placeholder="Important announcement..." /></div>
-                            <div><label style="font-size: 0.75rem; opacity: 0.8;">Banner Text (ES)</label><input id="bannerTextEs" placeholder="Anuncio importante..." /></div>
-                            <div class="col-span-2" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                              <button type="button" id="saveBannerBtn" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;"><span id="saveBannerBtnText">Save & Activate</span></button>
-                              <button type="button" id="saveDraftBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">Save Draft</button>
-                              <button type="button" id="clearBannerBtn" class="btn-ghost" style="padding: 6px 12px; font-size: 0.85rem;">Deactivate</button>
-                              <label style="display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 0.85rem; cursor: pointer; color: var(--text-secondary);">
-                                <input type="checkbox" id="bannerActiveCheck" checked />
-                                <span id="activeCheckLabel">Auto-Activate</span>
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div class="grid-form">
-                            <div><label data-i18n="event.title_en">Title (EN)</label><input id="titleEn" required /></div>
-                            <div><label data-i18n="event.title_es">Title (ES)</label><input id="titleEs" /></div>
-                            <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea id="descEn"></textarea></div>
-                            <div class="col-span-2"><label data-i18n="event.desc_es">Description (ES)</label><textarea id="descEs"></textarea></div>
-                            <div><label data-i18n="event.start">Start time</label><input id="startTime" type="text" placeholder="mm/dd/yyyy --:-- --" required /></div>
-                            <div><label data-i18n="event.end">End time</label><input id="endTime" type="text" placeholder="mm/dd/yyyy --:-- --" /></div>
-                            <div><label data-i18n="event.lang">Language</label>
-                                <select id="eventLang">
-                                    <option value="bi">Bilingual</option><option value="en">English</option><option value="es">Español</option>
-                                </select>
-                            </div>
-                            <div><label data-i18n="event.host">Host org</label><input id="hostOrg" placeholder="UNAM, University of Arizona…" /></div>
-                            <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="zoomUrl" type="url" /></div>
-                            <div class="col-span-2"><label data-i18n="event.recording_url">Recording URL</label><input id="recordingUrl" type="url" /></div>
-                            <div class="col-span-2"><label data-i18n="tags.label">Tags (optional)</label><input id="tags" data-i18n-placeholder="tags.placeholder" placeholder="earth science, agriculture, environment" /></div>
-                            <fieldset class="speakers-fieldset col-span-2">
-                                <legend data-i18n="speakers.title">Speakers</legend>
-                                <div id="speakersContainer"></div>
-                                <button type="button" class="btn btn-secondary" id="addSpeakerBtn" data-i18n="speakers.add" style="padding: 6px 12px; font-size: 0.85rem; margin-top: 8px;">Add Speaker</button>
-                            </fieldset>
-                        </div>
-                        <div id="slotConflicts" class="slot-conflicts col-span-2" style="margin-top: 1rem;"></div>
-                    </div>
-                    <div><button class="btn btn-primary" type="submit" data-i18n="event.create" style="width: 100%;">Create Event</button></div>
-                </form>
-            </div>
-
-            <!-- Right Panel: Calendar -->
-            <div class="admin-side panel">
-                <h2 data-i18n="calendar.title">Event Calendar</h2>
-                <div class="calendar-tools">
-                    <input id="tagFilterInput" data-i18n-placeholder="tags.filter" placeholder="Filter by tags (comma separated)" />
+    <div id="admin" class="dashboard-grid" style="display: none;">
+      <!-- Left Panel: Form -->
+      <div class="organizer-form-container panel">
+        <h2 data-i18n="admin.title">Organizer Tools</h2>
+        <form id="createEventForm">
+          <div>
+            <div class="banner-management">
+              <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                <span style="font-size: 1.5rem;">📢</span>
+                <strong style="flex: 1; min-width: 150px;">Site Announcement Banner</strong>
+                <button type="button" id="toggleBannerBtn" class="btn-ghost" style="padding: 4px 12px; font-size: 0.85rem;">
+                  <span id="bannerStatusText">No Active Banner</span>
+                </button>
+              </div>
+              <div class="grid-form" style="gap: 12px;">
+                <div><label style="font-size: 0.75rem; opacity: 0.8;">Banner Text (EN)</label><input id="bannerTextEn" placeholder="Important announcement..." /></div>
+                <div><label style="font-size: 0.75rem; opacity: 0.8;">Banner Text (ES)</label><input id="bannerTextEs" placeholder="Anuncio importante..." /></div>
+                <div class="col-span-2" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <button type="button" id="saveBannerBtn" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;"><span id="saveBannerBtnText">Save & Activate</span></button>
+                  <button type="button" id="saveDraftBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">Save Draft</button>
+                  <button type="button" id="clearBannerBtn" class="btn-ghost" style="padding: 6px 12px; font-size: 0.85rem;">Deactivate</button>
+                  <label style="display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 0.85rem; cursor: pointer; color: var(--text-secondary);">
+                    <input type="checkbox" id="bannerActiveCheck" checked />
+                    <span id="activeCheckLabel">Auto-Activate</span>
+                  </label>
                 </div>
-                <div id="calendar"></div>
+              </div>
             </div>
-        </div>
 
-        <div id="accessDenied" style="display: none;">
-            <h2 data-i18n="access_denied.title">Access Denied</h2>
-            <p data-i18n="access_denied.body">You must be an organizer to view this page. Please sign in with an authorized account.</p>
-            <a href="index.html" class="btn btn-secondary" data-i18n="back.general">Back to Schedule</a>
-        </div>
-    </main>
-    
-    <footer class="site-footer">
-        <div class="container">
-          <small>
-            <div class="footer-text">
-              © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
-              <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
-            </div>
-            <div class="footer-logos">
-              <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer">
-                <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics">
-              </a>
-              <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer">
-                <img src="static/unam.png" alt="UNAM">
-              </a>
-              <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer">
-                <img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana" style="background-color: white;">
-              </a>
-              <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer">
-                <img src="static/rame.png" alt="Rame - Red Agrivoltaica de México" style="background-color: white;">
-              </a>
-            </div>
-          </small>
-        </div>
-    </footer>
-
-    <dialog id="edit-event-modal">
-        <div class="modal-header">
-            <h2 data-i18n="event.edit_title">Edit Event</h2>
-            <button id="close-modal-btn" class="btn-ghost" style="padding: 4px 8px;" aria-label="Close">✕</button>
-        </div>
-        <form id="editEventForm">
             <div class="grid-form">
-                <input type="hidden" id="editEventId">
-                <div><label data-i18n="event.title_en">Title (EN)</label><input id="editTitleEn" required /></div>
-                <div><label data-i18n="event.title_es">Title (ES)</label><input id="editTitleEs" /></div>
-                <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea id="editDescEn"></textarea></div>
-                <div class="col-span-2"><label data-i18n="event.desc_es">Description (ES)</label><textarea id="editDescEs"></textarea></div>
-                <div><label data-i18n="event.start">Start time</label><input id="editStartTime" type="datetime-local" required /></div>
-                <div><label data-i18n="event.end">End time</label><input id="editEndTime" type="datetime-local" /></div>
-                <div><label data-i18n="event.lang">Language</label>
-                    <select id="editEventLang">
-                        <option value="bi">Bilingual</option><option value="en">English</option><option value="es">Español</option>
-                    </select>
-                </div>
-                <div><label data-i18n="event.host">Host org</label><input id="editHostOrg" /></div>
-                <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="editZoomUrl" type="url" /></div>
-                <div class="col-span-2"><label data-i18n="event.recording_url">Recording URL</label><input id="editRecordingUrl" type="url" /></div>
-                <div class="col-span-2"><label data-i18n="tags.label">Tags</label><input id="editTags" /></div>
-                <fieldset class="speakers-fieldset col-span-2">
-                    <legend data-i18n="speakers.title">Speakers</legend>
-                    <div id="editSpeakersContainer"></div>
-                    <button type="button" class="btn btn-secondary" id="addEditSpeakerBtn" data-i18n="speakers.add" style="padding: 6px 12px; font-size: 0.85rem; margin-top: 8px;">Add Speaker</button>
-                </fieldset>
-                <div id="editConflicts" class="slot-conflicts col-span-2" style="margin-top: 0.5rem;"></div>
+              <div><label data-i18n="event.title_en">Title (EN)</label><input id="titleEn" required /></div>
+              <div><label data-i18n="event.title_es">Title (ES)</label><input id="titleEs" /></div>
+              <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea id="descEn"></textarea></div>
+              <div class="col-span-2"><label data-i18n="event.desc_es">Description (ES)</label><textarea id="descEs"></textarea></div>
+              <div><label data-i18n="event.start">Start time</label><input id="startTime" type="text" placeholder="mm/dd/yyyy --:-- --" required /></div>
+              <div><label data-i18n="event.end">End time</label><input id="endTime" type="text" placeholder="mm/dd/yyyy --:-- --" /></div>
+              <div><label data-i18n="event.lang">Language</label>
+                <select id="eventLang">
+                  <option value="bi">Bilingual</option><option value="en">English</option><option value="es">Español</option>
+                </select>
+              </div>
+              <div><label data-i18n="event.host">Host org</label><input id="hostOrg" placeholder="UNAM, University of Arizona…" /></div>
+              <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="zoomUrl" type="url" /></div>
+              <div class="col-span-2"><label data-i18n="event.recording_url">Recording URL</label><input id="recordingUrl" type="url" /></div>
+              <div class="col-span-2"><label data-i18n="tags.label">Tags (optional)</label><input id="tags" data-i18n-placeholder="tags.placeholder" placeholder="earth science, agriculture, environment" /></div>
+              <fieldset class="speakers-fieldset col-span-2">
+                <legend data-i18n="speakers.title">Speakers</legend>
+                <div id="speakersContainer"></div>
+                <button type="button" class="btn btn-secondary" id="addSpeakerBtn" data-i18n="speakers.add" style="padding: 6px 12px; font-size: 0.85rem; margin-top: 8px;">Add Speaker</button>
+              </fieldset>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
-                <button class="btn btn-primary" type="submit" data-i18n="save">Save Changes</button>
-                <button id="btnDeleteEvent" class="btn btn-danger" type="button" data-i18n="event.delete">Delete</button>
-            </div>
+            <div id="slotConflicts" class="slot-conflicts col-span-2" style="margin-top: 1rem;"></div>
+          </div>
+          <div><button class="btn btn-primary" type="submit" data-i18n="event.create" style="width: 100%;">Create Event</button></div>
         </form>
-    </dialog>
+      </div>
 
-    <script type="module">
-        import { supabase, initAuth, initSharedUI, renderHeader } from './auth.js';
-        let calendar = null; const state = { language: localStorage.getItem("lang") || "en", events: [], profiles: [], tagFilter: [], }; const t = { en: { tagline: "A seminar series to share advances in agrivoltaics in the Americas", nav: { schedule: "Schedule", about: "About", admin: "Admin", archive: "Archive" }, auth: { signin: "Sign in", signout: "Sign out" }, admin: { title: "Organizer Tools" }, calendar: { title: "Event Calendar" }, event: { title_en: "Title (EN)", title_es: "Title (ES)", desc_en: "Description (EN)", desc_es: "Description (ES)", start: "Start time", end: "End time", host: "Host org", zoom: "Zoom URL (members only)", lang: "Language", recording_url: "Recording URL", create: "Create Event", edit_title: "Edit Event", delete: "Delete" }, speakers: { title: "Speakers", add: "Add Speaker", name: "Name*", affiliation: "Affiliation", link_profile: "Link Profile", primary: "Primary", remove: "Remove" }, tags: { label: "Tags", placeholder: "earth science, agriculture...", hint: "Separate with commas. Not mandatory.", filter: "Filter by tags..." }, save: "Save Changes", access_denied: { title: "Access Denied", body: "You must be an organizer to view this page. Please sign in with an authorized account." }, back: { general: "Go Back" }, errors: { overlap: "Selected time overlaps an existing event.", create_event: "Could not create event", update_event: "Could not update event", delete_event: "Could not delete event", load_profiles: "Could not load user profiles" }, footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }, }, es: { tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas", nav: { schedule: "Calendario", about: "Acerca de", admin: "Admin", archive: "Archivo" }, auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" }, admin: { title: "Herramientas para organizadores" }, calendar: { title: "Calendario de Eventos" }, event: { title_en: "Título (EN)", title_es: "Título (ES)", desc_en: "Descripción (EN)", desc_es: "Descripción (ES)", start: "Inicio", end: "Fin", host: "Institución anfitriona", zoom: "Enlace de Zoom (solo miembros)", lang: "Idioma", recording_url: "URL de grabación", create: "Crear evento", edit_title: "Editar Evento", delete: "Eliminar" }, speakers: { title: "Ponentes", add: "Añadir Ponente", name: "Nombre*", affiliation: "Afiliación", link_profile: "Vincular Perfil", primary: "Principal", remove: "Quitar" }, tags: { label: "Etiquetas", placeholder: "ciencias de la tierra, agricultura...", hint: "Separar con comas. No es obligatorio.", filter: "Filtrar por etiquetas..." }, save: "Guardar Cambios", access_denied: { title: "Acceso Denegado", body: "Debe ser un organizador para ver esta página. Inicie sesión con una cuenta autorizada." }, back: { general: "Regresar" }, errors: { overlap: "El horario seleccionado se cruza con otro evento.", create_event: "No se pudo crear el evento", update_event: "No se pudo actualizar el evento", delete_event: "No se pudo eliminar el evento", load_profiles: "No se pudieron cargar los perfiles de usuario" }, footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }, }, };
-        const $ = (sel) => document.querySelector(sel); const tr = (key, fallback = "") => { const parts = key.split("."); let obj = t[state.language]; for (const p of parts) obj = obj?.[p]; return obj ?? fallback; };
-        const setFlash = (msg, isError = false) => { const el = $("#flash"); if (!el) return; el.textContent = msg; el.style.backgroundColor = isError ? 'var(--color-danger)' : ''; el.classList.add("visible"); setTimeout(() => el.classList.remove("visible"), 3000); };
-        const toIsoOrNull = (v) => { if (!v) return null; const d = new Date(v); return isNaN(d.getTime()) ? null : d.toISOString(); }; const toLocalInputValue = (d) => { if (!d) return ""; d = new Date(d); const p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; }; const overlaps = (aStart, aEnd, bStart, bEnd) => { if (!aStart || !bStart) return false; const aS = new Date(aStart).getTime(); const aE = aEnd ? new Date(aEnd).getTime() : aS + 3600000; const bS = new Date(bStart).getTime(); const bE = bEnd ? new Date(bEnd).getTime() : bS + 3600000; return Math.max(aS, bS) < Math.min(aE, bE); }; const findConflicts = (startIso, endIso, excludeId = null) => { if (!startIso) return []; return state.events.filter(ev => { if (ev.status === 'canceled' || (excludeId != null && String(ev.id) === String(excludeId))) return false; return overlaps(startIso, endIso, ev.start_time, ev.end_time); }); }; const escapeHtml = (s) => (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); const normalizeTags = (s) => String(s || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-        const applyI18n = () => { document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = tr(e.dataset.i18n, e.textContent)); document.querySelectorAll("[data-i18n-placeholder]").forEach(e => e.placeholder = tr(e.dataset.i18nPlaceholder, e.placeholder)); document.querySelectorAll(".lang-switch-slider").forEach(el => el.dataset.lang = state.language); if (calendar) calendar.setOption('locale', state.language === 'es' ? 'es' : 'en'); }; const handleLangSwitch = () => { state.language = state.language === "en" ? "es" : "en"; localStorage.setItem("lang", state.language); applyI18n(); if (calendar) calendar.render(); };
-        const checkAccess = async (authState) => {
-    const isAllowed = ["organizer", "admin"].includes(authState.profile?.role);
-    $("#admin").style.display = isAllowed ? "" : "none";
-    $("#accessDenied").style.display = isAllowed ? 'none' : 'block';
-    if (isAllowed) {
-        await loadProfiles();
-        renderSpeakerFields('speakersContainer'); // Add this line here
-        if (!calendar) initializeCalendar();
-        await loadEvents();
+      <!-- Right Panel: Calendar -->
+      <div class="admin-side panel">
+        <h2 data-i18n="calendar.title">Event Calendar</h2>
+        <div class="calendar-tools">
+          <input id="tagFilterInput" data-i18n-placeholder="tags.filter" placeholder="Filter by tags (comma separated)" />
+        </div>
+        <div id="calendar"></div>
+      </div>
+    </div>
+
+    <div id="accessDenied" style="display: none;">
+      <h2 data-i18n="access_denied.title">Access Denied</h2>
+      <p data-i18n="access_denied.body">You must be an organizer to view this page. Please sign in with an authorized account.</p>
+      <a href="index.html" class="btn btn-secondary" data-i18n="back.general">Back to Schedule</a>
+    </div>
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <small>
+        <div class="footer-text">
+          © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
+          <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
+        </div>
+        <div class="footer-logos">
+          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer">
+            <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics">
+          </a>
+          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer">
+            <img src="static/unam.png" alt="UNAM">
+          </a>
+          <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer">
+            <img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana" style="background-color: white;">
+          </a>
+          <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer">
+            <img src="static/rame.png" alt="Rame - Red Agrivoltaica de México" style="background-color: white;">
+          </a>
+        </div>
+      </small>
+    </div>
+  </footer>
+
+  <!-- ================= MODAL ================= -->
+  <dialog id="edit-event-modal">
+    <div class="modal-header">
+      <h2 data-i18n="event.edit_title">Edit Event</h2>
+      <button id="close-modal-btn" class="btn-ghost" style="padding: 4px 8px;" aria-label="Close">✕</button>
+    </div>
+    <form id="editEventForm">
+      <div class="grid-form">
+        <input type="hidden" id="editEventId">
+        <div><label data-i18n="event.title_en">Title (EN)</label><input id="editTitleEn" required /></div>
+        <div><label data-i18n="event.title_es">Title (ES)</label><input id="editTitleEs" /></div>
+        <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea id="editDescEn"></textarea></div>
+        <div class="col-span-2"><label data-i18n="event.desc_es">Description (ES)</label><textarea id="editDescEs"></textarea></div>
+        <div><label data-i18n="event.start">Start time</label><input id="editStartTime" type="datetime-local" required /></div>
+        <div><label data-i18n="event.end">End time</label><input id="editEndTime" type="datetime-local" /></div>
+        <div><label data-i18n="event.lang">Language</label>
+          <select id="editEventLang">
+            <option value="bi">Bilingual</option><option value="en">English</option><option value="es">Español</option>
+          </select>
+        </div>
+        <div><label data-i18n="event.host">Host org</label><input id="editHostOrg" /></div>
+        <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="editZoomUrl" type="url" /></div>
+        <div class="col-span-2"><label data-i18n="event.recording_url">Recording URL</label><input id="editRecordingUrl" type="url" /></div>
+        <div class="col-span-2"><label data-i18n="tags.label">Tags</label><input id="editTags" /></div>
+        <fieldset class="speakers-fieldset col-span-2">
+          <legend data-i18n="speakers.title">Speakers</legend>
+          <div id="editSpeakersContainer"></div>
+          <button type="button" class="btn btn-secondary" id="addEditSpeakerBtn" data-i18n="speakers.add" style="padding: 6px 12px; font-size: 0.85rem; margin-top: 8px;">Add Speaker</button>
+        </fieldset>
+        <div id="editConflicts" class="slot-conflicts col-span-2" style="margin-top: 0.5rem;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+        <button class="btn btn-primary" type="submit" data-i18n="save">Save Changes</button>
+        <button id="btnDeleteEvent" class="btn btn-danger" type="button" data-i18n="event.delete">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script type="module">
+    import { supabase, authState, initAuth, signOut } from './auth.js';
+    import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, setFlash, escapeHtml } from './ui.js';
+
+    // --- PAGE-SPECIFIC STATE & I18N ---
+    const state = { 
+      language: localStorage.getItem("lang") || "en", 
+      events: [], 
+      profiles: [], 
+      tagFilter: [],
+      calendar: null 
+    };
+    
+    const t = {
+      en: {
+        tagline: "Seminar series on agrivoltaics in the Americas",
+        nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
+        auth: { signin: "Sign in", signout: "Sign out" },
+        admin: { title: "Organizer Tools" },
+        calendar: { title: "Event Calendar" },
+        event: {
+          title_en: "Title (EN)", title_es: "Title (ES)", desc_en: "Description (EN)", desc_es: "Description (ES)",
+          start: "Start time", end: "End time", host: "Host org", zoom: "Zoom URL (members only)",
+          lang: "Language", recording_url: "Recording URL", create: "Create Event",
+          edit_title: "Edit Event", delete: "Delete"
+        },
+        speakers: { title: "Speakers", add: "Add Speaker", name: "Name*", affiliation: "Affiliation", link_profile: "Link Profile", primary: "Primary", remove: "Remove" },
+        tags: { label: "Tags", placeholder: "earth science, agriculture...", filter: "Filter by tags..." },
+        save: "Save Changes",
+        access_denied: { title: "Access Denied", body: "You must be an organizer to view this page. Please sign in with an authorized account." },
+        back: { general: "Go Back" },
+        errors: {
+          overlap: "Selected time overlaps an existing event.",
+          create_event: "Could not create event",
+          update_event: "Could not update event",
+          delete_event: "Could not delete event",
+          load_profiles: "Could not load user profiles"
+        },
+        footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }
+      },
+      es: {
+        tagline: "Serie de seminarios sobre agrovoltaicos en las Américas",
+        nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
+        auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
+        admin: { title: "Herramientas para organizadores" },
+        calendar: { title: "Calendario de Eventos" },
+        event: {
+          title_en: "Título (EN)", title_es: "Título (ES)", desc_en: "Descripción (EN)", desc_es: "Descripción (ES)",
+          start: "Inicio", end: "Fin", host: "Institución anfitriona", zoom: "Enlace de Zoom (solo miembros)",
+          lang: "Idioma", recording_url: "URL de grabación", create: "Crear evento",
+          edit_title: "Editar Evento", delete: "Eliminar"
+        },
+        speakers: { title: "Ponentes", add: "Añadir Ponente", name: "Nombre*", affiliation: "Afiliación", link_profile: "Vincular Perfil", primary: "Principal", remove: "Quitar" },
+        tags: { label: "Etiquetas", placeholder: "ciencias de la tierra, agricultura...", filter: "Filtrar por etiquetas..." },
+        save: "Guardar Cambios",
+        access_denied: { title: "Acceso Denegado", body: "Debe ser un organizador para ver esta página. Inicie sesión con una cuenta autorizada." },
+        back: { general: "Regresar" },
+        errors: {
+          overlap: "El horario seleccionado se cruza con otro evento.",
+          create_event: "No se pudo crear el evento",
+          update_event: "No se pudo actualizar el evento",
+          delete_event: "No se pudo eliminar el evento",
+          load_profiles: "No se pudieron cargar los perfiles de usuario"
+        },
+        footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }
+      }
+    };
+
+    // --- PAGE-SPECIFIC FUNCTIONS ---
+    const toIsoOrNull = (v) => { if (!v) return null; const d = new Date(v); return isNaN(d.getTime()) ? null : d.toISOString(); };
+    const toLocalInputValue = (d) => { if (!d) return ""; d = new Date(d); const p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+    const overlaps = (aStart, aEnd, bStart, bEnd) => { if (!aStart || !bStart) return false; const aS = new Date(aStart).getTime(); const aE = aEnd ? new Date(aEnd).getTime() : aS + 3600000; const bS = new Date(bStart).getTime(); const bE = bEnd ? new Date(bEnd).getTime() : bS + 3600000; return Math.max(aS, bS) < Math.min(aE, bE); };
+    const findConflicts = (startIso, endIso, excludeId = null) => { if (!startIso) return []; return state.events.filter(ev => { if (ev.status === 'canceled' || (excludeId != null && String(ev.id) === String(excludeId))) return false; return overlaps(startIso, endIso, ev.start_time, ev.end_time); }); };
+    const normalizeTags = (s) => String(s || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+
+    function applyPageI18n() {
+      applyI18n(t, state.language);
+      if (state.calendar) state.calendar.setOption('locale', state.language === 'es' ? 'es' : 'en');
     }
-};
-        const loadProfiles = async () => { const { data, error } = await supabase.from('profiles').select('id, full_name, affiliation').order('full_name'); if (error) { setFlash(tr('errors.load_profiles'), true); state.profiles = []; } else { state.profiles = data || []; } }; const createProfileOptions = (selectedId) => `<option value="">--</option>${state.profiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.full_name || '')}</option>`).join('')}`; const addSpeakerField = (containerId, speaker = {}) => { const container = $(`#${containerId}`); const row = document.createElement('div'); row.className = 'speaker-row'; row.innerHTML = `<div><label>${tr('speakers.name')}</label><input type="text" class="speaker-name" value="${escapeHtml(speaker.name || '')}" required></div><div><label>${tr('speakers.affiliation')}</label><input type="text" class="speaker-affiliation" value="${escapeHtml(speaker.affiliation || '')}"></div><div><label>${tr('speakers.link_profile')}</label><select class="speaker-profile">${createProfileOptions(speaker.profile_id)}</select></div><div style="display:flex;gap:1rem;align-items:flex-end;"><div class="checkbox-field"><label>${tr('speakers.primary')}</label><input type="checkbox" class="speaker-primary" ${speaker.primary_speaker ? 'checked' : ''}></div><button type="button" class="remove-speaker-btn btn-danger-ghost" title="${tr('speakers.remove')}">✕</button></div>`; container.appendChild(row); }; const renderSpeakerFields = (containerId, speakers = []) => { const container = $(`#${containerId}`); container.innerHTML = ''; if (speakers.length === 0) { addSpeakerField(containerId); } else { speakers.forEach(speaker => addSpeakerField(containerId, speaker)); } }; const passesTagFilter = (ev) => { if (!state.tagFilter.length) return true; const tags = normalizeTags((ev.topic_tags || []).join(',')); return state.tagFilter.every(t => tags.includes(t)); }; const loadEvents = async () => { const { data, error } = await supabase.from("events").select("*").order("start_time"); if (error) console.error(error); else { state.events = data || []; if (calendar) calendar.refetchEvents(); } }; const formatEventsForCalendar = () => state.events.filter(passesTagFilter).map(ev => ({ id: ev.id, title: state.language === 'es' ? (ev.title_es || ev.title_en) : (ev.title_en || ev.title_es), start: ev.start_time, end: ev.end_time, backgroundColor: ev.status === 'canceled' ? '#555' : 'var(--color-brand)', borderColor: ev.status === 'canceled' ? '#555' : 'var(--color-brand)', extendedProps: ev })); const handleEventClick = async ({ event }) => { const ev = event.extendedProps; $("#editEventId").value = String(ev.id); $("#editTitleEn").value = ev.title_en || ""; $("#editTitleEs").value = ev.title_es || ""; $("#editDescEn").value = ev.description_en || ""; $("#editDescEs").value = ev.description_es || ""; $("#editStartTime").value = toLocalInputValue(ev.start_time); $("#editEndTime").value = toLocalInputValue(ev.end_time); $("#editEventLang").value = ev.language || "bi"; $("#editHostOrg").value = ev.host_org || ""; $("#editZoomUrl").value = ev.zoom_url || ""; $("#editRecordingUrl").value = ev.recording_url || ""; $("#editTags").value = (ev.topic_tags || []).join(', '); $("#editConflicts").innerHTML = ''; const { data: speakers } = await supabase.from('event_speakers').select('*').eq('event_id', ev.id); renderSpeakerFields('editSpeakersContainer', speakers || []); $("#edit-event-modal").showModal(); }; const handleTimeSelect = ({ start, end }) => { $("#startTime").value = toLocalInputValue(start); $('#startTime').type = 'datetime-local'; $("#endTime").value = toLocalInputValue(end); $('#endTime').type = 'datetime-local'; calendar.unselect(); checkCreateFormConflicts(); $("#titleEn").focus(); }; const handleDateClick = (info) => { let start = new Date(info.date); if (info.allDay) start.setHours(12, 0, 0, 0); const end = new Date(start.getTime() + 60 * 60 * 1000); $("#startTime").value = toLocalInputValue(start); $("#endTime").value = toLocalInputValue(end); $('#startTime').type = 'datetime-local'; $('#endTime').type = 'datetime-local'; checkCreateFormConflicts(); $("#titleEn").focus(); }; const handleEventMove = async ({ event, revert }) => { const conflicts = findConflicts(event.start.toISOString(), event.end?.toISOString(), event.id); if (conflicts.length > 0) { setFlash(tr('errors.overlap'), true); revert(); return; } if (!confirm(`Move "${event.title}"?`)) { revert(); return; } const { error } = await supabase.from("events").update({ start_time: event.start.toISOString(), end_time: event.end ? event.end.toISOString() : null }).eq("id", event.id); if (error) { setFlash(tr('errors.update_event'), true); revert(); } else { setFlash("Event time updated!"); await loadEvents(); } }; const initializeCalendar = () => { const el = $('#calendar'); if (!el || !window.FullCalendar) return; calendar = new FullCalendar.Calendar(el, { initialView: 'timeGridWeek', headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' }, editable: true, selectable: true, selectMirror: true, slotMinTime: '08:00:00', slotMaxTime: '20:00:00', height: '100%', eventClick: handleEventClick, select: handleTimeSelect, dateClick: handleDateClick, eventDrop: handleEventMove, eventResize: handleEventMove, events: (_f, s, _fail) => s(formatEventsForCalendar()), eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' }, locale: state.language === 'es' ? 'es' : 'en' }); calendar.render(); }; const checkCreateFormConflicts = () => { const startIso = toIsoOrNull($("#startTime").value); const endIso = toIsoOrNull($("#endTime").value); const conflicts = findConflicts(startIso, endIso, null); $("#slotConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${(ev.title_en || ev.title_es || '').replace(/</g, '&lt;')}</div>`).join("") : ''; return conflicts.length > 0; }; const checkEditFormConflicts = () => { const id = $("#editEventId").value; const startIso = toIsoOrNull($("#editStartTime").value); const endIso = toIsoOrNull($("#editEndTime").value); const conflicts = findConflicts(startIso, endIso, id); $("#editConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${(ev.title_en || ev.title_es || '').replace(/</g, '&lt;')}</div>`).join("") : ''; return conflicts.length > 0; }; const getSpeakersFromForm = (containerId) => { return Array.from($(`#${containerId}`).querySelectorAll('.speaker-row')).map(row => ({ name: row.querySelector('.speaker-name').value.trim(), affiliation: row.querySelector('.speaker-affiliation').value.trim() || null, profile_id: row.querySelector('.speaker-profile').value || null, primary_speaker: row.querySelector('.speaker-primary').checked, })).filter(s => s.name); }; const createEvent = async (payload) => { if (!payload.title_en || !payload.start_time) { setFlash("Title (EN) and Start Time are required.", true); return; } if (checkCreateFormConflicts()) { setFlash(tr('errors.overlap'), true); return; } const { data, error } = await supabase.from("events").insert([{ ...payload, status: "scheduled" }]).select().single(); if (error) { setFlash(tr("errors.create_event"), true); console.error(error); return; } const speakers = getSpeakersFromForm('speakersContainer'); if (speakers.length > 0) { const { error: spErr } = await supabase.from('event_speakers').insert(speakers.map(s => ({ ...s, event_id: data.id }))); if (spErr) { setFlash('Event created, but failed to add speakers.', true); console.error(spErr); } } setFlash("Event created!"); $("#createEventForm").reset(); $('#startTime').type = 'text'; $('#endTime').type = 'text'; $("#slotConflicts").innerHTML = ''; renderSpeakerFields('speakersContainer'); await loadEvents(); }; const updateEvent = async (id, payload) => { const { error } = await supabase.from("events").update(payload).eq("id", id); if (error) { setFlash(tr('errors.update_event'), true); console.error(error); return; } await supabase.from('event_speakers').delete().eq('event_id', id); const speakers = getSpeakersFromForm('editSpeakersContainer'); if (speakers.length > 0) { const { error: spErr } = await supabase.from('event_speakers').insert(speakers.map(s => ({ ...s, event_id: id }))); if (spErr) { setFlash('Event updated, but failed to update speakers.', true); console.error(spErr); } } setFlash("Event details saved!"); await loadEvents(); $("#edit-event-modal").close(); }; const deleteEvent = async (id) => { if (!confirm("Permanently delete this event? This cannot be undone.")) return; try { await supabase.rpc('delete_event_and_dependencies', { event_id_to_delete: id }); setFlash("Event deleted."); await loadEvents(); $("#edit-event-modal").close(); } catch (error) { setFlash(tr('errors.delete_event'), true); console.error(error); } }; const wireUI = () => { const setupDateTime = (s, e) => { const hf = (el) => el.type = 'datetime-local'; const hb = (el) => { if (!el.value) el.type = 'text' }; s.addEventListener('focus', () => hf(s)); s.addEventListener('blur', () => hb(s)); if (!s.value) s.type = 'text'; if (e) { e.addEventListener('focus', () => hf(e)); e.addEventListener('blur', () => hb(e)); if (!e.value) e.type = 'text'; } }; setupDateTime($('#startTime'), $('#endTime')); $("#createEventForm")?.addEventListener("input", checkCreateFormConflicts); $("#createEventForm").addEventListener('submit', async (e) => { e.preventDefault(); await createEvent({ title_en: $("#titleEn")?.value.trim(), title_es: $("#titleEs")?.value.trim() || null, description_en: $("#descEn")?.value.trim() || null, description_es: $("#descEs")?.value.trim() || null, start_time: toIsoOrNull($("#startTime")?.value), end_time: toIsoOrNull($("#endTime")?.value), language: $("#eventLang")?.value || "bi", host_org: $("#hostOrg")?.value.trim() || null, zoom_url: $("#zoomUrl")?.value.trim() || null, recording_url: $("#recordingUrl")?.value.trim() || null, topic_tags: normalizeTags($("#tags")?.value), }); }); $("#tagFilterInput")?.addEventListener('keyup', (e) => { state.tagFilter = normalizeTags(e.target.value || ''); if (calendar) calendar.refetchEvents(); }); $("#close-modal-btn")?.addEventListener("click", () => { $("#edit-event-modal").close(); }); $("#editStartTime")?.addEventListener("input", checkEditFormConflicts); $("#editEndTime")?.addEventListener("input", checkEditFormConflicts); $("#editEventForm")?.addEventListener("submit", async (e) => { e.preventDefault(); const id = $("#editEventId").value; const start_time = toIsoOrNull($("#editStartTime").value); const end_time = toIsoOrNull($("#editEndTime").value); if (findConflicts(start_time, end_time, id).length > 0) { setFlash(tr('errors.overlap'), true); return; } await updateEvent(id, { title_en: $("#editTitleEn").value?.trim(), title_es: $("#editTitleEs").value?.trim() || null, description_en: $("#editDescEn").value?.trim() || null, description_es: $("#editDescEs").value?.trim() || null, language: $("#editEventLang").value, host_org: $("#editHostOrg").value?.trim() || null, zoom_url: $("#editZoomUrl").value?.trim() || null, recording_url: $("#editRecordingUrl").value?.trim() || null, start_time, end_time, topic_tags: normalizeTags($("#editTags").value) }); }); $("#btnDeleteEvent")?.addEventListener("click", () => deleteEvent($("#editEventId").value)); $('#addSpeakerBtn')?.addEventListener('click', () => { addSpeakerField('speakersContainer'); }); $('#addEditSpeakerBtn')?.addEventListener('click', () => { addSpeakerField('editSpeakersContainer'); }); document.body.addEventListener('click', e => { if (e.target.classList.contains('remove-speaker-btn')) { e.target.closest('.speaker-row').remove(); } }); };
-        (async function main() { applyI18n(); initSharedUI({ applyI18n, handleLangSwitch }); await initAuth({ onAuthReady: checkAccess, onAuthChange: checkAccess }); wireUI(); })();
-    </script>
-</body>
 
+    function handleLangSwitch() { 
+      state.language = state.language === 'en' ? 'es' : 'en'; 
+      localStorage.setItem("lang", state.language); 
+      applyPageI18n();
+      if (state.calendar) state.calendar.render();
+    }
+
+    const checkAccess = async () => {
+      const isAllowed = ["organizer", "admin"].includes(authState.profile?.role);
+      $("#admin").style.display = isAllowed ? "" : "none";
+      $("#accessDenied").style.display = isAllowed ? 'none' : 'block';
+      if (isAllowed) {
+        await loadProfiles();
+        renderSpeakerFields('speakersContainer');
+        if (!state.calendar) initializeCalendar();
+        await loadEvents();
+      }
+    };
+
+    const loadProfiles = async () => {
+      const { data, error } = await supabase.from('profiles').select('id, full_name, affiliation').order('full_name');
+      if (error) {
+        setFlash(tr(t, state.language, 'errors.load_profiles'), 3000);
+        state.profiles = [];
+      } else {
+        state.profiles = data || [];
+      }
+    };
+
+    const createProfileOptions = (selectedId) => `<option value="">--</option>${state.profiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.full_name || '')}</option>`).join('')}`;
+
+    const addSpeakerField = (containerId, speaker = {}) => {
+      const container = $(`#${containerId}`);
+      const row = document.createElement('div');
+      row.className = 'speaker-row';
+      row.innerHTML = `<div><label>${tr(t, state.language, 'speakers.name')}</label><input type="text" class="speaker-name" value="${escapeHtml(speaker.name || '')}" required></div><div><label>${tr(t, state.language, 'speakers.affiliation')}</label><input type="text" class="speaker-affiliation" value="${escapeHtml(speaker.affiliation || '')}"></div><div><label>${tr(t, state.language, 'speakers.link_profile')}</label><select class="speaker-profile">${createProfileOptions(speaker.profile_id)}</select></div><div style="display:flex;gap:1rem;align-items:flex-end;"><div class="checkbox-field"><label>${tr(t, state.language, 'speakers.primary')}</label><input type="checkbox" class="speaker-primary" ${speaker.primary_speaker ? 'checked' : ''}></div><button type="button" class="remove-speaker-btn btn-danger-ghost" title="${tr(t, state.language, 'speakers.remove')}">✕</button></div>`;
+      container.appendChild(row);
+    };
+
+    const renderSpeakerFields = (containerId, speakers = []) => {
+      const container = $(`#${containerId}`);
+      container.innerHTML = '';
+      if (speakers.length === 0) {
+        addSpeakerField(containerId);
+      } else {
+        speakers.forEach(speaker => addSpeakerField(containerId, speaker));
+      }
+    };
+
+    const passesTagFilter = (ev) => {
+      if (!state.tagFilter.length) return true;
+      const tags = normalizeTags((ev.topic_tags || []).join(','));
+      return state.tagFilter.every(t => tags.includes(t));
+    };
+
+    const loadEvents = async () => {
+      const { data, error } = await supabase.from("events").select("*").order("start_time");
+      if (error) console.error(error);
+      else {
+        state.events = data || [];
+        if (state.calendar) state.calendar.refetchEvents();
+      }
+    };
+
+    const formatEventsForCalendar = () => state.events.filter(passesTagFilter).map(ev => ({
+      id: ev.id,
+      title: state.language === 'es' ? (ev.title_es || ev.title_en) : (ev.title_en || ev.title_es),
+      start: ev.start_time,
+      end: ev.end_time,
+      backgroundColor: ev.status === 'canceled' ? '#555' : 'var(--color-brand)',
+      borderColor: ev.status === 'canceled' ? '#555' : 'var(--color-brand)',
+      extendedProps: ev
+    }));
+
+    const handleEventClick = async ({ event }) => {
+      const ev = event.extendedProps;
+      $("#editEventId").value = String(ev.id);
+      $("#editTitleEn").value = ev.title_en || "";
+      $("#editTitleEs").value = ev.title_es || "";
+      $("#editDescEn").value = ev.description_en || "";
+      $("#editDescEs").value = ev.description_es || "";
+      $("#editStartTime").value = toLocalInputValue(ev.start_time);
+      $("#editEndTime").value = toLocalInputValue(ev.end_time);
+      $("#editEventLang").value = ev.language || "bi";
+      $("#editHostOrg").value = ev.host_org || "";
+      $("#editZoomUrl").value = ev.zoom_url || "";
+      $("#editRecordingUrl").value = ev.recording_url || "";
+      $("#editTags").value = (ev.topic_tags || []).join(', ');
+      $("#editConflicts").innerHTML = '';
+      const { data: speakers } = await supabase.from('event_speakers').select('*').eq('event_id', ev.id);
+      renderSpeakerFields('editSpeakersContainer', speakers || []);
+      $("#edit-event-modal").showModal();
+    };
+
+    const handleTimeSelect = ({ start, end }) => {
+      $("#startTime").value = toLocalInputValue(start);
+      $('#startTime').type = 'datetime-local';
+      $("#endTime").value = toLocalInputValue(end);
+      $('#endTime').type = 'datetime-local';
+      state.calendar.unselect();
+      checkCreateFormConflicts();
+      $("#titleEn").focus();
+    };
+
+    const handleDateClick = (info) => {
+      let start = new Date(info.date);
+      if (info.allDay) start.setHours(12, 0, 0, 0);
+      const end = new Date(start.getTime() + 60 * 60 * 1000);
+      $("#startTime").value = toLocalInputValue(start);
+      $("#endTime").value = toLocalInputValue(end);
+      $('#startTime').type = 'datetime-local';
+      $('#endTime').type = 'datetime-local';
+      checkCreateFormConflicts();
+      $("#titleEn").focus();
+    };
+
+    const handleEventMove = async ({ event, revert }) => {
+      const conflicts = findConflicts(event.start.toISOString(), event.end?.toISOString(), event.id);
+      if (conflicts.length > 0) {
+        setFlash(tr(t, state.language, 'errors.overlap'), 3000);
+        revert();
+        return;
+      }
+      if (!confirm(`Move "${event.title}"?`)) {
+        revert();
+        return;
+      }
+      const { error } = await supabase.from("events").update({ start_time: event.start.toISOString(), end_time: event.end ? event.end.toISOString() : null }).eq("id", event.id);
+      if (error) {
+        setFlash(tr(t, state.language, 'errors.update_event'), 3000);
+        revert();
+      } else {
+        setFlash("Event time updated!");
+        await loadEvents();
+      }
+    };
+
+    const initializeCalendar = () => {
+      const el = $('#calendar');
+      if (!el || !window.FullCalendar) return;
+      state.calendar = new FullCalendar.Calendar(el, {
+        initialView: 'timeGridWeek',
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
+        editable: true,
+        selectable: true,
+        selectMirror: true,
+        slotMinTime: '08:00:00',
+        slotMaxTime: '20:00:00',
+        height: '100%',
+        eventClick: handleEventClick,
+        select: handleTimeSelect,
+        dateClick: handleDateClick,
+        eventDrop: handleEventMove,
+        eventResize: handleEventMove,
+        events: (_f, s, _fail) => s(formatEventsForCalendar()),
+        eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
+        locale: state.language === 'es' ? 'es' : 'en'
+      });
+      state.calendar.render();
+    };
+
+    const checkCreateFormConflicts = () => {
+      const startIso = toIsoOrNull($("#startTime").value);
+      const endIso = toIsoOrNull($("#endTime").value);
+      const conflicts = findConflicts(startIso, endIso, null);
+      $("#slotConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${escapeHtml(ev.title_en || ev.title_es || '')}</div>`).join("") : '';
+      return conflicts.length > 0;
+    };
+
+    const checkEditFormConflicts = () => {
+      const id = $("#editEventId").value;
+      const startIso = toIsoOrNull($("#editStartTime").value);
+      const endIso = toIsoOrNull($("#editEndTime").value);
+      const conflicts = findConflicts(startIso, endIso, id);
+      $("#editConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${escapeHtml(ev.title_en || ev.title_es || '')}</div>`).join("") : '';
+      return conflicts.length > 0;
+    };
+
+    const getSpeakersFromForm = (containerId) => {
+      return Array.from($(`#${containerId}`).querySelectorAll('.speaker-row')).map(row => ({
+        name: row.querySelector('.speaker-name').value.trim(),
+        affiliation: row.querySelector('.speaker-affiliation').value.trim() || null,
+        profile_id: row.querySelector('.speaker-profile').value || null,
+        primary_speaker: row.querySelector('.speaker-primary').checked,
+      })).filter(s => s.name);
+    };
+
+    const createEvent = async (payload) => {
+      if (!payload.title_en || !payload.start_time) {
+        setFlash("Title (EN) and Start Time are required.", 3000);
+        return;
+      }
+      if (checkCreateFormConflicts()) {
+        setFlash(tr(t, state.language, 'errors.overlap'), 3000);
+        return;
+      }
+      const { data, error } = await supabase.from("events").insert([{ ...payload, status: "scheduled" }]).select().single();
+      if (error) {
+        setFlash(tr(t, state.language, "errors.create_event"), 3000);
+        console.error(error);
+        return;
+      }
+      const speakers = getSpeakersFromForm('speakersContainer');
+      if (speakers.length > 0) {
+        const { error: spErr } = await supabase.from('event_speakers').insert(speakers.map(s => ({ ...s, event_id: data.id })));
+        if (spErr) {
+          setFlash('Event created, but failed to add speakers.', 3000);
+          console.error(spErr);
+        }
+      }
+      setFlash("Event created!");
+      $("#createEventForm").reset();
+      $('#startTime').type = 'text';
+      $('#endTime').type = 'text';
+      $("#slotConflicts").innerHTML = '';
+      renderSpeakerFields('speakersContainer');
+      await loadEvents();
+    };
+
+    const updateEvent = async (id, payload) => {
+      const { error } = await supabase.from("events").update(payload).eq("id", id);
+      if (error) {
+        setFlash(tr(t, state.language, 'errors.update_event'), 3000);
+        console.error(error);
+        return;
+      }
+      await supabase.from('event_speakers').delete().eq('event_id', id);
+      const speakers = getSpeakersFromForm('editSpeakersContainer');
+      if (speakers.length > 0) {
+        const { error: spErr } = await supabase.from('event_speakers').insert(speakers.map(s => ({ ...s, event_id: id })));
+        if (spErr) {
+          setFlash('Event updated, but failed to update speakers.', 3000);
+          console.error(spErr);
+        }
+      }
+      setFlash("Event details saved!");
+      await loadEvents();
+      $("#edit-event-modal").close();
+    };
+
+    const deleteEvent = async (id) => {
+      if (!confirm("Permanently delete this event? This cannot be undone.")) return;
+      try {
+        await supabase.rpc('delete_event_and_dependencies', { event_id_to_delete: id });
+        setFlash("Event deleted.");
+        await loadEvents();
+        $("#edit-event-modal").close();
+      } catch (error) {
+        setFlash(tr(t, state.language, 'errors.delete_event'), 3000);
+        console.error(error);
+      }
+    };
+
+    // --- EVENT HANDLERS ---
+    const setupDateTime = (s, e) => {
+      const hf = (el) => el.type = 'datetime-local';
+      const hb = (el) => { if (!el.value) el.type = 'text' };
+      s.addEventListener('focus', () => hf(s));
+      s.addEventListener('blur', () => hb(s));
+      if (!s.value) s.type = 'text';
+      if (e) {
+        e.addEventListener('focus', () => hf(e));
+        e.addEventListener('blur', () => hb(e));
+        if (!e.value) e.type = 'text';
+      }
+    };
+
+    setupDateTime($('#startTime'), $('#endTime'));
+
+    $("#createEventForm")?.addEventListener("input", checkCreateFormConflicts);
+    $("#createEventForm").addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await createEvent({
+        title_en: $("#titleEn")?.value.trim(),
+        title_es: $("#titleEs")?.value.trim() || null,
+        description_en: $("#descEn")?.value.trim() || null,
+        description_es: $("#descEs")?.value.trim() || null,
+        start_time: toIsoOrNull($("#startTime")?.value),
+        end_time: toIsoOrNull($("#endTime")?.value),
+        language: $("#eventLang")?.value || "bi",
+        host_org: $("#hostOrg")?.value.trim() || null,
+        zoom_url: $("#zoomUrl")?.value.trim() || null,
+        recording_url: $("#recordingUrl")?.value.trim() || null,
+        topic_tags: normalizeTags($("#tags")?.value),
+      });
+    });
+
+    $("#tagFilterInput")?.addEventListener('keyup', (e) => {
+      state.tagFilter = normalizeTags(e.target.value || '');
+      if (state.calendar) state.calendar.refetchEvents();
+    });
+
+    $("#close-modal-btn")?.addEventListener("click", () => {
+      $("#edit-event-modal").close();
+    });
+
+    $("#editStartTime")?.addEventListener("input", checkEditFormConflicts);
+    $("#editEndTime")?.addEventListener("input", checkEditFormConflicts);
+
+    $("#editEventForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = $("#editEventId").value;
+      const start_time = toIsoOrNull($("#editStartTime").value);
+      const end_time = toIsoOrNull($("#editEndTime").value);
+      if (findConflicts(start_time, end_time, id).length > 0) {
+        setFlash(tr(t, state.language, 'errors.overlap'), 3000);
+        return;
+      }
+      await updateEvent(id, {
+        title_en: $("#editTitleEn").value?.trim(),
+        title_es: $("#editTitleEs").value?.trim() || null,
+        description_en: $("#editDescEn").value?.trim() || null,
+        description_es: $("#editDescEs").value?.trim() || null,
+        language: $("#editEventLang").value,
+        host_org: $("#editHostOrg").value?.trim() || null,
+        zoom_url: $("#editZoomUrl").value?.trim() || null,
+        recording_url: $("#editRecordingUrl").value?.trim() || null,
+        start_time,
+        end_time,
+        topic_tags: normalizeTags($("#editTags").value)
+      });
+    });
+
+    $("#btnDeleteEvent")?.addEventListener("click", () => deleteEvent($("#editEventId").value));
+
+    $('#addSpeakerBtn')?.addEventListener('click', () => {
+      addSpeakerField('speakersContainer');
+    });
+
+    $('#addEditSpeakerBtn')?.addEventListener('click', () => {
+      addSpeakerField('editSpeakersContainer');
+    });
+
+    document.body.addEventListener('click', e => {
+      if (e.target.classList.contains('remove-speaker-btn')) {
+        e.target.closest('.speaker-row').remove();
+      }
+    });
+
+    // --- MAIN EXECUTION ---
+    (async function main() {
+      // Initialize shared UI components (header buttons, mobile menu, etc.)
+      initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
+      
+      // Initialize authentication and render the header when auth state is known
+      await initAuth({ 
+        onAuthReady: () => renderHeader(authState, t, state.language), 
+        onAuthChange: () => renderHeader(authState, t, state.language) 
+      });
+
+      // Apply initial language settings to the page content
+      applyPageI18n();
+
+      // Check access and load admin content if authorized
+      await checkAccess();
+
+      lucide.createIcons();
+    })();
+  </script>
+
+</body>
 </html>
