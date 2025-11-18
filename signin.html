@@ -1,60 +1,58 @@
-<!doctype html>
-<html lang="en" class="h-full bg-white">
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Sign In • Agrovoltaicos sin Fronteras</title>
-  <meta name="description" content="Sign in to participate in the Agrovoltaicos sin Fronteras seminar series." />
+  <meta name="description" content="Sign in to participate in the Agrovoltaicos sin Fronteras seminar series.">
 
-  <script>
-    (function() {
-      try {
-        const cached = localStorage.getItem('asf_auth_cache');
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Date.now() < parsed.expiry && parsed.data?.session) {
-            // If there's a valid, non-expired session, redirect immediately.
-            window.location.replace('index.html');
-            return;
-          }
-        }
-        // Otherwise, render the page as logged-out.
-        document.documentElement.setAttribute('data-auth-ready', 'logged-out');
-      } catch (e) {
-        document.documentElement.setAttribute('data-auth-ready', 'error');
-      }
-    })();
-  </script>
+  <!-- Critical pre-render script to prevent UI flicker -->
+  <script src="auth-preloader.js"></script>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- External Tailwind Config -->
+  <script src="tailwind.config.js"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
             sans: ['Inter', 'sans-serif'],
-            display: ['Poppins', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
           },
           colors: {
             brand: {
-              50: '#f0f7f5',
-              100: '#e1efeb',
-              200: '#c3e0d8',
-              300: '#a5d0c4',
-              400: '#6aae9d',
-              500: '#4A8C82',
-              600: '#3b7d71',
-              700: '#186D50',
-              800: '#145942',
-              900: '#114a37'
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49',
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: 0, transform: 'translateY(10px)' },
+              '100%': { opacity: 1, transform: 'translateY(0)' },
             }
           }
         }
@@ -63,60 +61,78 @@
   </script>
 
   <!-- Custom CSS -->
-  <style>
-    :root { --color-brand: #16a34a; --color-brand-dark: #15803d; --color-brand-light: #dcfce7; --color-accent: #f97316; --color-danger: #ef4444; --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #64748b; --text-tertiary: #94a3b8; --text-light: #ffffff; --border: #e2e8f0; --radius-md: 12px; --radius-lg: 24px; --header-h: 64px; --footer-h: 64px; --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); }
-    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-    .site-header { background-color: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 0 16px; position: sticky; top: 0; z-index: 50; }
-    @media (min-width: 768px) { .site-header { padding: 0 24px; } }
-    .site-header .container.header-grid { height: 72px; max-width: 1800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand .logo-image { width: 40px; height: 40px; }
-    .brand-text .title { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); }
-    .brand-text .subtitle { display: none; }
-    @media (min-width: 768px) { .brand-text .subtitle { display: block; font-family: 'Lato', sans-serif; font-size: 0.8rem; color: var(--text-secondary); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
-    .site-footer { background-color: var(--bg-panel); border-top: 1px solid var(--border); padding: 24px; }
-    .site-footer .container { max-width: 1800px; margin: 0 auto; }
-    .site-footer small { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-secondary); }
-    .site-footer .footer-text { display: flex; align-items: center; flex-wrap: wrap; }
-    .site-footer .footer-logos { display: flex; align-items: center; gap: 8px; }
-    .site-footer .footer-logos img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-    @media (max-width: 767px) { .site-footer small { flex-direction: column; text-align: center; } }
-    .btn { border: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
-    .btn:active { transform: scale(0.98); }
-    .btn-primary { background: var(--color-brand-dark); color: white; box-shadow: 0 4px 12px -2px rgba(22, 163, 74, 0.3); }
-    .btn-primary:hover { background: #14532d; }
-    .btn-secondary { background: white; border: 2px solid var(--border); color: var(--text-primary); }
-    .btn-secondary:hover { border-color: var(--text-tertiary); background: var(--bg-input); }
-    #flash { position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-150%); background-color: #0f172a; color: white; padding: 12px 24px; border-radius: 9999px; font-weight: 600; z-index: 1000; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
-    #flash.visible { transform: translateX(-50%) translateY(0); }
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .glass-panel {
+        @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-xl;
+      }
+    }
+    html, body { height: 100%; }
+    
+    #flash {
+        position: fixed;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-150%);
+        background-color: #0f172a;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        z-index: 1000;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    #flash.visible {
+        transform: translateX(-50%) translateY(0);
+    }
   </style>
 
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="flex flex-col h-full bg-gray-50 text-slate-800">
+<body class="flex flex-col h-full bg-gray-50 selection:bg-brand-100 selection:text-brand-900 font-sans relative overflow-hidden">
 
-  <header class="site-header">
-    <div class="container header-grid">
-      <a href="index.html" class="brand">
-        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
-        <div class="brand-text">
-          <div class="title">Agrovoltaicos sin Fronteras</div>
-          <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
+  <!-- Decorative Background -->
+  <div class="absolute top-0 right-0 -mr-40 -mt-40 w-[500px] h-[500px] bg-brand-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+  <div class="absolute bottom-0 left-0 -ml-40 -mb-40 w-[500px] h-[500px] bg-blue-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+
+  <!-- ================= HEADER ================= -->
+  <header class="relative z-50 border-b border-gray-200/60 bg-white/80 backdrop-blur-md">
+    <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 group">
+        <div class="relative w-9 h-9 flex-none">
+          <img src="static/icon.png" alt="Logo" class="w-full h-full object-contain transition-transform duration-500 group-hover:rotate-12">
+        </div>
+        <div class="flex flex-col justify-center">
+          <div class="font-display font-bold text-slate-900 leading-none text-base tracking-tight group-hover:text-brand-700 transition-colors">Agrovoltaicos sin Fronteras</div>
+          <div class="text-[10px] font-medium text-slate-500 uppercase tracking-wider leading-tight mt-0.5 hidden sm:block" data-i18n="tagline">Seminar Series</div>
         </div>
       </a>
-      <!-- No navigation or auth buttons needed on sign-in page header -->
     </div>
   </header>
 
-  <div id="flash" role="status" aria-live="polite" style="display: none;"></div>
+  <div id="flash" role="status" aria-live="polite"></div>
 
-  <main class="flex-1 flex items-center justify-center p-4">
-    <section class="bg-white rounded-3xl shadow-lg border border-gray-200 p-8 w-full max-w-md">
-      <h1 id="authTitle" class="text-3xl font-bold font-display text-brand-700 text-center mb-6" data-i18n="auth.title">Sign in to Participate</h1>
+  <!-- ================= MAIN ================= -->
+  <main class="flex-1 flex items-center justify-center p-4 relative z-10">
+    <section class="glass-panel rounded-3xl w-full max-w-[420px] overflow-hidden animate-fade-in">
       
-      <div id="normalAuthSection">
-        <button id="btnGoogle" class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-xl shadow-sm hover:bg-gray-50 transition-colors font-semibold text-slate-700">
-          <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
+      <!-- Card Header -->
+      <div class="px-8 pt-8 pb-6 text-center">
+        <h1 id="authTitle" class="text-2xl font-bold font-display text-slate-900 mb-2" data-i18n="auth.title">Sign in to Participate</h1>
+        <p class="text-sm text-slate-500">Welcome back to the community</p>
+      </div>
+      
+      <div id="normalAuthSection" class="px-8 pb-8">
+        <!-- Google Auth -->
+        <button id="btnGoogle" class="w-full flex items-center justify-center gap-3 py-2.5 px-4 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-xl shadow-sm transition-all duration-200 font-semibold text-slate-700 text-sm group">
+          <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" class="transition-transform group-hover:scale-110">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path><path d="M1 1h22v22H1z" fill="none"></path>
           </svg>
           <span data-i18n="auth.google">Sign in with Google</span>
@@ -124,58 +140,86 @@
 
         <div class="my-6 flex items-center">
           <div class="flex-grow border-t border-gray-200"></div>
-          <span class="mx-4 text-xs font-semibold text-gray-400 uppercase" data-i18n="auth.or">OR</span>
+          <span class="mx-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="auth.or">OR</span>
           <div class="flex-grow border-t border-gray-200"></div>
         </div>
         
-        <form id="magicLinkForm" class="flex gap-2 mb-6">
+        <!-- Magic Link -->
+        <form id="magicLinkForm" class="flex gap-2 mb-6 group">
           <label for="magicLinkEmail" class="sr-only">Email</label>
-          <input id="magicLinkEmail" type="email" class="flex-grow bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm" data-i18n-placeholder="auth.email_placeholder" placeholder="you@example.com" required />
-          <button class="btn btn-secondary !px-4 !py-2.5 !text-sm !rounded-xl" type="submit" data-i18n="auth.magic_link">Send magic link</button>
+          <div class="relative flex-grow">
+            <i data-lucide="mail" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
+            <input id="magicLinkEmail" type="email" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm focus:bg-white placeholder:text-slate-400" data-i18n-placeholder="auth.email_placeholder" placeholder="you@example.com" required />
+          </div>
+          <button class="px-4 py-2.5 bg-white border border-gray-200 text-slate-700 font-semibold text-sm rounded-xl hover:bg-gray-50 hover:border-gray-300 shadow-sm transition-all whitespace-nowrap" type="submit" data-i18n="auth.magic_link">Magic Link</button>
         </form>
 
-        <div class="flex bg-gray-100 p-1 rounded-xl mb-4">
-          <button id="tabSignIn" class="flex-1 p-2 rounded-lg font-semibold bg-white text-brand-600 shadow-sm transition-all" data-i18n="auth.signin">Sign In</button>
-          <button id="tabSignUp" class="flex-1 p-2 rounded-lg font-semibold text-slate-500 hover:text-slate-700 transition-all" data-i18n="auth.signup">Sign Up</button>
+        <!-- Tabs -->
+        <div class="flex bg-gray-100 p-1 rounded-xl mb-5 border border-gray-200">
+          <button id="tabSignIn" class="flex-1 py-2 rounded-lg text-sm font-bold bg-white text-brand-700 shadow-sm transition-all" data-i18n="auth.signin">Sign In</button>
+          <button id="tabSignUp" class="flex-1 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-all" data-i18n="auth.signup">Sign Up</button>
         </div>
 
-        <form id="signInForm" class="flex flex-col gap-3">
-          <label for="signInEmail" class="sr-only">Email</label>
-          <input id="signInEmail" type="email" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" data-i18n-placeholder="auth.email_placeholder" placeholder="Email" required autocomplete="email">
-          <label for="signInPassword" class="sr-only">Password</label>
-          <input id="signInPassword" type="password" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" data-i18n-placeholder="auth.password_placeholder" placeholder="Password" required autocomplete="current-password">
-          <button type="submit" class="btn btn-primary !mt-2" data-i18n="auth.signin">Sign In</button>
-          <a href="#" id="forgotPasswordLink" class="text-center text-sm text-slate-500 hover:text-brand-600 mt-2" data-i18n="auth.forgot">Forgot your password?</a>
+        <!-- Sign In Form -->
+        <form id="signInForm" class="flex flex-col gap-3 animate-fade-in">
+          <div class="space-y-3">
+            <div class="relative group">
+              <i data-lucide="at-sign" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
+              <input id="signInEmail" type="email" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm focus:bg-white" data-i18n-placeholder="auth.email_placeholder" placeholder="Email" required autocomplete="email">
+            </div>
+            <div class="relative group">
+              <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
+              <input id="signInPassword" type="password" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm focus:bg-white" data-i18n-placeholder="auth.password_placeholder" placeholder="Password" required autocomplete="current-password">
+            </div>
+          </div>
+          <button type="submit" class="w-full mt-2 bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl shadow-lg shadow-brand-500/30 transition-all active:scale-[0.98] text-sm flex items-center justify-center gap-2" data-i18n="auth.signin">
+            Sign In <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+          <a href="#" id="forgotPasswordLink" class="text-center text-xs font-medium text-slate-500 hover:text-brand-600 mt-2 transition-colors" data-i18n="auth.forgot">Forgot your password?</a>
         </form>
 
-        <form id="signUpForm" class="flex flex-col gap-3" style="display: none;">
-          <label for="signUpEmail" class="sr-only">Email</label>
-          <input id="signUpEmail" type="email" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" data-i18n-placeholder="auth.email_placeholder" placeholder="Email" required autocomplete="email">
-          <label for="signUpPassword" class="sr-only">Password</label>
-          <input id="signUpPassword" type="password" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" data-i18n-placeholder="auth.password_placeholder" placeholder="Password" required autocomplete="new-password">
-          <button type="submit" class="btn btn-primary !mt-2" data-i18n="auth.signup">Sign Up</button>
+        <!-- Sign Up Form -->
+        <form id="signUpForm" class="flex flex-col gap-3 animate-fade-in" style="display: none;">
+          <div class="space-y-3">
+            <div class="relative group">
+              <i data-lucide="at-sign" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
+              <input id="signUpEmail" type="email" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm focus:bg-white" data-i18n-placeholder="auth.email_placeholder" placeholder="Email" required autocomplete="email">
+            </div>
+            <div class="relative group">
+              <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
+              <input id="signUpPassword" type="password" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm focus:bg-white" data-i18n-placeholder="auth.password_placeholder" placeholder="Password" required autocomplete="new-password">
+            </div>
+          </div>
+          <button type="submit" class="w-full mt-2 bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl shadow-lg shadow-brand-500/30 transition-all active:scale-[0.98] text-sm flex items-center justify-center gap-2" data-i18n="auth.signup">
+            Create Account <i data-lucide="user-plus" class="w-4 h-4"></i>
+          </button>
+          <p class="text-center text-xs text-slate-400 mt-2">
+            By signing up, you agree to our Terms & Privacy Policy.
+          </p>
         </form>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <small>
-        <div class="footer-text">
-          © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-white border-t border-gray-200 py-6 z-10">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="text-xs text-slate-500 text-center md:text-left">
+          <div class="font-semibold text-slate-700 mb-1">© <span id="year"></span> Agrovoltaicos sin Fronteras</div>
           <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
         </div>
-        <div class="footer-logos">
-          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer"><img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics"></a>
-          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer"><img src="static/unam.png" alt="UNAM"></a>
-          <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer"><img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana" style="background-color: white;"></a>
-          <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer"><img src="static/rame.png" alt="Rame - Red Agrivoltaica de México" style="background-color: white;"></a>
+        <div class="flex items-center gap-4 opacity-80 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
+          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer"><img src="static/b2ua.jpg" alt="Biosphere 2" class="h-8 w-auto mix-blend-multiply"></a>
+          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer"><img src="static/unam.png" alt="UNAM" class="h-8 w-auto"></a>
+          <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer"><img src="static/aal.png" alt="AAL" class="h-6 w-auto object-contain" onerror="this.style.display='none'"></a>
+          <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer"><img src="static/rame.png" alt="Rame" class="h-6 w-auto object-contain" onerror="this.style.display='none'"></a>
         </div>
-      </small>
+      </div>
     </div>
   </footer>
 
+  <!-- ================= SCRIPT ================= -->
   <script type="module">
     import { supabase, initAuth, signInWithGoogle, signInWithEmail } from "./auth.js";
 
@@ -184,13 +228,13 @@
     
     const t = {
       en: {
-        tagline: "A seminar series to share advances in agrivoltaics in the Americas",
+        tagline: "Seminar Series",
         footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
         auth: {
           title: "Sign in to Participate",
           google: "Sign in with Google",
           or: "OR",
-          magic_link: "Send magic link",
+          magic_link: "Link",
           signin: "Sign In",
           signup: "Sign Up",
           forgot: "Forgot your password?",
@@ -199,15 +243,15 @@
         }
       },
       es: {
-        tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas",
+        tagline: "Serie de Seminarios",
         footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
         auth: {
-          title: "Inicia Sesión para Participar",
-          google: "Iniciar sesión con Google",
+          title: "Inicia Sesión",
+          google: "Entrar con Google",
           or: "O",
-          magic_link: "Enviar enlace mágico",
-          signin: "Iniciar Sesión",
-          signup: "Registrarse",
+          magic_link: "Enlace",
+          signin: "Entrar",
+          signup: "Registro",
           forgot: "¿Olvidaste tu contraseña?",
           email_placeholder: "tu@ejemplo.com",
           password_placeholder: "Contraseña"
@@ -216,13 +260,16 @@
     };
     
     function tr(key) { const parts = key.split("."); let obj = t[state.language]; for (const p of parts) obj = obj?.[p]; return obj ?? key; }
-    function applyI18n() { document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = tr(el.dataset.i18n); }); document.querySelectorAll("[data-i18n-placeholder]").forEach(el => { el.placeholder = tr(el.dataset.i18nPlaceholder); }); }
+    function applyI18n() { 
+      document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = tr(el.dataset.i18n); }); 
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => { el.placeholder = tr(el.dataset.i18nPlaceholder); }); 
+    }
 
     function setFlash(msg, timeout = 5000) {
       const el = $("#flash");
       if (!el) return;
-      el.textContent = msg;
-      el.style.display = "block";
+      el.innerHTML = `<i data-lucide="info" class="w-4 h-4"></i> ${msg}`;
+      lucide.createIcons();
       el.classList.add('visible');
       clearTimeout(setFlash._t);
       if (timeout > 0) {
@@ -244,13 +291,18 @@
       if (error) {
         setFlash(error.message);
       } else {
-        setFlash("Success! Please check your email to verify your account.");
+        setFlash("Success! Check your email to verify.");
         $('#signUpForm').reset();
       }
     }
 
     function wireUI() {
-      const targetRedirectUrl = window.location.origin + '/index.html';
+      // --- CRITICAL FIX FOR REDIRECT ---
+      // Replaces 'window.location.origin' with a relative path calculation
+      // This ensures that if you are in http://localhost:3000/AgroCollaboration/signin.html
+      // it redirects to http://localhost:3000/AgroCollaboration/index.html
+      // instead of http://localhost:3000/index.html (which causes the File Not Found error)
+      const targetRedirectUrl = new URL('index.html', window.location.href).href;
 
       $("#btnGoogle")?.addEventListener("click", () => signInWithGoogle({ redirectTo: targetRedirectUrl }));
 
@@ -277,21 +329,25 @@
       const tabSignIn = $('#tabSignIn'), tabSignUp = $('#tabSignUp');
       const signInForm = $('#signInForm'), signUpForm = $('#signUpForm');
 
+      const activeClass = 'bg-white text-brand-700 shadow-sm';
+      const inactiveClass = 'text-slate-500 hover:text-slate-700';
+
       tabSignIn?.addEventListener('click', () => {
-        tabSignIn.className = 'flex-1 p-2 rounded-lg font-semibold bg-white text-brand-600 shadow-sm transition-all';
-        tabSignUp.className = 'flex-1 p-2 rounded-lg font-semibold text-slate-500 hover:text-slate-700 transition-all';
+        tabSignIn.className = `flex-1 py-2 rounded-lg text-sm font-bold transition-all ${activeClass}`;
+        tabSignUp.className = `flex-1 py-2 rounded-lg text-sm font-bold transition-all ${inactiveClass}`;
         signInForm.style.display = 'flex';
         signUpForm.style.display = 'none';
       });
 
       tabSignUp?.addEventListener('click', () => {
-        tabSignUp.className = 'flex-1 p-2 rounded-lg font-semibold bg-white text-brand-600 shadow-sm transition-all';
-        tabSignIn.className = 'flex-1 p-2 rounded-lg font-semibold text-slate-500 hover:text-slate-700 transition-all';
+        tabSignUp.className = `flex-1 py-2 rounded-lg text-sm font-bold transition-all ${activeClass}`;
+        tabSignIn.className = `flex-1 py-2 rounded-lg text-sm font-bold transition-all ${inactiveClass}`;
         signUpForm.style.display = 'flex';
         signInForm.style.display = 'none';
       });
 
       $("#year").textContent = new Date().getFullYear();
+      lucide.createIcons();
     }
 
     (async function main() {
@@ -301,6 +357,7 @@
       await initAuth({
         onAuthReady: (authState) => {
           if (authState.session) {
+            // Use replace to prevent back-button loops
             window.location.replace('index.html');
           }
         }

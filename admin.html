@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-white">
+<html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
   <meta charset="UTF-8">
@@ -7,456 +7,392 @@
   <title>Admin • Agrovoltaicos sin Fronteras</title>
   <meta name="description" content="Organizer tools for managing the Agrovoltaicos sin Fronteras seminar series.">
 
-  <!-- Critical pre-render script to prevent UI flicker -->
+  <!-- Critical pre-render script -->
   <script src="auth-preloader.js"></script>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- External Tailwind Config -->
-  <script src="tailwind.config.js"></script>
-
-  <!-- FullCalendar (global build + locales) -->
+  <!-- FullCalendar -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales-all.global.min.js"></script>
 
+  <!-- External Tailwind Config -->
+  <script src="tailwind.config.js"></script>
+  <script>
+    // Ensure config matches archive.html if external file fails or for immediate apply
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8',
+              500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e', 950: '#082f49',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
   <!-- Custom CSS -->
-  <style>
-    /* These styles are specific to the shared header/footer component */
-    :root { --color-brand: #16a34a; --color-brand-dark: #15803d; --color-brand-light: #dcfce7; --color-accent: #f97316; --color-danger: #ef4444; --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #64748b; --text-tertiary: #94a3b8; --text-light: #ffffff; --border: #e2e8f0; --radius-md: 12px; --radius-lg: 24px; --header-h: 64px; --footer-h: 64px; --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); }
-    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-    .site-header { background-color: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 0 16px; position: sticky; top: 0; z-index: 50; }
-    @media (min-width: 768px) { .site-header { padding: 0 24px; } }
-    .site-header .container.header-grid { height: 72px; max-width: 1800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand .logo-image { width: 40px; height: 40px; }
-    .brand-text .title { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); }
-    .brand-text .subtitle { display: none; }
-    @media (min-width: 768px) { .brand-text .subtitle { display: block; font-family: 'Lato', sans-serif; font-size: 0.8rem; color: var(--text-secondary); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
-    .nav { display: none; }
-    @media (min-width: 960px) { .nav { display: flex; align-items: center; gap: 24px; } }
-    .nav .link { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; color: var(--text-secondary); transition: color 0.2s; }
-    .nav .link:hover, .nav .link.active { color: var(--color-brand); }
-    .nav .divider { width: 1px; height: 20px; background-color: var(--border); }
-    .lang-switch-slider { display: flex; cursor: pointer; background: var(--bg-input); border-radius: 99px; padding: 4px; position: relative; font-size: 12px; font-weight: 700; }
-    .lang-switch-slider span { padding: 4px 12px; z-index: 1; transition: color 0.2s; user-select: none; }
-    .lang-switch-slider::before { content: ''; position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: white; border-radius: 99px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
-    .lang-switch-slider[data-lang="es"]::before { transform: translateX(100%); }
-    .lang-switch-slider[data-lang="en"] span:first-child, .lang-switch-slider[data-lang="es"] span:last-child { color: var(--color-brand-dark); }
-    .auth-area { display: flex; align-items: center; gap: 16px; }
-    .profile-button { width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-brand-light); color: var(--color-brand-dark); font-weight: 700; font-family: 'Poppins', sans-serif; display: grid; place-content: center; overflow: hidden; border: 2px solid var(--border); }
-    #userName { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; }
-    .mobile-menu-btn { display: block; color: var(--text-secondary); }
-    @media (min-width: 960px) { .mobile-menu-btn { display: none; } }
-    .mobile-nav-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 998; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
-    .mobile-nav-overlay.is-open { opacity: 1; visibility: visible; }
-    .mobile-nav-content { position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 320px; background: var(--bg-panel); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1); display: flex; flex-direction: column; z-index: 999; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1); padding: 24px; }
-    .is-open .mobile-nav-content { transform: translateX(0); }
-    .mobile-nav-close-btn { position: absolute; top: 16px; right: 16px; color: var(--text-secondary); z-index: 10; }
-    .mobile-nav-content > nav { display: flex; flex-direction: column; align-items: center; text-align: center; height: 100%; padding-top: 48px; }
-    .mobile-nav-content .link { font-size: 1.75rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--text-primary); width: 100%; padding: 12px 0; }
-    .mobile-nav-content .link.active { color: var(--color-brand); }
-    .mobile-nav-content .divider { display: none; }
-    .mobile-nav-content .lang-switch-slider { order: -1; transform: scale(1.15); margin-bottom: 48px; }
-    .mobile-nav-content .auth-area { margin-top: auto; width: 100%; padding-top: 24px; border-top: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .mobile-nav-content .auth-area .profile-button { width: 64px; height: 64px; font-size: 2rem; }
-    .mobile-nav-content .auth-area #userNameMobile { font-weight: 600; font-size: 1.1rem; color: var(--text-primary); }
-    .mobile-nav-content .auth-area #btnSignOutMobile, .mobile-nav-content .auth-area #btnSignInMobile { width: 100%; justify-content: center; padding: 12px 24px; font-size: 1rem; border-radius: var(--radius-md); }
-    .btn { border: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn:active { transform: scale(0.98); }
-    .btn-primary { background: var(--color-brand-dark); color: white; box-shadow: 0 4px 12px -2px rgba(22, 163, 74, 0.3); }
-    .btn-primary:hover { background: #14532d; }
-    .btn-secondary { background: white; border: 2px solid var(--border); color: var(--text-primary); }
-    .btn-secondary:hover { border-color: var(--text-tertiary); background: var(--bg-input); }
-    .btn-ghost { background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 700; padding: 8px 12px; border-radius: 8px; }
-    .btn-ghost:hover { background: var(--bg-input); color: var(--text-primary); }
-    #btnSignIn { padding: 8px 16px; font-size: 0.9rem; border-radius: 8px; background: var(--color-brand); color: white;}
-    #btnSignIn:hover { background: var(--color-brand-dark); }
-    .site-footer { background-color: var(--bg-panel); border-top: 1px solid var(--border); padding: 24px; }
-    .site-footer .container { max-width: 1800px; margin: 0 auto; }
-    .site-footer small { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-secondary); }
-    .site-footer .footer-text { display: flex; align-items: center; flex-wrap: wrap; }
-    .site-footer .footer-logos { display: flex; align-items: center; gap: 8px; }
-    .site-footer .footer-logos img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-    @media (max-width: 767px) { .site-footer small { flex-direction: column; text-align: center; } }
-  </style>
-
-  <!-- Admin-specific styles -->
-  <style>
-    /* --- ADMIN DASHBOARD LAYOUT --- */
-    .app-main { padding: 16px 24px; overflow: hidden; height: 100%; }
-    .panel { background: var(--bg-panel); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-panel); display: flex; flex-direction: column; overflow: hidden; }
-    
-    #admin.dashboard-grid {
-        display: grid;
-        grid-template-columns: minmax(450px, 1.2fr) 2fr;
-        gap: 20px;
-        height: 100%;
-        max-width: 1800px; margin: 0 auto;
-    }
-    .organizer-form-container, .admin-side { padding: 24px; }
-
-    /* Panel Header Styling */
-    .panel h2 {
-        margin: 0 0 16px 0;
-        padding-bottom: 16px;
-        border-bottom: 1px solid var(--border);
-        font-family: 'Poppins', sans-serif;
-        font-size: 20px;
-        font-weight: 700;
-        flex-shrink: 0;
-    }
-
-    /* --- LEFT PANEL: FORM --- */
-    #createEventForm {
-        flex-grow: 1;
-        min-height: 0;
-        overflow-y: auto;
-        padding-right: 8px;
-        display: flex;
-        flex-direction: column;
-    }
-    #createEventForm > div:first-child { flex-grow: 1; }
-    #createEventForm > div:last-child { margin-top: auto; padding-top: 16px; flex-shrink: 0; }
-
-    /* Form Styling */
-    .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
-    .grid-form .col-span-2 { grid-column: 1 / -1; }
-    .grid-form label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 6px; display: block; }
-    .grid-form input, .grid-form select, .grid-form textarea {
-        background: var(--bg-input); border: 1px solid transparent; padding: 10px 14px;
-        border-radius: 10px; font-size: 14px; transition: all 0.2s; color: var(--text-primary);
-        width: 100%; font-family: inherit;
-    }
-    .grid-form input:focus, .grid-form select:focus, .grid-form textarea:focus {
-        background: white; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); outline: none;
-    }
-    .grid-form textarea { min-height: 90px; resize: vertical; }
-
-    /* Speakers Fieldset */
-    .speakers-fieldset { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 16px; margin-top: 8px; background: var(--bg-main); }
-    .speakers-fieldset legend { font-weight: 700; padding: 0 8px; font-size: 13px; color: var(--text-secondary); }
-    .speaker-row { display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 12px; align-items: flex-end; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-    .speaker-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .speaker-row .checkbox-field { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-bottom: 8px;}
-    .speaker-row .checkbox-field label { font-size: 11px; margin: 0; }
-    .remove-speaker-btn { color: var(--color-danger); font-weight: 700; font-size: 18px; line-height: 1; border-radius: 50%; width: 36px; height: 36px; display: grid; place-items: center; }
-    .remove-speaker-btn:hover { background-color: #fee2e2; }
-
-    /* Banner Management */
-    .banner-management { background: var(--color-brand-light); border: 1px solid var(--color-brand); border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px; flex-shrink: 0; }
-    .banner-management strong { color: var(--color-brand-dark); }
-
-    /* --- RIGHT PANEL: CALENDAR --- */
-    .calendar-tools { display: flex; margin-bottom: 16px; flex-shrink: 0; }
-    .calendar-tools input { background: var(--bg-input); border: 1px solid transparent; padding: 10px 14px; border-radius: 10px; font-size: 14px; width: 100%; transition: all 0.2s; }
-    .calendar-tools input:focus { background: white; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); outline: none; }
-    #calendar { flex-grow: 1; min-height: 0; }
-
-    /* FullCalendar Theme Overrides */
-    :root {
-        --fc-bg-color: transparent; --fc-border-color: var(--border); --fc-text-color: var(--text-primary); --fc-neutral-bg-color: var(--bg-input); --fc-today-bg-color: color-mix(in srgb, var(--color-brand) 10%, transparent); --fc-event-bg-color: var(--color-brand); --fc-event-border-color: var(--color-brand); --fc-event-text-color: var(--text-light); --fc-button-bg-color: var(--bg-panel); --fc-button-border-color: var(--border); --fc-button-text-color: var(--text-secondary); --fc-button-active-bg-color: var(--color-brand); --fc-button-active-border-color: var(--color-brand); --fc-button-active-text-color: #fff; --fc-button-hover-bg-color: var(--bg-input);
-    }
-    #calendar .fc { height: 100%; font-size: 13px; }
-    .fc-col-header-cell-cushion, .fc-daygrid-day-number { text-decoration: none; color: var(--text-secondary) !important; font-weight: 600; }
-    .fc .fc-toolbar-title { font-size: 1.25em; font-family: 'Poppins', sans-serif; font-weight: 700; }
-    .fc .fc-button { text-transform: capitalize; box-shadow: none !important; border-radius: 8px; padding: 8px 12px;}
-
-    /* --- MODAL & MISC --- */
-    #edit-event-modal { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); color: var(--text-primary); box-shadow: 0 20px 40px -10px rgb(0 0 0 / 0.15); width: 90%; max-width: 800px; padding: 24px 32px; max-height: 90vh; overflow: hidden; flex-direction: column; }
-    #edit-event-modal[open] { display: flex; }
-    #edit-event-modal::backdrop { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    #edit-event-modal h2 { margin: 0; font-family: 'Poppins', sans-serif; font-size: 20px; }
-    #edit-event-modal form { overflow-y: auto; padding-right: 8px; margin-right: -8px; flex-grow: 1; }
-    .conflict-row { font-size: 0.8rem; color: #f97316; line-height: 1.4; }
-    #accessDenied { background: white; padding: 48px; border-radius: 32px; text-align: center; box-shadow: 0 20px 40px -10px rgb(0 0 0 / 0.1); max-width: 420px; margin: auto; }
-    #accessDenied h2 { font-family: 'Poppins', sans-serif; margin-bottom: 12px; font-size: 24px; }
-    #accessDenied p { color: var(--text-secondary); margin-bottom: 32px; line-height: 1.5; }
-
-    .btn-danger { background: var(--color-danger); color: white; }
-    .btn-danger:hover { background: #dc2626; }
-    .btn-danger-ghost { background: transparent; color: var(--color-danger); }
-    .btn-danger-ghost:hover { background-color: #fee2e2; }
-
-    /* --- NOTIFICATION --- */
-    #flash { position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--text-primary); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; z-index: 1000; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    #flash.visible { transform: translateX(-50%) translateY(0); }
-
-    /* --- MOBILE VIEW OVERHAUL --- */
-    @media (max-width: 959px) {
-        html, body {
-            height: auto;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-        body {
-            display: block;
-        }
-        .app-main {
-            overflow: visible;
-            height: auto;
-            padding: 16px;
-        }
-        .site-header {
-            padding: 0 16px;
-        }
-        .site-header .container.header-grid {
-            height: 64px;
-        }
-        .brand-text .subtitle {
-            display: none;
-        }
-        #admin.dashboard-grid {
-            display: flex;
-            flex-direction: column;
-            height: auto;
-            gap: 16px;
-        }
-        .organizer-form-container, .admin-side {
-            max-height: none;
-            min-height: auto;
-            padding: 16px;
-        }
-        .admin-side {
-            min-height: 80vh; /* Ensure calendar has height */
-        }
-        .grid-form {
-            grid-template-columns: 1fr;
-        }
-        .speaker-row {
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-        .banner-management .grid-form {
-             grid-template-columns: 1fr;
-        }
-        #edit-event-modal {
-            padding: 16px;
-            width: 95%;
-        }
-        #edit-event-modal .grid-form {
-            grid-template-columns: 1fr;
-        }
-    }
-  </style>
-
   <style type="text/tailwindcss">
     @layer utilities {
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      
       .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-      .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #a8b2c1; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+      .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; border: 2px solid transparent; background-clip: content-box; }
     }
+
+    html, body { height: 100%; overflow: hidden; }
+    
+    /* Flash Notification */
+    #flash {
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-150%);
+        background-color: #0f172a;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 9999px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        z-index: 9999;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        display: flex; align-items: center; gap: 8px; opacity: 0;
+    }
+    #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* Form Inputs */
+    .input-field {
+        @apply w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all text-sm text-slate-800 placeholder:text-slate-400;
+    }
+    .label-text {
+        @apply block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5;
+    }
+
+    /* FullCalendar Theme Overrides (Matching Brand Blue) */
+    :root {
+        --fc-bg-color: transparent;
+        --fc-border-color: #e2e8f0;
+        --fc-text-color: #334155;
+        --fc-neutral-bg-color: #f8fafc;
+        --fc-today-bg-color: #f0f9ff;
+        --fc-event-bg-color: #0284c7;
+        --fc-event-border-color: #0284c7;
+        --fc-event-text-color: #ffffff;
+        --fc-button-bg-color: #ffffff;
+        --fc-button-border-color: #e2e8f0;
+        --fc-button-text-color: #64748b;
+        --fc-button-active-bg-color: #0284c7;
+        --fc-button-active-border-color: #0284c7;
+        --fc-button-active-text-color: #fff;
+        --fc-button-hover-bg-color: #f1f5f9;
+    }
+    .fc { font-family: 'Inter', sans-serif; font-size: 0.85rem; }
+    .fc .fc-toolbar-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 1.25rem; color: #1e293b; }
+    .fc .fc-button { border-radius: 0.75rem; font-weight: 600; text-transform: capitalize; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+    .fc-col-header-cell-cushion, .fc-daygrid-day-number { color: #64748b !important; font-weight: 600; text-decoration: none !important; }
+
+    /* Modal Styles */
+    dialog::backdrop { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); }
+    dialog[open] { animation: modal-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes modal-pop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
   </style>
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-200 selection:text-brand-900">
+<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
-  <!-- ================= HEADER ================= -->
-  <header class="site-header">
-    <div class="container header-grid">
-      <a href="index.html" class="brand">
-        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
+  <!-- ================= HEADER (Matched to CSS: Sticky, 72px height, Max-width 1800) ================= -->
+  <header class="site-header bg-white border-b border-gray-200 sticky top-0 z-50 px-4">
+    <div class="container mx-auto h-[72px] flex items-center justify-between max-w-[1800px]">
+      <!-- Brand -->
+      <a href="index.html" class="brand group flex items-center gap-3">
+        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="w-10 h-10">
         <div class="brand-text">
-          <div class="title">Agrovoltaicos sin Fronteras</div>
-          <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
+          <div class="title font-display font-extrabold text-slate-900 text-lg group-hover:text-brand-700 transition-colors">Agrovoltaicos sin Fronteras</div>
+          <!-- Subtitle visible only on desktop per CSS -->
+          <div class="subtitle text-slate-500 text-xs hidden md:block" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
         </div>
       </a>
-      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+      
+      <button id="mobileMenuBtn" class="mobile-menu-btn md:hidden text-slate-600 hover:bg-gray-100 rounded-lg p-2" aria-label="Open menu" aria-expanded="false">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
+
       <!-- Desktop Nav -->
-      <nav class="nav">
-        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-        <a href="about.html" class="link" data-i18n="nav.about">About</a>
-        <a href="network.html" class="link" data-i18n="nav.network">Network</a>
-        <a href="map.html" class="link" data-i18n="nav.map">Map</a>
-        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-        <div class="divider"></div>
-        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-          <span>EN</span>
-          <span>ES</span>
+      <nav class="nav hidden md:flex items-center gap-6">
+        <!-- Links match CSS: font-weight 700 (bold), text-secondary (slate-500) -->
+        <a href="index.html" class="link text-sm font-bold text-slate-500 hover:text-brand-700 px-3 py-1 rounded-full transition-colors" data-i18n="nav.schedule">Schedule</a>
+        <a href="archive.html" class="link text-sm font-bold text-slate-500 hover:text-brand-700 px-3 py-1 rounded-full transition-colors" data-i18n="nav.archive">Archive</a>
+        <a href="about.html" class="link text-sm font-bold text-slate-500 hover:text-brand-700 px-3 py-1 rounded-full transition-colors" data-i18n="nav.about">About</a>
+        <a href="network.html" class="link text-sm font-bold text-slate-500 hover:text-brand-700 px-3 py-1 rounded-full transition-colors" data-i18n="nav.network">Network</a>
+        <a href="map.html" class="link text-sm font-bold text-slate-500 hover:text-brand-700 px-3 py-1 rounded-full transition-colors" data-i18n="nav.map">Map</a>
+        <a href="admin.html" id="btnAdmin" class="link text-sm font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full transition-all" data-i18n="nav.admin" style="display: none;">Admin</a>
+        
+        <div class="divider border-r border-gray-200 h-6 mx-2"></div>
+        
+        <!-- Language Switcher (CSS: .lang-switch-slider) -->
+        <div id="langSwitchDesktop" class="lang-switch-slider flex border border-gray-200 bg-gray-50 hover:border-brand-300 cursor-pointer rounded-full p-1 relative w-16 justify-between" data-lang="en">
+          <div class="absolute bg-white shadow-sm rounded-full h-[calc(100%-8px)] w-[calc(50%-4px)] top-1 left-1 transition-transform duration-300 ease-cubic" style="transform: var(--lang-offset, translateX(0))"></div>
+          <span class="text-[10px] font-bold text-slate-500 z-10 px-2">EN</span>
+          <span class="text-[10px] font-bold text-slate-500 z-10 px-2">ES</span>
         </div>
-        <div class="auth-area">
-          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile"
-            onclick="window.location.href='profile.html'">
-            <span id="userInitial"></span>
-            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;"
-              alt="User Avatar" />
+        
+        <!-- Auth Section -->
+        <div class="auth-area flex items-center gap-3">
+          <button id="btnProfile" class="profile-button w-9 h-9 rounded-full bg-brand-500 text-white shadow-sm ring-2 ring-white hover:ring-brand-200 transition-all flex items-center justify-center overflow-hidden" style="display: none" aria-label="Open profile" onclick="window.location.href='profile.html'">
+            <span id="userInitial" class="font-bold text-xs"></span>
+            <img id="userAvatar" class="rounded-full object-cover w-full h-full" style="display: none;" alt="User Avatar" />
           </button>
-          <span id="userName" style="display: none;"></span>
-          <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
-          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
-            Sign out
-          </button>
+          <span id="userName" class="text-sm font-bold text-slate-700 hover:text-brand-600 cursor-pointer" style="display: none;"></span>
+          <a href="signin.html" id="btnSignIn" class="text-sm font-bold text-slate-700 hover:text-brand-600 transition-colors" data-i18n="auth.signin">Sign in</a>
+          <button id="btnSignOut" class="text-xs font-medium text-slate-400 hover:text-red-600 transition-colors" data-i18n="auth.signout" style="display: none">Sign out</button>
         </div>
       </nav>
     </div>
   </header>
 
   <!-- ================= MOBILE MENU OVERLAY ================= -->
-  <div id="mobileNavOverlay" class="mobile-nav-overlay">
-    <div class="mobile-nav-content"><!-- Injected by JS --></div>
+  <div id="mobileNavOverlay" class="mobile-nav-overlay fixed inset-0 z-[60] bg-slate-900/20 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="mobile-nav-content absolute right-0 top-0 bottom-0 w-72 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col p-4">
+      <!-- Injected by JS -->
+    </div>
   </div>
 
   <!-- ================= MAIN CONTENT ================= -->
-  <main class="app-main">
+  <main class="flex-1 relative overflow-hidden bg-gray-50">
     <div id="flash"></div>
 
-    <div id="admin" class="dashboard-grid" style="display: none;">
-      <!-- Left Panel: Form -->
-      <div class="organizer-form-container panel">
-        <h2 data-i18n="admin.title">Organizer Tools</h2>
-        <form id="createEventForm">
-          <div>
-            <div class="banner-management">
-              <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                <span style="font-size: 1.5rem;">📢</span>
-                <strong style="flex: 1; min-width: 150px;">Site Announcement Banner</strong>
-                <button type="button" id="toggleBannerBtn" class="btn-ghost" style="padding: 4px 12px; font-size: 0.85rem;">
-                  <span id="bannerStatusText">No Active Banner</span>
-                </button>
-              </div>
-              <div class="grid-form" style="gap: 12px;">
-                <div><label style="font-size: 0.75rem; opacity: 0.8;">Banner Text (EN)</label><input id="bannerTextEn" placeholder="Important announcement..." /></div>
-                <div><label style="font-size: 0.75rem; opacity: 0.8;">Banner Text (ES)</label><input id="bannerTextEs" placeholder="Anuncio importante..." /></div>
-                <div class="col-span-2" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                  <button type="button" id="saveBannerBtn" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;"><span id="saveBannerBtnText">Save & Activate</span></button>
-                  <button type="button" id="saveDraftBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">Save Draft</button>
-                  <button type="button" id="clearBannerBtn" class="btn-ghost" style="padding: 6px 12px; font-size: 0.85rem;">Deactivate</button>
-                  <label style="display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 0.85rem; cursor: pointer; color: var(--text-secondary);">
-                    <input type="checkbox" id="bannerActiveCheck" checked />
-                    <span id="activeCheckLabel">Auto-Activate</span>
-                  </label>
+    <!-- Scrollable Container -->
+    <div class="absolute inset-0 overflow-y-auto custom-scrollbar">
+      <div class="max-w-[1800px] mx-auto px-4 sm:px-6 py-6 flex flex-col h-full">
+        
+        <!-- Access Denied View -->
+        <div id="accessDenied" class="hidden m-auto max-w-md w-full">
+            <div class="bg-white rounded-2xl p-8 text-center border border-gray-200 shadow-lg">
+                <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="lock" class="w-8 h-8"></i>
                 </div>
-              </div>
+                <h2 class="font-display font-bold text-2xl text-slate-800 mb-2" data-i18n="access_denied.title">Access Denied</h2>
+                <p class="text-slate-500 mb-6" data-i18n="access_denied.body">You must be an organizer to view this page.</p>
+                <a href="index.html" class="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-bold rounded-xl text-brand-700 bg-brand-50 hover:bg-brand-100 transition-all">
+                    <span data-i18n="back.general">Go Back</span>
+                </a>
             </div>
-
-            <div class="grid-form">
-              <div><label data-i18n="event.title_en">Title (EN)</label><input id="titleEn" required /></div>
-              <div><label data-i18n="event.title_es">Title (ES)</label><input id="titleEs" /></div>
-              <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea id="descEn"></textarea></div>
-              <div class="col-span-2"><label data-i18n="event.desc_es">Description (ES)</label><textarea id="descEs"></textarea></div>
-              <div><label data-i18n="event.start">Start time</label><input id="startTime" type="text" placeholder="mm/dd/yyyy --:-- --" required /></div>
-              <div><label data-i18n="event.end">End time</label><input id="endTime" type="text" placeholder="mm/dd/yyyy --:-- --" /></div>
-              <div><label data-i18n="event.lang">Language</label>
-                <select id="eventLang">
-                  <option value="bi">Bilingual</option><option value="en">English</option><option value="es">Español</option>
-                </select>
-              </div>
-              <div><label data-i18n="event.host">Host org</label><input id="hostOrg" placeholder="UNAM, University of Arizona…" /></div>
-              <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="zoomUrl" type="url" /></div>
-              <div class="col-span-2"><label data-i18n="event.recording_url">Recording URL</label><input id="recordingUrl" type="url" /></div>
-              <div class="col-span-2"><label data-i18n="tags.label">Tags (optional)</label><input id="tags" data-i18n-placeholder="tags.placeholder" placeholder="earth science, agriculture, environment" /></div>
-              <fieldset class="speakers-fieldset col-span-2">
-                <legend data-i18n="speakers.title">Speakers</legend>
-                <div id="speakersContainer"></div>
-                <button type="button" class="btn btn-secondary" id="addSpeakerBtn" data-i18n="speakers.add" style="padding: 6px 12px; font-size: 0.85rem; margin-top: 8px;">Add Speaker</button>
-              </fieldset>
-            </div>
-            <div id="slotConflicts" class="slot-conflicts col-span-2" style="margin-top: 1rem;"></div>
-          </div>
-          <div><button class="btn btn-primary" type="submit" data-i18n="event.create" style="width: 100%;">Create Event</button></div>
-        </form>
-      </div>
-
-      <!-- Right Panel: Calendar -->
-      <div class="admin-side panel">
-        <h2 data-i18n="calendar.title">Event Calendar</h2>
-        <div class="calendar-tools">
-          <input id="tagFilterInput" data-i18n-placeholder="tags.filter" placeholder="Filter by tags (comma separated)" />
         </div>
-        <div id="calendar"></div>
-      </div>
-    </div>
 
-    <div id="accessDenied" style="display: none;">
-      <h2 data-i18n="access_denied.title">Access Denied</h2>
-      <p data-i18n="access_denied.body">You must be an organizer to view this page. Please sign in with an authorized account.</p>
-      <a href="index.html" class="btn btn-secondary" data-i18n="back.general">Back to Schedule</a>
+        <!-- Dashboard Grid -->
+        <div id="admin" class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full pb-6 hidden">
+            
+            <!-- LEFT PANEL: TOOLS & FORM -->
+            <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 overflow-hidden h-full">
+                <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm flex flex-col overflow-hidden h-full">
+                    <div class="p-5 border-b border-gray-100 bg-white sticky top-0 z-10">
+                        <h2 class="font-display font-bold text-xl text-slate-800 flex items-center gap-2">
+                            <i data-lucide="settings-2" class="w-5 h-5 text-brand-500"></i>
+                            <span data-i18n="admin.title">Organizer Tools</span>
+                        </h2>
+                    </div>
+                    
+                    <div class="overflow-y-auto custom-scrollbar p-5 flex-1">
+                        <form id="createEventForm" class="space-y-6">
+                            <!-- Banner Management Card -->
+                            <div class="bg-brand-50/50 border border-brand-100 rounded-xl p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-2 text-brand-800 font-bold text-xs uppercase tracking-wider">
+                                        <i data-lucide="megaphone" class="w-3 h-3"></i> Announcement Banner
+                                    </div>
+                                    <span id="bannerStatusText" class="text-[10px] font-bold px-2 py-0.5 bg-white rounded text-slate-500 border border-brand-100">Inactive</span>
+                                </div>
+                                <div class="space-y-3">
+                                    <input id="bannerTextEn" class="input-field bg-white" placeholder="Banner Text (EN)...">
+                                    <input id="bannerTextEs" class="input-field bg-white" placeholder="Banner Text (ES)...">
+                                    <div class="flex flex-wrap gap-2 items-center pt-2">
+                                        <button type="button" id="saveBannerBtn" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">Save & Activate</button>
+                                        <button type="button" id="clearBannerBtn" class="px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-slate-600 text-xs font-bold rounded-lg transition-colors">Deactivate</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Event Fields -->
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div><label class="label-text" data-i18n="event.title_en">Title (EN)</label><input id="titleEn" class="input-field" required /></div>
+                                    <div><label class="label-text" data-i18n="event.title_es">Title (ES)</label><input id="titleEs" class="input-field" /></div>
+                                </div>
+                                <div><label class="label-text" data-i18n="event.desc_en">Description (EN)</label><textarea id="descEn" class="input-field h-24 resize-y"></textarea></div>
+                                <div><label class="label-text" data-i18n="event.desc_es">Description (ES)</label><textarea id="descEs" class="input-field h-24 resize-y"></textarea></div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="label-text" data-i18n="event.start">Start</label><input id="startTime" type="text" class="input-field" placeholder="mm/dd/yyyy --:--" required /></div>
+                                    <div><label class="label-text" data-i18n="event.end">End</label><input id="endTime" type="text" class="input-field" placeholder="mm/dd/yyyy --:--" /></div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="label-text" data-i18n="event.lang">Language</label>
+                                        <select id="eventLang" class="input-field cursor-pointer">
+                                            <option value="bi">Bilingual</option><option value="en">English</option><option value="es">Español</option>
+                                        </select>
+                                    </div>
+                                    <div><label class="label-text" data-i18n="event.host">Host Org</label><input id="hostOrg" class="input-field" placeholder="e.g. UNAM" /></div>
+                                </div>
+
+                                <div class="space-y-3">
+                                    <div><label class="label-text" data-i18n="event.zoom">Zoom URL</label><input id="zoomUrl" type="url" class="input-field" /></div>
+                                    <div><label class="label-text" data-i18n="event.recording_url">Recording URL</label><input id="recordingUrl" type="url" class="input-field" /></div>
+                                    <div><label class="label-text" data-i18n="tags.label">Tags</label><input id="tags" class="input-field" data-i18n-placeholder="tags.placeholder" /></div>
+                                </div>
+
+                                <!-- Speakers Section -->
+                                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <label class="label-text mb-0" data-i18n="speakers.title">Speakers</label>
+                                        <button type="button" id="addSpeakerBtn" class="text-xs font-bold text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-2 py-1 rounded transition-colors" data-i18n="speakers.add">+ Add</button>
+                                    </div>
+                                    <div id="speakersContainer" class="space-y-3"></div>
+                                </div>
+                                
+                                <div id="slotConflicts" class="text-xs text-orange-600 font-medium space-y-1"></div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="p-4 border-t border-gray-100 bg-gray-50">
+                        <button type="submit" form="createEventForm" class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-md transition-all flex justify-center items-center gap-2" data-i18n="event.create">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Event
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: CALENDAR -->
+            <div class="lg:col-span-8 xl:col-span-9 h-full">
+                <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm h-full flex flex-col overflow-hidden">
+                    <div class="p-4 border-b border-gray-100 flex items-center justify-between gap-4 bg-white sticky top-0 z-10">
+                        <h2 class="font-display font-bold text-xl text-slate-800" data-i18n="calendar.title">Event Calendar</h2>
+                        <div class="relative w-64">
+                            <i data-lucide="filter" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                            <input id="tagFilterInput" class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-500 outline-none" data-i18n-placeholder="tags.filter">
+                        </div>
+                    </div>
+                    <div class="flex-1 p-4 bg-white min-h-[500px]">
+                        <div id="calendar" class="h-full"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+      </div>
     </div>
   </main>
 
-  <!-- ================= FOOTER ================= -->
-  <footer class="site-footer">
-    <div class="container">
-      <small>
-        <div class="footer-text">
-          © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
-          <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
-        </div>
-        <div class="footer-logos">
+  <!-- ================= FOOTER (Matched to CSS: Padding 24px, Round Logos 40px, Text Secondary) ================= -->
+  <footer class="site-footer bg-white border-t border-gray-200 p-6 mt-auto z-10">
+    <div class="mx-auto flex flex-col md:flex-row justify-between items-center gap-4 max-w-[1800px] text-xs text-slate-500">
+      <!-- Text Section -->
+      <div class="footer-text flex items-center flex-wrap justify-center md:justify-start gap-1">
+        <span>&copy; <span id="year"></span> Agrovoltaicos sin Fronteras •</span>
+        <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
+      </div>
+      
+      <!-- Logos Section (CSS: w-40px h-40px rounded-50% object-cover) -->
+      <div class="footer-logos flex gap-2 items-center">
           <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer">
-            <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics">
+            <img src="static/b2ua.jpg" class="w-10 h-10 rounded-full object-cover border border-gray-100" alt="Biosphere 2 Agrivoltaics">
           </a>
           <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer">
-            <img src="static/unam.png" alt="UNAM">
+            <img src="static/unam.png" class="w-10 h-10 rounded-full object-cover border border-gray-100 bg-white" alt="UNAM">
           </a>
           <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer">
-            <img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana" style="background-color: white;">
+            <img src="static/aal.png" class="w-10 h-10 rounded-full object-cover border border-gray-100 bg-white" alt="AAL">
           </a>
           <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer">
-            <img src="static/rame.png" alt="Rame - Red Agrivoltaica de México" style="background-color: white;">
+            <img src="static/rame.png" class="w-10 h-10 rounded-full object-cover border border-gray-100 bg-white" alt="RAME">
           </a>
-        </div>
-      </small>
+      </div>
     </div>
   </footer>
 
-  <!-- ================= MODAL ================= -->
-  <dialog id="edit-event-modal">
-    <div class="modal-header">
-      <h2 data-i18n="event.edit_title">Edit Event</h2>
-      <button id="close-modal-btn" class="btn-ghost" style="padding: 4px 8px;" aria-label="Close">✕</button>
-    </div>
-    <form id="editEventForm">
-      <div class="grid-form">
-        <input type="hidden" id="editEventId">
-        <div><label data-i18n="event.title_en">Title (EN)</label><input id="editTitleEn" required /></div>
-        <div><label data-i18n="event.title_es">Title (ES)</label><input id="editTitleEs" /></div>
-        <div class="col-span-2"><label data-i18n="event.desc_en">Description (EN)</label><textarea id="editDescEn"></textarea></div>
-        <div class="col-span-2"><label data-i18n="event.desc_es">Description (ES)</label><textarea id="editDescEs"></textarea></div>
-        <div><label data-i18n="event.start">Start time</label><input id="editStartTime" type="datetime-local" required /></div>
-        <div><label data-i18n="event.end">End time</label><input id="editEndTime" type="datetime-local" /></div>
-        <div><label data-i18n="event.lang">Language</label>
-          <select id="editEventLang">
-            <option value="bi">Bilingual</option><option value="en">English</option><option value="es">Español</option>
-          </select>
+  <!-- ================= EDIT MODAL ================= -->
+  <dialog id="edit-event-modal" class="rounded-2xl p-0 bg-white shadow-2xl max-w-2xl w-full m-auto backdrop:bg-slate-900/50">
+    <div class="flex flex-col h-full max-h-[90vh]">
+        <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h2 class="font-display font-bold text-xl text-slate-800" data-i18n="event.edit_title">Edit Event</h2>
+            <button id="close-modal-btn" class="p-2 hover:bg-gray-200 rounded-full transition-colors text-slate-500"><i data-lucide="x" class="w-5 h-5"></i></button>
         </div>
-        <div><label data-i18n="event.host">Host org</label><input id="editHostOrg" /></div>
-        <div class="col-span-2"><label data-i18n="event.zoom">Zoom URL (members only)</label><input id="editZoomUrl" type="url" /></div>
-        <div class="col-span-2"><label data-i18n="event.recording_url">Recording URL</label><input id="editRecordingUrl" type="url" /></div>
-        <div class="col-span-2"><label data-i18n="tags.label">Tags</label><input id="editTags" /></div>
-        <fieldset class="speakers-fieldset col-span-2">
-          <legend data-i18n="speakers.title">Speakers</legend>
-          <div id="editSpeakersContainer"></div>
-          <button type="button" class="btn btn-secondary" id="addEditSpeakerBtn" data-i18n="speakers.add" style="padding: 6px 12px; font-size: 0.85rem; margin-top: 8px;">Add Speaker</button>
-        </fieldset>
-        <div id="editConflicts" class="slot-conflicts col-span-2" style="margin-top: 0.5rem;"></div>
-      </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
-        <button class="btn btn-primary" type="submit" data-i18n="save">Save Changes</button>
-        <button id="btnDeleteEvent" class="btn btn-danger" type="button" data-i18n="event.delete">Delete</button>
-      </div>
-    </form>
+        
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <form id="editEventForm" class="space-y-5">
+                <input type="hidden" id="editEventId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="label-text" data-i18n="event.title_en">Title (EN)</label><input id="editTitleEn" class="input-field" required /></div>
+                    <div><label class="label-text" data-i18n="event.title_es">Title (ES)</label><input id="editTitleEs" class="input-field" /></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="label-text" data-i18n="event.start">Start</label><input id="editStartTime" type="datetime-local" class="input-field" required /></div>
+                    <div><label class="label-text" data-i18n="event.end">End</label><input id="editEndTime" type="datetime-local" class="input-field" /></div>
+                </div>
+
+                <div><label class="label-text" data-i18n="event.desc_en">Description (EN)</label><textarea id="editDescEn" class="input-field h-20 resize-y"></textarea></div>
+                <div><label class="label-text" data-i18n="event.desc_es">Description (ES)</label><textarea id="editDescEs" class="input-field h-20 resize-y"></textarea></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="label-text" data-i18n="event.lang">Language</label>
+                        <select id="editEventLang" class="input-field">
+                            <option value="bi">Bilingual</option><option value="en">English</option><option value="es">Español</option>
+                        </select>
+                    </div>
+                    <div><label class="label-text" data-i18n="event.host">Host</label><input id="editHostOrg" class="input-field" /></div>
+                </div>
+
+                <div><label class="label-text" data-i18n="event.zoom">Zoom URL</label><input id="editZoomUrl" type="url" class="input-field" /></div>
+                <div><label class="label-text" data-i18n="event.recording_url">Recording URL</label><input id="editRecordingUrl" type="url" class="input-field" /></div>
+                <div><label class="label-text" data-i18n="tags.label">Tags</label><input id="editTags" class="input-field" /></div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="label-text mb-0" data-i18n="speakers.title">Speakers</label>
+                        <button type="button" id="addEditSpeakerBtn" class="text-xs font-bold text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-2 py-1 rounded transition-colors" data-i18n="speakers.add">+ Add</button>
+                    </div>
+                    <div id="editSpeakersContainer" class="space-y-3"></div>
+                </div>
+
+                <div id="editConflicts" class="text-xs text-orange-600 font-medium"></div>
+            </form>
+        </div>
+        
+        <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
+            <button id="btnDeleteEvent" type="button" class="px-4 py-2 text-red-600 hover:bg-red-50 border border-transparent hover:border-red-100 rounded-xl font-bold text-sm transition-colors" data-i18n="event.delete">Delete Event</button>
+            <button type="submit" form="editEventForm" class="px-6 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold text-sm shadow-sm transition-colors" data-i18n="save">Save Changes</button>
+        </div>
+    </div>
   </dialog>
 
-  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <!-- ================= LOGIC ================= -->
   <script type="module">
     import { supabase, authState, initAuth, signOut } from './auth.js';
-    import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, setFlash, escapeHtml } from './ui.js';
+    import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, setFlash, escapeHtml, getAvatarUrl } from './ui.js';
 
     // --- PAGE-SPECIFIC STATE & I18N ---
     const state = { 
@@ -467,9 +403,10 @@
       calendar: null 
     };
     
+    // Merged Translation Object (Global + Admin Specific)
     const t = {
       en: {
-        tagline: "Seminar series on agrivoltaics in the Americas",
+        tagline: "A seminar series to share advances in agrivoltaics in the Americas",
         nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
         auth: { signin: "Sign in", signout: "Sign out" },
         admin: { title: "Organizer Tools" },
@@ -480,10 +417,10 @@
           lang: "Language", recording_url: "Recording URL", create: "Create Event",
           edit_title: "Edit Event", delete: "Delete"
         },
-        speakers: { title: "Speakers", add: "Add Speaker", name: "Name*", affiliation: "Affiliation", link_profile: "Link Profile", primary: "Primary", remove: "Remove" },
+        speakers: { title: "Speakers", add: "+ Add Speaker", name: "Name*", affiliation: "Affiliation", link_profile: "Link Profile", primary: "Primary", remove: "Remove" },
         tags: { label: "Tags", placeholder: "earth science, agriculture...", filter: "Filter by tags..." },
         save: "Save Changes",
-        access_denied: { title: "Access Denied", body: "You must be an organizer to view this page. Please sign in with an authorized account." },
+        access_denied: { title: "Access Denied", body: "You must be an organizer to view this page." },
         back: { general: "Go Back" },
         errors: {
           overlap: "Selected time overlaps an existing event.",
@@ -495,34 +432,34 @@
         footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }
       },
       es: {
-        tagline: "Serie de seminarios sobre agrovoltaicos en las Américas",
+        tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas",
         nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
-        auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
-        admin: { title: "Herramientas para organizadores" },
+        auth: { signin: "Ingresar", signout: "Salir" },
+        admin: { title: "Herramientas de Organizador" },
         calendar: { title: "Calendario de Eventos" },
         event: {
           title_en: "Título (EN)", title_es: "Título (ES)", desc_en: "Descripción (EN)", desc_es: "Descripción (ES)",
-          start: "Inicio", end: "Fin", host: "Institución anfitriona", zoom: "Enlace de Zoom (solo miembros)",
+          start: "Inicio", end: "Fin", host: "Institución anfitriona", zoom: "Zoom (solo miembros)",
           lang: "Idioma", recording_url: "URL de grabación", create: "Crear evento",
           edit_title: "Editar Evento", delete: "Eliminar"
         },
-        speakers: { title: "Ponentes", add: "Añadir Ponente", name: "Nombre*", affiliation: "Afiliación", link_profile: "Vincular Perfil", primary: "Principal", remove: "Quitar" },
-        tags: { label: "Etiquetas", placeholder: "ciencias de la tierra, agricultura...", filter: "Filtrar por etiquetas..." },
+        speakers: { title: "Ponentes", add: "+ Añadir Ponente", name: "Nombre*", affiliation: "Afiliación", link_profile: "Vincular Perfil", primary: "Principal", remove: "Quitar" },
+        tags: { label: "Etiquetas", placeholder: "ciencias, agricultura...", filter: "Filtrar etiquetas..." },
         save: "Guardar Cambios",
-        access_denied: { title: "Acceso Denegado", body: "Debe ser un organizador para ver esta página. Inicie sesión con una cuenta autorizada." },
+        access_denied: { title: "Acceso Denegado", body: "Debe ser un organizador para ver esta página." },
         back: { general: "Regresar" },
         errors: {
-          overlap: "El horario seleccionado se cruza con otro evento.",
+          overlap: "El horario se cruza con otro evento.",
           create_event: "No se pudo crear el evento",
           update_event: "No se pudo actualizar el evento",
           delete_event: "No se pudo eliminar el evento",
-          load_profiles: "No se pudieron cargar los perfiles de usuario"
+          load_profiles: "Error cargando perfiles"
         },
         footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }
       }
     };
 
-    // --- PAGE-SPECIFIC FUNCTIONS ---
+    // --- FUNCTIONS ---
     const toIsoOrNull = (v) => { if (!v) return null; const d = new Date(v); return isNaN(d.getTime()) ? null : d.toISOString(); };
     const toLocalInputValue = (d) => { if (!d) return ""; d = new Date(d); const p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
     const overlaps = (aStart, aEnd, bStart, bEnd) => { if (!aStart || !bStart) return false; const aS = new Date(aStart).getTime(); const aE = aEnd ? new Date(aEnd).getTime() : aS + 3600000; const bS = new Date(bStart).getTime(); const bE = bEnd ? new Date(bEnd).getTime() : bS + 3600000; return Math.max(aS, bS) < Math.min(aE, bE); };
@@ -532,6 +469,10 @@
     function applyPageI18n() {
       applyI18n(t, state.language);
       if (state.calendar) state.calendar.setOption('locale', state.language === 'es' ? 'es' : 'en');
+      // Update dynamic language switcher offset if needed
+      const offset = state.language === 'es' ? '100%' : '0%';
+      const slider = document.querySelector('#langSwitchDesktop div');
+      if(slider) slider.style.setProperty('--lang-offset', `translateX(${offset})`);
     }
 
     function handleLangSwitch() { 
@@ -543,44 +484,54 @@
 
     const checkAccess = async () => {
       const isAllowed = ["organizer", "admin"].includes(authState.profile?.role);
-      $("#admin").style.display = isAllowed ? "" : "none";
-      $("#accessDenied").style.display = isAllowed ? 'none' : 'block';
       if (isAllowed) {
+        $('#admin').classList.remove('hidden');
+        $('#accessDenied').classList.add('hidden');
         await loadProfiles();
         renderSpeakerFields('speakersContainer');
         if (!state.calendar) initializeCalendar();
         await loadEvents();
+      } else {
+        $('#admin').classList.add('hidden');
+        $('#accessDenied').classList.remove('hidden');
       }
     };
 
     const loadProfiles = async () => {
       const { data, error } = await supabase.from('profiles').select('id, full_name, affiliation').order('full_name');
-      if (error) {
-        setFlash(tr(t, state.language, 'errors.load_profiles'), 3000);
-        state.profiles = [];
-      } else {
-        state.profiles = data || [];
-      }
+      if (error) { setFlash(tr(t, state.language, 'errors.load_profiles'), 3000); state.profiles = []; } else { state.profiles = data || []; }
     };
 
-    const createProfileOptions = (selectedId) => `<option value="">--</option>${state.profiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.full_name || '')}</option>`).join('')}`;
+    const createProfileOptions = (selectedId) => `<option value="">-- Link Profile --</option>${state.profiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.full_name || '')}</option>`).join('')}`;
 
+    // Improved Speaker Row HTML
     const addSpeakerField = (containerId, speaker = {}) => {
       const container = $(`#${containerId}`);
       const row = document.createElement('div');
-      row.className = 'speaker-row';
-      row.innerHTML = `<div><label>${tr(t, state.language, 'speakers.name')}</label><input type="text" class="speaker-name" value="${escapeHtml(speaker.name || '')}" required></div><div><label>${tr(t, state.language, 'speakers.affiliation')}</label><input type="text" class="speaker-affiliation" value="${escapeHtml(speaker.affiliation || '')}"></div><div><label>${tr(t, state.language, 'speakers.link_profile')}</label><select class="speaker-profile">${createProfileOptions(speaker.profile_id)}</select></div><div style="display:flex;gap:1rem;align-items:flex-end;"><div class="checkbox-field"><label>${tr(t, state.language, 'speakers.primary')}</label><input type="checkbox" class="speaker-primary" ${speaker.primary_speaker ? 'checked' : ''}></div><button type="button" class="remove-speaker-btn btn-danger-ghost" title="${tr(t, state.language, 'speakers.remove')}">✕</button></div>`;
+      row.className = 'speaker-row flex flex-col md:flex-row gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm items-start md:items-center';
+      row.innerHTML = `
+        <div class="flex-1 w-full grid grid-cols-1 md:grid-cols-3 gap-2">
+            <input type="text" class="speaker-name input-field !py-1.5" placeholder="${tr(t, state.language, 'speakers.name')}" value="${escapeHtml(speaker.name || '')}" required>
+            <input type="text" class="speaker-affiliation input-field !py-1.5" placeholder="${tr(t, state.language, 'speakers.affiliation')}" value="${escapeHtml(speaker.affiliation || '')}">
+            <select class="speaker-profile input-field !py-1.5">${createProfileOptions(speaker.profile_id)}</select>
+        </div>
+        <div class="flex items-center gap-2 mt-2 md:mt-0">
+            <label class="flex items-center gap-1 text-xs text-slate-600 cursor-pointer select-none bg-gray-100 px-2 py-1.5 rounded hover:bg-gray-200 transition-colors">
+                <input type="checkbox" class="speaker-primary rounded text-brand-600 focus:ring-brand-500 border-gray-300" ${speaker.primary_speaker ? 'checked' : ''}>
+                <span>${tr(t, state.language, 'speakers.primary')}</span>
+            </label>
+            <button type="button" class="remove-speaker-btn text-red-500 hover:bg-red-50 p-1.5 rounded-full transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+        </div>
+      `;
       container.appendChild(row);
+      lucide.createIcons();
     };
 
     const renderSpeakerFields = (containerId, speakers = []) => {
       const container = $(`#${containerId}`);
       container.innerHTML = '';
-      if (speakers.length === 0) {
-        addSpeakerField(containerId);
-      } else {
-        speakers.forEach(speaker => addSpeakerField(containerId, speaker));
-      }
+      if (speakers.length === 0) addSpeakerField(containerId);
+      else speakers.forEach(speaker => addSpeakerField(containerId, speaker));
     };
 
     const passesTagFilter = (ev) => {
@@ -603,8 +554,8 @@
       title: state.language === 'es' ? (ev.title_es || ev.title_en) : (ev.title_en || ev.title_es),
       start: ev.start_time,
       end: ev.end_time,
-      backgroundColor: ev.status === 'canceled' ? '#555' : 'var(--color-brand)',
-      borderColor: ev.status === 'canceled' ? '#555' : 'var(--color-brand)',
+      backgroundColor: ev.status === 'canceled' ? '#64748b' : '#0ea5e9', // slate-500 vs brand-500
+      borderColor: ev.status === 'canceled' ? '#64748b' : '#0ea5e9',
       extendedProps: ev
     }));
 
@@ -652,23 +603,11 @@
 
     const handleEventMove = async ({ event, revert }) => {
       const conflicts = findConflicts(event.start.toISOString(), event.end?.toISOString(), event.id);
-      if (conflicts.length > 0) {
-        setFlash(tr(t, state.language, 'errors.overlap'), 3000);
-        revert();
-        return;
-      }
-      if (!confirm(`Move "${event.title}"?`)) {
-        revert();
-        return;
-      }
+      if (conflicts.length > 0) { setFlash(tr(t, state.language, 'errors.overlap'), 3000); revert(); return; }
+      if (!confirm(`Move "${event.title}"?`)) { revert(); return; }
       const { error } = await supabase.from("events").update({ start_time: event.start.toISOString(), end_time: event.end ? event.end.toISOString() : null }).eq("id", event.id);
-      if (error) {
-        setFlash(tr(t, state.language, 'errors.update_event'), 3000);
-        revert();
-      } else {
-        setFlash("Event time updated!");
-        await loadEvents();
-      }
+      if (error) { setFlash(tr(t, state.language, 'errors.update_event'), 3000); revert(); }
+      else { setFlash("Event time updated!"); await loadEvents(); }
     };
 
     const initializeCalendar = () => {
@@ -677,17 +616,10 @@
       state.calendar = new FullCalendar.Calendar(el, {
         initialView: 'timeGridWeek',
         headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
-        editable: true,
-        selectable: true,
-        selectMirror: true,
-        slotMinTime: '08:00:00',
-        slotMaxTime: '20:00:00',
-        height: '100%',
-        eventClick: handleEventClick,
-        select: handleTimeSelect,
-        dateClick: handleDateClick,
-        eventDrop: handleEventMove,
-        eventResize: handleEventMove,
+        editable: true, selectable: true, selectMirror: true,
+        slotMinTime: '08:00:00', slotMaxTime: '20:00:00', height: '100%',
+        eventClick: handleEventClick, select: handleTimeSelect, dateClick: handleDateClick,
+        eventDrop: handleEventMove, eventResize: handleEventMove,
         events: (_f, s, _fail) => s(formatEventsForCalendar()),
         eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
         locale: state.language === 'es' ? 'es' : 'en'
@@ -699,7 +631,8 @@
       const startIso = toIsoOrNull($("#startTime").value);
       const endIso = toIsoOrNull($("#endTime").value);
       const conflicts = findConflicts(startIso, endIso, null);
-      $("#slotConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${escapeHtml(ev.title_en || ev.title_es || '')}</div>`).join("") : '';
+      $("#slotConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3 h-3"></i> ${new Date(ev.start_time).toLocaleString()} — ${escapeHtml(ev.title_en || ev.title_es || '')}</div>`).join("") : '';
+      lucide.createIcons();
       return conflicts.length > 0;
     };
 
@@ -708,7 +641,8 @@
       const startIso = toIsoOrNull($("#editStartTime").value);
       const endIso = toIsoOrNull($("#editEndTime").value);
       const conflicts = findConflicts(startIso, endIso, id);
-      $("#editConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="conflict-row">⚠️ ${new Date(ev.start_time).toLocaleString()} — ${escapeHtml(ev.title_en || ev.title_es || '')}</div>`).join("") : '';
+      $("#editConflicts").innerHTML = conflicts.length ? conflicts.map(ev => `<div class="flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3 h-3"></i> ${new Date(ev.start_time).toLocaleString()} — ${escapeHtml(ev.title_en || ev.title_es || '')}</div>`).join("") : '';
+      lucide.createIcons();
       return conflicts.length > 0;
     };
 
@@ -721,33 +655,20 @@
       })).filter(s => s.name);
     };
 
+    // --- FORM SUBMISSION LOGIC ---
     const createEvent = async (payload) => {
-      if (!payload.title_en || !payload.start_time) {
-        setFlash("Title (EN) and Start Time are required.", 3000);
-        return;
-      }
-      if (checkCreateFormConflicts()) {
-        setFlash(tr(t, state.language, 'errors.overlap'), 3000);
-        return;
-      }
+      if (!payload.title_en || !payload.start_time) { setFlash("Title (EN) and Start Time are required.", 3000); return; }
+      if (checkCreateFormConflicts()) { setFlash(tr(t, state.language, 'errors.overlap'), 3000); return; }
       const { data, error } = await supabase.from("events").insert([{ ...payload, status: "scheduled" }]).select().single();
-      if (error) {
-        setFlash(tr(t, state.language, "errors.create_event"), 3000);
-        console.error(error);
-        return;
-      }
+      if (error) { setFlash(tr(t, state.language, "errors.create_event"), 3000); return; }
       const speakers = getSpeakersFromForm('speakersContainer');
       if (speakers.length > 0) {
         const { error: spErr } = await supabase.from('event_speakers').insert(speakers.map(s => ({ ...s, event_id: data.id })));
-        if (spErr) {
-          setFlash('Event created, but failed to add speakers.', 3000);
-          console.error(spErr);
-        }
+        if (spErr) console.error(spErr);
       }
       setFlash("Event created!");
       $("#createEventForm").reset();
-      $('#startTime').type = 'text';
-      $('#endTime').type = 'text';
+      $('#startTime').type = 'text'; $('#endTime').type = 'text';
       $("#slotConflicts").innerHTML = '';
       renderSpeakerFields('speakersContainer');
       await loadEvents();
@@ -755,19 +676,12 @@
 
     const updateEvent = async (id, payload) => {
       const { error } = await supabase.from("events").update(payload).eq("id", id);
-      if (error) {
-        setFlash(tr(t, state.language, 'errors.update_event'), 3000);
-        console.error(error);
-        return;
-      }
+      if (error) { setFlash(tr(t, state.language, 'errors.update_event'), 3000); return; }
       await supabase.from('event_speakers').delete().eq('event_id', id);
       const speakers = getSpeakersFromForm('editSpeakersContainer');
       if (speakers.length > 0) {
         const { error: spErr } = await supabase.from('event_speakers').insert(speakers.map(s => ({ ...s, event_id: id })));
-        if (spErr) {
-          setFlash('Event updated, but failed to update speakers.', 3000);
-          console.error(spErr);
-        }
+        if (spErr) console.error(spErr);
       }
       setFlash("Event details saved!");
       await loadEvents();
@@ -775,32 +689,23 @@
     };
 
     const deleteEvent = async (id) => {
-      if (!confirm("Permanently delete this event? This cannot be undone.")) return;
+      if (!confirm("Permanently delete this event?")) return;
       try {
         await supabase.rpc('delete_event_and_dependencies', { event_id_to_delete: id });
         setFlash("Event deleted.");
         await loadEvents();
         $("#edit-event-modal").close();
-      } catch (error) {
-        setFlash(tr(t, state.language, 'errors.delete_event'), 3000);
-        console.error(error);
-      }
+      } catch (error) { setFlash(tr(t, state.language, 'errors.delete_event'), 3000); }
     };
 
-    // --- EVENT HANDLERS ---
+    // --- LISTENERS ---
     const setupDateTime = (s, e) => {
       const hf = (el) => el.type = 'datetime-local';
       const hb = (el) => { if (!el.value) el.type = 'text' };
-      s.addEventListener('focus', () => hf(s));
-      s.addEventListener('blur', () => hb(s));
-      if (!s.value) s.type = 'text';
-      if (e) {
-        e.addEventListener('focus', () => hf(e));
-        e.addEventListener('blur', () => hb(e));
-        if (!e.value) e.type = 'text';
-      }
+      s.addEventListener('focus', () => hf(s)); s.addEventListener('blur', () => hb(s));
+      if(!s.value) s.type = 'text';
+      if(e) { e.addEventListener('focus', () => hf(e)); e.addEventListener('blur', () => hb(e)); if(!e.value) e.type = 'text'; }
     };
-
     setupDateTime($('#startTime'), $('#endTime'));
 
     $("#createEventForm")?.addEventListener("input", checkCreateFormConflicts);
@@ -821,15 +726,8 @@
       });
     });
 
-    $("#tagFilterInput")?.addEventListener('keyup', (e) => {
-      state.tagFilter = normalizeTags(e.target.value || '');
-      if (state.calendar) state.calendar.refetchEvents();
-    });
-
-    $("#close-modal-btn")?.addEventListener("click", () => {
-      $("#edit-event-modal").close();
-    });
-
+    $("#tagFilterInput")?.addEventListener('keyup', (e) => { state.tagFilter = normalizeTags(e.target.value || ''); if (state.calendar) state.calendar.refetchEvents(); });
+    $("#close-modal-btn")?.addEventListener("click", () => $("#edit-event-modal").close());
     $("#editStartTime")?.addEventListener("input", checkEditFormConflicts);
     $("#editEndTime")?.addEventListener("input", checkEditFormConflicts);
 
@@ -838,10 +736,7 @@
       const id = $("#editEventId").value;
       const start_time = toIsoOrNull($("#editStartTime").value);
       const end_time = toIsoOrNull($("#editEndTime").value);
-      if (findConflicts(start_time, end_time, id).length > 0) {
-        setFlash(tr(t, state.language, 'errors.overlap'), 3000);
-        return;
-      }
+      if (findConflicts(start_time, end_time, id).length > 0) { setFlash(tr(t, state.language, 'errors.overlap'), 3000); return; }
       await updateEvent(id, {
         title_en: $("#editTitleEn").value?.trim(),
         title_es: $("#editTitleEs").value?.trim() || null,
@@ -851,48 +746,39 @@
         host_org: $("#editHostOrg").value?.trim() || null,
         zoom_url: $("#editZoomUrl").value?.trim() || null,
         recording_url: $("#editRecordingUrl").value?.trim() || null,
-        start_time,
-        end_time,
+        start_time, end_time,
         topic_tags: normalizeTags($("#editTags").value)
       });
     });
 
     $("#btnDeleteEvent")?.addEventListener("click", () => deleteEvent($("#editEventId").value));
-
-    $('#addSpeakerBtn')?.addEventListener('click', () => {
-      addSpeakerField('speakersContainer');
-    });
-
-    $('#addEditSpeakerBtn')?.addEventListener('click', () => {
-      addSpeakerField('editSpeakersContainer');
-    });
-
+    $('#addSpeakerBtn')?.addEventListener('click', () => addSpeakerField('speakersContainer'));
+    $('#addEditSpeakerBtn')?.addEventListener('click', () => addSpeakerField('editSpeakersContainer'));
     document.body.addEventListener('click', e => {
-      if (e.target.classList.contains('remove-speaker-btn')) {
-        e.target.closest('.speaker-row').remove();
-      }
+      if (e.target.closest('.remove-speaker-btn')) e.target.closest('.speaker-row').remove();
+      if (e.target.closest('#btnProfile') || e.target.id === 'userName') window.location.href = 'profile.html';
     });
 
-    // --- MAIN EXECUTION ---
+    // --- INITIALIZATION ---
     (async function main() {
-      // Initialize shared UI components (header buttons, mobile menu, etc.)
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
-      
-      // Initialize authentication and render the header when auth state is known
       await initAuth({ 
-        onAuthReady: () => renderHeader(authState, t, state.language), 
-        onAuthChange: () => renderHeader(authState, t, state.language) 
+          onAuthReady: () => renderHeader(authState, t, state.language), 
+          onAuthChange: () => {
+              renderHeader(authState, t, state.language);
+              if(authState.profile?.avatar_url) {
+                  getAvatarUrl(authState.profile.avatar_url).then(url => {
+                      if(url) { const i = $('#userAvatar'); if(i) { i.src = url; show(i); hide($('#userInitial')); } }
+                  });
+              }
+          }
       });
-
-      // Apply initial language settings to the page content
       applyPageI18n();
-
-      // Check access and load admin content if authorized
       await checkAccess();
-
       lucide.createIcons();
+
+      document.getElementById('year').innerText = new Date().getFullYear();
     })();
   </script>
-
 </body>
 </html>

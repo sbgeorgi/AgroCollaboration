@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-white">
+<html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
   <meta charset="UTF-8">
@@ -13,271 +13,165 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- External Tailwind Config (Extracted) -->
+  <script src="theme.js"></script>
   
-  <!-- External Tailwind Config -->
-  <script src="tailwind.config.js"></script>
-
   <!-- Custom CSS -->
-  <style>
-    /* These styles are specific to the shared header/footer component */
-    :root { --color-brand: #16a34a; --color-brand-dark: #15803d; --color-brand-light: #dcfce7; --color-accent: #f97316; --color-danger: #ef4444; --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #64748b; --text-tertiary: #94a3b8; --text-light: #ffffff; --border: #e2e8f0; --radius-md: 12px; --radius-lg: 24px; --header-h: 64px; --footer-h: 64px; --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); }
-    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-    .site-header { background-color: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 0 16px; position: sticky; top: 0; z-index: 50; }
-    @media (min-width: 768px) { .site-header { padding: 0 24px; } }
-    .site-header .container.header-grid { height: 72px; max-width: 1800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand .logo-image { width: 40px; height: 40px; }
-    .brand-text .title { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); }
-    .brand-text .subtitle { display: none; }
-    @media (min-width: 768px) { .brand-text .subtitle { display: block; font-family: 'Lato', sans-serif; font-size: 0.8rem; color: var(--text-secondary); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
-    .nav { display: none; }
-    @media (min-width: 960px) { .nav { display: flex; align-items: center; gap: 24px; } }
-    .nav .link { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; color: var(--text-secondary); transition: color 0.2s; }
-    .nav .link:hover, .nav .link.active { color: var(--color-brand); }
-    .nav .divider { width: 1px; height: 20px; background-color: var(--border); }
-    .lang-switch-slider { display: flex; cursor: pointer; background: var(--bg-input); border-radius: 99px; padding: 4px; position: relative; font-size: 12px; font-weight: 700; }
-    .lang-switch-slider span { padding: 4px 12px; z-index: 1; transition: color 0.2s; user-select: none; }
-    .lang-switch-slider::before { content: ''; position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: white; border-radius: 99px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
-    .lang-switch-slider[data-lang="es"]::before { transform: translateX(100%); }
-    .lang-switch-slider[data-lang="en"] span:first-child, .lang-switch-slider[data-lang="es"] span:last-child { color: var(--color-brand-dark); }
-    .auth-area { display: flex; align-items: center; gap: 16px; }
-    .profile-button { width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-brand-light); color: var(--color-brand-dark); font-weight: 700; font-family: 'Poppins', sans-serif; display: grid; place-content: center; overflow: hidden; border: 2px solid var(--border); }
-    #userName { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; }
-    .mobile-menu-btn { display: block; color: var(--text-secondary); }
-    @media (min-width: 960px) { .mobile-menu-btn { display: none; } }
-    .mobile-nav-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 998; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
-    .mobile-nav-overlay.is-open { opacity: 1; visibility: visible; }
-    .mobile-nav-content { position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 320px; background: var(--bg-panel); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1); display: flex; flex-direction: column; z-index: 999; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1); padding: 24px; }
-    .is-open .mobile-nav-content { transform: translateX(0); }
-    .mobile-nav-close-btn { position: absolute; top: 16px; right: 16px; color: var(--text-secondary); z-index: 10; }
-    .mobile-nav-content > nav { display: flex; flex-direction: column; align-items: center; text-align: center; height: 100%; padding-top: 48px; }
-    .mobile-nav-content .link { font-size: 1.75rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--text-primary); width: 100%; padding: 12px 0; }
-    .mobile-nav-content .link.active { color: var(--color-brand); }
-    .mobile-nav-content .divider { display: none; }
-    .mobile-nav-content .lang-switch-slider { order: -1; transform: scale(1.15); margin-bottom: 48px; }
-    .mobile-nav-content .auth-area { margin-top: auto; width: 100%; padding-top: 24px; border-top: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .mobile-nav-content .auth-area .profile-button { width: 64px; height: 64px; font-size: 2rem; }
-    .mobile-nav-content .auth-area #userNameMobile { font-weight: 600; font-size: 1.1rem; color: var(--text-primary); }
-    .mobile-nav-content .auth-area #btnSignOutMobile, .mobile-nav-content .auth-area #btnSignInMobile { width: 100%; justify-content: center; padding: 12px 24px; font-size: 1rem; border-radius: var(--radius-md); }
-    .btn { border: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn:active { transform: scale(0.98); }
-    .btn-primary { background: var(--color-brand-dark); color: white; box-shadow: 0 4px 12px -2px rgba(22, 163, 74, 0.3); }
-    .btn-primary:hover { background: #14532d; }
-    .btn-secondary { background: white; border: 2px solid var(--border); color: var(--text-primary); }
-    .btn-secondary:hover { border-color: var(--text-tertiary); background: var(--bg-input); }
-    .btn-ghost { background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 700; padding: 8px 12px; border-radius: 8px; }
-    .btn-ghost:hover { background: var(--bg-input); color: var(--text-primary); }
-    #btnSignIn { padding: 8px 16px; font-size: 0.9rem; border-radius: 8px; background: var(--color-brand); color: white;}
-    #btnSignIn:hover { background: var(--color-brand-dark); }
-    .site-footer { background-color: var(--bg-panel); border-top: 1px solid var(--border); padding: 24px; }
-    .site-footer .container { max-width: 1800px; margin: 0 auto; }
-    .site-footer small { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-secondary); }
-    .site-footer .footer-text { display: flex; align-items: center; flex-wrap: wrap; }
-    .site-footer .footer-logos { display: flex; align-items: center; gap: 8px; }
-    .site-footer .footer-logos img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-    @media (max-width: 767px) { .site-footer small { flex-direction: column; text-align: center; } }
-  </style>
-
   <style type="text/tailwindcss">
     @layer utilities {
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      
       .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-      .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #a8b2c1; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+      .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; border: 2px solid transparent; background-clip: content-box; }
     }
+
+    html, body { height: 100%; overflow: hidden; }
+    .cubic-bezier { transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1); }
+    
+    /* Markdown Styles */
+    .prose p { margin-bottom: 1em; line-height: 1.7; color: #475569; }
+    .prose h2 { color: #0f172a; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.5rem; }
+    .prose a { color: #0369a1; text-decoration: underline; text-decoration-color: #bae6fd; text-underline-offset: 2px; font-weight: 600; }
   </style>
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-200 selection:text-brand-900">
+<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
-  <!-- ================= HEADER ================= -->
-  <header class="site-header">
-    <div class="container header-grid">
-      <a href="index.html" class="brand">
-        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
-        <div class="brand-text">
-          <div class="title">Agrovoltaicos sin Fronteras</div>
-          <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
-        </div>
-      </a>
-      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-      </button>
-      <!-- Desktop Nav -->
-      <nav class="nav">
-        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-        <a href="about.html" class="link" data-i18n="nav.about">About</a>
-        <a href="network.html" class="link" data-i18n="nav.network">Network</a>
-        <a href="map.html" class="link" data-i18n="nav.map">Map</a>
-        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-        <div class="divider"></div>
-        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-          <span>EN</span>
-          <span>ES</span>
-        </div>
-        <div class="auth-area">
-          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile"
-            onclick="window.location.href='profile.html'">
-            <span id="userInitial"></span>
-            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;"
-              alt="User Avatar" />
-          </button>
-          <span id="userName" style="display: none;"></span>
-          <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
-          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
-            Sign out
-          </button>
-        </div>
-      </nav>
-    </div>
-  </header>
-
-  <!-- ================= MOBILE MENU OVERLAY ================= -->
-  <div id="mobileNavOverlay" class="mobile-nav-overlay">
-    <div class="mobile-nav-content"><!-- Injected by JS --></div>
-  </div>
+  <!-- Note: Header is injected by layout.js -->
 
   <!-- ================= MAIN CONTENT ================= -->
   <main class="flex-1 relative overflow-hidden bg-gray-50">
-    <div class="absolute inset-0 overflow-y-auto custom-scrollbar">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
-          <img src="static/agrivUA.jpg" 
-               alt="Agrivoltaic solar panels over a field of crops at the University of Arizona"
-               class="w-full h-64 md:h-96 object-cover">
-          <div class="p-8 md:p-12">
-            <!-- English Content -->
-            <div class="prose prose-lg max-w-none" data-lang-content="en">
-              <h2 class="text-3xl font-bold font-display text-brand-700 mb-4">What is Agrivoltaics?</h2>
-              <p class="text-gray-600 leading-relaxed">
-                Agrivoltaics is the integration of solar photovoltaics with agricultural production in the same space. 
-                Agrivoltaics is a highly diverse field that can include energy production from household to utility scale, 
-                and agricultural production from horticulture to field crops to livestock and more. Topics covered in this 
-                seminar series will include agrivoltaic system design, crop yield and responses, business models, community 
-                engagement, governance and legal frameworks, and much more.
-              </p>
+    <div class="absolute inset-0 flex flex-col overflow-hidden">
+      <div class="flex-1 overflow-y-auto custom-scrollbar">
+        
+        <!-- Container matches Archive.html: max-w-[1800px] -->
+        <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-6 py-6 pb-16">
+            
+            <!-- Main Card -->
+            <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden">
+              
+              <!-- Hero Image (Reduced height ~30%) -->
+              <div class="relative h-48 md:h-64 w-full group">
+                 <img src="static/agrivUA.jpg" 
+                      alt="Agrivoltaic solar panels over a field of crops at the University of Arizona"
+                      class="w-full h-full object-cover">
+                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                 <div class="absolute bottom-6 left-6 md:left-10 text-white">
+                    <h1 class="font-display font-bold text-3xl md:text-4xl tracking-tight mb-1 drop-shadow-md">About the Seminar</h1>
+                    <p class="text-sm md:text-base opacity-90 font-medium drop-shadow-sm">Bridging research across the Americas</p>
+                 </div>
+              </div>
 
-              <h2 class="text-3xl font-bold font-display text-brand-700 mb-4 mt-8">Attend the seminars:</h2>
-              <p class="text-gray-600 leading-relaxed">
-                To attend the seminars, simply 
-                <a href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" 
-                   target="_blank" rel="noopener noreferrer" 
-                   class="text-brand-600 hover:text-brand-700 font-semibold underline">register here</a> 
-                and you will receive the zoom meeting link to your email. This link will work for all future seminars, 
-                so you only need to register once.
-              </p>
+              <!-- Content Text Area (Full width) -->
+              <div class="p-8 md:p-12 w-full">
+                
+                <!-- English Content -->
+                <div class="prose prose-lg max-w-none animate-fade-in" data-lang-content="en">
+                  <h2>What is Agrivoltaics?</h2>
+                  <p>
+                    Agrivoltaics is the integration of solar photovoltaics with agricultural production in the same space. 
+                    Agrivoltaics is a highly diverse field that can include energy production from household to utility scale, 
+                    and agricultural production from horticulture to field crops to livestock and more. Topics covered in this 
+                    seminar series will include agrivoltaic system design, crop yield and responses, business models, community 
+                    engagement, governance and legal frameworks, and much more.
+                  </p>
 
-              <h2 class="text-3xl font-bold font-display text-brand-700 mb-4 mt-8">Contact Us:</h2>
-              <p class="text-gray-600 leading-relaxed">
-                Agrovoltaicos sin Fronteras is jointly hosted by UNAM and the University of Arizona. 
-                For more information, please contact Christine Lamanna 
-                <a href="mailto:clamanna@arizona.edu" class="text-brand-600 hover:text-brand-700 font-semibold underline">clamanna@arizona.edu</a>.
-              </p>
+                  <h2>Attend the seminars:</h2>
+                  <p>
+                    To attend the seminars, simply 
+                    <a href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" 
+                       target="_blank" rel="noopener noreferrer">register here</a> 
+                    and you will receive the zoom meeting link to your email. This link will work for all future seminars, 
+                    so you only need to register once.
+                  </p>
+
+                  <h2>Contact Us:</h2>
+                  <p>
+                    Agrovoltaicos sin Fronteras is jointly hosted by UNAM and the University of Arizona. 
+                    For more information, please contact Christine Lamanna 
+                    <a href="mailto:clamanna@arizona.edu">clamanna@arizona.edu</a>.
+                  </p>
+                </div>
+
+                <!-- Spanish Content -->
+                <div class="prose prose-lg max-w-none hidden animate-fade-in" data-lang-content="es">
+                  <h2>¿Qué son los Agrovoltaicos?</h2>
+                  <p>
+                    Los Agrovoltaicos son la integración de la energía solar fotovoltaica con la producción agrícola en un mismo espacio. 
+                    Es un campo muy diverso que abarca la producción de energía desde el hogar hasta la escala de servicios públicos, 
+                    y la producción agrícola desde la horticultura hasta los cultivos extensivos, la ganadería y más. 
+                    Los temas que se abordarán en esta serie de seminarios incluirán el diseño de sistemas agrovoltaicos, 
+                    el rendimiento y las respuestas de los cultivos, los modelos de negocio, la participación comunitaria, 
+                    la gobernanza y los marcos legales, y mucho más.
+                  </p>
+
+                  <h2>Asista a los seminarios:</h2>
+                  <p>
+                    Para asistir a los seminarios, simplemente 
+                    <a href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" 
+                       target="_blank" rel="noopener noreferrer">regístrese aquí</a> 
+                    y recibirá el enlace de la reunión de Zoom en su correo electrónico. 
+                    Este enlace funcionará para todos los seminarios futuros, por lo que solo necesita registrarse una vez.
+                  </p>
+
+                  <h2>Contáctenos:</h2>
+                  <p>
+                    Agrovoltaicos sin Fronteras es un evento conjunto de la UNAM y la Universidad de Arizona. 
+                    Para obtener más información, comuníquese con Christine Lamanna 
+                    <a href="mailto:clamanna@arizona.edu">clamanna@arizona.edu</a>.
+                  </p>
+                </div>
+
+              </div>
             </div>
-
-            <!-- Spanish Content -->
-            <div class="prose prose-lg max-w-none hidden" data-lang-content="es">
-              <h2 class="text-3xl font-bold font-display text-brand-700 mb-4">¿Qué son los Agrovoltaicos?</h2>
-              <p class="text-gray-600 leading-relaxed">
-                Los Agrovoltaicos son la integración de la energía solar fotovoltaica con la producción agrícola en un mismo espacio. 
-                Es un campo muy diverso que abarca la producción de energía desde el hogar hasta la escala de servicios públicos, 
-                y la producción agrícola desde la horticultura hasta los cultivos extensivos, la ganadería y más. 
-                Los temas que se abordarán en esta serie de seminarios incluirán el diseño de sistemas agrovoltaicos, 
-                el rendimiento y las respuestas de los cultivos, los modelos de negocio, la participación comunitaria, 
-                la gobernanza y los marcos legales, y mucho más.
-              </p>
-
-              <h2 class="text-3xl font-bold font-display text-brand-700 mb-4 mt-8">Asista a los seminarios:</h2>
-              <p class="text-gray-600 leading-relaxed">
-                Para asistir a los seminarios, simplemente 
-                <a href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" 
-                   target="_blank" rel="noopener noreferrer"
-                   class="text-brand-600 hover:text-brand-700 font-semibold underline">regístrese aquí</a> 
-                y recibirá el enlace de la reunión de Zoom en su correo electrónico. 
-                Este enlace funcionará para todos los seminarios futuros, por lo que solo necesita registrarse una vez.
-              </p>
-
-              <h2 class="text-3xl font-bold font-display text-brand-700 mb-4 mt-8">Contáctenos:</h2>
-              <p class="text-gray-600 leading-relaxed">
-                Agrovoltaicos sin Fronteras es un evento conjunto de la UNAM y la Universidad de Arizona. 
-                Para obtener más información, comuníquese con Christine Lamanna 
-                <a href="mailto:clamanna@arizona.edu" class="text-brand-600 hover:text-brand-700 font-semibold underline">clamanna@arizona.edu</a>.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- ================= FOOTER ================= -->
-  <footer class="site-footer">
-    <div class="container">
-      <small>
-        <div class="footer-text">
-          © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
-          <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
-        </div>
-        <div class="footer-logos">
-          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer">
-            <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics">
-          </a>
-          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer">
-            <img src="static/unam.png" alt="UNAM">
-          </a>
-          <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer">
-            <img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana" style="background-color: white;">
-          </a>
-          <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer">
-            <img src="static/rame.png" alt="Rame - Red Agrivoltaica de México" style="background-color: white;">
-          </a>
-        </div>
-      </small>
-    </div>
-  </footer>
+  <!-- Note: Footer is injected by layout.js -->
 
   <!-- ================= JAVASCRIPT LOGIC ================= -->
   <script type="module">
+    import { renderLayout } from './layout.js';
     import { authState, initAuth, signOut } from './auth.js';
-    import { initSharedUI, renderHeader, applyI18n, tr, $$, show, hide } from './ui.js';
+    import { initSharedUI, renderHeader, applyI18n, tr, $$, show, hide, getAvatarUrl } from './ui.js';
 
-    // --- PAGE-SPECIFIC STATE & I18N ---
+    // Inject Layout (About Active)
+    renderLayout('about');
+
     const state = { language: localStorage.getItem("lang") || "en" };
+    // Merged translations (Auth/Nav/Footer removed as they are in layout.js)
     const t = {
-      en: {
-        tagline: "Seminar series on agrivoltaics in the Americas",
-        nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
-        auth: { signin: "Sign in", signout: "Sign out" },
-        footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }
-      },
-      es: {
-        tagline: "Serie de seminarios sobre agrovoltaicos en las Américas",
-        nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
-        auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
-        footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }
-      }
+      en: { tagline: "A seminar series to share advances in agrivoltaics in the Americas" },
+      es: { tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas" }
     };
     
-    // --- PAGE-SPECIFIC FUNCTIONS ---
     function applyPageI18n() {
-        applyI18n(t, state.language); // Apply shared translations
-        // Apply page-specific content visibility
+        // Apply global strings (like tagline in header which is injected)
+        applyI18n(t, state.language); 
+        
+        const s = document.querySelector('#langSwitchDesktop div:last-child');
+        if(s) {
+            s.style.transform = state.language === 'es' ? 'translateX(100%)' : 'translateX(0)';
+            s.innerText = state.language.toUpperCase();
+        }
+
         $$("[data-lang-content]").forEach(el => {
-            if (el.dataset.langContent === state.language) {
-                show(el);
-            } else {
-                hide(el);
-            }
+            if (el.dataset.langContent === state.language) show(el);
+            else hide(el);
         });
     }
 
@@ -287,21 +181,33 @@
       applyPageI18n();
     }
     
-    // --- MAIN EXECUTION ---
     (async function main() {
-      // Initialize shared UI components (header buttons, mobile menu, etc.)
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
       
-      // Initialize authentication and render the header when auth state is known
+      // --- Fix: Global listener for dynamically injected header profile link ---
+      document.addEventListener('click', e => {
+        if (e.target.closest('#btnProfile') || e.target.closest('#userName')) {
+            window.location.href = 'profile.html';
+        }
+      });
+      // -----------------------------------------------------------------------
+
       await initAuth({ 
-          onAuthReady: () => renderHeader(authState, t, state.language), 
+          onAuthReady: () => {
+              // Still need renderHeader to handle Auth UI state (signin/signout buttons)
+              renderHeader(authState, t, state.language);
+              const y = document.getElementById('year'); if(y) y.innerText = new Date().getFullYear();
+              if(authState.profile?.avatar_url) {
+                  getAvatarUrl(authState.profile.avatar_url).then(url => {
+                      const img = document.getElementById('userAvatar');
+                      if(url && img) { img.src = url; show(img); hide(document.getElementById('userInitial')); }
+                  });
+              }
+          }, 
           onAuthChange: () => renderHeader(authState, t, state.language) 
       });
-
-      // Apply initial language settings to the page content
       applyPageI18n();
-
-      lucide.createIcons();
+      const y = document.getElementById('year'); if(y) y.innerText = new Date().getFullYear();
     })();
   </script>
 

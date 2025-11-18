@@ -1,652 +1,471 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <title>Profile Dashboard • Agrovoltaicos sin Fronteras</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Profile Dashboard • Agrovoltaicos sin Fronteras</title>
+
+  <!-- Critical pre-render script to prevent UI flicker -->
+  <script src="auth-preloader.js"></script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="theme.js"></script>
+
+  <!-- Custom CSS -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    }
+
+    html, body { height: 100%; overflow: hidden; }
     
-    <!-- Modern Font Stack -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-    
-    <style>
-        /* --- 2025 DESIGN TOKENS (V1 CORE) --- */
-        :root {
-            --color-brand: #16a34a;
-            --color-brand-dark: #15803d;
-            --color-brand-light: #dcfce7;
-            --color-accent: #f97316;
+    /* Flash Notification */
+    #flash {
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-150%);
+        background-color: #0f172a;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 9999px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        z-index: 9999;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        display: flex; align-items: center; gap: 8px; opacity: 0;
+    }
+    #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-            --bg-main: #f8fafc;
-            --bg-panel: #ffffff;
-            --bg-input: #f1f5f9;
+    /* Avatar Hover Overlay */
+    .avatar-overlay {
+      background: rgba(0,0,0,0.4);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .avatar-container:hover .avatar-overlay { opacity: 1; }
+  </style>
 
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --text-tertiary: #94a3b8;
-            --text-light: #ffffff;
-
-            --border: #e2e8f0;
-            --radius-md: 12px;
-            --radius-lg: 24px;
-            
-            --header-h: 64px;
-            --footer-h: 64px;
-            
-            --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-        }
-
-        /* --- BASE RESET & V1 DESKTOP LAYOUT --- */
-        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-        html, body {
-            height: 100%; width: 100%; margin: 0; padding: 0;
-            overflow: hidden; /* Enforce non-scrollable body ON DESKTOP */
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-primary);
-            font-size: 14px;
-        }
-        body {
-            display: grid;
-            grid-template-rows: auto 1fr auto; /* Header, Main, Footer */
-        }
-        a { text-decoration: none; color: inherit; }
-        button { cursor: pointer; font-family: inherit; border: none; background: transparent; padding: 0; }
-        
-        /* --- UTILITIES --- */
-        .hidden { display: none !important; }
-
-        /* --- V2 HEADER STYLES (EXACT REPLICA) --- */
-        .site-header {
-            background-color: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            padding: 0 16px;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-        @media (min-width: 768px) { .site-header { padding: 0 24px; } }
-        .site-header .container.header-grid {
-            height: 72px;
-            max-width: 1800px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .brand { display: flex; align-items: center; gap: 12px; }
-        .brand .logo-image { width: 40px; height: 40px; }
-        .brand-text .title { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); }
-        .brand-text .subtitle { display: none; }
-        @media (min-width: 768px) { .brand-text .subtitle { display: block; font-family: 'Lato', sans-serif; font-size: 0.8rem; color: var(--text-secondary); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
-        .nav { display: none; }
-        @media (min-width: 960px) { .nav { display: flex; align-items: center; gap: 24px; } }
-        .nav .link { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; color: var(--text-secondary); transition: color 0.2s; }
-        .nav .link:hover, .nav .link.active { color: var(--color-brand); }
-        .nav .divider { width: 1px; height: 20px; background-color: var(--border); }
-        .lang-switch-slider { display: flex; cursor: pointer; background: var(--bg-input); border-radius: 99px; padding: 4px; position: relative; font-size: 12px; font-weight: 700; }
-        .lang-switch-slider span { padding: 4px 12px; z-index: 1; transition: color 0.2s; user-select: none; }
-        .lang-switch-slider::before { content: ''; position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: white; border-radius: 99px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
-        .lang-switch-slider[data-lang="es"]::before { transform: translateX(100%); }
-        .lang-switch-slider[data-lang="en"] span:first-child, .lang-switch-slider[data-lang="es"] span:last-child { color: var(--color-brand-dark); }
-        .auth-area { display: flex; align-items: center; gap: 16px; }
-        .profile-button { width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-brand-light); color: var(--color-brand-dark); font-weight: 700; font-family: 'Poppins', sans-serif; display: grid; place-content: center; overflow: hidden; border: 2px solid var(--border); }
-        #userName { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; }
-        
-        /* --- MOBILE NAVIGATION STYLES (CENTERED & FULL-SPACE LAYOUT) --- */
-        .mobile-menu-btn { display: block; color: var(--text-secondary); }
-        @media (min-width: 960px) { .mobile-menu-btn { display: none; } }
-
-        .mobile-nav-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 998;
-            opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
-        }
-        .mobile-nav-overlay.is-open { opacity: 1; visibility: visible; }
-
-        .mobile-nav-content {
-            position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 320px;
-            background: var(--bg-panel);
-            transform: translateX(100%);
-            transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1);
-            display: flex; flex-direction: column; z-index: 999;
-            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-            padding: 24px;
-        }
-        .is-open .mobile-nav-content { transform: translateX(0); }
-
-        .mobile-nav-close-btn {
-            position: absolute; top: 16px; right: 16px; color: var(--text-secondary); z-index: 10;
-        }
-
-        /* Style the cloned <nav> container */
-        .mobile-nav-content > nav {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            height: 100%;
-            padding-top: 48px;
-        }
-
-        /* Centered pages options, larger, full width */
-        .mobile-nav-content .link {
-            font-size: 1.75rem;
-            font-weight: 700;
-            font-family: 'Poppins', sans-serif;
-            color: var(--text-primary);
-            width: 100%;
-            padding: 12px 0;
-        }
-
-        /* Hide desktop divider */
-        .mobile-nav-content .divider {
-            display: none;
-        }
-
-        /* EN/ES toggle centered at the top and larger */
-        .mobile-nav-content .lang-switch-slider {
-            order: -1; /* Move to top */
-            transform: scale(1.15);
-            margin-bottom: 48px; /* Space between toggle and links */
-        }
-
-        /* Auth area at the bottom */
-        .mobile-nav-content .auth-area {
-            margin-top: auto; /* Push to the bottom */
-            width: 100%;
-            padding-top: 24px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-        }
-
-        /* User info when logged in */
-        .mobile-nav-content .auth-area .profile-button {
-            width: 64px;
-            height: 64px;
-            font-size: 2rem;
-        }
-        .mobile-nav-content .auth-area #userName {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: var(--text-primary);
-        }
-
-        /* Full-width buttons in auth area */
-        .mobile-nav-content .auth-area #btnSignOut,
-        .mobile-nav-content .auth-area #btnSignIn {
-            width: 100%;
-            justify-content: center;
-            padding: 12px 24px;
-            font-size: 1rem;
-            border-radius: var(--radius-md);
-        }
-        .mobile-nav-content .auth-area #btnSignOut {
-            background: transparent;
-            border: 2px solid var(--border);
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-        .mobile-nav-content .auth-area #btnSignOut:hover {
-            background: var(--bg-input);
-            color: var(--text-primary);
-            border-color: var(--text-tertiary);
-        }
-
-        /* --- MAIN DASHBOARD (V1 BENTO GRID) --- */
-        .app-main {
-            padding: 16px 24px;
-            overflow: hidden; /* Prevent outer scroll on desktop */
-            height: 100%;
-        }
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 20px;
-            height: 100%;
-            max-width: 1800px; margin: 0 auto;
-        }
-        .panel { background: var(--bg-panel); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-panel); display: flex; flex-direction: column; overflow: hidden; }
-        .identity-panel { padding: 32px 24px; align-items: center; text-align: center; justify-content: space-between; }
-        .avatar-section { display: flex; flex-direction: column; align-items: center; width: 100%; }
-        .avatar-container { width: 180px; height: 180px; border-radius: 50%; background: var(--bg-input); border: 4px solid white; box-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.15); margin-bottom: 24px; position: relative; overflow: hidden; cursor: pointer; display: grid; place-items: center; font-size: 64px; font-weight: 700; color: var(--color-brand-light); }
-        .avatar-container img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-hover { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: white; }
-        .avatar-container:hover .avatar-hover { opacity: 1; }
-        .user-stat { margin-top: 12px; }
-        .user-stat h2 { margin: 0; font-family: 'Poppins', sans-serif; font-size: 20px; }
-        .user-stat p { margin: 4px 0 0; color: var(--text-secondary); font-size: 13px; }
-        .action-stack { width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-top: 32px; }
-        .details-panel { padding: 32px; overflow-y: auto; }
-        .details-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-        .details-title { font-family: 'Poppins', sans-serif; font-size: 22px; margin: 0; font-weight: 700; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px 32px; }
-        .input-group { display: flex; flex-direction: column; gap: 6px; }
-        .input-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); }
-        .input-label.required::after { content: '*'; color: #ef4444; margin-left: 4px; }
-        .input-field { background: var(--bg-input); border: 1px solid transparent; padding: 12px 16px; border-radius: 10px; font-size: 14px; transition: all 0.2s; color: var(--text-primary); width: 100%; }
-        .input-field:focus { background: white; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); outline: none; }
-        .input-field::placeholder { color: var(--text-tertiary); }
-        textarea.input-field { min-height: 120px; resize: none; }
-        .col-span-full { grid-column: 1 / -1; }
-        
-        /* --- BUTTONS --- */
-        .btn { border: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--color-brand-dark); color: white; box-shadow: 0 4px 12px -2px rgba(22, 163, 74, 0.3); }
-        .btn-primary:hover { background: #14532d; }
-        .btn-secondary { background: white; border: 2px solid var(--border); color: var(--text-primary); }
-        .btn-secondary:hover { border-color: var(--text-tertiary); background: var(--bg-input); }
-        .btn-text { background: transparent; color: var(--text-secondary); padding: 8px; }
-        .btn-text:hover { color: var(--text-primary); background: var(--bg-input); }
-        .btn-ghost { background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 700; padding: 8px 12px; border-radius: 8px; }
-        .btn-ghost:hover { background: var(--bg-input); color: var(--text-primary); }
-        #btnSignIn { padding: 8px 16px; font-size: 0.9rem; border-radius: 8px; background: var(--color-brand); color: white;}
-        #btnSignIn:hover { background: var(--color-brand-dark); }
-        
-        /* --- V2 FOOTER STYLES (EXACT REPLICA) --- */
-        .site-footer { background-color: var(--bg-panel); border-top: 1px solid var(--border); padding: 24px; }
-        .site-footer .container { max-width: 1800px; margin: 0 auto; }
-        .site-footer small { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-secondary); }
-        .site-footer .footer-text { display: flex; align-items: center; flex-wrap: wrap; }
-        .site-footer .footer-logos { display: flex; align-items: center; gap: 8px; }
-        .site-footer .footer-logos img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        
-        /* --- NOTIFICATION & PROMPTS --- */
-        #flash { position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--text-primary); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; z-index: 1000; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        #flash.visible { transform: translateX(-50%) translateY(0); }
-        .center-card-container { position: absolute; inset: 0; background: rgba(248, 250, 252, 0.8); backdrop-filter: blur(4px); z-index: 5; display: flex; align-items: center; justify-content: center; }
-        .prompt-card { background: white; padding: 48px; border-radius: 32px; text-align: center; box-shadow: 0 20px 40px -10px rgb(0 0 0 / 0.1); max-width: 420px; width: 90%; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .spinner { animation: spin 1s linear infinite; color: var(--color-brand); }
-        
-        /* --- RESPONSIVE FIXES --- */
-        @media (max-width: 1200px) { .dashboard-grid { grid-template-columns: 260px 1fr; gap: 16px; } .identity-panel { padding: 24px 16px; } .avatar-container { width: 140px; height: 140px; } .form-grid { gap: 16px 24px; } }
-        @media (max-width: 959px) { .brand-text .subtitle { display: none; } }
-        
-        /* MOBILE SCROLL FIX */
-        @media (max-width: 767px) {
-            html, body {
-                height: auto;
-                overflow: auto; /* Allow scrolling */
-            }
-            body {
-                display: block; /* Break the grid layout */
-            }
-            .app-main {
-                overflow: visible;
-                height: auto;
-                padding: 16px;
-            }
-            .dashboard-grid {
-                display: flex;
-                flex-direction: column;
-                height: auto;
-            }
-            .site-header .container.header-grid { height: 64px; }
-            .site-footer small { flex-direction: column; text-align: center; }
-        }
-    </style>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body>
+<body class="text-slate-800 flex flex-col h-full overflow-hidden font-sans">
 
-    <!-- Header (from v2) -->
-    <header class="site-header">
-    <div class="container header-grid">
-        <a href="index.html" class="brand">
-            <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
-            <div class="brand-text">
-                <div class="title">Agrovoltaicos sin Fronteras</div>
-                <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
-            </div>
-        </a>
-        <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-        </button>
-        <!-- Desktop Nav -->
-        <nav class="nav">
-        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-        <a href="about.html" class="link" data-i18n="nav.about">About</a>
-        <a href="network.html" class="link" data-i18n="nav.network">Network</a>
-        <a href="map.html" class="link" data-i18n="nav.map">Map</a>
-        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-        <div class="divider"></div>
-        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-          <span>EN</span>
-          <span>ES</span>
-        </div>
-        <div class="auth-area">
-          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile"
-            onclick="window.location.href='profile.html'">
-            <span id="userInitial"></span>
-            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;"
-              alt="User Avatar" />
-          </button>
-          <span id="userName" style="display: none;"></span>
-          <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
-          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
-            Sign out
-          </button>
-        </div>
-      </nav>
+  <!-- Main App Container (Header/Footer injected via layout.js) -->
+  <main class="flex-1 relative overflow-hidden bg-gray-50 overflow-y-auto">
+    
+    <!-- View: Loading Spinner -->
+    <div id="view-loading" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-50">
+        <div class="w-10 h-10 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
     </div>
-  </header>
 
-    <div id="mobileNavOverlay" class="mobile-nav-overlay">
-        <div class="mobile-nav-content">
-            <!-- Content injected by JS -->
+    <!-- View: Auth Required Prompt -->
+    <div id="view-auth-required" class="hidden min-h-full flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 max-w-md w-full text-center">
+            <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="lock" class="w-8 h-8"></i>
+            </div>
+            <h2 class="font-display font-bold text-2xl text-slate-800 mb-3" data-i18n="auth.signin_prompt_title">Please Sign In</h2>
+            <p class="text-slate-500 mb-8 leading-relaxed" data-i18n="auth.signin_prompt_body">Access to your profile dashboard requires authentication.</p>
+            <a href="signin.html?return_to=profile.html" class="block w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-brand-200" data-i18n="auth.signin_prompt_button">Go to Sign In</a>
         </div>
     </div>
 
-    <!-- Main Dashboard -->
-    <main class="app-main">
-        
-        <div id="loading" class="center-card-container">
-            <svg class="spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-        </div>
-
-        <div id="authPrompt" class="center-card-container hidden">
-            <div class="prompt-card">
-                <div style="width: 64px; height: 64px; background: var(--color-brand-light); color: var(--color-brand-dark); border-radius: 50%; display: grid; place-items: center; margin: 0 auto 24px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
-                </div>
-                <h2 style="font-family: Poppins; margin-bottom: 12px;" data-i18n="auth.signin_prompt_title">Please Sign In</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 32px; line-height: 1.5;" data-i18n="auth.signin_prompt_body">Access to your profile dashboard requires authentication.</p>
-                <a href="signin.html" class="btn btn-primary w-full" data-i18n="auth.signin_prompt_button">Go to Sign In</a>
-            </div>
-        </div>
-
-        <form id="profileForm" class="dashboard-grid hidden">
-            <div class="panel identity-panel">
-                <div class="avatar-section">
-                    <label class="avatar-container">
-                        <img id="avatarImg" class="hidden" alt="Avatar" />
-                        <span id="avatarInitials">U</span>
-                        <div class="avatar-hover">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+    <!-- View: Profile Form -->
+    <div id="view-profile" class="hidden max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
+        <form id="profileForm" class="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
+            
+            <!-- Left Panel: Identity & Actions -->
+            <div class="flex flex-col gap-6">
+                <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm p-8 flex flex-col items-center text-center relative overflow-hidden">
+                    
+                    <!-- Avatar -->
+                    <label class="avatar-container w-40 h-40 rounded-full bg-gray-100 border-4 border-white shadow-lg relative cursor-pointer overflow-hidden mb-6 group ring-1 ring-gray-200">
+                        <img id="avatarImg" class="hidden w-full h-full object-cover" alt="Avatar" />
+                        <span id="avatarInitials" class="w-full h-full flex items-center justify-center text-4xl font-bold text-brand-300">U</span>
+                        <div class="avatar-overlay absolute inset-0 flex items-center justify-center text-white">
+                            <i data-lucide="camera" class="w-8 h-8"></i>
                         </div>
                         <input type="file" id="avatarInput" hidden accept="image/*" />
                     </label>
-                    <div class="user-stat">
-                        <h2 id="displayUsername">@username</h2>
-                        <p id="displayEmail">user@example.com</p>
+
+                    <div class="mb-1">
+                        <h2 id="displayUsername" class="font-display font-bold text-xl text-slate-800">@username</h2>
+                        <p id="displayEmail" class="text-sm text-slate-400 font-medium">user@example.com</p>
                     </div>
-                    <button type="button" id="removeAvatarBtn" class="btn-text hidden" style="color: #ef4444; font-size: 12px; margin-top: 8px;" data-i18n="profile.remove_image">Remove Picture</button>
+
+                    <button type="button" id="removeAvatarBtn" class="hidden mt-2 text-xs font-bold text-red-500 hover:text-red-600 hover:bg-red-50 px-3 py-1 rounded-full transition-colors" data-i18n="profile.remove_image">Remove Picture</button>
                 </div>
-                <div class="action-stack">
-                    <button type="submit" id="saveBtn" class="btn btn-primary w-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+
+                <!-- Actions -->
+                <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm p-6 flex flex-col gap-3">
+                    <button type="submit" id="saveBtn" class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all shadow-md shadow-brand-100 flex items-center justify-center gap-2">
+                        <i data-lucide="save" class="w-4 h-4"></i>
                         <span data-i18n="profile.save">Save Changes</span>
                     </button>
-                    <button type="button" id="backBtn" class="btn btn-secondary w-full">
+                    <button type="button" id="backBtn" class="w-full py-3 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-slate-600 font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
                         <span data-i18n="back.general">Go Back</span>
                     </button>
                 </div>
             </div>
-            <div class="panel details-panel">
-                <div class="details-header">
-                    <h1 class="details-title" data-i18n="profile.title">Edit Profile</h1>
-                    <span style="font-size: 12px; color: var(--text-tertiary);"><span style="color: #ef4444">*</span> Required</span>
+
+            <!-- Right Panel: Details Form -->
+            <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm p-6 md:p-8">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-6 mb-8">
+                    <h1 class="font-display font-bold text-2xl text-slate-800" data-i18n="profile.title">Edit Profile</h1>
+                    <span class="text-xs font-semibold text-slate-400 bg-gray-50 px-2 py-1 rounded border border-gray-200"><span class="text-red-500">*</span> Required</span>
                 </div>
-                <div class="form-grid">
-                    <div class="input-group">
-                        <label class="input-label required" for="fullName" data-i18n="profile.full_name">Full Name</label>
-                        <input type="text" id="fullName" class="input-field" required placeholder="e.g. Dr. Jane Doe" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                    
+                    <!-- Full Name -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="fullName"><span data-i18n="profile.full_name">Full Name</span> <span class="text-red-500">*</span></label>
+                        <input type="text" id="fullName" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="e.g. Dr. Jane Doe" />
                     </div>
-                    <div class="input-group">
-                        <label class="input-label required" for="username" data-i18n="profile.username">Username</label>
-                        <input type="text" id="username" class="input-field" required placeholder="janedoe" pattern="[a-zA-Z0-9_-]+" />
+
+                    <!-- Username -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="username"><span data-i18n="profile.username">Username</span> <span class="text-red-500">*</span></label>
+                        <input type="text" id="username" required pattern="[a-zA-Z0-9_-]+" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="janedoe" />
                     </div>
-                    <div class="input-group">
-                        <label class="input-label required" for="affiliation" data-i18n="profile.affiliation">Affiliation</label>
-                        <input type="text" id="affiliation" class="input-field" required placeholder="University / Organization" />
+
+                    <!-- Affiliation -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="affiliation"><span data-i18n="profile.affiliation">Affiliation</span> <span class="text-red-500">*</span></label>
+                        <input type="text" id="affiliation" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="University / Organization" />
                     </div>
-                    <div class="input-group">
-                        <label class="input-label required" for="workEmail" data-i18n="profile.work_email">Work Email</label>
-                        <input type="email" id="workEmail" class="input-field" required placeholder="jane@university.edu" />
+
+                    <!-- Work Email -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="workEmail"><span data-i18n="profile.work_email">Work Email</span> <span class="text-red-500">*</span></label>
+                        <input type="email" id="workEmail" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="jane@university.edu" />
                     </div>
-                    <div class="input-group">
-                        <label class="input-label" for="personalWebsite" data-i18n="profile.personal_website">Personal Website</label>
-                        <input type="url" id="personalWebsite" class="input-field" placeholder="https://" />
+
+                    <div class="col-span-1 md:col-span-2 border-t border-gray-100 my-2"></div>
+
+                    <!-- Personal Website -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="personalWebsite" data-i18n="profile.personal_website">Personal Website</label>
+                        <div class="relative">
+                            <i data-lucide="globe" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                            <input type="url" id="personalWebsite" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="https://" />
+                        </div>
                     </div>
-                    <div class="input-group">
-                        <label class="input-label" for="professionalWebsite" data-i18n="profile.professional_website">Lab Website</label>
-                        <input type="url" id="professionalWebsite" class="input-field" placeholder="https://" />
+
+                    <!-- Professional Website -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="professionalWebsite" data-i18n="profile.professional_website">Lab Website</label>
+                        <div class="relative">
+                            <i data-lucide="flask-conical" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                            <input type="url" id="professionalWebsite" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="https://" />
+                        </div>
                     </div>
-                    <div class="input-group">
-                        <label class="input-label" for="googleScholar" data-i18n="profile.google_scholar">Google Scholar</label>
-                        <input type="url" id="googleScholar" class="input-field" placeholder="https://scholar.google.com/..." />
+
+                    <!-- Google Scholar -->
+                    <div class="space-y-1.5 md:col-span-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="googleScholar" data-i18n="profile.google_scholar">Google Scholar</label>
+                        <div class="relative">
+                            <i data-lucide="graduation-cap" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                            <input type="url" id="googleScholar" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="https://scholar.google.com/..." />
+                        </div>
                     </div>
-                    <div class="hidden"></div>
-                    <div class="input-group col-span-full">
-                        <label class="input-label" for="fieldsOfStudy" data-i18n="profile.fields_section">Research Interests</label>
-                        <textarea id="fieldsOfStudy" class="input-field" placeholder="Agrivoltaics, Crop Science, Renewable Energy..." data-i18n-placeholder="profile.fields_hint"></textarea>
+
+                    <!-- Research Interests -->
+                    <div class="space-y-1.5 md:col-span-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="fieldsOfStudy" data-i18n="profile.fields_section">Research Interests</label>
+                        <textarea id="fieldsOfStudy" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400 min-h-[100px] resize-y" placeholder="Agrivoltaics, Crop Science, Renewable Energy..." data-i18n-placeholder="profile.fields_hint"></textarea>
                     </div>
+
                 </div>
             </div>
         </form>
-    </main>
+    </div>
 
-    <!-- Footer (from v2) -->
-    <footer class="site-footer">
-        <div class="container">
-          <small>
-            <div class="footer-text">
-              © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
-              <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
-            </div>
-            <div class="footer-logos">
-              <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer">
-                <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics">
-              </a>
-              <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer">
-                <img src="static/unam.png" alt="UNAM">
-              </a>
-              <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer">
-                <img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana" style="background-color: white;">
-              </a>
-              <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer">
-                <img src="static/rame.png" alt="Rame - Red Agrivoltaica de México" style="background-color: white;">
-              </a>
-            </div>
-          </small>
-        </div>
-    </footer>
+  </main>
 
-    <div id="flash"></div>
+  <!-- Logic -->
+  <script type="module">
+    import { renderLayout } from './layout.js';
+    import { supabase, authState, initAuth, signOut } from './auth.js';
+    import { renderHeader, $, $$, show, hide, applyI18n, tr, setFlash, getAvatarUrl } from './ui.js';
 
-    <script type="module">
-        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    // 1. Inject Layout (Passing null/empty as this isn't a navigation tab)
+    renderLayout('');
 
-        const SUPABASE_URL = "https://iuzgfldgvueuehybgntm.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1emdmbGRndnVldWVoeWJnbnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjc0MjUsImV4cCI6MjA3MjQwMzQyNX0.do919Hvw2AK-Ql-2V5guoRRH2yx4Rmset4eeVXi__o8";
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true } });
+    const state = {
+        language: localStorage.getItem("lang") || "en",
+        profile: null,
+        avatarFile: null,
+        avatarRemoved: false
+    };
 
-        const state = { session: null, profile: null, lang: localStorage.getItem("lang") || "en", avatarFile: null, avatarRemoved: false };
-
-        const t = {
-            en: {
-                tagline: "A seminar series to share advances in agrivoltaics in the Americas", nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", admin: "Admin" }, 
-                auth: { signin: "Sign in", signout: "Sign out", signin_prompt_title: "Please Sign In", signin_prompt_body: "Access to your profile dashboard requires authentication.", signin_prompt_button: "Go to Sign In" },
-                profile: { title: "Edit Profile", full_name: "Full Name", username: "Username", affiliation: "Affiliation", work_email: "Work Email", personal_website: "Personal Website", professional_website: "Lab Website", google_scholar: "Google Scholar Profile", fields_section: "Research Interests", fields_hint: "e.g. Solar energy, water conservation...", save: "Save Changes", saving: "Saving...", saved: "Dashboard updated successfully", remove_image: "Remove Picture", upload_error: "Failed to upload image. Please try again." },
-                back: { general: "Go Back" },
-                footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
-            },
-            es: {
-                tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas", nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", admin: "Admin" }, 
-                auth: { signin: "Iniciar sesión", signout: "Cerrar sesión", signin_prompt_title: "Inicia Sesión", signin_prompt_body: "El acceso al panel de perfil requiere autenticación.", signin_prompt_button: "Iniciar Sesión" },
-                profile: { title: "Editar Perfil", full_name: "Nombre Completo", username: "Usuario", affiliation: "Afiliación", work_email: "Correo Trabajo", personal_website: "Sitio Personal", professional_website: "Sitio Laboratorio", google_scholar: "Perfil Google Scholar", fields_section: "Intereses de Investigación", fields_hint: "ej. Energía solar, conservación de agua...", save: "Guardar Cambios", saving: "Guardando...", saved: "Panel actualizado con éxito", remove_image: "Eliminar Foto", upload_error: "Error al subir la imagen. Por favor intenta de nuevo." },
-                back: { general: "Regresar" },
-                footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
-            }
-        };
-
-        const $ = (sel) => document.querySelector(sel);
-        const $$ = (sel) => document.querySelectorAll(sel);
-        const tr = (key) => key.split('.').reduce((o, i) => o?.[i], t[state.lang]) || key;
-        const show = (el) => el?.classList.remove('hidden');
-        const hide = (el) => el?.classList.add('hidden');
-        const flash = (msg) => { const f = $('#flash'); f.textContent = msg; f.classList.add('visible'); setTimeout(() => f.classList.remove('visible'), 3000); };
-        async function getAvatarUrl(path) { if (!path) return null; const { data } = supabase.storage.from("avatars").getPublicUrl(path); return data?.publicUrl; }
-        
-        function applyI18n() {
-            $$('[data-i18n]').forEach(el => el.textContent = tr(el.dataset.i18n));
-            $$('[data-i18n-placeholder]').forEach(el => el.placeholder = tr(el.dataset.i18nPlaceholder));
-            $$('.lang-switch-slider').forEach(el => el.dataset.lang = state.lang);
+    const t = {
+        en: {
+            auth: { signin_prompt_title: "Please Sign In", signin_prompt_body: "Access to your profile dashboard requires authentication.", signin_prompt_button: "Go to Sign In" },
+            profile: { title: "Edit Profile", full_name: "Full Name", username: "Username", affiliation: "Affiliation", work_email: "Work Email", personal_website: "Personal Website", professional_website: "Lab Website", google_scholar: "Google Scholar Profile", fields_section: "Research Interests", fields_hint: "e.g. Solar energy, water conservation...", save: "Save Changes", saving: "Saving...", saved: "Dashboard updated successfully", remove_image: "Remove Picture", upload_error: "Failed to upload image. Please try again." },
+            back: { general: "Go Back" }
+        },
+        es: {
+            auth: { signin_prompt_title: "Inicia Sesión", signin_prompt_body: "El acceso al panel de perfil requiere autenticación.", signin_prompt_button: "Iniciar Sesión" },
+            profile: { title: "Editar Perfil", full_name: "Nombre Completo", username: "Usuario", affiliation: "Afiliación", work_email: "Correo Trabajo", personal_website: "Sitio Personal", professional_website: "Sitio Laboratorio", google_scholar: "Perfil Google Scholar", fields_section: "Intereses de Investigación", fields_hint: "ej. Energía solar, conservación de agua...", save: "Guardar Cambios", saving: "Guardando...", saved: "Panel actualizado con éxito", remove_image: "Eliminar Foto", upload_error: "Error al subir la imagen. Por favor intenta de nuevo." },
+            back: { general: "Regresar" }
         }
+    };
 
-        function handleLangSwitch() { state.lang = state.lang === "en" ? "es" : "en"; localStorage.setItem("lang", state.lang); applyI18n(); }
+    function localTr(key) { return tr(t, state.language, key); }
 
-        async function renderHeader() {
-            const isOrganizer = ["organizer", "admin"].includes(state.profile?.role);
-            const userInitialEl = $("#userInitial");
-            const userAvatarEl = $("#userAvatar");
-            if (state.session) {
-                hide($("#btnSignIn")); 
-                $("#btnSignOut").style.display = "";
-                $("#btnProfile").style.display = "";
-                $("#userName").style.display = "";
-                $("#userName").textContent = state.profile?.full_name || state.profile?.username || "";
-                if (state.profile?.avatar_url) {
-                    const url = await getAvatarUrl(state.profile.avatar_url);
-                    if (url) { userAvatarEl.src = url; userAvatarEl.style.display = ""; userInitialEl.style.display = "none"; }
-                } else {
-                    userAvatarEl.style.display = "none"; userInitialEl.style.display = ""; userInitialEl.textContent = (state.profile?.full_name || "U").charAt(0).toUpperCase();
-                }
-                if (isOrganizer) $("#btnAdmin").style.display = ""; else $("#btnAdmin").style.display = "none";
-            } else {
-                show($("#btnSignIn")); 
-                $("#btnSignOut").style.display = "none";
-                $("#btnProfile").style.display = "none";
-                $("#userName").style.display = "none";
-                $("#btnAdmin").style.display = "none";
-            }
-            setupMobileMenu();
-        }
+    function handleLangSwitch() {
+        state.language = state.language === "en" ? "es" : "en";
+        localStorage.setItem("lang", state.language);
+        applyI18n(t, state.language);
+        renderHeader(authState, t, state.language); // Re-render header to update its text
+    }
 
-        function openMenu() { $("#mobileNavOverlay")?.classList.add("is-open"); document.body.style.overflowY = 'hidden'; const btn = $("#mobileMenuBtn"); if (btn) { btn.setAttribute("aria-expanded", "true"); btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`; } }
-        function closeMenu() { $("#mobileNavOverlay")?.classList.remove("is-open"); document.body.style.overflowY = ''; const btn = $("#mobileMenuBtn"); if (btn) { btn.setAttribute("aria-expanded", "false"); btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`; } }
-        
-        function setupMobileMenu() {
-            const mobileNavContent = $("#mobileNavOverlay .mobile-nav-content");
-            const desktopNav = $(".header-grid .nav");
-            if (!mobileNavContent || !desktopNav) return;
-            mobileNavContent.innerHTML = '';
-            const closeBtn = document.createElement('button');
-            closeBtn.className = 'mobile-nav-close-btn';
-            closeBtn.setAttribute('aria-label', 'Close menu');
-            closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24" 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 6L6 18M6 6l12 12"/></svg>';
-            const content = desktopNav.cloneNode(true);
-            content.id = '';
+    // --- Routing Logic ---
+    // Decides which view to show based on auth state
+    async function handleRoute() {
+        const loadingEl = $('#view-loading');
+        const authReqEl = $('#view-auth-required');
+        const profileEl = $('#view-profile');
+
+        if (!authState.session) {
+            // Not logged in
+            hide(loadingEl);
+            hide(profileEl);
+            show(authReqEl);
+        } else {
+            // Logged in
+            hide(authReqEl);
+            show(profileEl);
+            hide(loadingEl);
             
-            const langSwitchMobile = content.querySelector('#langSwitchDesktop');
-            if (langSwitchMobile) langSwitchMobile.id = 'langSwitchMobile';
-            mobileNavContent.append(closeBtn, content);
-            closeBtn.onclick = closeMenu;
-            langSwitchMobile?.addEventListener('click', handleLangSwitch);
-            content.querySelector("#btnSignOut")?.addEventListener("click", () => supabase.auth.signOut());
-            content.querySelector("#btnProfile")?.addEventListener("click", () => { window.location.href = 'profile.html'; });
+            // Fetch fresh data for the form
+            await loadProfileData();
         }
+    }
 
-        async function handlePageLogic() {
-            if (state.session) { hide($('#authPrompt')); show($('#profileForm')); await loadProfileData(); } 
-            else { hide($('#profileForm')); show($('#authPrompt')); }
-            hide($('#loading'));
-        }
+    async function loadProfileData() {
+        if (!authState.session) return;
         
-        async function fetchProfile(userId) { return (await supabase.from("profiles").select("*").eq("id", userId).single()).data; }
-
-        async function initAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
-            state.session = session;
-            if (session) state.profile = await fetchProfile(session.user.id);
-            await renderHeader();
-            await handlePageLogic();
-            supabase.auth.onAuthStateChange(async (_event, newSession) => {
-                state.session = newSession;
-                state.profile = newSession ? await fetchProfile(newSession.user.id) : null;
-                await renderHeader();
-                await handlePageLogic();
-            });
-        }
-        
-        async function loadProfileData() {
-            if (!state.session) return;
-            state.profile = await fetchProfile(state.session.user.id) || {};
-            ['fullName', 'username', 'affiliation', 'workEmail', 'personalWebsite', 'professionalWebsite', 'googleScholar', 'fieldsOfStudy']
-                .forEach(id => ($(`#${id}`).value = state.profile[id.replace(/[A-Z]/g, m => '_' + m.toLowerCase())] || ''));
-            $('#displayUsername').textContent = '@' + (state.profile.username || state.session.user.email.split('@')[0]);
-            $('#displayEmail').textContent = state.profile.work_email || state.session.user.email;
-            if (state.profile.avatar_url) setAvatar(await getAvatarUrl(state.profile.avatar_url)); else setAvatar(null);
-        }
-
-        function setAvatar(url) {
-            const img = $('#avatarImg'), initials = $('#avatarInitials');
-            if (url) { img.src = url; show(img); hide(initials); show($('#removeAvatarBtn')); } 
-            else { hide(img); show(initials); hide($('#removeAvatarBtn')); initials.textContent = ($('#fullName').value || 'U')[0].toUpperCase(); }
-        }
-
-        async function saveProfile(e) {
-            e.preventDefault();
-            const btn = $('#saveBtn'), originalHTML = btn.innerHTML;
-            btn.disabled = true; btn.innerHTML = `<svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> <span data-i18n="profile.saving">${tr('profile.saving')}</span>`;
-            try {
-                let avatar_url = state.profile?.avatar_url;
-                if (state.avatarFile) {
-                    const path = `${state.session.user.id}/${Date.now()}.${state.avatarFile.name.split('.').pop()}`;
-                    const { error } = await supabase.storage.from('avatars').upload(path, state.avatarFile);
-                    if (error) throw new Error(tr('profile.upload_error'));
-                    if (avatar_url) await supabase.storage.from('avatars').remove([avatar_url]);
-                    avatar_url = path;
-                } else if (state.avatarRemoved && avatar_url) {
-                    await supabase.storage.from('avatars').remove([avatar_url]);
-                    avatar_url = null;
-                }
-                const updates = { id: state.session.user.id, updated_at: new Date().toISOString(), avatar_url,
-                    full_name: $('#fullName').value.trim(), username: $('#username').value.trim(), affiliation: $('#affiliation').value.trim(), work_email: $('#workEmail').value.trim(),
-                    personal_website: $('#personalWebsite').value.trim() || null, professional_website: $('#professionalWebsite').value.trim() || null, 
-                    google_scholar: $('#googleScholar').value.trim() || null, fields_of_study: $('#fieldsOfStudy').value.trim() || null,
-                };
-                const { error } = await supabase.from('profiles').upsert(updates);
-                if (error) throw error;
-                state.profile = { ...state.profile, ...updates }; state.avatarFile = null; state.avatarRemoved = false;
-                flash(tr('profile.saved')); await renderHeader();
-                const returnTo = new URLSearchParams(location.search).get('return_to');
-                if (returnTo) setTimeout(() => window.location.href = returnTo, 1000);
-            } catch (err) { console.error(err); flash(err.message || "Error saving profile"); } 
-            finally { btn.disabled = false; btn.innerHTML = originalHTML; }
-        }
-
-        function bindEvents() {
-            $('#langSwitchDesktop').onclick = handleLangSwitch;
-            $('#btnSignOut').onclick = () => supabase.auth.signOut();
-            $('#mobileMenuBtn').onclick = () => $("#mobileNavOverlay").classList.contains('is-open') ? closeMenu() : openMenu();
-            $("#mobileNavOverlay").onclick = (e) => { if (e.target === e.currentTarget) closeMenu(); };
-            $('#backBtn').onclick = () => history.back();
-            $('#avatarInput').onchange = (e) => {
-                const file = e.target.files[0]; if (!file) return;
-                state.avatarFile = file; state.avatarRemoved = false;
-                const reader = new FileReader(); reader.onload = (ev) => setAvatar(ev.target.result); reader.readAsDataURL(file);
+        // Fetch full profile data directly from Supabase to ensure we have all fields (e.g. fields_of_study)
+        // which might not be present in the global authState.profile depending on auth.js implementation
+        const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", authState.session.user.id)
+            .single();
+            
+        if (error) {
+            console.error("Error fetching profile:", error);
+            // Fallback to basic auth info
+            state.profile = {
+                full_name: authState.session.user.user_metadata?.full_name || '',
+                email: authState.session.user.email
             };
-            $('#removeAvatarBtn').onclick = () => { state.avatarFile = null; state.avatarRemoved = true; setAvatar(null); $('#avatarInput').value = ''; };
-            $('#fullName').oninput = (e) => { if(!state.avatarFile && !state.profile?.avatar_url && !state.avatarRemoved) $('#avatarInitials').textContent = (e.target.value || 'U')[0].toUpperCase(); };
-            $('#username').oninput = (e) => $('#displayUsername').textContent = '@' + (e.target.value || 'username');
-            $('#workEmail').oninput = (e) => $('#displayEmail').textContent = e.target.value || 'user@example.com';
-            $('#profileForm').onsubmit = saveProfile;
+        } else {
+            state.profile = data || {};
         }
 
-        (function main() {
-            applyI18n();
-            $('#year').textContent = new Date().getFullYear();
-            bindEvents();
-            initAuth();
-        })();
-    </script>
+        // Populate Form
+        const fields = ['fullName', 'username', 'affiliation', 'workEmail', 'personalWebsite', 'professionalWebsite', 'googleScholar', 'fieldsOfStudy'];
+        fields.forEach(id => {
+            const dbKey = id.replace(/[A-Z]/g, m => '_' + m.toLowerCase()); // camelToSnake
+            const el = $(`#${id}`);
+            if(el) el.value = state.profile[dbKey] || '';
+        });
+
+        // Defaults if empty
+        if(!$('#workEmail').value) $('#workEmail').value = authState.session.user.email;
+        if(!$('#username').value) $('#username').value = authState.session.user.email.split('@')[0];
+
+        updatePreviewText();
+
+        // Handle Avatar
+        if (state.profile.avatar_url) {
+            const url = await getAvatarUrl(state.profile.avatar_url);
+            setAvatar(url);
+        } else {
+            setAvatar(null);
+        }
+    }
+
+    function setAvatar(url) {
+        const img = $('#avatarImg');
+        const initials = $('#avatarInitials');
+        const removeBtn = $('#removeAvatarBtn');
+        
+        if (url) {
+            img.src = url;
+            show(img);
+            hide(initials);
+            show(removeBtn);
+        } else {
+            hide(img);
+            show(initials);
+            hide(removeBtn);
+            updateInitials();
+        }
+    }
+
+    function updateInitials() {
+        const name = $('#fullName').value || 'User';
+        $('#avatarInitials').textContent = name.charAt(0).toUpperCase();
+    }
+
+    function updatePreviewText() {
+        $('#displayUsername').textContent = '@' + ($('#username').value || 'username');
+        $('#displayEmail').textContent = $('#workEmail').value || 'user@example.com';
+    }
+
+    async function saveProfile(e) {
+        e.preventDefault();
+        const btn = $('#saveBtn');
+        const originalContent = btn.innerHTML;
+        
+        // Loading state
+        btn.disabled = true;
+        btn.innerHTML = `<div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> <span>${localTr('profile.saving')}</span>`;
+
+        try {
+            let avatar_url = state.profile?.avatar_url;
+
+            // 1. Handle Image Upload
+            if (state.avatarFile) {
+                const fileExt = state.avatarFile.name.split('.').pop();
+                const fileName = `${authState.session.user.id}/${Date.now()}.${fileExt}`;
+                
+                const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, state.avatarFile);
+                if (uploadError) throw new Error(localTr('profile.upload_error'));
+
+                // Clean up old avatar if exists
+                if (avatar_url) await supabase.storage.from('avatars').remove([avatar_url]);
+                avatar_url = fileName;
+            } 
+            // 2. Handle Removal
+            else if (state.avatarRemoved && avatar_url) {
+                await supabase.storage.from('avatars').remove([avatar_url]);
+                avatar_url = null;
+            }
+
+            // 3. Upsert Profile
+            const updates = {
+                id: authState.session.user.id,
+                updated_at: new Date().toISOString(),
+                avatar_url,
+                full_name: $('#fullName').value.trim(),
+                username: $('#username').value.trim(),
+                affiliation: $('#affiliation').value.trim(),
+                work_email: $('#workEmail').value.trim(),
+                personal_website: $('#personalWebsite').value.trim() || null,
+                professional_website: $('#professionalWebsite').value.trim() || null,
+                google_scholar: $('#googleScholar').value.trim() || null,
+                fields_of_study: $('#fieldsOfStudy').value.trim() || null,
+            };
+
+            const { error } = await supabase.from('profiles').upsert(updates);
+            if (error) throw error;
+
+            // Success
+            state.profile = { ...state.profile, ...updates };
+            state.avatarFile = null;
+            state.avatarRemoved = false;
+            setFlash(localTr('profile.saved'));
+
+            // Update global authState locally so Header updates immediately without refresh
+            if(authState.profile) {
+                Object.assign(authState.profile, updates);
+                renderHeader(authState, t, state.language);
+            }
+
+            // Optional redirect logic
+            const returnTo = new URLSearchParams(location.search).get('return_to');
+            if (returnTo) setTimeout(() => window.location.href = returnTo, 1000);
+
+        } catch (err) {
+            console.error(err);
+            setFlash(err.message || "Error saving profile");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            lucide.createIcons(); // Re-render icon in button
+        }
+    }
+
+    function bindEvents() {
+        // File Input
+        $('#avatarInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            state.avatarFile = file;
+            state.avatarRemoved = false;
+            const reader = new FileReader();
+            reader.onload = (ev) => setAvatar(ev.target.result);
+            reader.readAsDataURL(file);
+        });
+
+        // Remove Avatar
+        $('#removeAvatarBtn').addEventListener('click', () => {
+            state.avatarFile = null;
+            state.avatarRemoved = true;
+            setAvatar(null);
+            $('#avatarInput').value = '';
+        });
+
+        // Real-time Preview updates
+        $('#fullName').addEventListener('input', updateInitials);
+        $('#username').addEventListener('input', updatePreviewText);
+        $('#workEmail').addEventListener('input', updatePreviewText);
+
+        // Form Submit
+        $('#profileForm').addEventListener('submit', saveProfile);
+
+        // Back Button
+        $('#backBtn').addEventListener('click', () => {
+            if(document.referrer && document.referrer.includes(window.location.host)) {
+                history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+    }
+
+    // --- Main ---
+    (async function main() {
+        applyI18n(t, state.language);
+        bindEvents();
+        lucide.createIcons();
+
+        // Initialize Auth exactly like archive.html
+        await initAuth({
+            onAuthReady: () => {
+                // Render Header once auth is ready
+                renderHeader(authState, t, state.language);
+                // Handle Page View Logic
+                handleRoute();
+            },
+            onAuthChange: () => {
+                // Re-render Header on login/logout
+                renderHeader(authState, t, state.language);
+                // Re-evaluate Page View Logic
+                handleRoute();
+            }
+        });
+        
+        // Listen for global lang switch event from ui.js/header
+        window.addEventListener('lang-switch', handleLangSwitch);
+    })();
+  </script>
 </body>
 </html>

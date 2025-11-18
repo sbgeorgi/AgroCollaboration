@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
   <meta charset="UTF-8">
@@ -7,303 +7,539 @@
   <title>Network Map • Agrovoltaicos sin Fronteras</title>
   <meta name="description" content="A map of agrivoltaics projects and collaborators in the Americas.">
 
+  <!-- Critical pre-render script -->
+  <script src="auth-preloader.js"></script>
+
   <!-- Leaflet Map Library -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-  <!-- Critical pre-render script -->
-  <script src="auth-preloader.js"></script>
-
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
-  <script src="https://cdn-tailwindcss.vercel.app/?plugins=typography"></script>
-  <script src="tailwind.config.js"></script>
-  
-  <!-- Custom CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="styles.css">
-  <style>
-    :root { --color-brand: #186D50; --color-brand-dark: #145942; --color-brand-light: #e1efeb; --color-accent: #f97316; --color-danger: #ef4444; --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #64748b; --text-tertiary: #94a3b8; --text-light: #ffffff; --border: #e2e8f0; --radius-md: 12px; --radius-lg: 24px; --header-h: 64px; --footer-h: 64px; --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); --space-3: 24px; }
-    html, body { height: 100%; font-family: 'Inter', sans-serif; background-color: var(--bg-main); }
-    body { display: grid; grid-template-rows: auto 1fr auto; min-height: 100vh; overflow: hidden; color: var(--text-primary); }
-    main { padding: var(--space-3); display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; gap: var(--space-3); }
-    .panel { background: var(--bg-panel); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-panel); display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
-    .map-panel { flex: 7; position: relative; }
-    .table-panel { flex: 3; }
-    #map { position: absolute; inset: 0; }
-    .leaflet-container { width: 100% !important; height: 100% !important; }
-    .btn { font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 10px; transition: all 0.2s; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; }
-    .btn-primary { background-color: var(--color-brand); color: var(--text-light); }
-    .btn-primary:hover { background-color: var(--color-brand-dark); }
-    .btn-secondary { background-color: #f1f5f9; color: #334155; border-color: #e2e8f0; }
-    .btn-secondary:hover { background-color: #e2e8f0; }
-    .btn-danger { background-color: #fee2e2; color: #b91c1c; }
-    .btn-danger:hover { background-color: #fecaca; }
-    .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
-    .grid-form .col-span-2 { grid-column: 1 / -1; }
-    .grid-form label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 6px; display: block; }
-    .grid-form input, .grid-form select, .grid-form textarea { background: var(--bg-input); border: 1px solid transparent; padding: 10px 14px; border-radius: 10px; font-size: 14px; transition: all 0.2s; color: var(--text-primary); width: 100%; font-family: inherit; }
-    .grid-form input:focus, .grid-form select:focus, .grid-form textarea:focus { background: white; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); outline: none; }
-    .grid-form textarea { min-height: 90px; resize: vertical; }
 
-    /* CAROUSEL FIXES – NO GAP, ALWAYS FLUSH TO TOP */
-    .carousel-container { 
-      position: relative; 
-      width: 100%; 
-      height: 200px; 
-      background: #e2e8f0; 
+  <!-- External Tailwind Config (Extracted) -->
+  <script src="theme.js"></script>
+
+  <!-- Custom CSS -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+      .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; border: 2px solid transparent; background-clip: content-box; }
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+    
+    /* Flash Message */
+    #flash {
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-150%);
+        background-color: #0f172a;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 9999px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        z-index: 9999;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        opacity: 0;
+    }
+    #flash.visible {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+  </style>
+
+  <!-- Map Specific Styles (Adapted to New Theme) -->
+  <style>
+    :root {
+      --color-brand: #0284c7; /* brand-600 */
+      --color-brand-dark: #0369a1; /* brand-700 */
+      --color-brand-light: #e0f2fe; /* brand-100 */
+      --text-primary: #1e293b; /* slate-800 */
+      --text-secondary: #64748b; /* slate-500 */
+      --border: #e2e8f0; /* gray-200 */
+      --bg-input: #f9fafb; /* gray-50 */
+    }
+
+    /* Leaflet Override */
+    .leaflet-container {
+      width: 100% !important;
+      height: 100% !important;
+      font-family: 'Inter', sans-serif !important;
+      z-index: 0;
+    }
+
+    /* Panel Transitions */
+    #view-panel, #edit-panel {
+      transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    /* Grid Form */
+    .grid-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 20px;
+    }
+    .grid-form .col-span-2 { grid-column: 1 / -1; }
+
+    .grid-form label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .grid-form input,
+    .grid-form select,
+    .grid-form textarea {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      transition: all 0.2s;
+      color: var(--text-primary);
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .grid-form input:focus,
+    .grid-form select:focus,
+    .grid-form textarea:focus {
+      background: white;
+      border-color: var(--color-brand);
+      box-shadow: 0 0 0 3px var(--color-brand-light);
+      outline: none;
+    }
+
+    .grid-form textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    /* Carousel Components */
+    .carousel-container {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      background: #f1f5f9;
+      border-radius: 12px;
       overflow: hidden;
     }
-    .carousel-track { 
-      display: flex; 
-      height: 100%; 
-      transition: transform 0.4s ease; 
+    .carousel-track {
+      display: flex;
+      height: 100%;
+      transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
     }
-    .carousel-slide { 
-      width: 100%; 
-      height: 100%; 
-      flex-shrink: 0; 
+    .carousel-slide {
+      width: 100%;
+      height: 100%;
+      flex-shrink: 0;
     }
-    .carousel-slide img, .carousel-slide video { 
-      width: 100%; 
-      height: 100%; 
-      object-fit: cover; 
+    .carousel-slide img, .carousel-slide video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
-    .carousel-btn { 
-      position: absolute; 
-      top: 50%; 
-      transform: translateY(-50%); 
-      background: rgba(0,0,0,0.6); 
-      color: white; 
-      border: none; 
-      width: 36px; 
-      height: 36px; 
-      border-radius: 50%; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      cursor: pointer; 
-      opacity: 0; 
-      transition: opacity 0.3s; 
-      z-index: 2; 
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.4);
+      color: white;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 2;
+      backdrop-filter: blur(4px);
     }
     .carousel-container:hover .carousel-btn { opacity: 1; }
-    .carousel-btn:hover { background: rgba(0,0,0,0.8); }
+    .carousel-btn:hover { background: rgba(0, 0, 0, 0.7); }
     .carousel-btn.prev { left: 12px; }
     .carousel-btn.next { right: 12px; }
-    .carousel-indicators { 
-      position: absolute; 
-      bottom: 12px; 
-      left: 50%; 
-      transform: translateX(-50%); 
-      display: flex; 
-      gap: 6px; 
-      z-index: 2; 
+    .carousel-indicators {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      z-index: 2;
     }
-    .carousel-dot { 
-      width: 8px; 
-      height: 8px; 
-      border-radius: 50%; 
-      background: rgba(255,255,255,0.5); 
-      transition: all 0.3s; 
-      cursor: pointer; 
+    .carousel-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s;
+      cursor: pointer;
     }
-    .carousel-dot.active { 
-      width: 24px; 
-      border-radius: 4px; 
-      background: white; 
+    .carousel-dot.active {
+      width: 16px;
+      border-radius: 4px;
+      background: white;
     }
 
-    .media-upload-area { background: linear-gradient(135deg, #f6f9fc 0%, #e9f3ff 100%); border: 2px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; transition: all 0.3s; position: relative; min-height: 120px; }
-    .media-upload-area.dragging { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); border-color: #0ea5e9; transform: scale(1.02); }
-    .media-upload-area:hover { border-color: #94a3b8; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); }
-    .upload-icon { width: 48px; height: 48px; margin: 0 auto 12px; color: #64748b; }
-    .upload-text { color: #475569; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
-    .upload-subtext { color: #94a3b8; font-size: 12px; }
-    .media-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; margin-top: 16px; }
-    .media-preview-item { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.2s; }
-    .media-preview-item:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-    .media-preview-item img, .media-preview-item video { width: 100%; height: 100%; object-fit: cover; }
-    .media-preview-remove { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; background: rgba(239,68,68,0.9); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.2s; z-index: 10; }
-    .media-preview-item:hover .media-preview-remove { opacity: 1; }
-    .media-preview-remove:hover { background: #dc2626; transform: scale(1.1); }
-    .media-preview-type-icon { position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.6); color: white; border-radius: 50%; padding: 4px; }
+    /* Upload Area */
+    .media-upload-area {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      transition: all 0.3s;
+      position: relative;
+      cursor: pointer;
+    }
+    .media-upload-area:hover { border-color: var(--color-brand-dark); background: var(--color-brand-light); }
+    .media-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .media-preview-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #e2e8f0;
+    }
+    .media-preview-item img, .media-preview-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .media-preview-remove {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 20px;
+      height: 20px;
+      background: rgba(220, 38, 38, 0.9);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    /* User Search */
     .user-search-wrapper { position: relative; }
-    #userSearchResults { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; z-index: 100; max-height: 200px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); display: none; }
-    .user-search-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; transition: background-color 0.2s; font-size: 14px; }
+    #userSearchResults {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-top: 4px;
+      z-index: 100;
+      max-height: 200px;
+      overflow-y: auto;
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      display: none;
+    }
+    .user-search-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      font-size: 14px;
+    }
     .user-search-item:hover { background-color: var(--color-brand-light); }
-    .user-search-item img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #e2e8f0; }
-    #selectedUsers { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 10px; }
-    .selected-user-pill { display: flex; align-items: center; gap: 8px; background: var(--color-brand-light); padding: 6px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--color-brand-dark); }
-    .selected-user-pill img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-    .selected-user-pill span { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .selected-user-pill button { background: none; border: none; color: var(--color-brand); cursor: pointer; padding: 4px; border-radius: 50%; transition: background-color 0.2s; }
-    .selected-user-pill button:hover { background: rgba(0,0,0,0.1); }
-    .table-container { padding: 0; display: flex; flex-direction: column; height: 100%; }
-    .table-scroll-wrapper { overflow: auto; flex-grow: 1; }
-    #projects-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    #projects-table thead { position: sticky; top: 0; background: white; z-index: 1; box-shadow: 0 1px 0 0 var(--border); }
-    #projects-table th { padding: 16px 24px; text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; transition: background-color 0.2s; }
+    .user-search-item img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+    
+    #selectedUsers {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .selected-user-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--color-brand-light);
+      padding: 4px 8px 4px 4px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-brand-dark);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+    }
+    .selected-user-pill img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+    .selected-user-pill button { margin-left: 4px; color: var(--color-brand-dark); opacity: 0.6; }
+    .selected-user-pill button:hover { opacity: 1; }
+
+    /* Table Styles */
+    #projects-table th { cursor: pointer; user-select: none; }
     #projects-table th:hover { background-color: #f8fafc; }
-    #projects-table th .sort-icon { opacity: 0.3; transition: opacity 0.2s; display: inline-block; vertical-align: middle; margin-left: 4px; }
-    #projects-table th.sort-asc .sort-icon, #projects-table th.sort-desc .sort-icon { opacity: 1; }
-    #projects-table tbody tr { transition: background-color 0.2s, box-shadow 0.2s; cursor: pointer; }
-    #projects-table tbody tr:hover { background-color: var(--color-brand-light); }
-    #projects-table tbody tr.selected { background-color: #c3e0d8; font-weight: 600; box-shadow: inset 4px 0 0 0 var(--color-brand); }
-    #projects-table td { padding: 14px 24px; border-bottom: 1px solid #f1f5f9; color: var(--text-primary); }
-    #projects-table td:first-child { color: var(--color-brand-dark); font-weight: 500; }
-    #view-panel { max-width: 32rem; }
+    #projects-table th .sort-icon { opacity: 0.3; transition: opacity 0.2s; display: inline-block; vertical-align: middle; margin-left: 4px; width: 14px; height: 14px; }
+    #projects-table th.sort-asc .sort-icon, #projects-table th.sort-desc .sort-icon { opacity: 1; color: var(--color-brand); }
+    #projects-table tbody tr.selected { background-color: var(--color-brand-light); }
+    #projects-table tbody tr.selected td:first-child { color: var(--color-brand-dark); font-weight: 700; position: relative; }
+    #projects-table tbody tr.selected td:first-child::before {
+        content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--color-brand);
+    }
   </style>
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="h-full">
+<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
-  <header class="site-header">
-    <div class="container header-grid">
-      <a href="index.html" class="brand"><img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image"><div class="brand-text"><div class="title">Agrovoltaicos sin Fronteras</div><div class="subtitle" data-i18n="tagline"></div></div></a>
-      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
-      <nav class="nav">
-        <a href="index.html" class="link" data-i18n="nav.schedule"></a><a href="archive.html" class="link" data-i18n="nav.archive"></a><a href="about.html" class="link" data-i18n="nav.about"></a><a href="network.html" class="link" data-i18n="nav.network"></a><a href="map.html" class="link active" data-i18n="nav.map"></a>
-        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;"></a>
-        <div class="divider"></div>
-        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en"><span>EN</span><span>ES</span></div>
-        <div class="auth-area">
-          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile" onclick="window.location.href='profile.html'"><span id="userInitial"></span><img id="userAvatar" style="display: none; width:100%;height:100%;object-fit:cover;" alt="User Avatar" /></button>
-          <span id="userName" style="display: none;"></span>
-          <a href="signin.html" id="btnSignIn" data-i18n="auth.signin"></a>
-          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none"></button>
-        </div>
-      </nav>
-    </div>
-  </header>
+  <!-- Note: Header is injected by layout.js -->
 
-  <div id="mobileNavOverlay" class="mobile-nav-overlay"><div class="mobile-nav-content"></div></div>
-  <div id="flash" class="flash" role="status" aria-live="polite" style="display:none;"></div>
+  <!-- ================= FLASH MESSAGES ================= -->
+  <div id="flash" role="status" aria-live="polite"></div>
 
-  <main>
-    <div class="panel map-panel">
-      <div id="map" class="h-full w-full z-10"></div>
-      <button id="addPointBtn" class="hidden absolute top-4 right-4 z-20 bg-brand-700 text-white font-bold py-3 px-5 rounded-full shadow-lg hover:bg-brand-800 transition-colors active:scale-95 flex items-center gap-2"><i data-lucide="plus-circle" class="w-5 h-5"></i><span data-i18n="map.add"></span></button>
-      <div id="view-panel" class="absolute top-0 left-0 h-full w-full bg-white shadow-2xl z-30 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-  <!-- Remove the wrapper div and position button absolutely -->
-  <button id="closeViewPanelBtn" class="absolute top-2 right-2 z-50 p-2 bg-white/80 backdrop-blur text-gray-600 hover:bg-white rounded-full shadow-md"><i data-lucide="x" class="w-6 h-6"></i></button>
-  <div id="view-panel-content" class="flex-1 overflow-y-auto"></div>
-</div>
-      <div id="edit-panel" class="absolute top-0 right-0 h-full w-full max-w-2xl bg-white shadow-2xl z-30 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-        <div class="p-6 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
-          <h2 id="panel-title" class="font-display font-bold text-2xl text-brand-700" data-i18n="map.add_panel_title"></h2>
-          <button id="closePanelBtn" class="p-2 text-gray-400 hover:bg-gray-100 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button>
-        </div>
-        <form id="point-form" class="flex-1 overflow-y-auto p-6">
-          <div class="grid-form">
-            <input type="hidden" id="pointId">
-            <div class="col-span-2"><label for="mediaUpload" data-i18n="form.media">Media (videos/images)</label><div id="mediaDropZone" class="media-upload-area"><svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg><div class="upload-text">Drop videos or images here, or click to browse</div><div class="upload-subtext">Videos first in carousel. PNG, JPG, MP4 up to 10MB.</div><input type="file" id="mediaUpload" accept="image/*,video/*" multiple style="display: none;"></div><div id="mediaPreviewGrid" class="media-preview-grid"></div></div>
-            <div class="col-span-2"><label for="userSearch" data-i18n="form.collaborators">Collaborators (Required)</label><div id="selectedUsers"></div><div class="user-search-wrapper"><input type="text" id="userSearch" placeholder="Search for users to add..."><div id="userSearchResults"></div></div><input type="text" id="collaborators_hidden_required" required style="height:0; padding:0; border:none; position:absolute; opacity:0;"></div>
-            <div><label for="name" data-i18n="form.institution">Institution (Required)</label><input id="name" required /></div>
-            <div><label for="project_name" data-i18n="form.project_name">Project Name (Required)</label><input id="project_name" required /></div>
-            <div><label for="latitude" data-i18n="form.latitude">Latitude (Required)</label><input id="latitude" type="number" step="any"  required /></div>
-            <div><label for="longitude" data-i18n="form.longitude">Longitude (Required)</label><input id="longitude" type="number" step="any" required /></div>
-            <div><label for="start_year" data-i18n="form.start_year">Start Year (Required)</label><input id="start_year" type="number" required /></div>
-            <div><label for="area" data-i18n="form.area">Area (ha or m2) (Required)</label><input id="area" required /></div>
-            <div class="col-span-2"><label for="associated_crops" data-i18n="form.associated_crops">Associated Crop(s) (Required)</label><input id="associated_crops" required /></div>
-            <div class="col-span-2"><label for="av_system_type" data-i18n="form.av_system_type">AV System Type (Required)</label><input id="av_system_type" placeholder="e.g., Static, Tracking, Height..." required /></div>
-            <div class="col-span-2"><hr class="my-4"></div>
-            <div><label for="generating_capacity_kw" data-i18n="form.generating_capacity_kw">Generating Capacity (kW)</label><input id="generating_capacity_kw" type="number" step="any" /></div>
-            <div><label for="keywords" data-i18n="form.keywords">Keywords</label><input id="keywords" placeholder="e.g. Research, Commercial, Education" /></div>
-            <div><label for="affiliation" data-i18n="form.affiliation">Affiliation</label><input id="affiliation" /></div>
-            <div><label for="link" data-i18n="form.link">Website Link</label><input id="link" type="url" /></div>
-            <div class="col-span-2"><label for="description" data-i18n="form.description">Description</label><textarea id="description"></textarea></div>
-            <div class="col-span-2"><label for="leadership" data-i18n="form.leadership">Leadership</label><textarea id="leadership" placeholder="HTML is allowed for rich formatting."></textarea></div>
-            <div class="col-span-2"><label for="facilities" data-i18n="form.facilities">Facilities</label><textarea id="facilities"></textarea></div>
-            <div class="col-span-2"><label for="equipment" data-i18n="form.equipment">Equipment</label><textarea id="equipment"></textarea></div>
-            <div class="col-span-2"><label for="capabilities" data-i18n="form.capabilities">Capabilities</label><textarea id="capabilities"></textarea></div>
-            <div class="col-span-2"><label for="experiments" data-i18n="form.experiments">Experiments</label><textarea id="experiments"></textarea></div>
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="flex-1 relative overflow-hidden bg-gray-50 flex flex-col items-center">
+    
+    <!-- Inner Container (Matches Archive Width/Padding) -->
+    <div class="w-full h-full max-w-[1800px] px-4 sm:px-6 py-6 flex flex-col lg:flex-row gap-6 relative">
+
+      <!-- MAP PANEL (Top on mobile, Left on desktop) -->
+      <div class="flex-[2] relative rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-white z-0 flex flex-col">
+        
+        <!-- Map container -->
+        <div id="map" class="flex-1 w-full h-full z-10"></div>
+        
+        <!-- Floating Add Button -->
+        <button id="addPointBtn" class="hidden absolute top-4 right-4 z-20 bg-brand-600 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:bg-brand-700 transition-colors active:scale-95 items-center gap-2 border border-white/20 backdrop-blur-sm">
+          <i data-lucide="plus-circle" class="w-5 h-5"></i>
+          <span data-i18n="map.add">Add Point</span>
+        </button>
+
+        <!-- View Panel (Slide-out over map) -->
+        <div id="view-panel" class="absolute top-0 left-0 h-full w-full md:max-w-md bg-white/95 backdrop-blur-md shadow-2xl z-30 transform -translate-x-full border-r border-gray-200 flex flex-col">
+          <button id="closeViewPanelBtn" class="absolute top-3 right-3 z-50 p-2 bg-white text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-full shadow-sm border border-gray-200 transition-all">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+          <div id="view-panel-content" class="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <!-- Content injected by map.js -->
           </div>
-          <div class="mt-6 pt-6 border-t border-gray-200 flex justify-end gap-3"><button type="button" id="cancelBtn" class="btn btn-secondary" data-i18n="form.cancel">Cancel</button><button type="submit" id="saveBtn" class="btn btn-primary bg-brand-700 hover:bg-brand-800" data-i18n="form.save">Save Point</button></div>
-        </form>
+        </div>
+
+        <!-- Edit Panel (Slide-out over map from right) -->
+        <div id="edit-panel" class="absolute top-0 right-0 h-full w-full md:max-w-2xl bg-white shadow-2xl z-30 transform translate-x-full flex flex-col border-l border-gray-200">
+          <div class="p-5 border-b border-gray-100 flex justify-between items-center flex-shrink-0 bg-white z-10">
+            <h2 id="panel-title" class="font-display font-bold text-xl text-slate-800" data-i18n="map.add_panel_title">Add New Point</h2>
+            <button id="closePanelBtn" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
+              <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+          </div>
+          
+          <form id="point-form" class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-gray-50/50">
+            <div class="grid-form">
+              <input type="hidden" id="pointId">
+              
+              <!-- Media Upload -->
+              <div class="col-span-2">
+                <label for="mediaUpload" data-i18n="form.media">Media</label>
+                <div id="mediaDropZone" class="media-upload-area group">
+                  <i data-lucide="upload-cloud" class="w-10 h-10 text-brand-300 mx-auto mb-2 group-hover:text-brand-500 transition-colors"></i>
+                  <div class="text-sm font-medium text-slate-600">Drop videos or images here</div>
+                  <div class="text-xs text-slate-400 mt-1">Videos first. PNG, JPG, MP4 up to 10MB.</div>
+                  <input type="file" id="mediaUpload" accept="image/*,video/*" multiple style="display: none;">
+                </div>
+                <div id="mediaPreviewGrid" class="media-preview-grid"></div>
+              </div>
+
+              <!-- Collaborators -->
+              <div class="col-span-2">
+                <label for="userSearch" data-i18n="form.collaborators">Collaborators (Required)</label>
+                <div id="selectedUsers"></div>
+                <div class="user-search-wrapper">
+                  <input type="text" id="userSearch" placeholder="Search for users..." autocomplete="off">
+                  <div id="userSearchResults" class="custom-scrollbar"></div>
+                </div>
+                <input type="text" id="collaborators_hidden_required" required style="height:0; padding:0; border:none; position:absolute; opacity:0;">
+              </div>
+
+              <!-- Basic Info -->
+              <div><label for="name" data-i18n="form.institution">Institution (Required)</label><input id="name" required /></div>
+              <div><label for="project_name" data-i18n="form.project_name">Project Name (Required)</label><input id="project_name" required /></div>
+              <div><label for="latitude" data-i18n="form.latitude">Latitude (Required)</label><input id="latitude" type="number" step="any" required /></div>
+              <div><label for="longitude" data-i18n="form.longitude">Longitude (Required)</label><input id="longitude" type="number" step="any" required /></div>
+              <div><label for="start_year" data-i18n="form.start_year">Start Year (Required)</label><input id="start_year" type="number" required /></div>
+              <div><label for="area" data-i18n="form.area">Area (ha or m2) (Required)</label><input id="area" required /></div>
+              
+              <div class="col-span-2"><label for="associated_crops" data-i18n="form.associated_crops">Associated Crop(s) (Required)</label><input id="associated_crops" required /></div>
+              <div class="col-span-2"><label for="av_system_type" data-i18n="form.av_system_type">AV System Type (Required)</label><input id="av_system_type" placeholder="e.g., Static, Tracking, Height..." required /></div>
+              
+              <div class="col-span-2"><hr class="border-gray-200 my-2"></div>
+              
+              <div><label for="generating_capacity_kw" data-i18n="form.generating_capacity_kw">Capacity (kW)</label><input id="generating_capacity_kw" type="number" step="any" /></div>
+              <div><label for="keywords" data-i18n="form.keywords">Keywords</label><input id="keywords" placeholder="Research, Commercial..." /></div>
+              <div><label for="affiliation" data-i18n="form.affiliation">Affiliation</label><input id="affiliation" /></div>
+              <div><label for="link" data-i18n="form.link">Website Link</label><input id="link" type="url" /></div>
+              
+              <div class="col-span-2"><label for="description" data-i18n="form.description">Description</label><textarea id="description"></textarea></div>
+              <div class="col-span-2"><label for="leadership" data-i18n="form.leadership">Leadership</label><textarea id="leadership" placeholder="HTML allowed"></textarea></div>
+              <div class="col-span-2"><label for="facilities" data-i18n="form.facilities">Facilities</label><textarea id="facilities"></textarea></div>
+              <div class="col-span-2"><label for="equipment" data-i18n="form.equipment">Equipment</label><textarea id="equipment"></textarea></div>
+              <div class="col-span-2"><label for="capabilities" data-i18n="form.capabilities">Capabilities</label><textarea id="capabilities"></textarea></div>
+              <div class="col-span-2"><label for="experiments" data-i18n="form.experiments">Experiments</label><textarea id="experiments"></textarea></div>
+            </div>
+            
+            <div class="mt-6 pt-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50/50 sticky bottom-0">
+              <button type="button" id="cancelBtn" class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-gray-200 rounded-lg transition-colors" data-i18n="form.cancel">Cancel</button>
+              <button type="submit" id="saveBtn" class="px-5 py-2 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition-colors" data-i18n="form.save">Save Point</button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
-    <div id="table-panel" class="panel table-panel">
-      <div class="table-container">
-        <div class="table-scroll-wrapper">
-          <table id="projects-table">
-            <thead>
+
+      <!-- TABLE PANEL (Bottom on mobile, Right on desktop) -->
+      <div class="flex-1 lg:flex-[0.8] rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-white flex flex-col relative">
+        <div class="flex-1 overflow-y-auto custom-scrollbar">
+          <table id="projects-table" class="w-full text-left border-collapse">
+            <thead class="bg-white sticky top-0 z-10 shadow-sm text-xs font-bold uppercase text-slate-500 tracking-wider">
               <tr>
-                <th data-sort="project_name"><span data-i18n="table.project_name"></span><i class="sort-icon" data-lucide="chevrons-up-down"></i></th>
-                <th data-sort="name"><span data-i18n="table.institution"></span><i class="sort-icon" data-lucide="chevrons-up-down"></i></th>
-                <th data-sort="start_year"><span data-i18n="table.start_year"></span><i class="sort-icon" data-lucide="chevrons-up-down"></i></th>
-                <th data-sort="generating_capacity_kw"><span data-i18n="table.capacity"></span><i class="sort-icon" data-lucide="chevrons-up-down"></i></th>
-                <th data-sort="area"><span data-i18n="table.area"></span><i class="sort-icon" data-lucide="chevrons-up-down"></i></th>
+                <th class="p-4 border-b border-gray-100" data-sort="project_name">
+                  <div class="flex items-center gap-1"><span data-i18n="table.project_name">Project</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div>
+                </th>
+                <th class="p-4 border-b border-gray-100" data-sort="name">
+                  <div class="flex items-center gap-1"><span data-i18n="table.institution">Inst.</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div>
+                </th>
+                <th class="p-4 border-b border-gray-100 hidden sm:table-cell" data-sort="start_year">
+                  <div class="flex items-center gap-1"><span data-i18n="table.start_year">Year</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div>
+                </th>
+                <th class="p-4 border-b border-gray-100 hidden md:table-cell" data-sort="generating_capacity_kw">
+                  <div class="flex items-center gap-1"><span data-i18n="table.capacity">kW</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div>
+                </th>
+                <th class="p-4 border-b border-gray-100 hidden lg:table-cell" data-sort="area">
+                  <div class="flex items-center gap-1"><span data-i18n="table.area">Area</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div>
+                </th>
               </tr>
             </thead>
-            <tbody></tbody>
+            <tbody class="text-sm text-slate-700 divide-y divide-gray-50">
+              <!-- Rows injected by JS -->
+            </tbody>
           </table>
         </div>
       </div>
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <small>
-        <div class="footer-text">© <span id="year"></span> Agrovoltaicos sin Fronteras • <span data-i18n="footer.note"></span></div>
-        <div class="footer-logos">
-          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer"><img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics"></a>
-          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer"><img src="static/unam.png" alt="UNAM"></a>
-          <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer"><img src="static/aal.png" alt="AAL" style="background-color: white;"></a>
-          <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer"><img src="static/rame.png" alt="Rame" style="background-color: white;"></a>
-        </div>
-      </small>
-    </div>
-  </footer>
+  <!-- Note: Footer is injected by layout.js -->
 
+  <!-- ================= LOGIC ================= -->
   <script type="module">
+    import { renderLayout } from './layout.js';
     import { authState, initAuth, signOut } from './auth.js';
-    import { initSharedUI, renderHeader, applyI18n as applySharedI18n } from './ui.js';
+    import { initSharedUI, renderHeader, applyI18n as applySharedI18n, getAvatarUrl, show, hide } from './ui.js';
     import { initMap } from './map.js';
+    
+    // Inject Layout with 'map' active state
+    renderLayout('map');
 
+    // Local Translation Object
     const t = {
-      en: { tagline: "A seminar series to share advances in agrivoltaics in the Americas", nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" }, auth: { signin: "Sign in", signout: "Sign out" }, footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }, map: { add: "Add New Point", add_panel_title: "Add New Point" }, form: { media: "Media (videos/images)", collaborators: "Collaborators (Required)", institution: "Institution (Required)", project_name: "Project Name (Required)", latitude: "Latitude (Required)", longitude: "Longitude (Required)", start_year: "Start Year (Required)", area: "Area (ha or m2) (Required)", associated_crops: "Associated Crop(s) (Required)", av_system_type: "AV System Type (Required)", generating_capacity_kw: "Generating Capacity (kW)", keywords: "Keywords", affiliation: "Affiliation", link: "Website Link", description: "Description", leadership: "Leadership", facilities: "Facilities", equipment: "Equipment", capabilities: "Capabilities", experiments: "Experiments", cancel: "Cancel", save: "Save Point" }, table: { project_name: "Project Name", institution: "Institution", start_year: "Year", capacity: "Capacity (kW)", area: "Area" } },
-      es: { tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas", nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" }, auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" }, footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }, map: { add: "Añadir Nuevo Punto", add_panel_title: "Añadir Nuevo Punto" }, form: { media: "Multimedia", collaborators: "Colaboradores (Obligatorio)", institution: "Institución (Obligatorio)", project_name: "Nombre del Proyecto (Obligatorio)", latitude: "Latitud (Obligatorio)", longitude: "Longitud (Obligatorio)", start_year: "Año de Inicio (Obligatorio)", area: "Superficie (ha o m2) (Obligatorio)", associated_crops: "Cultivo(s) Asociado(s) (Obligatorio)", av_system_type: "Tipo de Sistema AV (Obligatorio)", generating_capacity_kw: "Capacidad de Generación (kW)", keywords: "Palabras Clave", affiliation: "Afiliación", link: "Enlace al Sitio Web", description: "Descripción", leadership: "Liderazgo", facilities: "Instalaciones", equipment: "Equipamiento", capabilities: "Capacidades", experiments: "Experimentos", cancel: "Cancelar", save: "Guardar Punto" }, table: { project_name: "Nombre del Proyecto", institution: "Institución", start_year: "Año", capacity: "Capacidad (kW)", area: "Área" } }
+      en: { 
+        auth: { signin: "Sign in", signout: "Sign out" }, 
+        map: { add: "Add New Point", add_panel_title: "Add New Point" }, 
+        form: { media: "Media", collaborators: "Collaborators (Required)", institution: "Institution (Required)", project_name: "Project Name (Required)", latitude: "Latitude (Required)", longitude: "Longitude (Required)", start_year: "Start Year", area: "Area (ha or m2)", associated_crops: "Associated Crop(s)", av_system_type: "AV System Type", generating_capacity_kw: "Capacity (kW)", keywords: "Keywords", affiliation: "Affiliation", link: "Website Link", description: "Description", leadership: "Leadership", facilities: "Facilities", equipment: "Equipment", capabilities: "Capabilities", experiments: "Experiments", cancel: "Cancel", save: "Save Point" }, 
+        table: { project_name: "Project Name", institution: "Institution", start_year: "Year", capacity: "Capacity", area: "Area" } 
+      },
+      es: { 
+        auth: { signin: "Ingresar", signout: "Salir" }, 
+        map: { add: "Añadir Nuevo Punto", add_panel_title: "Añadir Nuevo Punto" }, 
+        form: { media: "Multimedia", collaborators: "Colaboradores (Obligatorio)", institution: "Institución (Obligatorio)", project_name: "Nombre del Proyecto (Obligatorio)", latitude: "Latitud (Obligatorio)", longitude: "Longitud (Obligatorio)", start_year: "Año de Inicio", area: "Superficie (ha o m2)", associated_crops: "Cultivo(s) Asociado(s)", av_system_type: "Tipo de Sistema AV", generating_capacity_kw: "Capacidad (kW)", keywords: "Palabras Clave", affiliation: "Afiliación", link: "Sitio Web", description: "Descripción", leadership: "Liderazgo", facilities: "Instalaciones", equipment: "Equipamiento", capabilities: "Capacidades", experiments: "Experimentos", cancel: "Cancelar", save: "Guardar Punto" }, 
+        table: { project_name: "Nombre del Proyecto", institution: "Institución", start_year: "Año", capacity: "Capacidad", area: "Área" } 
+      }
     };
 
     function handleLangSwitch() {
       const newLang = (localStorage.getItem("lang") || "en") === 'en' ? 'es' : 'en';
       localStorage.setItem("lang", newLang);
+      // Apply I18N to injected header/footer and local content
       applySharedI18n(t, newLang);
+      
+      // Update dynamic language switcher offset in layout
+      const s = document.querySelector('#langSwitchDesktop div:last-child');
+      if(s) {
+          s.style.transform = newLang === 'es' ? 'translateX(100%)' : 'translateX(0)';
+          s.innerText = newLang.toUpperCase();
+      }
     }
 
     (async function main() {
       try {
+        // Initialize shared UI components
         initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
 
+        // Handle Username click
+        document.addEventListener('click', e => {
+          if (e.target.id === 'userName') window.location.href = 'profile.html';
+        });
+
+        // Initialize Auth and Header Logic
         await initAuth({
-          onAuthReady: (currentAuthState) => renderHeader(currentAuthState, t, localStorage.getItem("lang") || "en"),
+          onAuthReady: (currentAuthState) => {
+             renderHeader(currentAuthState, t, localStorage.getItem("lang") || "en");
+             if(currentAuthState.profile?.avatar_url) {
+                 getAvatarUrl(currentAuthState.profile.avatar_url).then(url => {
+                     const img = document.getElementById('userAvatar');
+                     if(url && img) { img.src = url; show(img); hide(document.getElementById('userInitial')); }
+                 });
+             }
+          },
           onAuthChange: (currentAuthState) => renderHeader(currentAuthState, t, localStorage.getItem("lang") || "en")
         });
 
+        // Initialize Map Logic
         initMap();
 
-        applySharedI18n(t, localStorage.getItem("lang") || "en");
+        // Apply translations and icons
+        handleLangSwitch(); // Ensure correct state on load
         lucide.createIcons();
-        
+
+        // Fix Leaflet sizing issues due to layout changes
         setTimeout(() => {
           if (window.map && typeof window.map.invalidateSize === 'function') {
             window.map.invalidateSize();
           }
-        }, 150);
+        }, 200);
       } catch (error) {
-        console.error('[map.html] A critical error occurred during initialization:', error);
+        console.error('[map.html] Initialization error:', error);
       }
     })();
   </script>
-
 </body>
-
 </html>

@@ -1,434 +1,589 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Member Network • Agrovoltaicos sin Fronteras</title>
-  <meta name="description"
-    content="Interactive network visualization of our community members and their connections." />
-  
-  <!-- Critical pre-render script to prevent UI flicker -->
+  <meta name="description" content="Interactive network visualization of our community members and their connections.">
+
+  <!-- Critical pre-render script -->
   <script src="auth-preloader.js"></script>
 
-  <!-- Fonts: Modern Stack -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&family=Lato:wght@400;700&display=swap"
-    rel="stylesheet">
-
-  <!-- Main Stylesheet for Header, Footer, and Base Styles -->
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- External Tailwind Config -->
-  <script src="tailwind.config.js"></script>
+  <link rel="stylesheet" href="styles.css">
 
-  <!-- Page-Specific Styles -->
+  <!-- External Tailwind Config (Extracted) -->
+  <script src="theme.js"></script>
+
+  <!-- Custom CSS -->
   <style>
-    :root {
-      --space-2: 8px; --space-3: 16px; --space-4: 24px;
-      --bg: var(--bg-main); --card: var(--bg-panel); --card-2: var(--bg-input);
-      --text: var(--text-primary); --muted: var(--text-secondary); --muted-2: var(--text-tertiary);
-      --brand: var(--color-brand); --brand-2: var(--color-brand-dark); --danger: var(--color-danger);
-      --color-primary-muted: var(--color-brand-light); --color-surface-hover: var(--bg-input);
-      --ring: var(--color-brand); --color-success: var(--color-brand-dark); --color-success-muted: var(--color-brand-light);
-      --shadow: var(--shadow-panel); --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-      --radius: var(--radius-md); --radius-sm: 8px;
-      --transition-base: all 0.2s ease-in-out; --transition-fast: all 0.15s ease-in-out;
+    /* Mobile: Allow Scroll. Desktop: Hidden (Dashboard style) */
+    body { overflow-y: auto; }
+    @media (min-width: 768px) { body { overflow: hidden; } }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; background-clip: content-box; border: 2px solid transparent; }
+    .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; }
+
+    /* Graph Canvas Styles */
+    #network-container { 
+        cursor: grab; 
+        background-image: radial-gradient(#e2e8f0 1px, transparent 1px); 
+        background-size: 24px 24px; 
+        touch-action: none; 
     }
-    body { display: grid; grid-template-rows: auto 1fr auto; height: 100vh; overflow: hidden; font-family: 'Inter', sans-serif; font-size: 14px; }
-    main { padding: var(--space-3); overflow: hidden; height: 100%; flex-grow: 0; }
-    .page-content { display: flex; gap: var(--space-3); height: 100%; min-height: 0; }
-    .panel { background: var(--card); border-radius: 24px; border: 1px solid var(--border); box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
-    .btn-ghost { border: 1px solid var(--border); }
-    .btn-ghost:hover { border-color: var(--text-tertiary); }
-    .chip { padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); border: 1px solid transparent; background-color: transparent; line-height: 1.2; }
-    .chip-toggle { color: var(--muted); border: 1px solid var(--border); }
-    .chip-toggle:hover { background-color: var(--color-surface-hover); color: var(--text); }
-    .chip-toggle.active { background-color: var(--text-primary); color: #fff; border-color: var(--text-primary); }
-    .control-panel { flex: 0 0 360px; padding: var(--space-4); }
-    .panel-top-section { flex-shrink: 0; }
-    .panel-scroll-section { flex-grow: 1; overflow-y: auto; margin: var(--space-3) calc(var(--space-4) * -1) 0; padding: var(--space-3) var(--space-4); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); scrollbar-gutter: stable; }
-    .panel-bottom-section { flex-shrink: 0; padding-top: var(--space-3); }
-    .control-section { margin-bottom: var(--space-3); }
-    .control-section:last-child { margin-bottom: 0; }
-    .control-section h3 { font-size: 1rem; color: var(--text); margin: 0 0 var(--space-2) 0; font-family: 'Poppins', sans-serif; }
-    .inline-control { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
-    .inline-control h3 { margin: 0; font-size: 0.8rem; text-transform: uppercase; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; flex-shrink: 0; }
-    .inline-control>*:last-child { flex-grow: 1; min-width: 0; }
-    .inline-control .view-switch { justify-content: flex-end; }
-    .search-container { position: relative; }
-    .input-field { background: var(--card-2); border: 1px solid transparent; padding: 10px 14px; border-radius: var(--radius); font-size: 14px; transition: all var(--transition-base); color: var(--text); width: 100%; }
-    .input-field:focus, .input-field:focus-visible { background: var(--card); border-color: var(--ring); box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--ring); outline: none; }
-    .search-input { padding-left: 36px; }
-    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted-2); }
-    .simple-select { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B6B6B' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.7rem center; background-repeat: no-repeat; background-size: 1.2em; padding-right: 2.5rem; }
-    .autocomplete-results { position: absolute; top: 100%; left: 0; right: 0; margin-top: 6px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); max-height: 260px; overflow-y: auto; display: none; box-shadow: var(--shadow-md); z-index: 60; }
-    .autocomplete-results.active { display: block; }
-    .autocomplete-item { padding: 10px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background-color var(--transition-fast); }
-    .autocomplete-item:hover, .autocomplete-item.active { background: var(--color-surface-hover); }
-    .autocomplete-kind { font-size: 0.8rem; color: var(--muted); border: 1px solid var(--border); padding: 2px 6px; border-radius: 999px; }
-    .autocomplete-name { color: var(--brand-2); font-weight: 600; }
-    .autocomplete-sub { color: var(--muted); font-size: 0.9rem; }
-    .tags-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2); }
-    .selected-tags-container { display: flex; flex-wrap: wrap; gap: 6px; }
-    .selected-tags-container:not(:empty) { margin-bottom: var(--space-2); }
-    .selected-tag-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 0.8rem; font-weight: 600; background: var(--color-primary-muted); color: var(--brand); border-radius: var(--radius-sm); }
-    .selected-tag-chip .remove-tag { cursor: pointer; font-weight: bold; font-size: 1rem; line-height: 1; transition: color var(--transition-fast); }
-    .selected-tag-chip .remove-tag:hover { color: var(--danger); }
-    .tag-filters { display: flex; flex-direction: column; gap: 6px; }
-    .tag-filter-item { display: flex; align-items: center; gap: var(--space-2); padding: 6px 10px; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition-fast); }
-    .tag-filter-item:hover { background: var(--color-surface-hover); }
-    .tag-filter-item.selected { background: var(--color-primary-muted); }
-    .tag-filter-checkbox { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 4px; display: grid; place-items: center; flex-shrink: 0; transition: all var(--transition-fast); }
-    .tag-filter-item.selected .tag-filter-checkbox { background: var(--brand); border-color: var(--brand); }
-    .tag-filter-item.selected .tag-filter-checkbox::after { content: '✓'; color: #fff; font-size: 10px; font-weight: bold; }
-    .tag-filter-label { flex: 1; color: var(--text); font-size: 0.9rem; }
-    .tag-filter-count { color: var(--muted); font-size: 0.85rem; }
-    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2); }
-    .stat-card { background: var(--card-2); border-radius: var(--radius); padding: var(--space-2); text-align: center; }
-    .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--brand-2); display: block; font-family: 'Poppins', sans-serif; }
-    .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; }
-    @media (min-width: 1200px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
-    .main-view { flex: 1; display: flex; flex-direction: column; gap: var(--space-3); min-height: 0; }
-    #network-container { flex: 2 1 0; position: relative; overflow: hidden; min-height: 250px; background-color: var(--card-2); }
-    #networkCanvas, #networkNodes, .network-connections { position: absolute; inset: 0; }
-    #networkCanvas { z-index: 1; transform-origin: 0 0; }
-    .network-connections { pointer-events: none; z-index: 5; }
-    #networkNodes { z-index: 10; }
-    .network-node { position: absolute; transform: translate(-50%, -50%); transition: transform .2s ease, opacity .2s ease; cursor: pointer; }
-    .network-node:hover { transform: translate(-50%, -50%) scale(1.05); z-index: 30; }
-    .network-node.selected { z-index: 40; }
-    .node-pill { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--card); border: 2px solid var(--border); border-radius: 999px; box-shadow: var(--shadow); transition: all .2s ease; }
-    .network-node:hover .node-pill { border-color: var(--brand); box-shadow: var(--shadow-md); }
-    .network-node.selected .node-pill { border-color: var(--brand-2); box-shadow: 0 0 0 4px var(--color-primary-muted); }
-    .org-node .node-pill { background: var(--color-primary-muted); border-color: transparent; padding: 4px 10px; }
-    .org-label { color: var(--brand); font-weight: 700; font-size: 0.9rem; }
-    .node-avatar { width: 32px; height: 32px; border-radius: 50%; background-color: var(--color-primary-muted); display: grid; place-items: center; color: var(--brand); font-weight: 700; font-size: 1rem; overflow: hidden; flex-shrink: 0; }
-    .node-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .node-name { color: var(--text); font-size: 0.95rem; font-weight: 600; line-height: 1.2; }
-    .node-affiliation { color: var(--muted); font-size: 0.85rem; line-height: 1.2; }
-    .network-edge.affiliation { stroke: var(--border); stroke-width: 2; stroke-opacity: 1; }
-    .network-node.dim, .network-edge.dim { opacity: .15; }
-    #table-container { flex: 1 1 0; min-height: 240px; }
-    .table-wrapper { overflow: auto; flex: 1; }
-    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    thead { position: sticky; top: 0; background: var(--card); z-index: 5; }
-    thead th:nth-child(1) { width: 22%; } thead th:nth-child(2) { width: 28%; } thead th:nth-child(3) { width: 35%; } thead th:nth-child(4) { width: 15%; }
-    th, td { padding: 8px 16px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    td:last-child { overflow: visible; }
-    th { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); cursor: pointer; user-select: none; background: var(--bg); }
-    th:hover { color: var(--text); }
-    th.sort-asc::after, th.sort-desc::after { content: ' ▲'; display: inline-block; width: 1em; text-align: left; }
-    th.sort-desc::after { content: ' ▼'; display: inline-block; width: 1em; text-align: left; }
-    td { font-size: 0.85rem; }
-    tbody tr { transition: background-color .15s ease; cursor: pointer; }
-    tbody tr:hover { background: var(--color-surface-hover); }
-    .badge { font-size: 0.8rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; color: var(--text); background: var(--card-2); }
-    .badge.speaker { color: var(--color-success); background: var(--color-success-muted); }
-    .mark { background: #fef9c3; padding: 0 2px; border-radius: 4px; color: #713f12; }
-    .loading-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 300; transition: opacity .4s ease; }
-    .loading-screen.hidden { opacity: 0; pointer-events: none; }
-    .loading-text { color: var(--muted); margin-top: 16px; font-size: 1rem; }
-    .spinner { animation: spin 1s linear infinite; color: var(--brand); }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    .signin-gate { position: fixed; inset: 0; background: var(--bg); display: grid; place-items: center; z-index: 250; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); z-index: 199; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
-    .modal-overlay.active { opacity: 1; pointer-events: all; }
-    .profile-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(.9); width: 90%; max-width: 520px; z-index: 200; opacity: 0; pointer-events: none; transition: all .25s ease; }
-    .profile-modal.active { opacity: 1; pointer-events: all; transform: translate(-50%, -50%) scale(1); }
-    .modal-header { padding: var(--space-4); border-bottom: 1px solid var(--border); position: relative; }
-    .modal-close { position: absolute; top: var(--space-2); right: var(--space-2); width: 32px; height: 32px; border-radius: 50%; border: none; background: transparent; color: var(--muted-2); cursor: pointer; font-size: 1.2rem; transition: all var(--transition-fast); }
-    .modal-close:hover { background: var(--color-surface-hover); color: var(--text); }
-    .modal-profile-header { display: flex; align-items: center; gap: var(--space-3); }
-    .modal-avatar { width: 76px; height: 76px; border-radius: 50%; background: var(--color-primary-muted); display: grid; place-items: center; font-size: 2.5rem; font-weight: 800; color: var(--brand); overflow: hidden; }
-    .modal-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .modal-profile-info h2 { margin: 0; color: var(--text); font-size: 1.5rem; font-family: 'Poppins', sans-serif; }
-    .modal-profile-info .affiliation { color: var(--muted); font-size: 1rem; margin-top: 2px; }
-    .modal-body { padding: var(--space-4); max-height: 60vh; overflow-y: auto; }
-    .modal-section { margin-bottom: var(--space-4); }
-    .modal-section h3 { font-size: 1rem; color: var(--text); margin: 0 0 var(--space-2); font-family: 'Poppins', sans-serif; }
-    .modal-links { display: flex; flex-direction: column; gap: 8px; }
-    .modal-link { display: inline-flex; align-items: center; gap: 8px; color: var(--brand); text-decoration: none; font-size: 1rem; font-weight: 500; }
-    .modal-link:hover { text-decoration: underline; }
-    .modal-tags { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-    .modal-tag { padding: 4px 10px; background: var(--card-2); border-radius: var(--radius-sm); font-size: 0.9rem; color: var(--text); }
-    .view-switch { display: flex; align-items: center; gap: var(--space-3); }
-    @media (max-width: 767px) { body { display: block; height: auto; overflow: auto; } main { overflow: visible; height: auto; padding: 16px; } .page-content { flex-direction: column; height: auto; } .control-panel { flex: 0 0 auto; } }
+    #network-container:active { cursor: grabbing; }
+    
+    #networkCanvas { transform-origin: 0 0; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    #networkNodes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .network-connections { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+
+    .network-node { position: absolute; transform: translate(-50%, -50%); cursor: pointer; pointer-events: auto; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10; }
+    .network-node:hover { z-index: 50; transform: translate(-50%, -50%) scale(1.1); }
+    .org-node { z-index: 5; }
+    .network-edge { fill: none; stroke: #cbd5e1; stroke-width: 1.5px; stroke-opacity: 0.5; }
+    
+    th.sort-asc::after { content: ' ▲'; font-size: 10px; margin-left: 4px; }
+    th.sort-desc::after { content: ' ▼'; font-size: 10px; margin-left: 4px; }
+
+    #flash {
+        position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-150%);
+        background-color: #0f172a; color: white; padding: 10px 20px; border-radius: 9999px;
+        font-weight: 500; font-size: 0.9rem; z-index: 9999; opacity: 0;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
   </style>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body>
-  <!-- Header -->
-  <header class="site-header">
-    <div class="container header-grid">
-      <a href="index.html" class="brand">
-        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
-        <div class="brand-text">
-          <div class="title">Agrovoltaicos sin Fronteras</div>
-          <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
-        </div>
-      </a>
-      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-      </button>
-      <nav class="nav">
-        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-        <a href="about.html" class="link" data-i18n="nav.about">About</a>
-        <a href="network.html" class="link" data-i18n="nav.network">Network</a>
-        <a href="map.html" class="link" data-i18n="nav.map">Map</a>
-        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-        <div class="divider"></div>
-        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en"><span>EN</span><span>ES</span></div>
-        <div class="auth-area">
-          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile" onclick="window.location.href='profile.html'">
-            <span id="userInitial"></span>
-            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />
-          </button>
-          <span id="userName" style="display: none;"></span>
-          <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
-          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">Sign out</button>
-        </div>
-      </nav>
-    </div>
-  </header>
+<body class="text-slate-800 flex flex-col h-full selection:bg-brand-100 selection:text-brand-900 font-sans bg-gray-50">
 
-  <div id="mobileNavOverlay" class="mobile-nav-overlay"><div class="mobile-nav-content"></div></div>
+  <!-- Note: Header is injected by layout.js -->
+
   <div id="flash" role="status" aria-live="polite"></div>
 
-  <!-- Main Content Wrapper -->
-  <main>
-    <div class="loading-screen" id="loadingScreen">
-      <svg class="spinner" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-      </svg>
-      <div class="loading-text">Initializing network visualization...</div>
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="flex-1 relative bg-gray-50 overflow-visible md:overflow-hidden">
+    
+    <!-- Loader & Auth Gate -->
+    <div id="loadingScreen" class="absolute inset-0 bg-gray-50 z-[60] flex flex-col items-center justify-center transition-opacity duration-500 fixed md:absolute">
+      <div class="w-8 h-8 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin mb-4"></div>
+      <span class="text-sm font-medium text-slate-500 animate-pulse">Building network graph...</span>
     </div>
 
-    <div class="signin-gate" id="signinGate" style="display:none;">
-      <div class="panel" style="max-width: 480px; text-align: center; padding: 24px;">
-        <h2 style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; margin-bottom: 16px;">Member Network Access</h2>
-        <p>Please sign in to explore our interactive member network and discover connections within our community.</p>
-        <a href="signin.html" class="btn btn-primary" style="text-decoration: none; display: inline-block; width: 100%; margin-top: 24px;">Sign In to Continue</a>
+    <div id="signinGate" class="absolute inset-0 bg-gray-50/90 backdrop-blur-sm z-[55] flex items-center justify-center fixed md:absolute" style="display:none;">
+      <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 max-w-md text-center mx-4">
+        <div class="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="lock" class="w-6 h-6 text-brand-600"></i>
+        </div>
+        <h2 class="font-display font-bold text-2xl text-slate-900 mb-2">Member Network</h2>
+        <p class="text-slate-500 mb-6 text-sm">Sign in to visualize connections between researchers, organizations, and topics.</p>
+        <a href="signin.html" class="inline-flex items-center justify-center px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors w-full">Sign In</a>
       </div>
     </div>
 
-    <div class="page-content">
-      <!-- Controls -->
-      <aside class="control-panel panel">
-        <div class="panel-top-section">
-          <h2 style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; margin: 0 0 var(--space-3) 0;">Explore Network</h2>
-          <div class="control-section">
-            <div class="search-container">
-              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              <input type="text" class="input-field search-input" id="searchInput" placeholder="Search people, orgs…">
-              <div class="autocomplete-results" id="autocompleteResults"></div>
-            </div>
-          </div>
-          <div class="inline-control">
-            <h3>Event</h3>
-            <select id="eventFilter" class="input-field simple-select"><option value="all">All Events</option></select>
-          </div>
-          <div class="inline-control">
-            <h3>Role</h3>
-            <div class="view-switch" id="roleRow">
-              <button class="chip chip-toggle active" data-role="all">All</button>
-              <button class="chip chip-toggle" data-role="speakers">Speakers</button>
-              <button class="chip chip-toggle" data-role="organizers">Organizers</button>
-            </div>
-          </div>
-          <div class="control-section">
-            <div class="tags-header">
-              <h3>Interests & Tags</h3>
-              <button id="clearFiltersBtn" class="btn btn-ghost" style="padding: 4px 8px; font-size: 0.8rem;">Clear</button>
-            </div>
-            <div id="selectedTagsContainer" class="selected-tags-container"></div>
-          </div>
-        </div>
-        <div class="panel-scroll-section"><div class="tag-filters" id="tagFilters"></div></div>
-        <div class="panel-bottom-section">
-          <div class="control-section">
-            <h3>Stats</h3>
-            <div class="stats-grid">
-              <div class="stat-card"><span class="stat-value" id="statMembers">0</span><span class="stat-label">Members</span></div>
-              <div class="stat-card"><span class="stat-value" id="statConnections">0</span><span class="stat-label">Connections</span></div>
-              <div class="stat-card"><span class="stat-value" id="statOrgs">0</span><span class="stat-label">Orgs</span></div>
-              <div class="stat-card"><span class="stat-value" id="statEvents">0</span><span class="stat-label">Events</span></div>
-            </div>
-          </div>
-        </div>
-      </aside>
+    <!-- CONTAINER -->
+    <div class="max-w-[1800px] mx-auto w-full h-auto md:h-full flex flex-col md:flex-row gap-4 p-4 md:p-6 relative">
 
-      <!-- Graph + Table -->
-      <div class="main-view">
-        <section id="network-container" class="panel">
-          <div id="networkCanvas">
-            <svg class="network-connections" id="networkConnections"></svg>
-            <div id="networkNodes"></div>
-          </div>
-          <div style="position:absolute; right:16px; top:16px; display:flex; gap:8px; z-index:12;">
-            <button id="resetViewBtn" class="btn btn-ghost" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(4px);">Reset View</button>
-          </div>
-        </section>
-        <section id="table-container" class="panel">
-          <div class="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th data-sort="name">Name</th><th data-sort="affiliation">Affiliation / Organization</th><th data-sort="interests">Research Interests</th><th data-sort="role">Role</th>
-                </tr>
-              </thead>
-              <tbody id="members-table-body"></tbody>
-            </table>
-          </div>
-        </section>
-      </div>
+        <!-- LEFT SIDEBAR: CONTROLS & STATS -->
+        <aside class="flex-none w-full md:w-80 bg-white border border-gray-200 rounded-2xl flex flex-col shadow-sm overflow-hidden h-auto md:h-full shrink-0">
+        
+            <!-- Header & Search -->
+            <div class="p-5 border-b border-gray-100 space-y-4">
+                <h2 class="font-display font-bold text-lg text-brand-700 flex items-center gap-2">
+                <i data-lucide="share-2" class="w-5 h-5"></i> Explore Network
+                </h2>
+                
+                <div class="relative z-30">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" id="searchInput" class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all outline-none" placeholder="Search people, orgs...">
+                    <div id="autocompleteResults" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar p-1 z-50"></div>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="relative">
+                    <select id="eventFilter" class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
+                        <option value="all">All Events</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Role Chips -->
+                <div class="flex flex-wrap gap-2">
+                    <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white" data-role="all">All</button>
+                    <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50" data-role="speakers">Speakers</button>
+                    <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50" data-role="organizers">Hosts</button>
+                </div>
+            </div>
+
+            <!-- Tag Filters (Scrollable) -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-5 min-h-[200px] md:min-h-0">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Interests & Tags</label>
+                    <button id="clearFiltersBtn" class="text-[10px] font-bold text-brand-600 hover:underline">Clear</button>
+                </div>
+                <div id="selectedTagsContainer" class="flex flex-wrap gap-1.5 mb-3 empty:hidden"></div>
+                <div id="tagFilters" class="space-y-0.5"></div>
+            </div>
+
+            <!-- REINSTATED KPI STATS (Footer of Sidebar) -->
+            <div class="p-4 bg-slate-50 border-t border-gray-200 mt-auto">
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
+                        <span id="statMembers" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Members</span>
+                    </div>
+                    <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
+                        <span id="statConnections" class="block text-xl font-display font-bold text-brand-600 leading-none mb-0.5">0</span>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Connections</span>
+                    </div>
+                    <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
+                        <span id="statOrgs" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Orgs</span>
+                    </div>
+                    <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
+                        <span id="statEvents" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Events</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- RIGHT COLUMN -->
+        <div class="flex-1 flex flex-col gap-4 min-w-0 h-auto md:h-full">
+        
+            <!-- CARD 2: GRAPH (Top) -->
+            <section id="network-container" class="md:flex-[2] bg-white border border-gray-200 rounded-2xl shadow-sm relative overflow-hidden h-[500px] md:h-auto shrink-0">
+                <div id="networkCanvas">
+                    <svg class="network-connections" id="networkConnections"></svg>
+                    <div id="networkNodes"></div>
+                </div>
+                
+                <div class="absolute top-4 right-4 flex gap-2 z-40">
+                    <button id="resetViewBtn" class="px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
+                    Reset View
+                    </button>
+                </div>
+            </section>
+
+            <!-- CARD 3: TABLE (Bottom) -->
+            <section class="md:flex-1 bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden h-[500px] md:h-auto shrink-0">
+                <div class="overflow-auto custom-scrollbar flex-1">
+                    <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50 sticky top-0 z-20 shadow-sm">
+                        <tr>
+                            <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort="name">Name</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hidden md:table-cell" data-sort="affiliation">Affiliation</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-1/3 hidden lg:table-cell" data-sort="interests">Interests</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort="role">Role</th>
+                        </tr>
+                    </thead>
+                    <tbody id="members-table-body" class="divide-y divide-gray-100 text-sm text-slate-700"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
     </div>
   </main>
 
-  <!-- Modal -->
-  <div class="modal-overlay" id="modalOverlay"></div>
-  <div class="profile-modal panel" id="profileModal">
-    <div class="modal-header">
-      <button class="modal-close" id="modalCloseBtn">✕</button>
-      <div class="modal-profile-header">
-        <div class="modal-avatar" id="modalAvatar">
-          <span id="modalAvatarInitial">?</span>
-          <img id="modalAvatarImage" style="display:none;">
-        </div>
-        <div class="modal-profile-info">
-          <h2 id="modalName">Loading…</h2>
-          <div class="affiliation" id="modalAffiliation">…</div>
-        </div>
+  <!-- Note: Footer is injected by layout.js -->
+
+  <!-- ================= MODAL ================= -->
+  <div id="modalOverlay" class="fixed inset-0 z-[100] bg-slate-900/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"></div>
+  <div id="profileModal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[90%] max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-200 opacity-0 pointer-events-none transition-all duration-300 scale-95 flex flex-col max-h-[85vh]">
+      <div class="p-6 border-b border-gray-100 flex items-center gap-5 relative bg-slate-50/50 rounded-t-2xl">
+          <button id="modalCloseBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 hover:bg-white p-1 rounded-full transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
+          <div id="modalAvatar" class="w-20 h-20 rounded-full bg-white ring-4 ring-white shadow-md flex items-center justify-center text-3xl font-bold text-brand-600 overflow-hidden shrink-0"><span id="modalAvatarInitial">?</span><img id="modalAvatarImage" class="w-full h-full object-cover hidden"></div>
+          <div class="min-w-0">
+              <h2 id="modalName" class="text-xl font-display font-bold text-slate-900 leading-tight mb-1">Loading...</h2>
+              <div id="modalAffiliation" class="text-sm font-medium text-brand-600">...</div>
+          </div>
       </div>
-    </div>
-    <div class="modal-body">
-      <div class="modal-section" id="modalEmailSection" style="display:none;"><h3>Contact</h3><div class="modal-links"><a href="#" class="modal-link" id="modalEmail"><span>📧</span><span class="email-text"></span></a></div></div>
-      <div class="modal-section" id="modalLinksSection" style="display:none;"><h3>Professional Links</h3><div class="modal-links" id="modalLinks"></div></div>
-      <div class="modal-section" id="modalFieldsSection" style="display:none;"><h3>Research Interests</h3><div class="modal-tags" id="modalFields"></div></div>
-      <div class="modal-section" id="modalConnectionsSection"><h3>Connections</h3><div class="modal-tags" id="modalConnections"></div></div>
-    </div>
+      <div class="p-6 overflow-y-auto custom-scrollbar space-y-6">
+          <div id="modalEmailSection" class="hidden"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Contact</h3><a id="modalEmail" href="#" class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 w-full"><i data-lucide="mail" class="w-4 h-4 text-slate-400"></i><span class="email-text truncate"></span></a></div>
+          <div id="modalLinksSection" class="hidden"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Links</h3><div id="modalLinks" class="flex flex-col gap-2"></div></div>
+          <div id="modalFieldsSection" class="hidden"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Interests</h3><div id="modalFields" class="flex flex-wrap gap-2"></div></div>
+          <div><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Network Connections</h3><div id="modalConnections" class="flex flex-wrap gap-2"></div></div>
+      </div>
   </div>
 
-  <!-- Footer -->
-  <footer class="site-footer">
-    <div class="container">
-      <small>
-        <div class="footer-text">
-          © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
-          <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
-        </div>
-        <div class="footer-logos">
-          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer"><img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics"></a>
-          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer"><img src="static/unam.png" alt="UNAM"></a>
-          <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer"><img src="static/aal.png" alt="AAL" style="background-color: white;"></a>
-          <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer"><img src="static/rame.png" alt="Rame" style="background-color: white;"></a>
-        </div>
-      </small>
-    </div>
-  </footer>
-
+  <!-- ================= LOGIC ================= -->
   <script type="module">
-    // --- [REFACTORED SCRIPT] ---
+    import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatarUrl } from './ui.js';
     
+    // Inject Layout with 'network' active state
+    renderLayout('network');
+
     const state = {
         members: [], profileById: new Map(), isSpeaker: new Set(), speakersByProfileId: new Map(),
         eventsById: new Map(), orgIndex: new Map(), tagIndex: new Map(), tagCounts: new Map(),
-        allCanonicalToDisplay: new Map(), connections: [], nodes: new Map(), orgNodes: new Map(),
-        positions: new Map(), selectedNode: null, roleFilter: "all", eventFilterId: "all",
-        searchQuery: "", selectedTags: new Set(), panOffset: { x: 0, y: 0 }, zoom: 1,
-        sort: { key: "name", dir: "asc" }, lastLayoutHash: "", lastFilteredIds: new Set(),
+        allCanonicalToDisplay: new Map(), connections: [], nodes: new Map(),
+        positions: new Map(), panOffset: { x: 0, y: 0 }, zoom: 1,
+        sort: { key: "name", dir: "asc" }, roleFilter: "all", eventFilterId: "all", searchQuery: "", selectedTags: new Set(),
         lang: localStorage.getItem("lang") || "en"
     };
 
     const t = {
-      en: { tagline: "A seminar series to share advances in agrivoltaics in the Americas", nav: { schedule: "Schedule", archive: "Archive", about: "About", admin: "Admin", network: "Network", map: "Map"}, auth: { signin: "Sign in", signout: "Sign out" }, footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }, },
-      es: { tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas", nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", admin: "Admin", network: "Red", map: "Mapa"}, auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" }, footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }, }
+      en: { auth: { signin: "Sign in", signout: "Sign out" } },
+      es: { auth: { signin: "Ingresar", signout: "Salir" } }
     };
 
-    // --- PAGE-SPECIFIC HELPERS ---
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-    const hashStr = (s) => { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
-    const seededRandom = (seed) => function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    const highlight = (text, q) => { if (!q || !text) return text || ""; try { const rx = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "ig"); return (text + "").replace(rx, '<span class="bg-yellow-100 text-yellow-800 px-0.5 rounded">$1</span>'); } catch { return text; } };
     const debounce = (fn, ms = 200) => { let t = null; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
-    const highlight = (text, q) => { if (!q || !text) return text || ""; try { const rx = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "ig"); return (text + "").replace(rx, '<span class="mark">$1</span>'); } catch { return text; } };
-    const SYNONYMS = { "agriculture": ["agriculture", "agricultural", "agro", "agrivoltaics", "agri-voltaics", "farming"], "solar": ["solar", "photovoltaic", "pv", "photovoltaics"], "energy": ["energy", "renewable energy", "renewables", "clean energy"], "environment": ["environment", "environmental", "ecosystem", "ecology"], "policy": ["policy", "policies", "regulation", "regulatory"] };
-    const CANONICAL = new Map();
-    for (const [canon, arr] of Object.entries(SYNONYMS)) arr.forEach(t => CANONICAL.set(t.toLowerCase(), canon));
-    const canonicalize = (raw) => { if (!raw) return null; const t = raw.toLowerCase().trim().replace(/\s+/g, " ").replace(/[-_]/g, " "); return CANONICAL.get(t) || t; };
     
-    // --- DATA & UI FUNCTIONS (Complete) ---
     async function loadNetworkData() {
-        const [profilesRes, speakerRowsRes, eventsRes] = await Promise.all([supabase.from('profiles').select(`id, full_name, affiliation, role, fields_of_study, avatar_url, work_email, personal_website, professional_website, google_scholar`).order('full_name'), supabase.from('event_speakers').select('event_id, profile_id'), supabase.from('events').select('id, title_en, title_es, start_time, topic_tags').order('start_time', { ascending: false })]);
-        state.members = profilesRes.data || [];
-        state.profileById.clear();
+        const [profiles, speakers, events] = await Promise.all([
+            supabase.from('profiles').select('*').order('full_name'),
+            supabase.from('event_speakers').select('event_id, profile_id'),
+            supabase.from('events').select('id, title_en, title_es, start_time, topic_tags').order('start_time', { ascending: false })
+        ]);
+        state.members = profiles.data || [];
         state.members.forEach(m => state.profileById.set(m.id, m));
-        state.eventsById.clear();
-        (eventsRes.data || []).forEach(e => state.eventsById.set(e.id, e));
-        populateEventFilter();
-        state.isSpeaker.clear();
-        state.speakersByProfileId.clear();
-        (speakerRowsRes.data || []).forEach(row => { if (!row.profile_id) return; state.isSpeaker.add(row.profile_id); if (!state.speakersByProfileId.has(row.profile_id)) state.speakersByProfileId.set(row.profile_id, new Set()); state.speakersByProfileId.get(row.profile_id).add(row.event_id); });
-        state.orgIndex.clear();
-        state.members.forEach(m => { const org = m.affiliation && m.affiliation.trim() ? m.affiliation.trim() : null; if (!org) return; if (!state.orgIndex.has(org)) state.orgIndex.set(org, new Set()); state.orgIndex.get(org).add(m.id); });
-        state.tagIndex.clear();
-        state.tagCounts.clear();
-        state.allCanonicalToDisplay.clear();
-        state.members.forEach(member => { const allRawTagsForPerson = (member.fields_of_study || "").split(",").map(s => s.trim()).filter(Boolean); if (state.speakersByProfileId.has(member.id)) { state.speakersByProfileId.get(member.id).forEach(eventId => { const event = state.eventsById.get(eventId); if (event && event.topic_tags) { allRawTagsForPerson.push(...event.topic_tags); } }); } const uniqueCanonicalTags = new Set(); allRawTagsForPerson.forEach(rawTag => { const canon = canonicalize(rawTag); if (!canon) return; if (!state.tagIndex.has(canon)) state.tagIndex.set(canon, new Set()); state.tagIndex.get(canon).add(member.id); if (!state.allCanonicalToDisplay.has(canon)) { state.allCanonicalToDisplay.set(canon, rawTag.trim()); } uniqueCanonicalTags.add(canon); }); uniqueCanonicalTags.forEach(canon => { state.tagCounts.set(canon, (state.tagCounts.get(canon) || 0) + 1); }); });
-        buildConnections();
-        $('#statMembers').textContent = state.members.length;
-        $('#statOrgs').textContent = state.orgIndex.size;
-        $('#statEvents').textContent = state.eventsById.size;
+        (events.data||[]).forEach(e => state.eventsById.set(e.id, e));
+        
+        const select = $('#eventFilter');
+        select.innerHTML = '<option value="all">All Events</option>'; 
+        state.eventsById.forEach(e => select.add(new Option(new Date(e.start_time).toLocaleDateString() + ' - ' + e.title_en, e.id)));
+        
+        (speakers.data||[]).forEach(s => {
+            if(!s.profile_id) return;
+            state.isSpeaker.add(s.profile_id);
+            if(!state.speakersByProfileId.has(s.profile_id)) state.speakersByProfileId.set(s.profile_id, new Set());
+            state.speakersByProfileId.get(s.profile_id).add(s.event_id);
+        });
+
+        // Indices & Tags
+        state.members.forEach(m => {
+            const org = m.affiliation?.trim();
+            if(org) { if(!state.orgIndex.has(org)) state.orgIndex.set(org, new Set()); state.orgIndex.get(org).add(m.id); }
+            
+            const rawTags = (m.fields_of_study || "").split(",").map(s => s.trim()).filter(Boolean);
+            if(state.speakersByProfileId.has(m.id)) {
+                 state.speakersByProfileId.get(m.id).forEach(eid => {
+                     const ev = state.eventsById.get(eid);
+                     if(ev?.topic_tags) rawTags.push(...ev.topic_tags);
+                 });
+            }
+            const unique = new Set(rawTags.map(t => t.toLowerCase()));
+            unique.forEach(u => {
+                const display = rawTags.find(r => r.toLowerCase() === u) || u;
+                if(!state.tagIndex.has(u)) state.tagIndex.set(u, new Set());
+                state.tagIndex.get(u).add(m.id);
+                state.allCanonicalToDisplay.set(u, display);
+                state.tagCounts.set(u, (state.tagCounts.get(u)||0)+1);
+            });
+        });
+        
+        // Connections
+        const conns = []; const processed = new Set();
+        state.orgIndex.forEach(idsSet => {
+            const ids = Array.from(idsSet);
+            for(let i=0; i<ids.length; i++) {
+                for(let j=i+1; j<ids.length; j++) {
+                    const key = [ids[i], ids[j]].sort().join('-');
+                    if(!processed.has(key)) { conns.push({source:ids[i], target:ids[j]}); processed.add(key); }
+                }
+            }
+        });
+        state.connections = conns;
+        
+        $('#statMembers').innerText = state.members.length;
+        $('#statConnections').innerText = conns.length;
+        $('#statOrgs').innerText = state.orgIndex.size;
+        $('#statEvents').innerText = state.eventsById.size;
+        
         populateTagFilters();
+        onFiltersChanged();
     }
-    function buildConnections() { const processed = new Set(); const conns = []; for (const [org, set] of state.orgIndex.entries()) { const ids = Array.from(set); for (let i = 0; i < ids.length; i++) { for (let j = i + 1; j < ids.length; j++) { const a = ids[i], b = ids[j]; const key = [a, b].sort().join("-"); if (!processed.has(key)) { conns.push({ source: a, target: b, type: 'affiliation', strength: 0.7 }); processed.add(key); } } } } state.connections = conns; $('#statConnections').textContent = state.connections.length; }
-    function populateEventFilter() { const select = $('#eventFilter'); (state.eventsById.values() || []).forEach(event => { const title = event.title_en || event.title_es || 'Untitled Event'; const date = new Date(event.start_time).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); const option = new Option(`${date} - ${title}`, event.id); select.add(option); }); }
-    function renderSelectedTags() { const container = $('#selectedTagsContainer'); container.innerHTML = ''; state.selectedTags.forEach(canon => { const chip = document.createElement('div'); chip.className = 'selected-tag-chip'; const label = state.allCanonicalToDisplay.get(canon) || canon; chip.innerHTML = `<span>${label}</span><span class="remove-tag" title="Remove filter: ${label}">×</span>`; chip.querySelector('.remove-tag').addEventListener('click', (e) => { e.stopPropagation(); state.selectedTags.delete(canon); onFiltersChanged(); }); container.appendChild(chip); }); }
-    function populateTagFilters() { const container = $('#tagFilters'); container.innerHTML = ''; const tags = Array.from(state.tagCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 100); tags.forEach(([canon, count]) => { const item = document.createElement('div'); item.className = 'tag-filter-item'; item.dataset.tag = canon; item.innerHTML = `<div class="tag-filter-checkbox"></div><div class="tag-filter-label">${state.allCanonicalToDisplay.get(canon) || canon}</div><div class="tag-filter-count">${count}</div>`; item.classList.toggle('selected', state.selectedTags.has(canon)); item.addEventListener('click', () => { if (state.selectedTags.has(canon)) state.selectedTags.delete(canon); else state.selectedTags.add(canon); onFiltersChanged(); }); container.appendChild(item); }); }
-    function updateTagSelectionsUI() { $$('#tagFilters .tag-filter-item').forEach(el => el.classList.toggle('selected', state.selectedTags.has(el.dataset.tag))); renderSelectedTags(); }
-    function setupAutocomplete() { const input = $('#searchInput'), results = $('#autocompleteResults'); let items = [], activeIndex = -1; const close = () => { results.classList.remove('active'); results.innerHTML = ''; activeIndex = -1; }, open = () => results.classList.add('active'); const rebuild = () => { const q = input.value.trim().toLowerCase(); if (!q) { onFiltersChanged(); close(); return; } const arr = []; state.members.filter(m => (m.full_name || "").toLowerCase().includes(q)).slice(0, 10).forEach(m => arr.push({ kind: 'person', id: m.id, label: m.full_name, sub: m.affiliation || '' })); Array.from(state.orgIndex.keys()).filter(o => o.toLowerCase().includes(q)).slice(0, 6).forEach(o => arr.push({ kind: 'org', id: o, label: o, sub: 'organization' })); Array.from(state.tagCounts.keys()).filter(t => (state.allCanonicalToDisplay.get(t) || t).toLowerCase().includes(q)).slice(0, 10).forEach(t => arr.push({ kind: 'tag', id: t, label: state.allCanonicalToDisplay.get(t) || t, sub: 'tag' })); results.innerHTML = ''; if (arr.length === 0) { close(); return; } open(); items = arr; arr.forEach((it, idx) => { const el = document.createElement('div'); el.className = 'autocomplete-item'; el.innerHTML = `<span class="autocomplete-kind">${it.kind}</span><span class="autocomplete-name">${highlight(it.label, q)}</span><span class="autocomplete-sub">${it.sub || ''}</span>`; el.addEventListener('mouseenter', () => setActive(idx)); el.addEventListener('mouseleave', () => setActive(-1)); el.addEventListener('click', () => choose(idx)); results.appendChild(el); }); }; const setActive = (i) => { $$('.autocomplete-item').forEach((el, ix) => el.classList.toggle('active', ix === i)); activeIndex = i; }; const choose = (i) => { const c = items[i]; if (!c) return; if (c.kind === 'person') { const m = state.profileById.get(c.id); if (m) { input.value = m.full_name; onFiltersChanged(); close(); } } else if (c.kind === 'org') { input.value = c.label; onFiltersChanged(); close(); } else if (c.kind === 'tag') { state.selectedTags.add(c.id); input.value = ''; onFiltersChanged(); close(); } }; input.addEventListener('input', debounce(() => { onFiltersChanged(); rebuild(); }, 250)); input.addEventListener('keydown', (e) => { const n = items.length; if (!results.classList.contains('active') || n === 0) return; if (e.key === 'ArrowDown') { e.preventDefault(); setActive((activeIndex + 1) % n); } else if (e.key === 'ArrowUp') { e.preventDefault(); setActive((activeIndex - 1 + n) % n); } else if (e.key === 'Enter') { e.preventDefault(); choose(activeIndex >= 0 ? activeIndex : 0); } else if (e.key === 'Escape') { close(); } }); document.addEventListener('click', (e) => { if (!results.contains(e.target) && e.target !== input) close(); }); }
-    function gatherPersonCanonicalTags(pid) { const out = new Set(); for (const [canon, set] of state.tagIndex.entries()) if (set.has(pid)) out.add(canon); return out; }
-    function getMatchedSet() { let ids = new Set(state.members.map(m => m.id)); if (state.roleFilter === "speakers") ids = new Set([...state.isSpeaker].filter(id => ids.has(id))); else if (state.roleFilter === "organizers") ids = new Set(state.members.filter(m => ["organizer", "admin"].includes(m.role)).map(m => m.id)); if (state.eventFilterId !== 'all') { const keep = new Set(); for (const [pid, evs] of state.speakersByProfileId.entries()) if (evs.has(state.eventFilterId) && ids.has(pid)) keep.add(pid); ids = keep; } if (state.selectedTags.size > 0) { ids = new Set([...ids].filter(pid => { const tags = gatherPersonCanonicalTags(pid); for (const t of state.selectedTags) if (tags.has(t)) return true; return false; })); } if (state.searchQuery) { const q = state.searchQuery.toLowerCase(); ids = new Set([...ids].filter(pid => { const m = state.profileById.get(pid); return (m?.full_name || "").toLowerCase().includes(q) || (m?.affiliation || "").toLowerCase().includes(q); })); } return ids; }
-    function getFilteredMembers() { const keep = getMatchedSet(); const arr = [...keep].map(id => state.profileById.get(id)).filter(Boolean); const key = state.sort.key, dir = state.sort.dir === 'asc' ? 1 : -1; arr.sort((a, b) => { const va = key === 'name' ? (a.full_name || '') : key === 'affiliation' ? (a.affiliation || '') : key === 'interests' ? (a.fields_of_study || '') : key === 'role' ? (a.role || '') : ''; const vb = key === 'name' ? (b.full_name || '') : key === 'affiliation' ? (b.affiliation || '') : key === 'interests' ? (b.fields_of_study || '') : key === 'role' ? (b.role || '') : ''; return va.localeCompare(vb) * dir; }); return arr; }
-    function layoutHash(ids) { return hashStr([...ids].sort().join(",")).toString(); }
-    function calculateNodePositions(filteredMembers, container) { const ids = filteredMembers.map(m => m.id); const h = layoutHash(new Set(ids)); if (h === state.lastLayoutHash && state.positions.size > 0) return state.positions; state.lastLayoutHash = h; const rect = container.getBoundingClientRect(); const width = rect.width, height = rect.height; const cx = width / 2, cy = height / 2; const margin = 60; const byOrg = new Map(); filteredMembers.forEach(m => { const org = (m.affiliation && m.affiliation.trim()) ? m.affiliation.trim() : "(No affiliation)"; if (!byOrg.has(org)) byOrg.set(org, []); byOrg.get(org).push(m); }); const EST_NODE_WIDTH = 190, EST_NODE_HEIGHT = 46; const orgs = []; for (const [org, arr] of byOrg.entries()) { const n = arr.length || 1; const minRingR = Math.max(120, (n * EST_NODE_WIDTH * 1.15) / (2 * Math.PI)); const ringR = minRingR; const bubbleR = ringR + EST_NODE_HEIGHT * 0.9 + 18; orgs.push({ name: org, members: arr, ringR, bubbleR }); } orgs.sort((a, b) => b.bubbleR - a.bubbleR); const GAP = 60; const totalArc = orgs.reduce((s, o) => s + (2 * o.bubbleR + GAP), 0); const requiredR = totalArc / (2 * Math.PI); const maxAllowedR = Math.min(width, height) / 2 - (Math.max(...orgs.map(o => o.bubbleR)) + margin); const baseR = Math.max(180, Math.min(requiredR, maxAllowedR)); let theta = 0; const orgPositions = new Map(); const seed = seededRandom(hashStr([...byOrg.keys()].join("|"))); const startOffset = seed() * Math.PI * 2; orgs.forEach(o => { const arc = (2 * o.bubbleR + GAP) / (totalArc || 1) * (Math.PI * 2); const ang = startOffset + theta + arc / 2; const x = cx + Math.cos(ang) * baseR; const y = cy + Math.sin(ang) * baseR; orgPositions.set(o.name, { x, y, ringR: o.ringR, bubbleR: o.bubbleR }); theta += arc; }); const MAX_ITERS = 80; for (let k = 0; k < MAX_ITERS; k++) { let moved = false; for (let i = 0; i < orgs.length; i++) { for (let j = i + 1; j < orgs.length; j++) { const oi = orgs[i], oj = orgs[j]; const pi = orgPositions.get(oi.name), pj = orgPositions.get(oj.name); const dx = pj.x - pi.x, dy = pj.y - pi.y; const dist = Math.hypot(dx, dy) || 1; const minD = oi.bubbleR + oj.bubbleR + 12; if (dist < minD) { const push = (minD - dist) / 2; const ux = dx / dist, uy = dy / dist; pi.x -= ux * push; pi.y -= uy * push; pj.x += ux * push; pj.y += uy * push; moved = true; } } } for (const o of orgs) { const p = orgPositions.get(o.name); p.x = clamp(p.x, margin + o.bubbleR, width - margin - o.bubbleR); p.y = clamp(p.y, margin + o.bubbleR, height - margin - o.bubbleR); } if (!moved) break; } const positions = new Map(); for (const o of orgs) { const P = orgPositions.get(o.name); positions.set(`org-${o.name}`, { x: P.x, y: P.y, ringR: P.ringR }); } for (const o of orgs) { const P = orgPositions.get(o.name); const n = o.members.length; if (n === 1) { const ang = (seededRandom(hashStr(o.name))() * Math.PI * 2); positions.set(o.members[0].id, { x: P.x + Math.cos(ang) * (P.ringR), y: P.y + Math.sin(ang) * (P.ringR) }); continue; } const start = seededRandom(hashStr(o.name + n))() * Math.PI * 2; const stepByCapacity = (2 * Math.PI) / n; const stepBySize = (EST_NODE_WIDTH * 1.05) / P.ringR; const step = Math.max(stepByCapacity, stepBySize); for (let i = 0; i < n; i++) { const ang = start + i * step; const x = P.x + Math.cos(ang) * P.ringR; const y = P.y + Math.sin(ang) * P.ringR; positions.set(o.members[i].id, { x, y }); } } state.positions = positions; return positions; }
-    async function renderGraph(filteredMembers, positions) { const nodesContainer = $('#networkNodes'); const svg = $('#networkConnections'); nodesContainer.innerHTML = ''; while (svg.firstChild) svg.removeChild(svg.firstChild); state.nodes.clear(); state.orgNodes.clear(); const { width, height } = nodesContainer.getBoundingClientRect(); svg.setAttribute('viewBox', `0 0 ${width} ${height}`); const degree = new Map(); const visible = new Set(filteredMembers.map(m => m.id)); for (const c of state.connections) { if (!visible.has(c.source) || !visible.has(c.target)) continue; degree.set(c.source, (degree.get(c.source) || 0) + 1); degree.set(c.target, (degree.get(c.target) || 0) + 1); } const orgsInView = new Set(filteredMembers.map(m => (m.affiliation && m.affiliation.trim()) ? m.affiliation.trim() : "(No affiliation)")); for (const org of orgsInView) { const pos = positions.get(`org-${org}`); if (!pos) continue; const nodeDiv = document.createElement('div'); nodeDiv.className = 'network-node org-node'; nodeDiv.style.left = pos.x + 'px'; nodeDiv.style.top = pos.y + 'px'; nodeDiv.innerHTML = `<div class="node-pill"><div class="org-label">${org}</div></div>`; nodeDiv.addEventListener('click', (e) => { e.stopPropagation(); $('#searchInput').value = org; onFiltersChanged(); }); nodesContainer.appendChild(nodeDiv); state.orgNodes.set(org, { element: nodeDiv, position: pos }); } for (const m of filteredMembers) { const mp = positions.get(m.id); const org = (m.affiliation && m.affiliation.trim()) ? m.affiliation.trim() : "(No affiliation)"; const op = positions.get(`org-${org}`); if (!mp || !op) continue; const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('class', 'network-edge affiliation'); p.setAttribute('d', `M ${mp.x} ${mp.y} L ${op.x} ${op.y}`); svg.appendChild(p); } for (const m of filteredMembers) { const pos = positions.get(m.id); if (!pos) continue; const nodeDiv = document.createElement('div'); nodeDiv.className = 'network-node'; nodeDiv.style.left = pos.x + 'px'; nodeDiv.style.top = pos.y + 'px'; nodeDiv.dataset.id = m.id; const pill = document.createElement('div'); pill.className = 'node-pill'; const d = degree.get(m.id) || 0; pill.style.borderWidth = (2 + Math.min(2, Math.floor(d / 4))) + 'px'; const avatar = document.createElement('div'); avatar.className = 'node-avatar'; avatar.textContent = (m.full_name || '?').charAt(0).toUpperCase(); if (m.avatar_url) { const url = await getAvatarUrl(m.avatar_url); if (url) avatar.innerHTML = `<img src="${url}" alt="${m.full_name}">`; } const info = document.createElement('div'); info.className = 'node-info'; info.innerHTML = `<div class="node-name">${m.full_name || 'Unknown'}</div>${m.affiliation ? `<div class="node-affiliation">${m.affiliation}</div>` : ''}`; pill.appendChild(avatar); pill.appendChild(info); nodeDiv.appendChild(pill); nodeDiv.addEventListener('click', () => selectNode(m, { center: true, openModal: true })); nodesContainer.appendChild(nodeDiv); state.nodes.set(m.id, { element: nodeDiv, position: pos, member: m }); } }
-    function selectNode(member, opts = {}) { $$('.network-node.selected').forEach(n => n.classList.remove('selected')); const node = state.nodes.get(member.id); if (!node) return; node.element.classList.add('selected'); state.selectedNode = node; if (opts.center) centerOn(node.position); if (opts.openModal) openProfileModal(member); }
-    function centerOn(pos) { const container = $('#network-container'); const rect = container.getBoundingClientRect(); const targetX = rect.width / 2 - pos.x * state.zoom; const targetY = rect.height / 2 - pos.y * state.zoom; state.panOffset.x = targetX; state.panOffset.y = targetY; applyCanvasTransform(); }
-    function applyCanvasTransform() { $('#networkCanvas').style.transform = `translate(${state.panOffset.x}px, ${state.panOffset.y}px) scale(${state.zoom})`; }
-    async function openProfileModal(member) { const modal = $('#profileModal'), overlay = $('#modalOverlay'); $('#modalName').textContent = member.full_name || 'Unknown'; $('#modalAffiliation').textContent = member.affiliation || 'No affiliation'; const avatarInitial = $('#modalAvatarInitial'), avatarImage = $('#modalAvatarImage'); avatarInitial.textContent = (member.full_name || '?').charAt(0).toUpperCase(); hide(avatarImage); show(avatarInitial); if (member.avatar_url) { const url = await getAvatarUrl(member.avatar_url); if (url) { avatarImage.src = url; show(avatarImage); hide(avatarInitial); } } const emailSection = $('#modalEmailSection'); if (member.work_email) { const a = $('#modalEmail'); a.href = `mailto:${member.work_email}`; a.querySelector('.email-text').textContent = member.work_email; show(emailSection); } else hide(emailSection); const links = $('#modalLinks'); links.innerHTML = ''; let hasLinks = false; [['personal_website', 'Personal Website', '🏠'], ['professional_website', 'Professional Website', '🏛️'], ['google_scholar', 'Google Scholar', '🎓']].forEach(([k, label, icon]) => { if (member[k]) { hasLinks = true; links.insertAdjacentHTML('beforeend', `<a href="${member[k]}" target="_blank" rel="noopener noreferrer" class="modal-link"><span>${icon}</span><span>${label}</span></a>`); } }); $('#modalLinksSection').style.display = hasLinks ? 'block' : 'none'; const fieldsContainer = $('#modalFields'); const tags = Array.from(gatherPersonCanonicalTags(member.id)); if (tags.length) { fieldsContainer.innerHTML = tags.map(t => `<span class="modal-tag">${state.allCanonicalToDisplay.get(t) || t}</span>`).join(''); $('#modalFieldsSection').style.display = 'block'; } else { fieldsContainer.innerHTML = ''; $('#modalFieldsSection').style.display = 'none'; } const connectedNames = new Set(state.connections.filter(c => c.source === member.id || c.target === member.id).map(c => c.source === member.id ? c.target : c.source).map(id => state.profileById.get(id)?.full_name).filter(Boolean)); const connectionsContainer = $('#modalConnections'); connectionsContainer.innerHTML = connectedNames.size ? [...connectedNames].slice(0, 6).map(n => `<span class="modal-tag">${n}</span>`).join('') + (connectedNames.size > 6 ? `<span class="modal-tag">+${connectedNames.size - 6} more</span>` : '') : '<span style="color: var(--text-secondary);">No connections yet</span>'; overlay.classList.add('active'); modal.classList.add('active'); }
-    function closeProfileModal() { $('#modalOverlay').classList.remove('active'); $('#profileModal').classList.remove('active'); }
-    function renderTable(allMembers) { const tbody = $('#members-table-body'); const q = state.searchQuery.trim().toLowerCase(); tbody.innerHTML = ''; allMembers.forEach(m => { const tr = document.createElement('tr'); const safeInterests = (m.fields_of_study || '').replace(/,/g, ', '); const isSpeaker = state.isSpeaker.has(m.id); tr.innerHTML = `<td>${highlight(m.full_name || 'N/A', q)}</td><td>${highlight(m.affiliation || 'N/A', q)}</td><td>${safeInterests ? highlight(safeInterests, q) : '<span style="color: var(--text-secondary)">—</span>'}</td><td>${["organizer", "admin"].includes(m.role) ? '<span class="badge">Organizer</span> ' : ''}${isSpeaker ? '<span class="badge speaker">Speaker</span>' : '<span class="badge">Member</span>'}</td>`; tr.addEventListener('click', () => selectNode(m, { center: true, openModal: true })); tbody.appendChild(tr); }); }
-    const updateViews = debounce(async function () { state.searchQuery = $('#searchInput').value; const filteredMembers = getFilteredMembers(); renderTable(filteredMembers); const container = $('#network-container'); if (container.offsetWidth === 0 || container.offsetHeight === 0) return; state.positions = calculateNodePositions(filteredMembers, container); await renderGraph(filteredMembers, state.positions); const orgs = new Set(filteredMembers.map(m => m.affiliation).filter(Boolean)); $('#statMembers').textContent = filteredMembers.length; let connCount = 0; const visible = new Set(filteredMembers.map(m => m.id)); for (const c of state.connections) if (visible.has(c.source) && visible.has(c.target)) connCount++; $('#statConnections').textContent = connCount; $('#statOrgs').textContent = orgs.size; state.lastFilteredIds = new Set(filteredMembers.map(m => m.id)); }, 50);
-    function onFiltersChanged() { updateTagSelectionsUI(); updateViews(); }
-    function setupPageEventListeners() { $$('[data-role]').forEach(chip => { chip.addEventListener('click', () => { $$('[data-role]').forEach(c => c.classList.remove('active')); chip.classList.add('active'); state.roleFilter = chip.dataset.role; onFiltersChanged(); }); }); $('#eventFilter').addEventListener('change', e => { state.eventFilterId = e.target.value; onFiltersChanged(); }); $('#clearFiltersBtn').addEventListener('click', () => { state.roleFilter = "all"; state.eventFilterId = "all"; state.selectedTags.clear(); state.searchQuery = ""; $$('[data-role]').forEach(b => b.classList.toggle('active', b.dataset.role === "all")); $('#eventFilter').value = 'all'; $('#searchInput').value = ""; onFiltersChanged(); }); const allTh = $$('th[data-sort]'); allTh.forEach(th => { th.addEventListener('click', () => { const key = th.dataset.sort; if (state.sort.key === key) { state.sort.dir = (state.sort.dir === 'asc' ? 'desc' : 'asc'); } else { state.sort.key = key; state.sort.dir = 'asc'; } allTh.forEach(h => h.classList.remove('sort-asc', 'sort-desc')); th.classList.add(state.sort.dir === 'asc' ? 'sort-asc' : 'sort-desc'); updateViews(); }); }); $(`th[data-sort="${state.sort.key}"]`)?.classList.add('sort-asc'); $('#modalCloseBtn')?.addEventListener('click', closeProfileModal); $('#modalOverlay')?.addEventListener('click', closeProfileModal); const canvasContainer = $('#network-container'); let isPanning = false, startX = 0, startY = 0; canvasContainer.addEventListener('mousedown', (e) => { if (e.target.closest('#network-container') && !e.target.closest('.network-node')) { isPanning = true; startX = e.clientX - state.panOffset.x; startY = e.clientY - state.panOffset.y; canvasContainer.style.cursor = 'grabbing'; } }); canvasContainer.addEventListener('mousemove', (e) => { if (!isPanning) return; state.panOffset.x = e.clientX - startX; state.panOffset.y = e.clientY - startY; applyCanvasTransform(); }); const endPan = () => { isPanning = false; canvasContainer.style.cursor = 'default'; }; canvasContainer.addEventListener('mouseup', endPan); canvasContainer.addEventListener('mouseleave', endPan); canvasContainer.addEventListener('wheel', (e) => { e.preventDefault(); const delta = e.deltaY > 0 ? 0.9 : 1.1; const prev = state.zoom; state.zoom = clamp(prev * delta, 0.5, 2.2); const rect = canvasContainer.getBoundingClientRect(); const cx = e.clientX - rect.left, cy = e.clientY - rect.top; state.panOffset.x = cx - (cx - state.panOffset.x) * (state.zoom / prev); state.panOffset.y = cy - (cy - state.panOffset.y) * (state.zoom / prev); applyCanvasTransform(); }); $('#resetViewBtn').addEventListener('click', () => { state.zoom = 1; state.panOffset = { x: 0, y: 0 }; applyCanvasTransform(); }); setupAutocomplete(); new ResizeObserver(() => updateViews()).observe($('#network-container')); }
-    
-    // --- MAIN EXECUTION ---
-    (async function main() {
-        initSharedUI({ onLangSwitch: () => { state.lang = state.lang === 'en' ? 'es' : 'en'; localStorage.setItem('lang', state.lang); applyI18n(t, state.lang); }, onSignOut: signOut });
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            $('#signinGate').style.display = 'grid';
-            $('.page-content').style.display = 'none';
-            $('#loadingScreen').classList.add('hidden');
-            await initAuth({ onAuthReady: () => renderHeader(authState, t, state.lang), onAuthChange: () => window.location.reload() });
-            return;
+
+    function populateTagFilters() {
+        const c = $('#tagFilters'); c.innerHTML = '';
+        Array.from(state.tagCounts.entries()).sort((a,b)=>b[1]-a[1]).slice(0,50).forEach(([tag, count]) => {
+           const row = document.createElement('div');
+           row.className = 'flex items-center justify-between px-2 py-1 hover:bg-gray-50 rounded cursor-pointer group';
+           const isSel = state.selectedTags.has(tag);
+           row.innerHTML = `<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-sm border ${isSel?'bg-brand-500 border-brand-500':'border-gray-300'} flex items-center justify-center">${isSel?'<svg width="8" height="8" viewBox="0 0 24 24" stroke="white" stroke-width="4" fill="none"><polyline points="20 6 9 17 4 12"/></svg>':''}</div><span class="text-xs text-slate-600">${state.allCanonicalToDisplay.get(tag)}</span></div><span class="text-[10px] text-slate-300 font-bold">${count}</span>`;
+           row.onclick = () => { if(isSel) state.selectedTags.delete(tag); else state.selectedTags.add(tag); onFiltersChanged(); };
+           c.appendChild(row);
+        });
+        
+        const selC = $('#selectedTagsContainer'); selC.innerHTML = '';
+        state.selectedTags.forEach(t => selC.insertAdjacentHTML('beforeend', `<span class="px-2 py-0.5 bg-brand-50 text-brand-700 border border-brand-100 rounded text-[10px] font-bold flex items-center gap-1">${state.allCanonicalToDisplay.get(t)} <button onclick="document.dispatchEvent(new CustomEvent('remTag',{detail:'${t}'}))">×</button></span>`));
+    }
+    document.addEventListener('remTag', e => { state.selectedTags.delete(e.detail); onFiltersChanged(); });
+
+    function calculatePositions(members) {
+        const byOrg = new Map();
+        members.forEach(m => {
+            const o = m.affiliation?.trim() || "Unaffiliated";
+            if(!byOrg.has(o)) byOrg.set(o, []);
+            byOrg.get(o).push(m);
+        });
+        
+        const orgs = [];
+        for(const [name, list] of byOrg.entries()) {
+            const n = list.length;
+            const ringR = Math.max(140, (n * 140) / (2 * Math.PI)); 
+            orgs.push({ name, list, ringR, bubbleR: ringR + 100 });
         }
-        await initAuth({ onAuthReady: () => renderHeader(authState, t, state.lang), onAuthChange: () => renderHeader(authState, t, state.lang) });
-        applyI18n(t, state.lang);
-        setupPageEventListeners();
-        await loadNetworkData();
-        await updateViews();
-        setTimeout(() => $('#loadingScreen').classList.add('hidden'), 400);
+        orgs.sort((a,b) => b.bubbleR - a.bubbleR);
+        
+        const pos = new Map();
+        let currentAngle = 0;
+        let currentDist = orgs.length > 0 ? orgs[0].bubbleR + 100 : 0; 
+        
+        orgs.forEach((o, i) => {
+            let ox, oy;
+            if (i === 0) {
+                ox = 0; oy = 0;
+            } else {
+                currentAngle += 2.4; 
+                currentDist += (o.bubbleR / 8) + 20; 
+                ox = Math.cos(currentAngle) * currentDist;
+                oy = Math.sin(currentAngle) * currentDist;
+            }
+            
+            pos.set(`org-${o.name}`, {x:ox, y:oy});
+            
+            if(o.list.length > 0) {
+                const step = (Math.PI * 2) / o.list.length;
+                o.list.forEach((m, j) => {
+                    const ma = step * j;
+                    const stagger = (j % 2 === 0) ? 0 : 40;
+                    const finalR = o.ringR + stagger;
+                    pos.set(m.id, { x: ox + Math.cos(ma) * finalR, y: oy + Math.sin(ma) * finalR });
+                });
+            }
+        });
+        return pos;
+    }
+
+    function renderGraph(members) {
+        const c = $('#network-container');
+        if(c.offsetWidth===0) return;
+        state.positions = calculatePositions(members);
+        
+        const svg = $('#networkConnections'); const nodes = $('#networkNodes');
+        svg.innerHTML = ''; nodes.innerHTML = '';
+        
+        new Set(members.map(m=>m.affiliation?.trim()||"Unaffiliated")).forEach(org => {
+            const p = state.positions.get(`org-${org}`);
+            if(!p || isNaN(p.x) || isNaN(p.y)) return;
+            const el = document.createElement('div'); el.className = 'network-node org-node';
+            el.style.left = p.x+'px'; el.style.top = p.y+'px';
+            el.innerHTML = `<div class="node-pill flex flex-col items-center justify-center bg-green-50 border border-green-200 text-green-800 px-4 py-2 gap-0 shadow-sm transition-all duration-200 min-w-[auto] rounded-full"><span class="org-label font-display font-bold text-sm text-center leading-tight">${org}</span></div>`;
+            el.onclick = (e) => { e.stopPropagation(); $('#searchInput').value=org; onFiltersChanged(); };
+            nodes.appendChild(el);
+        });
+        
+        let paths = '';
+        members.forEach(m => {
+            const mp = state.positions.get(m.id);
+            const op = state.positions.get(`org-${m.affiliation?.trim()||"Unaffiliated"}`);
+            if(mp && op && !isNaN(mp.x) && !isNaN(mp.y) && !isNaN(op.x) && !isNaN(op.y)) {
+                paths += `<path d="M ${mp.x} ${mp.y} L ${op.x} ${op.y}" class="network-edge"/>`;
+            }
+        });
+        svg.innerHTML = paths;
+        
+        members.forEach(m => {
+            const p = state.positions.get(m.id);
+            if(!p || isNaN(p.x) || isNaN(p.y)) return;
+            const el = document.createElement('div'); el.className = 'network-node';
+            el.style.left = p.x+'px'; el.style.top = p.y+'px';
+            el.innerHTML = `
+            <div class="node-pill flex items-center gap-3 pl-1 pr-4 py-1 bg-white border border-gray-200 rounded-full shadow-sm transition-all duration-200 min-w-[140px] group-hover:border-brand-400 group-hover:shadow-lg group-hover:ring-2 group-hover:ring-brand-100">
+                <div class="node-avatar w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-xs font-bold overflow-hidden shrink-0 ring-2 ring-white shadow-sm">
+                    ${(m.full_name||"?")[0]}
+                </div>
+                <div class="min-w-0">
+                    <span class="node-name text-xs font-bold text-slate-700 leading-tight block">${m.full_name}</span>
+                    ${m.affiliation ? `<span class="node-affiliation text-[9px] text-slate-400 leading-tight truncate max-w-[120px] block mt-0.5">${m.affiliation}</span>` : ''}
+                </div>
+            </div>`;
+            if(m.avatar_url) getAvatarUrl(m.avatar_url).then(u=>{if(u) el.querySelector('.node-avatar').innerHTML=`<img src="${u}" class="w-full h-full object-cover">`});
+            el.onclick = (e) => { e.stopPropagation(); openProfileModal(m); };
+            nodes.appendChild(el);
+        });
+        
+        fitGraph();
+    }
+
+    function fitGraph() {
+        const pts = Array.from(state.positions.values()).filter(p => !isNaN(p.x) && !isNaN(p.y));
+        if(!pts.length) return;
+        let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
+        pts.forEach(p=>{ if(p.x<minX)minX=p.x; if(p.x>maxX)maxX=p.x; if(p.y<minY)minY=p.y; if(p.y>maxY)maxY=p.y; });
+        
+        const w = maxX-minX + 300; 
+        const h = maxY-minY + 300;
+        const c = $('#network-container');
+        const scale = Math.min(c.offsetWidth/w, c.offsetHeight/h, 1.2);
+        
+        if(isFinite(scale)) {
+            state.zoom = scale;
+            state.panOffset.x = (c.offsetWidth/2) - ((minX+maxX)/2)*scale;
+            state.panOffset.y = (c.offsetHeight/2) - ((minY+maxY)/2)*scale;
+            updateTransform();
+        }
+    }
+    
+    function updateTransform() {
+        $('#networkCanvas').style.transform = `translate(${state.panOffset.x}px, ${state.panOffset.y}px) scale(${state.zoom})`;
+    }
+
+    function getFiltered() {
+        let ids = new Set(state.members.map(m=>m.id));
+        if(state.roleFilter === 'speakers') ids = new Set([...ids].filter(id => state.isSpeaker.has(id)));
+        else if(state.roleFilter === 'organizers') ids = new Set([...ids].filter(id => ['organizer','admin'].includes(state.profileById.get(id).role)));
+        
+        if(state.eventFilterId !== 'all') {
+             ids = new Set([...ids].filter(id => state.speakersByProfileId.get(id)?.has(state.eventFilterId)));
+        }
+        
+        if(state.searchQuery) {
+            const q = state.searchQuery.toLowerCase();
+            ids = new Set([...ids].filter(id => {
+                const m = state.profileById.get(id);
+                return (m.full_name||'').toLowerCase().includes(q) || (m.affiliation||'').toLowerCase().includes(q);
+            }));
+        }
+        
+        if(state.selectedTags.size > 0) {
+             ids = new Set([...ids].filter(id => {
+                 for(const t of state.selectedTags) if(state.tagIndex.get(t)?.has(id)) return true;
+                 return false;
+             }));
+        }
+        
+        const res = [...ids].map(id => state.profileById.get(id));
+        const k = state.sort.key; const d = state.sort.dir === 'asc' ? 1 : -1;
+        res.sort((a,b) => (a[k==='name'?'full_name':k]||"").localeCompare(b[k==='name'?'full_name':k]||"") * d);
+        return res;
+    }
+
+    function renderTable(list) {
+        $('#members-table-body').innerHTML = list.map(m => {
+            const isSp = state.isSpeaker.has(m.id);
+            const isOrg = ['organizer','admin'].includes(m.role);
+            return `<tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="document.dispatchEvent(new CustomEvent('openProfile',{detail:'${m.id}'}))">
+              <td class="py-2.5 px-6 border-b border-gray-50 font-medium text-slate-900">${highlight(m.full_name, state.searchQuery)}</td>
+              <td class="py-2.5 px-6 border-b border-gray-50 text-slate-500 hidden md:table-cell">${highlight(m.affiliation, state.searchQuery)}</td>
+              <td class="py-2.5 px-6 border-b border-gray-50 text-slate-400 truncate max-w-xs hidden lg:table-cell">${m.fields_of_study||'—'}</td>
+              <td class="py-2.5 px-6 border-b border-gray-50 text-xs space-x-1">
+                 ${isOrg ? '<span class="px-2 py-0.5 rounded bg-brand-50 text-brand-700 font-bold border border-brand-100">Host</span>' : ''}
+                 ${isSp ? '<span class="px-2 py-0.5 rounded bg-orange-50 text-orange-700 font-bold border border-orange-100">Speaker</span>' : ''}
+                 ${!isOrg && !isSp ? '<span class="px-2 py-0.5 rounded bg-gray-100 text-slate-500 font-bold border border-gray-200">Member</span>' : ''}
+              </td>
+            </tr>`;
+        }).join('');
+    }
+    document.addEventListener('openProfile', e => openProfileModal(state.profileById.get(e.detail)));
+
+    function onFiltersChanged() {
+        state.searchQuery = $('#searchInput').value;
+        populateTagFilters();
+        const list = getFiltered();
+        renderTable(list);
+        renderGraph(list);
+    }
+
+    async function openProfileModal(m) {
+        if(!m) return;
+        const modal = $('#profileModal'), over = $('#modalOverlay');
+        $('#modalName').innerText = m.full_name;
+        $('#modalAffiliation').innerText = m.affiliation || 'No affiliation';
+        $('#modalAvatarInitial').innerText = m.full_name[0];
+        hide($('#modalAvatarImage')); show($('#modalAvatarInitial'));
+        if(m.avatar_url) getAvatarUrl(m.avatar_url).then(u=>{if(u){ $('#modalAvatarImage').src=u; show($('#modalAvatarImage')); hide($('#modalAvatarInitial'));}});
+        
+        if(m.work_email) { $('#modalEmail').href=`mailto:${m.work_email}`; $('.email-text').innerText=m.work_email; show($('#modalEmailSection')); } else hide($('#modalEmailSection'));
+        
+        const ld = $('#modalLinks'); ld.innerHTML=''; let hl=false;
+        [['personal_website','Website','globe'],['professional_website','Work','building'],['google_scholar','Scholar','graduation-cap']].forEach(([k,l,i])=>{
+             if(m[k]) { hl=true; ld.insertAdjacentHTML('beforeend', `<a href="${m[k]}" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-brand-50 hover:border-brand-300 transition-all group"><span class="flex items-center gap-2 text-sm font-medium text-slate-700"><i data-lucide="${i}" class="w-4 h-4 text-slate-400 group-hover:text-brand-500"></i> ${l}</span><i data-lucide="external-link" class="w-3 h-3 text-slate-300"></i></a>`); }
+        });
+        if(hl) { show($('#modalLinksSection')); lucide.createIcons(); } else hide($('#modalLinksSection'));
+        
+        const fd = $('#modalFields'); fd.innerHTML='';
+        const tags = new Set(); for(const [t,s] of state.tagIndex) if(s.has(m.id)) tags.add(state.allCanonicalToDisplay.get(t));
+        if(tags.size) { tags.forEach(t=>fd.insertAdjacentHTML('beforeend', `<span class="px-2 py-1 rounded bg-gray-100 text-slate-600 text-xs font-bold border border-gray-200">${t}</span>`)); show($('#modalFieldsSection')); } else hide($('#modalFieldsSection'));
+        
+        show(over); show(modal);
+        requestAnimationFrame(()=>{ over.classList.remove('opacity-0','pointer-events-none'); modal.classList.remove('opacity-0','pointer-events-none','scale-95'); });
+    }
+
+    (async function() {
+        initSharedUI({ onLangSwitch: () => location.reload(), onSignOut: signOut });
+        document.addEventListener('click', e => {
+        if (e.target.closest('#btnProfile') || e.target.closest('#userName')) {
+            window.location.href = 'profile.html';
+        }
+    });
+        await initAuth({
+            onAuthReady: async () => {
+                renderHeader(authState, t, state.lang);
+                if (!authState.session) {
+                     $('#signinGate').style.display='flex';
+                     $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
+                } else {
+                     $('#signinGate').style.display='none';
+                     applyI18n(t, state.lang);
+                     await loadNetworkData();
+                     $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
+                }
+            },
+            onAuthChange: () => {
+                renderHeader(authState, t, state.lang);
+                if(!authState.session) location.reload(); 
+            }
+        });
+        
+        $$('[data-role]').forEach(b => b.onclick = e => {
+             $$('[data-role]').forEach(x => { x.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"; });
+             e.target.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white";
+             state.roleFilter = e.target.dataset.role; onFiltersChanged();
+        });
+        
+        $('#eventFilter').onchange = e => { state.eventFilterId = e.target.value; onFiltersChanged(); };
+        $('#searchInput').oninput = debounce(onFiltersChanged);
+        $('#clearFiltersBtn').onclick = () => { state.searchQuery=''; $('#searchInput').value=''; state.selectedTags.clear(); $('[data-role="all"]').click(); $('#eventFilter').value='all'; state.eventFilterId='all'; };
+        $('#resetViewBtn').onclick = fitGraph;
+        $('#modalCloseBtn').onclick = $('#modalOverlay').onclick = () => { 
+             $('#modalOverlay').classList.add('opacity-0','pointer-events-none'); 
+             $('#profileModal').classList.add('opacity-0','pointer-events-none','scale-95'); 
+             setTimeout(()=>{hide($('#profileModal'));hide($('#modalOverlay'))},300); 
+        };
+        
+        // Canvas Interaction (Mouse + Touch)
+        const cv = $('#network-container'); let drag=false, sx=0, sy=0;
+        cv.onmousedown = e => { if(e.target.id==='networkCanvas' || e.target===cv) { drag=true; sx=e.clientX-state.panOffset.x; sy=e.clientY-state.panOffset.y; cv.style.cursor='grabbing'; }};
+        window.onmousemove = e => { if(drag) { state.panOffset.x=e.clientX-sx; state.panOffset.y=e.clientY-sy; updateTransform(); }};
+        window.onmouseup = () => { drag=false; cv.style.cursor='grab'; };
+        cv.onwheel = e => { e.preventDefault(); const s = e.deltaY>0?0.9:1.1; state.zoom = clamp(state.zoom*s, 0.1, 5); updateTransform(); };
+        cv.ontouchstart = e => { if(e.target.id==='networkCanvas' || e.target===cv) { drag=true; sx = e.touches[0].clientX - state.panOffset.x; sy = e.touches[0].clientY - state.panOffset.y; }};
+        cv.ontouchmove = e => { if(drag) { e.preventDefault(); state.panOffset.x = e.touches[0].clientX - sx; state.panOffset.y = e.touches[0].clientY - sy; updateTransform(); }};
+        cv.ontouchend = () => { drag = false; };
+
+        lucide.createIcons();
     })();
   </script>
 </body>
-
 </html>

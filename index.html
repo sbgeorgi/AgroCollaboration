@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-white">
+<html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
   <meta charset="UTF-8">
@@ -13,553 +13,424 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Lato:wght@400;700&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="styles.css">
 
   <!-- External Tailwind Config -->
-  <script src="tailwind.config.js"></script>
+  <script src="theme.js"></script>
   
   <!-- Custom CSS -->
   <style type="text/tailwindcss">
     @layer utilities {
-            .no-scrollbar::-webkit-scrollbar { display: none; }
-            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-            .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-            .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-            .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-            .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #a8b2c1; }
-        }
-        html, body { height: 100%; overflow: hidden; }
-        @supports (-webkit-touch-callout: none) {
-            .h-screen { height: -webkit-fill-available; }
-        }
-        .cubic-bezier { transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1); }
-        #flash {
-            position: fixed;
-            top: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-150%);
-            background-color: #0f172a; /* slate-900 */
-            color: white;
-            padding: 12px 24px;
-            border-radius: 9999px;
-            font-weight: 600;
-            z-index: 1000;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-        #flash.visible {
-            transform: translateX(-50%) translateY(0);
-        }
-    </style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+      .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; border: 2px solid transparent; background-clip: content-box; }
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+    .cubic-bezier { transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1); }
+    
+    #flash {
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-150%);
+        background-color: #0f172a;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 9999px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        z-index: 9999;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        display: flex; align-items: center; gap: 8px; opacity: 0;
+    }
+    #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+    
+    /* Markdown Styles */
+    .prose p { margin-bottom: 1em; line-height: 1.6; color: #334155; }
+    .prose ul { list-style-type: disc; padding-left: 1.2em; margin-bottom: 1em; }
+    .prose h1, .prose h2, .prose h3 { color: #0f172a; font-weight: 700; margin-top: 1.2em; margin-bottom: 0.5em; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .prose a { color: #0369a1; text-decoration: underline; text-decoration-color: #bae6fd; text-underline-offset: 2px; }
+  </style>
+
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-200 selection:text-brand-900">
-
-  <!-- ================= HEADER ================= -->
-  <header class="site-header">
-    <div class="container header-grid">
-      <a href="index.html" class="brand">
-        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
-        <div class="brand-text">
-          <div class="title">Agrovoltaicos sin Fronteras</div>
-          <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas
-          </div>
-        </div>
-      </a>
-      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
-      <!-- Desktop Nav -->
-      <nav class="nav">
-        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-        <a href="about.html" class="link" data-i18n="nav.about">About</a>
-        <a href="network.html" class="link" data-i18n="nav.network">Network</a>
-        <a href="map.html" class="link" data-i18n="nav.map">Map</a>
-        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-        <div class="divider"></div>
-        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-          <span>EN</span>
-          <span>ES</span>
-        </div>
-        <div class="auth-area">
-          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile"
-            onclick="window.location.href='profile.html'">
-            <span id="userInitial"></span>
-            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;"
-              alt="User Avatar" />
-          </button>
-          <span id="userName" style="display: none;"></span>
-          <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
-          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
-            Sign out
-          </button>
-        </div>
-      </nav>
-    </div>
-  </header>
-
-  <!-- ================= MOBILE MENU OVERLAY ================= -->
-  <div id="mobileNavOverlay" class="mobile-nav-overlay">
-    <div class="mobile-nav-content"><!-- Injected by JS --></div>
-  </div>
+<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
   <!-- ================= MAIN APP CONTAINER ================= -->
   <main class="flex-1 relative overflow-hidden bg-gray-50">
 
     <!-- ================= VIEW: SCHEDULE (Default) ================= -->
-    <div id="view-schedule"
-      class="absolute inset-0 flex flex-col overflow-hidden transition-all duration-500 cubic-bezier">
+    <div id="view-schedule" class="absolute inset-0 flex flex-col overflow-hidden transition-all duration-500 cubic-bezier transform translate-x-0 opacity-100">
       <div class="flex-1 overflow-y-auto custom-scrollbar">
-        <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-6 py-6">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 flex flex-col gap-6 py-6">
 
           <!-- ================= HERO SECTION ================= -->
-          <section id="hero-section"
-            class="relative overflow-hidden rounded-3xl bg-white p-6 border border-gray-200/80 shadow-sm">
-            <div class="relative z-10 flex flex-col gap-y-2">
-              <!-- Top row for Banner and Host Info -->
-              <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <a id="siteBanner" href="#"
-                  class="hidden items-center gap-2 bg-brand-50 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-medium text-brand-700 border border-brand-100 animate-fade-in w-fit max-w-full transition-colors hover:bg-brand-100">
-                  <span class="relative flex-none flex h-2.5 w-2.5"><span
-                      class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span><span
-                      class="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500"></span></span>
-                  <span id="bannerText" class="truncate"></span>
-                </a>
-                <div
-                  class="flex-none p-2 bg-gray-50 backdrop-blur-lg rounded-xl border border-gray-200 text-xs w-full md:w-auto">
-                  <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <div class="flex items-center gap-2 whitespace-nowrap">
-                      <div class="flex -space-x-2">
-                        <img src="static/b2ua.jpg" class="w-6 h-6 rounded-full object-cover border-2 border-white"
-                          alt="UA Logo">
-                        <img src="static/unam.png" class="w-6 h-6 rounded-full object-cover border-2 border-white"
-                          alt="UNAM Logo">
-                      </div>
-                      <span class="text-slate-600 font-medium">Hosted by UA & UNAM</span>
+          <section id="hero-section" class="relative overflow-hidden rounded-[1.25rem] bg-white border border-gray-200 shadow-sm group p-5 md:p-6">
+             <div class="absolute inset-0 opacity-[0.02]" style="background-image: radial-gradient(#0369a1 1px, transparent 1px); background-size: 20px 20px;"></div>
+            
+            <div class="relative z-10 flex flex-col">
+              <div class="flex flex-col-reverse md:flex-row md:items-start justify-between gap-6">
+                <div class="flex-1 pt-1">
+                   <!-- Live Banner -->
+                   <a id="siteBanner" href="#" class="hidden inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm pl-2 pr-3 py-1 rounded-full text-[11px] font-semibold text-brand-700 border border-brand-100 shadow-sm hover:border-brand-300 transition-all mb-3">
+                    <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span></span>
+                    <span id="bannerText" class="truncate max-w-[350px]"></span>
+                  </a>
+                  
+                  <h2 class="font-display font-bold text-2xl md:text-3xl text-slate-900 tracking-tight mb-2" data-i18n="intro.title">
+                    Agrovoltaicos <span class="text-brand-600">sin Fronteras</span>
+                  </h2>
+                  <p class="text-slate-500 text-sm leading-relaxed max-w-3xl">
+                    A participatory seminar series presenting the latest advances in agrivoltaics research and development across the Americas.
+                  </p>
+                </div>
+
+                <!-- Host Card (Updated Logos) -->
+                <div class="flex-none self-start bg-slate-50/50 rounded-lg border border-gray-100 p-2.5 flex items-center gap-3">
+                    <div class="flex -space-x-2">
+                      <img src="static/b2ua.jpg" class="w-7 h-7 rounded-full border border-white object-cover" alt="UA">
+                      <img src="static/unam.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white" alt="UNAM">
+                      <img src="static/aal.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white" alt="AAL">
+                      <img src="static/rame.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white" alt="RAME">
                     </div>
-                    <div class="flex items-center gap-x-3 text-slate-500">
-                      <span class="flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="clock"
-                          class="w-3.5 h-3.5"></i> Bi-monthly Seminars</span>
-                      <span class="flex items-center gap-1.5 whitespace-nowrap"><i data-lucide="video"
-                          class="w-3.5 h-3.5"></i> Online via Zoom</span>
+                    <div class="flex flex-col">
+                      <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Hosted By</span>
+                      <span class="text-[10px] font-bold text-slate-700">UA, UNAM, AAL & RAME</span>
                     </div>
-                  </div>
+                    <div class="w-px h-6 bg-gray-200 mx-1 hidden sm:block"></div>
+                    <div class="hidden sm:flex flex-col justify-center">
+                         <div class="text-[10px] font-medium text-slate-500 flex items-center gap-1.5"><i data-lucide="video" class="w-3 h-3"></i> Bi-monthly Seminar</div>
+                    </div>
                 </div>
               </div>
-
-              <h2 class="font-display font-bold text-2xl md:text-3xl leading-tight text-brand-700"
-                data-i18n="intro.title">
-                Agrovoltaicos sin Fronteras
-              </h2>
-              <p class="text-slate-700 text-sm leading-relaxed">
-                Agrovoltaicos sin Fronteras is a participatory seminar series presenting the latest advances in
-                agrivoltaics research and development across the Americas and beyond. We welcome researchers,
-                practitioners, students and anyone interested in agrivoltaics to join us for bi-weekly seminars and
-                discussions. Seminars are bilingual (English and/or Spanish) and take place on zoom. Register to join
-                the seminars or continue the discussion in the members forum!
-              </p>
             </div>
           </section>
-          <!-- ================= END HERO SECTION ================= -->
 
+          <!-- ================= CONTENT AREA ================= -->
+          <section class="flex flex-col gap-4 flex-1 min-h-0 pb-10">
+            <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
+              <h3 class="font-display font-bold text-lg text-slate-800 self-start md:self-center" data-i18n="schedule.title">Upcoming Talks</h3>
 
-          <section class="bg-white rounded-[2.5rem] border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-            <div
-              class="p-3 md:px-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-20">
-              <h3 class="font-display font-bold text-2xl text-brand-700 self-start md:self-center"
-                data-i18n="schedule.title">Upcoming Talks</h3>
-
-              <div class="flex items-center gap-3 w-full md:w-auto">
-                <div class="flex bg-gray-100 p-1.5 rounded-2xl">
-                  <button id="btn-view-list" class="p-2.5 rounded-xl bg-white text-brand-600 shadow-sm transition-all"
-                    aria-label="List View">
-                    <i data-lucide="list" class="w-5 h-5"></i>
-                  </button>
-                  <button id="btn-view-cal" class="p-2.5 rounded-xl text-slate-400 hover:text-slate-600 transition-all"
-                    aria-label="Calendar View">
-                    <i data-lucide="calendar" class="w-5 h-5"></i>
-                  </button>
+              <div class="flex items-center gap-2 w-full md:w-auto">
+                <div class="flex bg-white p-0.5 rounded-lg border border-gray-200 shadow-sm">
+                  <button id="btn-view-list" class="p-1.5 rounded bg-brand-50 text-brand-700 shadow-sm transition-all"><i data-lucide="list" class="w-4 h-4"></i></button>
+                  <button id="btn-view-cal" class="p-1.5 rounded text-slate-400 hover:text-slate-700 transition-all"><i data-lucide="calendar" class="w-4 h-4"></i></button>
                 </div>
-                <div class="relative flex-1 md:w-72">
-                  <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
-                  <input id="search" type="search"
-                    class="w-full pl-12 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-                    data-i18n-placeholder="search.placeholder">
+                <div class="relative flex-1 md:w-64">
+                  <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"></i>
+                  <input id="search" type="search" class="w-full pl-9 pr-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all" data-i18n-placeholder="search.placeholder">
                 </div>
               </div>
             </div>
 
-            <div id="eventsLoader" class="p-8 flex-1 flex items-center justify-center">
-              <div class="w-12 h-12 border-4 border-gray-200 border-t-brand-700 rounded-full animate-spin"></div>
-            </div>
+            <div id="eventsLoader" class="py-12 flex justify-center"><div class="w-6 h-6 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div></div>
 
-            <div id="content-area" class="p-3 md:p-4 bg-gray-50/50 flex-1 hidden">
-              <div id="schedule-list" class="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in"></div>
-              <div id="schedule-calendar"
-                class="hidden h-full flex flex-col bg-white rounded-3xl border border-gray-200 overflow-hidden animate-fade-in">
-                <div class="flex items-center justify-between p-4 border-b border-gray-100">
-                  <button id="calPrev" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="chevron-left"
-                      class="w-5 h-5"></i></button>
-                  <h4 id="calLabel" class="font-display font-bold text-lg">Month Year</h4>
-                  <button id="calNext" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="chevron-right"
-                      class="w-5 h-5"></i></button>
+            <div id="content-area" class="hidden flex-col gap-4">
+              <div id="schedule-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in"></div>
+              
+              <div id="schedule-calendar" class="hidden h-[600px] flex flex-col bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm animate-fade-in">
+                <div class="flex items-center justify-between p-3 border-b border-gray-100 bg-gray-50/50">
+                  <button id="calPrev" class="p-1 rounded hover:bg-white"><i data-lucide="chevron-left" class="w-5 h-5 text-slate-500"></i></button>
+                  <h4 id="calLabel" class="font-bold text-sm text-slate-800">Month Year</h4>
+                  <button id="calNext" class="p-1 rounded hover:bg-white"><i data-lucide="chevron-right" class="w-5 h-5 text-slate-500"></i></button>
                 </div>
-                <div class="grid grid-cols-7 bg-gray-50 border-b border-gray-100">
-                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Mon</div>
-                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Tue</div>
-                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Wed</div>
-                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Thu</div>
-                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Fri</div>
-                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Sat</div>
-                  <div class="py-2.5 text-center text-xs font-bold text-slate-400 uppercase">Sun</div>
-                </div>
-                <div id="calendarGrid" class="flex-1 grid grid-cols-7 bg-gray-100 gap-px"></div>
+                <div id="calendarGrid" class="flex-1 grid grid-cols-7 bg-gray-100 gap-px overflow-y-auto"></div>
               </div>
+
+              <div id="emptyEvents" class="hidden py-12 text-center text-slate-400 text-sm" data-i18n="schedule.empty">No events found.</div>
             </div>
-            <div id="emptyEvents" class="p-8 hidden flex-1 items-center justify-center text-slate-500"
-              data-i18n="schedule.empty">No events found.</div>
           </section>
-
         </div>
       </div>
     </div>
 
     <!-- ================= VIEW: DETAIL ================= -->
-    <div id="view-detail"
-      class="absolute inset-0 flex flex-col bg-gray-50/50 translate-x-full transition-transform duration-500 cubic-bezier z-20">
-      <div
-        class="flex-1 m-0 md:m-6 bg-white md:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border border-gray-200">
-
-        <div id="compactEventHeaderContainer"
-          class="flex-none p-4 md:p-6 border-b border-gray-100 bg-white flex items-center gap-6 sticky top-0 z-10">
-          <!-- Dynamic Event Header will be injected here -->
+    <div id="view-detail" class="absolute inset-0 flex flex-col bg-slate-900/10 backdrop-blur-[2px] translate-x-full transition-transform duration-500 cubic-bezier z-50">
+      <div class="absolute inset-0" onclick="document.getElementById('back-to-schedule')?.click()"></div>
+      <div class="relative flex-1 md:m-4 lg:mx-auto lg:max-w-[1400px] w-full bg-white md:rounded-xl shadow-2xl flex flex-col overflow-hidden border border-white/40 h-full">
+        
+        <!-- Sticky Header -->
+        <div id="compactEventHeaderContainer" class="flex-none p-4 border-b border-gray-100 bg-white z-20 sticky top-0"></div>
+        
+        <!-- Navigation -->
+        <div class="flex-none px-6 border-b border-gray-100 flex gap-6 bg-white">
+          <button class="tab-link py-3 text-xs font-bold text-brand-600 border-b-2 border-brand-500 uppercase tracking-wide" data-tab="description" data-i18n="tabs.description">Description</button>
+          <button class="tab-link py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent uppercase tracking-wide hover:text-slate-600" data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
+          <button class="tab-link py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent uppercase tracking-wide hover:text-slate-600" data-tab="files" data-i18n="tabs.files">Files</button>
         </div>
 
-        <div class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
-          <div class="flex-1 flex flex-col min-h-0 lg:flex-[2]">
-            <div class="flex-none px-6 border-b border-gray-100 flex gap-6 overflow-x-auto no-scrollbar bg-white">
-              <button class="tab-link py-4 font-semibold text-brand-700 border-b-[3px] border-brand-500"
-                data-tab="description" data-i18n="tabs.description">Description</button>
-              <button class="tab-link py-4 font-semibold text-slate-400 border-b-[3px] border-transparent"
-                data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
-              <button class="tab-link py-4 font-semibold text-slate-400 border-b-[3px] border-transparent"
-                data-tab="files" data-i18n="tabs.files">Files</button>
-            </div>
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30">
+          
+          <!-- DESCRIPTION TAB (Layout handled in JS) -->
+          <div id="tab_description" class="tab-panel animate-fade-in p-6 md:p-8"></div>
 
-            <div class="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30 p-6 md:p-10 relative">
-              <div id="tab_description"
-                class="tab-panel prose prose-lg prose-slate prose-headings:font-display prose-a:text-brand-700 max-w-3xl animate-fade-in">
-              </div>
-
-              <div id="tab_discussion" class="tab-panel hidden h-full flex flex-col animate-fade-in">
-                <div id="thread-welcome" class="text-center p-8">
-                  <h3 class="font-bold text-lg" data-i18n="discussion.welcome_title">Welcome!</h3>
-                  <p class="text-slate-600" data-i18n="discussion.welcome_body">Select a topic to begin.</p>
-                </div>
-                <div id="threadDetailView"
-                  class="hidden h-full flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                  <div id="commentsList" class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-gray-50">
-                  </div>
-                  <div class="p-4 bg-white border-t border-gray-100">
-                    <form id="replyToThreadForm" class="flex gap-2">
-                      <input type="text" placeholder="Write a comment..."
-                        class="flex-1 bg-gray-100 border-0 focus:ring-2 focus:ring-brand-500 rounded-xl px-4 py-3 transition-all"
-                        data-i18n-placeholder="comment.placeholder" required>
-                      <button type="submit"
-                        class="bg-brand-700 hover:bg-brand-800 text-white p-3 rounded-xl transition-colors active:scale-95"><i
-                          data-lucide="send" class="w-5 h-5"></i></button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-
-              <div id="tab_files" class="tab-panel hidden animate-fade-in max-w-3xl space-y-6">
-                <form id="uploadFormContainer">
-                  <label
-                    class="border-2 border-dashed border-gray-300 rounded-2xl p-10 flex flex-col items-center justify-center text-slate-500 hover:bg-gray-100/50 hover:border-brand-400 transition-all cursor-pointer group">
-                    <div
-                      class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                      <i data-lucide="upload-cloud"
-                        class="w-8 h-8 text-slate-400 group-hover:text-brand-500 transition-colors"></i>
+          <!-- DISCUSSION TAB -->
+          <div id="tab_discussion" class="tab-panel hidden h-full animate-fade-in p-0 lg:p-6">
+             <div class="flex flex-col lg:flex-row h-full lg:border lg:border-gray-200 lg:rounded-xl lg:bg-white lg:shadow-sm overflow-hidden">
+                <!-- Left: Topics -->
+                <div class="w-full lg:w-64 flex flex-col flex-shrink-0 bg-gray-50 border-b lg:border-b-0 lg:border-r border-gray-200 h-48 lg:h-auto">
+                    <div class="p-3 border-b border-gray-200 bg-white flex justify-between items-center">
+                        <h3 class="font-bold text-xs text-slate-500 uppercase">Topics</h3>
                     </div>
-                    <p class="font-medium text-slate-900" data-i18n="files.upload_label">Click to upload or drag & drop
-                    </p>
-                    <p class="text-sm" data-i18n="files.upload_hint">Max 10MB per file</p>
-                    <input id="fileInput" type="file" class="hidden" />
-                  </label>
-                </form>
-                <div id="filesList" class="space-y-3"></div>
-                <div id="emptyFiles" class="hidden p-8 text-center text-slate-500" data-i18n="files.empty">No files
-                  uploaded.</div>
-              </div>
-            </div>
+                    <div class="p-2 bg-gray-50 border-b border-gray-200">
+                        <form id="newThreadForm" class="flex gap-1">
+                            <input id="threadTitle" class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-brand-500 outline-none" placeholder="New Topic..." autocomplete="off">
+                            <button class="bg-brand-600 hover:bg-brand-700 text-white px-2 rounded text-lg font-bold shadow-sm leading-none pb-0.5">+</button>
+                        </form>
+                    </div>
+                    <div id="threadsList" class="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar"></div>
+                </div>
+
+                <!-- Right: Chat -->
+                <div class="flex-1 flex flex-col min-w-0 bg-white relative min-h-[400px]">
+                    <div id="thread-welcome" class="absolute inset-0 flex items-center justify-center text-slate-400 flex-col gap-2 p-6 text-center">
+                        <i data-lucide="message-square" class="w-8 h-8 opacity-20"></i>
+                        <p class="text-sm">Select a topic to view discussion.</p>
+                    </div>
+                    <div id="threadDetailView" class="hidden absolute inset-0 flex flex-col bg-white z-10">
+                        <div id="commentsList" class="flex-1 overflow-y-auto p-4 custom-scrollbar"></div>
+                        <div class="p-3 border-t border-gray-100 bg-gray-50">
+                            <form id="replyToThreadForm" class="flex gap-2">
+                                <input class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none shadow-sm" placeholder="Write a reply...">
+                                <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide shadow-sm transition-colors">Send</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+             </div>
           </div>
 
-          <div class="hidden lg:flex flex-col w-96 border-l border-gray-200 bg-white">
-            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h3 class="font-display font-bold text-slate-900" data-i18n="discussion.topics">Discussion Topics</h3>
-            </div>
-            <div class="p-4">
-              <form id="newThreadForm" class="flex gap-2">
-                <input id="threadTitle" type="text" required
-                  class="flex-1 bg-gray-100 border-0 focus:ring-2 focus:ring-brand-500 rounded-xl px-4 py-2 text-sm"
-                  data-i18n-placeholder="thread.placeholder">
-                <button type="submit"
-                  class="text-xs font-bold text-brand-700 bg-brand-50 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-colors"
-                  data-i18n="thread.create">+ New</button>
-              </form>
-            </div>
-            <div id="threadsList" class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2"></div>
+          <!-- FILES TAB -->
+          <div id="tab_files" class="tab-panel hidden animate-fade-in max-w-3xl mx-auto p-6 md:p-8">
+             <form id="uploadFormContainer">
+               <label class="block border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:bg-white hover:border-brand-300 transition-all">
+                 <i data-lucide="upload-cloud" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
+                 <span class="text-sm text-slate-500 font-medium">Click to Upload File</span>
+                 <input id="fileInput" type="file" class="hidden">
+               </label>
+             </form>
+             <div id="filesList" class="mt-6 space-y-3"></div>
+             <div id="emptyFiles" class="hidden text-center py-8 text-slate-400 text-sm">No files uploaded yet.</div>
           </div>
+
         </div>
       </div>
     </div>
   </main>
 
-  <!-- ================= FOOTER ================= -->
-  <footer class="site-footer">
-    <div class="container">
-      <small>
-        <div class="footer-text">
-          © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
-          <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
-        </div>
-        <div class="footer-logos">
-          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank"
-            rel="noopener noreferrer">
-            <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics">
-          </a>
-          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer">
-            <img src="static/unam.png" alt="UNAM">
-          </a>
-          <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana"
-            target="_blank" rel="noopener noreferrer">
-            <img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana" style="background-color: white;">
-          </a>
-          <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer">
-            <img src="static/rame.png" alt="Rame - Red Agrivoltaica de México" style="background-color: white;">
-          </a>
-        </div>
-      </small>
-    </div>
-  </footer>
-
-  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <!-- ================= LOGIC ================= -->
   <script type="module">
+    import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
-    import {
-      initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr,
-      setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl
-    } from './ui.js';
+    import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl } from './ui.js';
+
+    // Inject Layout
+    renderLayout('schedule');
 
     let eventLogic;
-
-    // --- PAGE-SPECIFIC STATE & I18N ---
-    const state = { language: localStorage.getItem("lang") || "en", events: [], selectedEvent: null, threads: [], selectedThreadId: null, comments: [], files: [], calendarMonth: new Date(), };
-    const t = { en: { tagline: "A seminar series to share advances in agrivoltaics in the Americas", intro_title: "Agrovoltaicos sin Fronteras", nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", admin: "Admin" }, auth: { signin: "Sign in", signout: "Sign out", required: "Please sign in to view event details.", }, profile: { incomplete: "Please complete your profile to access all features" }, schedule: { title: "Upcoming Talks", empty: "No upcoming events found. Check back soon!" }, search: { placeholder: "Search by title, speaker, topic..." }, back: { schedule: "Back to schedule" }, tabs: { description: "Description", discussion: "Discussion", files: "Files" }, discussion: { welcome_title: "Welcome to the discussion!", welcome_body: "Select a topic from the left to view the conversation, or start a new one.", topics: "Discussion Topics" }, thread: { placeholder: "Start a new topic...", create: "New", empty: "No topics yet. Start the discussion!" }, comment: { placeholder: "Write a comment..." }, files: { upload_label: "Click to upload or drag & drop", upload_hint: "Max 10MB per file", empty: "No files uploaded.", deleting: "Deleting...", delete_confirm: "Are you sure you want to delete this file?" }, footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }, open: "View Details" }, es: { tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas", intro_title: "Agrovoltaicos sin Fronteras", nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", admin: "Admin" }, auth: { signin: "Iniciar sesión", signout: "Cerrar sesión", required: "Por favor, inicia sesión para ver los detalles del evento.", }, profile: { incomplete: "Por favor completa tu perfil para acceder a todas las funciones" }, schedule: { title: "Próximas Charlas", empty: "No se encontraron eventos. Vuelve pronto." }, search: { placeholder: "Buscar por título, ponente, tema..." }, back: { schedule: "Volver al calendario" }, tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" }, discussion: { welcome_title: "¡Bienvenido/a a la discusión!", welcome_body: "Selecciona un tema de la izquierda o crea uno nuevo.", topics: "Temas de Discusión" }, thread: { placeholder: "Iniciar un nuevo tema...", create: "Nuevo", empty: "Aún no hay temas. ¡Comienza la discusión!" }, comment: { placeholder: "Escribe un comentario..." }, files: { upload_label: "Haz clic para subir o arrastra y suelta", upload_hint: "Máximo 10MB por archivo", empty: "No hay archivos subidos.", deleting: "Eliminando...", delete_confirm: "¿Estás seguro de que quieres eliminar este archivo?" }, footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }, open: "Ver Detalles" }, };
+    const state = { language: localStorage.getItem("lang") || "en", events: [], selectedEvent: null, calendarMonth: new Date() };
+    
+    const t = { 
+        en: { 
+            intro_title: "Agrovoltaicos sin Fronteras", 
+            auth: { signin: "Sign in", signout: "Sign out", required: "Sign in to view details." }, 
+            schedule: { title: "Upcoming Talks", empty: "No events found." }, 
+            search: { placeholder: "Search talks..." }, 
+            tabs: { description: "Description", discussion: "Discussion", files: "Files" }, 
+        }, 
+        es: { 
+            intro_title: "Agrovoltaicos sin Fronteras", 
+            auth: { signin: "Ingresar", signout: "Salir", required: "Iniciar sesión." }, 
+            schedule: { title: "Próximas Charlas", empty: "No hay eventos." }, 
+            search: { placeholder: "Buscar..." }, 
+            tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" }, 
+        } 
+    };
+    
     const localTr = (key, fallback = "") => tr(t, state.language, key, fallback);
 
-    // --- PAGE-SPECIFIC FUNCTIONS ---
-    function showView(viewName) {
-      const scheduleView = $('#view-schedule');
-      const detailView = $('#view-detail');
-      if (viewName === 'schedule') {
-        detailView.classList.add('translate-x-full');
-        scheduleView.classList.remove('-translate-x-1/4', 'opacity-50', 'pointer-events-none');
-        window.history.pushState({}, '', window.location.pathname);
-      } else if (viewName === 'event') {
-        scheduleView.classList.add('-translate-x-1/4', 'opacity-50', 'pointer-events-none');
-        detailView.classList.remove('translate-x-full');
-      }
+    function showView(name) {
+       if(name==='schedule') { $('#view-detail').classList.add('translate-x-full'); $('#view-schedule').classList.remove('-translate-x-1/4','opacity-50'); }
+       else { $('#view-schedule').classList.add('-translate-x-1/4','opacity-50'); $('#view-detail').classList.remove('translate-x-full'); }
     }
-
     function switchScheduleView(mode) {
-      if (mode === 'list') {
-        show($('#schedule-list')); hide($('#schedule-calendar'));
-        $('#btn-view-list').classList.add('bg-white', 'text-brand-600', 'shadow-sm');
-        $('#btn-view-list').classList.remove('text-slate-400');
-        $('#btn-view-cal').classList.remove('bg-white', 'text-brand-600', 'shadow-sm');
-        $('#btn-view-cal').classList.add('text-slate-400');
-      } else {
-        hide($('#schedule-list')); show($('#schedule-calendar'));
-        $('#btn-view-cal').classList.add('bg-white', 'text-brand-600', 'shadow-sm');
-        $('#btn-view-cal').classList.remove('text-slate-400');
-        $('#btn-view-list').classList.remove('bg-white', 'text-brand-600', 'shadow-sm');
-        $('#btn-view-list').classList.add('text-slate-400');
-      }
+        if(mode==='list') { show($('#schedule-list')); hide($('#schedule-calendar')); $('#btn-view-list').classList.add('bg-brand-50','text-brand-700'); $('#btn-view-cal').classList.remove('bg-brand-50','text-brand-700'); }
+        else { hide($('#schedule-list')); show($('#schedule-calendar')); $('#btn-view-cal').classList.add('bg-brand-50','text-brand-700'); $('#btn-view-list').classList.remove('bg-brand-50','text-brand-700'); }
     }
-
+    
     function handleLangSwitch() {
-      state.language = state.language === 'en' ? 'es' : 'en';
-      localStorage.setItem("lang", state.language);
-      applyI18n(t, state.language);
-      renderDynamicHeroBanner();
-      renderEventsList();
-      if (state.selectedEvent && eventLogic) {
-        eventLogic.reRender();
-      }
-      renderScheduleCalendar();
+        state.language = state.language === 'en' ? 'es' : 'en';
+        localStorage.setItem("lang", state.language);
+        applyI18n(t, state.language);
+        renderEventsList(); renderScheduleCalendar(); renderBanner();
+        if(eventLogic) eventLogic.reRender();
     }
-
-    function renderDynamicHeroBanner() {
-      const bannerEl = $('#siteBanner');
-      const textEl = $('#bannerText');
-      if (!bannerEl || !textEl) return;
-
-      const nextEvent = state.events
-        .filter(e => new Date(e.start_time) > new Date())
-        .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))[0];
-
-      let bannerHTML = '';
-      if (nextEvent) {
-        const title = state.language === 'es' && nextEvent.title_es ? nextEvent.title_es : nextEvent.title_en;
-        const formattedDate = fmtDateTime(nextEvent.start_time, { month: 'short', day: 'numeric', year: 'numeric' });
-        bannerHTML = `Next Session: ${formattedDate} &mdash; ${escapeHtml(title)}`;
-        bannerEl.dataset.openEvent = nextEvent.id;
-        bannerEl.classList.remove('pointer-events-none');
-      } else {
-        bannerHTML = 'Welcome! Check the archive for past event recordings.';
-        delete bannerEl.dataset.openEvent;
-        bannerEl.classList.add('pointer-events-none');
-      }
-
-      textEl.innerHTML = bannerHTML;
-      bannerEl.classList.remove('hidden');
-      bannerEl.classList.add('inline-flex');
+    
+    function renderBanner() {
+        const next = state.events.filter(e => new Date(e.start_time) > new Date()).sort((a,b)=>new Date(a.start_time)-new Date(b.start_time))[0];
+        const banner = $('#siteBanner');
+        if(next) {
+            const title = state.language === 'es' ? (next.title_es||next.title_en) : next.title_en;
+            $('#bannerText').innerHTML = `<span class="font-bold opacity-80">${fmtDateTime(next.start_time, {month:'short', day:'numeric'})}:</span> ${escapeHtml(title)}`;
+            banner.dataset.openEvent = next.id;
+            show(banner);
+            banner.style.display = 'inline-flex';
+        } else hide(banner);
     }
 
     async function loadEvents() {
-      hide($('#content-area')); show($('#eventsLoader'));
-      const { data } = await supabase
-        .from("events")
-        .select("*, event_speakers(*, profile:profiles(*))")
-        .order("start_time", { ascending: true });
-
-      state.events = data || [];
-      renderEventsList();
-      renderScheduleCalendar();
-      renderDynamicHeroBanner();
-      hide($('#eventsLoader')); show($('#content-area'));
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const eid = urlParams.get("event") || urlParams.get("e");
-      if (eid && eventLogic) {
-        if (authState.session) {
-          await eventLogic.openEvent(eid);
-        } else {
-          authState.pendingDeepLinkEventId = eid;
-          setFlash(localTr('auth.required'));
-          showView("schedule");
+        hide($('#content-area')); show($('#eventsLoader'));
+        const { data } = await supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", {ascending:true});
+        state.events = data || [];
+        renderEventsList(); renderScheduleCalendar(); renderBanner();
+        hide($('#eventsLoader')); show($('#content-area'));
+        
+        const params = new URLSearchParams(window.location.search);
+        const eid = params.get("event") || params.get("e");
+        if(eid && eventLogic) {
+            if(authState.session) eventLogic.openEvent(eid);
+            else { authState.pendingDeepLinkEventId = eid; setFlash(localTr('auth.required')); }
         }
-      } else {
-        showView("schedule");
-      }
     }
 
+    // --- STREAMLINED CARD RENDERER ---
     async function renderEventsList() {
-      const list = $("#schedule-list"), empty = $("#emptyEvents");
-      if (!list || !empty) return;
-      const term = ($("#search")?.value || "").toLowerCase().trim();
-      const now = new Date();
+        const list = $('#schedule-list');
+        const term = ($('#search').value || '').toLowerCase();
+        const now = new Date();
+        
+        const filtered = state.events.filter(e => {
+             const end = new Date(e.start_time); end.setHours(end.getHours()+2);
+             // Default view: future events + past 7 days. Search view: everything matching.
+             if(!term && end < now && (now - end > 86400000 * 7)) return false;
+             if(!term) return true;
+             return (JSON.stringify(e) + (e.topic_tags||[]).join(' ')).toLowerCase().includes(term);
+        });
+        
+        if(!filtered.length) { hide(list); show($('#emptyEvents')); $('#emptyEvents').style.display='flex'; return; }
+        show(list); hide($('#emptyEvents'));
 
-      const upcomingEvents = state.events.filter(e => {
-        const endTime = new Date(e.start_time);
-        endTime.setHours(endTime.getHours() + 1);
-        return endTime >= now;
-      });
+        const html = await Promise.all(filtered.map(async ev => {
+            const title = state.language === 'es' ? (ev.title_es || ev.title_en) : ev.title_en;
+            const desc = state.language === 'es' ? (ev.description_es || ev.description_en) : ev.description_en;
+            const start = new Date(ev.start_time);
+            const isPast = start < now;
+            
+            // Speaker Stack
+            const speakers = ev.event_speakers || [];
+            const avas = await Promise.all(speakers.slice(0, 3).map(async s => {
+                const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
+                return img ? `<img src="${img}" class="w-full h-full object-cover">` : `<span class="text-[9px] font-bold">${(s.name||'?')[0]}</span>`;
+            }));
+            
+            const speakerHtml = avas.length ? 
+                `<div class="flex -space-x-2">
+                   ${avas.map(a => `<div class="w-6 h-6 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-slate-500 overflow-hidden">${a}</div>`).join('')}
+                   ${speakers.length > 3 ? `<div class="w-6 h-6 rounded-full ring-2 ring-white bg-gray-50 flex items-center justify-center text-[8px] font-bold">+${speakers.length-3}</div>` : ''}
+                 </div>` : '';
 
-      const filtered = upcomingEvents.filter(e => {
-        if (!term) return true;
-        const speakerMatch = (e.event_speakers || []).some(s =>
-          (s.profile?.full_name || s.name || "").toLowerCase().includes(term) ||
-          (s.profile?.affiliation || s.affiliation || "").toLowerCase().includes(term)
-        );
-        const tagsMatch = (e.topic_tags || []).some(tag => (tag || "").toLowerCase().includes(term));
-        const eventMatch = [e.title_en, e.title_es, e.description_en, e.description_es, e.host_org].filter(Boolean).some(v => v.toLowerCase().includes(term));
-        return speakerMatch || tagsMatch || eventMatch;
-      });
+            const langCode = ev.language === 'es' ? 'ES' : (ev.language === 'bi' ? 'EN/ES' : 'EN');
+            
+            return `<article class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col h-full ${isPast ? 'opacity-70 grayscale-[0.3]' : ''}" data-open-event="${ev.id}">
+                <div class="p-4 flex flex-col h-full">
+                    <!-- Compact Header: Date | Time | Lang -->
+                    <div class="flex items-center justify-between mb-2 text-xs font-bold text-slate-400 uppercase tracking-wide">
+                        <div class="flex items-center gap-2">
+                            <span class="${isPast ? 'text-slate-500' : 'text-brand-600'}">
+                                ${start.toLocaleDateString(state.language, {month:'short', day:'numeric'}).toUpperCase()}
+                            </span>
+                            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                            <span>${fmtDateTime(ev.start_time,{timeStyle:'short'})}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                             <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-[4px] text-[10px]">${langCode}</span>
+                             ${(ev.zoom_url && !isPast) ? '<i data-lucide="video" class="w-3.5 h-3.5 text-brand-400"></i>' : ''}
+                        </div>
+                    </div>
 
-      if (filtered.length > 0) {
-        hide(empty); show(list);
-      } else {
-        show(empty); hide(list);
-      }
-
-      const eventCards = await Promise.all(filtered.map(async (ev) => {
-        const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
-        const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
-        const eventSpeaker = (ev.event_speakers || []).find(s => s.primary_speaker) || (ev.event_speakers || [])[0];
-        const speakerProfile = eventSpeaker?.profile;
-        const speakerName = speakerProfile?.full_name || eventSpeaker?.name || '';
-        const speakerAffiliation = speakerProfile?.affiliation || eventSpeaker?.affiliation || '';
-        const statusColors = { scheduled: 'bg-brand-50 text-brand-700 border-brand-100', completed: 'bg-gray-50 text-slate-700 border-gray-100', canceled: 'bg-red-50 text-red-700 border-red-100' };
-        let avatarHtml = '';
-        if (speakerProfile?.avatar_url) { const avatarUrl = await getAvatarUrl(speakerProfile.avatar_url); if (avatarUrl) avatarHtml = `<img src="${avatarUrl}" alt="${escapeHtml(speakerName)}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>`; }
-        const initials = speakerName ? speakerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '';
-        const tagsHtml = (ev.topic_tags || []).slice(0, 3).map(tag => `<span class="px-2.5 py-1 bg-gray-100 text-slate-600 rounded-full text-xs font-semibold whitespace-nowrap">#${escapeHtml(tag)}</span>`).join('');
-        return `<article class="group bg-white rounded-3xl p-4 border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-brand-200 transition-all duration-300 flex flex-col" data-open-event="${ev.id}"><div class="flex-grow"><div class="flex justify-between items-start mb-3"><div class="flex flex-col"><span class="text-xs font-bold uppercase tracking-wider text-brand-700 mb-1">${fmtDateTime(ev.start_time)}</span><h4 class="font-display font-bold text-lg text-slate-800 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h4></div><span class="flex-shrink-0 ml-4 px-3 py-1 ${statusColors[ev.status] || statusColors.scheduled} text-[10px] font-bold uppercase tracking-widest rounded-full border">${escapeHtml(ev.status)}</span></div>${desc ? `<p class="text-slate-600 mb-3 text-sm line-clamp-2">${escapeHtml(desc)}</p>` : ''}</div><div class="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-4"><div class="flex items-center gap-4 min-w-0">${eventSpeaker ? `<div class="flex items-center gap-3 flex-shrink-0"><div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center text-gray-600 font-semibold text-sm">${avatarHtml}<span ${avatarHtml ? `style="display:none;"` : ''}>${initials}</span></div><div><p class="text-sm font-bold text-slate-800 truncate">${escapeHtml(speakerName)}</p><p class="text-xs text-slate-500 truncate">${escapeHtml(speakerAffiliation)}</p></div></div>` : '<div></div>'}${tagsHtml ? `<div class="hidden lg:flex items-center gap-2">${tagsHtml}</div>` : ''}</div><button class="flex-shrink-0 w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-slate-400 group-hover:bg-brand-700 group-hover:text-white group-hover:border-transparent transition-all"><i data-lucide="arrow-right" class="w-5 h-5"></i></button></div></article>`;
-      }));
-
-      list.innerHTML = eventCards.join('');
-      lucide.createIcons();
+                    <!-- Title -->
+                    <h3 class="font-display font-bold text-[15px] text-slate-800 leading-snug mb-1.5 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h3>
+                    
+                    <!-- Desc -->
+                    <p class="text-[13px] text-slate-500 line-clamp-2 mb-4 flex-1 leading-relaxed">${escapeHtml(desc||'')}</p>
+                    
+                    <!-- Footer: Speakers Left, Host Right -->
+                    <div class="flex items-center justify-between pt-3 border-t border-gray-50 mt-auto">
+                        <div class="flex items-center gap-2">
+                            ${speakerHtml}
+                            ${!speakerHtml ? '<span class="text-[10px] text-slate-400 italic">TBA</span>' : ''}
+                        </div>
+                        ${ev.host_org ? `<div class="text-[10px] font-bold text-slate-400 truncate max-w-[100px] text-right">${escapeHtml(ev.host_org)}</div>` : ''}
+                    </div>
+                </div>
+            </article>`;
+        }));
+        list.innerHTML = html.join('');
+        lucide.createIcons();
     }
-
+    
     function renderScheduleCalendar() {
-      const grid = $("#calendarGrid"), label = $("#calLabel");
-      if (!grid || !label) return;
-      const m = state.calendarMonth;
-      label.textContent = m.toLocaleString(state.language, { month: "long", year: "numeric" });
-      const startOfMonth = new Date(m.getFullYear(), m.getMonth(), 1); const endOfMonth = new Date(m.getFullYear(), m.getMonth() + 1, 0); const firstDayIndex = (startOfMonth.getDay() + 6) % 7; const daysInMonth = endOfMonth.getDate();
-      grid.innerHTML = ``;
-      for (let i = 0; i < firstDayIndex; i++) grid.insertAdjacentHTML('beforeend', `<div class="bg-gray-50/50"></div>`);
-      const eventsByDay = state.events.reduce((acc, ev) => { const d = new Date(ev.start_time); if (d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear()) { const day = d.getDate(); if (!acc[day]) acc[day] = []; acc[day].push(ev); } return acc; }, {});
-      for (let day = 1; day <= daysInMonth; day++) { const today = new Date(); const isToday = day === today.getDate() && m.getMonth() === today.getMonth() && m.getFullYear() === today.getFullYear(); const dayEvents = eventsByDay[day] || []; const eventsHtml = dayEvents.map(ev => { const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en; return `<div class="bg-brand-100 border-l-2 border-brand-500 p-1.5 rounded text-[10px] text-brand-900 truncate font-medium cursor-pointer" data-open-event="${ev.id}">${fmtDateTime(ev.start_time, { timeStyle: 'short' })} ${escapeHtml(title)}</div>`; }).join(''); grid.insertAdjacentHTML('beforeend', `<div class="bg-white p-1 flex flex-col gap-1 min-h-[56px] overflow-y-auto custom-scrollbar"><span class="text-sm font-bold w-6 h-6 rounded-full flex items-center justify-center self-end mb-1 ${isToday ? 'bg-brand-700 text-white' : 'text-slate-600'}">${day}</span>${eventsHtml}</div>`); }
+        const grid=$('#calendarGrid'), m=state.calendarMonth;
+        $('#calLabel').innerText = m.toLocaleString(state.language,{month:'long',year:'numeric'});
+        const start=new Date(m.getFullYear(),m.getMonth(),1).getDay(); 
+        const end=new Date(m.getFullYear(),m.getMonth()+1,0).getDate();
+        grid.innerHTML='';
+        for(let i=0; i<(start+6)%7; i++) grid.insertAdjacentHTML('beforeend',`<div class="bg-gray-50/50 min-h-[80px]"></div>`);
+        for(let d=1; d<=end; d++) {
+             const dateStr = `${m.getFullYear()}-${String(m.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+             const dayEvs = state.events.filter(e=>e.start_time.startsWith(dateStr));
+             const evHtml = dayEvs.map(e=>`<div class="text-[9px] truncate bg-brand-100 text-brand-800 px-1 rounded mb-0.5 cursor-pointer" data-open-event="${e.id}">${state.language==='es'?(e.title_es||e.title_en):e.title_en}</div>`).join('');
+             grid.insertAdjacentHTML('beforeend', `<div class="bg-white p-1 min-h-[80px] border-r border-b border-gray-50"><div class="text-xs font-bold text-slate-300 mb-1">${d}</div>${evHtml}</div>`);
+        }
     }
 
-    // --- MAIN EXECUTION ---
-    (async function main() {
-      const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide };
-      eventLogic = initEventLogic(deps);
+    (async function() {
+       const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: ()=>applyI18n(t,state.language), show, hide };
+       eventLogic = initEventLogic(deps);
+       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
+       
+       $('#search').addEventListener('input', renderEventsList);
+       $('#btn-view-list').addEventListener('click', ()=>switchScheduleView('list'));
+       $('#btn-view-cal').addEventListener('click', ()=>switchScheduleView('calendar'));
+       $('#calPrev').addEventListener('click', ()=>{state.calendarMonth.setMonth(state.calendarMonth.getMonth()-1); renderScheduleCalendar()});
+       $('#calNext').addEventListener('click', ()=>{state.calendarMonth.setMonth(state.calendarMonth.getMonth()+1); renderScheduleCalendar()});
+       $$('.tab-link').forEach(b=>b.addEventListener('click', e=>switchTab(e.target.dataset.tab, e.target)));
+       
+       document.body.addEventListener('click', e=>{
+           const c = e.target.closest('[data-open-event]');
+           if(c && eventLogic) { e.preventDefault(); c.classList.add('scale-95'); setTimeout(()=>c.classList.remove('scale-95'),100); eventLogic.openEvent(c.dataset.openEvent); }
+           if(e.target.id==='btnProfile' || e.target.closest('#btnProfile') || e.target.id==='userName') window.location.href='profile.html';
+       });
 
-      initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
-
-      // Wire page-specific listeners
-      $('#search').addEventListener('input', renderEventsList);
-      $('#btn-view-list').addEventListener('click', () => switchScheduleView('list'));
-      $('#btn-view-cal').addEventListener('click', () => switchScheduleView('calendar'));
-      $('#calPrev').addEventListener("click", () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() - 1); renderScheduleCalendar(); });
-      $('#calNext').addEventListener("click", () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() + 1); renderScheduleCalendar(); });
-      $$('.tab-link').forEach(tab => tab.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab, e.currentTarget)));
-      document.body.addEventListener('click', e => {
-        const card = e.target.closest('[data-open-event]');
-        if (card && eventLogic) { e.preventDefault(); eventLogic.openEvent(card.dataset.openEvent); }
-      });
-
-      await initAuth({
-        onAuthReady: () => renderHeader(authState, t, state.language),
-        onAuthChange: () => renderHeader(authState, t, state.language)
-      });
-
-      await loadEvents();
-      supabase.channel('public:events').on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadEvents()).subscribe();
+       await initAuth({
+           onAuthReady: ()=>renderHeader(authState, t, state.language),
+           onAuthChange: async ()=>{
+               renderHeader(authState, t, state.language);
+               if(authState.profile?.avatar_url) {
+                   const url = await getAvatarUrl(authState.profile.avatar_url);
+                   const img = $('#userAvatar');
+                   if(img && url) { img.src = url; show(img); hide($('#userInitial')); }
+               }
+           }
+       });
+       
+       await loadEvents();
+       supabase.channel('public:events').on('postgres_changes', {event:'*', schema:'public', table:'events'}, loadEvents).subscribe();
     })();
-
   </script>
 </body>
-
 </html>

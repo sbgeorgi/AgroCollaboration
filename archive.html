@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-white">
+<html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
   <meta charset="UTF-8">
@@ -13,367 +13,228 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Lato:wght@400;700&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- External Tailwind Config -->
-  <script src="tailwind.config.js"></script>
+  <link rel="stylesheet" href="styles.css">
 
+  <!-- External Tailwind Config (Extracted) -->
+  <script src="theme.js"></script>
+  
   <!-- Custom CSS -->
-  <style>
-    /* NOTE: This custom CSS is being replaced by styles.css and Tailwind. It is kept here for reference but can be moved. */
-    :root {
-      --color-brand: #16a34a;
-      --color-brand-dark: #15803d;
-      --color-brand-light: #dcfce7;
-      --color-accent: #f97316;
-      --color-danger: #ef4444;
-      --bg-main: #f8fafc;
-      --bg-panel: #ffffff;
-      --bg-input: #f1f5f9;
-      --text-primary: #0f172a;
-      --text-secondary: #64748b;
-      --text-tertiary: #94a3b8;
-      --text-light: #ffffff;
-      --border: #e2e8f0;
-      --radius-md: 12px;
-      --radius-lg: 24px;
-      --header-h: 64px;
-      --footer-h: 64px;
-      --shadow-panel: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    }
-    /* ... (rest of the custom CSS from the original file) ... */
-    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-    .site-header { background-color: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 0 16px; position: sticky; top: 0; z-index: 50; }
-    @media (min-width: 768px) { .site-header { padding: 0 24px; } }
-    .site-header .container.header-grid { height: 72px; max-width: 1800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand .logo-image { width: 40px; height: 40px; }
-    .brand-text .title { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); }
-    .brand-text .subtitle { display: none; }
-    @media (min-width: 768px) { .brand-text .subtitle { display: block; font-family: 'Lato', sans-serif; font-size: 0.8rem; color: var(--text-secondary); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
-    .nav { display: none; }
-    @media (min-width: 960px) { .nav { display: flex; align-items: center; gap: 24px; } }
-    .nav .link { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; color: var(--text-secondary); transition: color 0.2s; }
-    .nav .link:hover, .nav .link.active { color: var(--color-brand); }
-    .nav .divider { width: 1px; height: 20px; background-color: var(--border); }
-    .lang-switch-slider { display: flex; cursor: pointer; background: var(--bg-input); border-radius: 99px; padding: 4px; position: relative; font-size: 12px; font-weight: 700; }
-    .lang-switch-slider span { padding: 4px 12px; z-index: 1; transition: color 0.2s; user-select: none; }
-    .lang-switch-slider::before { content: ''; position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: white; border-radius: 99px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
-    .lang-switch-slider[data-lang="es"]::before { transform: translateX(100%); }
-    .lang-switch-slider[data-lang="en"] span:first-child, .lang-switch-slider[data-lang="es"] span:last-child { color: var(--color-brand-dark); }
-    .auth-area { display: flex; align-items: center; gap: 16px; }
-    .profile-button { width: 36px; height: 36px; border-radius: 50%; background-color: var(--color-brand-light); color: var(--color-brand-dark); font-weight: 700; font-family: 'Poppins', sans-serif; display: grid; place-content: center; overflow: hidden; border: 2px solid var(--border); }
-    #userName { font-weight: 700; font-size: 0.9rem; font-family: 'Lato', sans-serif; }
-    .mobile-menu-btn { display: block; color: var(--text-secondary); }
-    @media (min-width: 960px) { .mobile-menu-btn { display: none; } }
-    .mobile-nav-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 998; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
-    .mobile-nav-overlay.is-open { opacity: 1; visibility: visible; }
-    .mobile-nav-content { position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 320px; background: var(--bg-panel); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1); display: flex; flex-direction: column; z-index: 999; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1); padding: 24px; }
-    .is-open .mobile-nav-content { transform: translateX(0); }
-    .mobile-nav-close-btn { position: absolute; top: 16px; right: 16px; color: var(--text-secondary); z-index: 10; }
-    .mobile-nav-content > nav { display: flex; flex-direction: column; align-items: center; text-align: center; height: 100%; padding-top: 48px; }
-    .mobile-nav-content .link { font-size: 1.75rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--text-primary); width: 100%; padding: 12px 0; }
-    .mobile-nav-content .link.active { color: var(--color-brand); }
-    .mobile-nav-content .divider { display: none; }
-    .mobile-nav-content .lang-switch-slider { order: -1; transform: scale(1.15); margin-bottom: 48px; }
-    .mobile-nav-content .auth-area { margin-top: auto; width: 100%; padding-top: 24px; border-top: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .mobile-nav-content .auth-area .profile-button { width: 64px; height: 64px; font-size: 2rem; }
-    .mobile-nav-content .auth-area #userNameMobile { font-weight: 600; font-size: 1.1rem; color: var(--text-primary); }
-    .mobile-nav-content .auth-area #btnSignOutMobile, .mobile-nav-content .auth-area #btnSignInMobile { width: 100%; justify-content: center; padding: 12px 24px; font-size: 1rem; border-radius: var(--radius-md); }
-    .btn { border: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn:active { transform: scale(0.98); }
-    .btn-primary { background: var(--color-brand-dark); color: white; box-shadow: 0 4px 12px -2px rgba(22, 163, 74, 0.3); }
-    .btn-primary:hover { background: #14532d; }
-    .btn-secondary { background: white; border: 2px solid var(--border); color: var(--text-primary); }
-    .btn-secondary:hover { border-color: var(--text-tertiary); background: var(--bg-input); }
-    .btn-ghost { background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 700; padding: 8px 12px; border-radius: 8px; }
-    .btn-ghost:hover { background: var(--bg-input); color: var(--text-primary); }
-    #btnSignIn { padding: 8px 16px; font-size: 0.9rem; border-radius: 8px; background: var(--color-brand); color: white; }
-    #btnSignIn:hover { background: var(--color-brand-dark); }
-    .site-footer { background-color: var(--bg-panel); border-top: 1px solid var(--border); padding: 24px; }
-    .site-footer .container { max-width: 1800px; margin: 0 auto; }
-    .site-footer small { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-secondary); }
-    .site-footer .footer-text { display: flex; align-items: center; flex-wrap: wrap; }
-    .site-footer .footer-logos { display: flex; align-items: center; gap: 8px; }
-    .site-footer .footer-logos img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-    @media (max-width: 767px) { .site-footer small { flex-direction: column; text-align: center; } }
-  </style>
   <style type="text/tailwindcss">
     @layer utilities {
-            .no-scrollbar::-webkit-scrollbar { display: none; }
-            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-            .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-            .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-            .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-            .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #a8b2c1; }
-        }
-        html, body { height: 100%; overflow: hidden; }
-        @supports (-webkit-touch-callout: none) {
-            .h-screen { height: -webkit-fill-available; }
-        }
-        .cubic-bezier { transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1); }
-        #flash {
-            position: fixed;
-            top: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-150%);
-            background-color: #0f172a; /* slate-900 */
-            color: white;
-            padding: 12px 24px;
-            border-radius: 9999px;
-            font-weight: 600;
-            z-index: 1000;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-        #flash.visible {
-            transform: translateX(-50%) translateY(0);
-        }
-    </style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+      .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; border: 2px solid transparent; background-clip: content-box; }
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+    .cubic-bezier { transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1); }
+    
+    #flash {
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-150%);
+        background-color: #0f172a;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 9999px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        z-index: 9999;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        opacity: 0;
+    }
+    #flash.visible {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+    
+    /* Markdown Styles */
+    .prose p { margin-bottom: 1em; line-height: 1.7; }
+    .prose ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
+    .prose h1, .prose h2, .prose h3 { color: #0f172a; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .prose a { color: #0369a1; text-decoration: underline; text-decoration-color: #bae6fd; text-underline-offset: 2px; }
+  </style>
+
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-200 selection:text-brand-900">
-
-  <!-- ================= HEADER ================= -->
-  <header class="site-header">
-    <div class="container header-grid">
-      <a href="index.html" class="brand">
-        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
-        <div class="brand-text">
-          <div class="title">Agrovoltaicos sin Fronteras</div>
-          <div class="subtitle" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas
-          </div>
-        </div>
-      </a>
-      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
-      <!-- Desktop Nav -->
-      <nav class="nav">
-        <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
-        <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
-        <a href="about.html" class="link" data-i18n="nav.about">About</a>
-        <a href="network.html" class="link" data-i18n="nav.network">Network</a>
-        <a href="map.html" class="link" data-i18n="nav.map">Map</a>
-        <a href="admin.html" id="btnAdmin" class="link" data-i18n="nav.admin" style="display: none;">Admin</a>
-        <div class="divider"></div>
-        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-          <span>EN</span>
-          <span>ES</span>
-        </div>
-        <div class="auth-area">
-          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Open profile"
-            onclick="window.location.href='profile.html'">
-            <span id="userInitial"></span>
-            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;"
-              alt="User Avatar" />
-          </button>
-          <span id="userName" style="display: none;"></span>
-          <a href="signin.html" id="btnSignIn" data-i18n="auth.signin">Sign in</a>
-          <button id="btnSignOut" class="btn-ghost" data-i18n="auth.signout" style="display: none">
-            Sign out
-          </button>
-        </div>
-      </nav>
-    </div>
-  </header>
-
-  <!-- ================= MOBILE MENU OVERLAY ================= -->
-  <div id="mobileNavOverlay" class="mobile-nav-overlay">
-    <div class="mobile-nav-content"><!-- Injected by JS --></div>
-  </div>
+<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
   <!-- ================= MAIN APP CONTAINER ================= -->
+  <!-- Note: Header and Footer are injected by layout.js -->
   <main class="flex-1 relative overflow-hidden bg-gray-50">
 
-    <!-- ================= VIEW: ARCHIVE ================= -->
-    <div id="view-archive"
-      class="absolute inset-0 flex flex-col overflow-hidden transition-all duration-500 cubic-bezier">
+    <!-- ================= VIEW: ARCHIVE (Modified for Layout) ================= -->
+    <div id="view-archive" class="absolute inset-0 flex flex-col overflow-hidden transition-all duration-500 cubic-bezier transform translate-x-0 opacity-100">
       <div class="flex-1 overflow-y-auto custom-scrollbar">
         <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-6 py-6">
-          <section class="bg-white rounded-[2.5rem] border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-            <div
-              class="p-4 md:p-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-20">
-              <h3 class="font-display font-bold text-2xl text-brand-700 self-start md:self-center"
-                data-i18n="archive.title">Event Archive</h3>
+          
+          <section class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+            <!-- Controls Header -->
+            <div class="p-4 md:p-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between sticky top-0 bg-white/90 backdrop-blur-md z-20">
+              <h3 class="font-display font-bold text-2xl text-slate-800 self-start md:self-center" data-i18n="archive.title">Event Archive</h3>
+              
               <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
                 <div class="relative w-full sm:w-64">
-                  <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
-                  <input id="search" type="search"
-                    class="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm"
-                    data-i18n-placeholder="search.placeholder">
+                  <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                  <input id="search" type="search" class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all text-sm" data-i18n-placeholder="search.placeholder">
                 </div>
-                <select id="yearFilter"
-                  class="w-full sm:w-auto px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all appearance-none text-slate-800 font-medium text-sm"></select>
-                <label
-                  class="flex items-center gap-2 cursor-pointer bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-800 hover:bg-gray-100 transition-colors w-full sm:w-auto justify-center">
-                  <input type="checkbox" id="hasRecording"
-                    class="w-4 h-4 rounded text-brand-600 border-gray-300 focus:ring-brand-500">
+                <select id="yearFilter" class="w-full sm:w-auto px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all text-slate-700 font-medium text-sm cursor-pointer"></select>
+                <label class="flex items-center gap-2 cursor-pointer bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-gray-100 transition-colors w-full sm:w-auto justify-center select-none">
+                  <input type="checkbox" id="hasRecording" class="w-4 h-4 rounded text-brand-600 border-gray-300 focus:ring-brand-500">
                   <span data-i18n="archive.recordings_only">Recordings only</span>
                 </label>
               </div>
             </div>
+
+            <!-- Tag Bar -->
             <div id="tagsFilterBar" class="p-4 border-b border-gray-100 bg-gray-50/50 hidden">
               <div class="flex items-center gap-x-4 gap-y-2 flex-wrap">
-                <span class="text-xs font-bold text-slate-500 mr-2 uppercase" data-i18n="archive.filter_by_tags">Filter
-                  by Tag:</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="archive.filter_by_tags">Filter by Tag:</span>
                 <div id="tagsFilter" class="flex items-center gap-2 flex-wrap"></div>
               </div>
             </div>
 
-            <div id="archiveLoader" class="p-8 flex-1 flex items-center justify-center">
-              <div class="w-12 h-12 border-4 border-gray-200 border-t-brand-700 rounded-full animate-spin"></div>
+            <div id="archiveLoader" class="py-20 flex items-center justify-center">
+              <div class="w-8 h-8 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
             </div>
 
-            <div id="content-area" class="p-3 md:p-4 bg-gray-50/50 flex-1 hidden">
-              <div id="archiveList" class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4"></div>
+            <div id="content-area" class="p-4 md:p-6 bg-gray-50/30 flex-1 hidden">
+              <div id="archiveList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 animate-fade-in"></div>
             </div>
-            <div id="emptyArchive" class="p-8 hidden flex-1 items-center justify-center text-slate-500"
-              data-i18n="archive.empty">No past events found matching your filters.</div>
+            
+            <div id="emptyArchive" class="hidden py-20 text-center text-slate-400 text-sm" data-i18n="archive.empty">No past events found matching your filters.</div>
           </section>
         </div>
       </div>
     </div>
 
-    <!-- ================= VIEW: DETAIL (Works with event.js) ================= -->
-    <div id="view-detail"
-      class="absolute inset-0 flex flex-col bg-gray-50/50 translate-x-full transition-transform duration-500 cubic-bezier z-20">
-      <div
-        class="flex-1 m-0 md:m-6 bg-white md:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border border-gray-200">
-        <div id="compactEventHeaderContainer"
-          class="flex-none p-4 md:p-6 border-b border-gray-100 bg-white flex items-center gap-6 sticky top-0 z-10">
+    <!-- ================= VIEW: DETAIL ================= -->
+    <div id="view-detail" class="absolute inset-0 flex flex-col bg-slate-900/10 backdrop-blur-[2px] translate-x-full transition-transform duration-500 cubic-bezier z-50">
+      <div class="absolute inset-0" onclick="document.getElementById('backToScheduleBtn')?.click()"></div>
+      <div class="relative flex-1 md:m-4 lg:mx-auto lg:max-w-[1600px] w-full bg-white md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-white/40 h-full">
+        <!-- Header -->
+        <div id="compactEventHeaderContainer" class="flex-none p-5 border-b border-gray-100 bg-white z-20 sticky top-0"></div>
+        
+        <!-- Tabs Navigation -->
+        <div class="flex-none px-6 border-b border-gray-100 flex gap-6 bg-white">
+          <button class="tab-link py-3 text-sm font-bold text-brand-600 border-b-2 border-brand-500" data-tab="description" data-i18n="tabs.description">Description</button>
+          <button class="tab-link py-3 text-sm font-bold text-slate-400 border-b-2 border-transparent" data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
+          <button class="tab-link py-3 text-sm font-bold text-slate-400 border-b-2 border-transparent" data-tab="files" data-i18n="tabs.files">Files</button>
         </div>
-        <div class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
-          <div class="flex-1 flex flex-col min-h-0 lg:flex-[2]">
-            <div class="flex-none px-6 border-b border-gray-100 flex gap-6 overflow-x-auto no-scrollbar bg-white">
-              <button class="tab-link py-4 font-semibold text-brand-700 border-b-[3px] border-brand-500"
-                data-tab="description" data-i18n="tabs.description">Description</button>
-              <button class="tab-link py-4 font-semibold text-slate-400 border-b-[3px] border-transparent"
-                data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
-              <button class="tab-link py-4 font-semibold text-slate-400 border-b-[3px] border-transparent"
-                data-tab="files" data-i18n="tabs.files">Files</button>
-            </div>
-            <div class="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30 p-6 md:p-10 relative">
-              <div id="tab_description"
-                class="tab-panel prose prose-lg prose-slate prose-headings:font-display prose-a:text-brand-700 max-w-3xl animate-fade-in">
-              </div>
-              <div id="tab_discussion" class="tab-panel hidden h-full flex flex-col animate-fade-in">
-                <div id="thread-welcome" class="text-center p-8">
-                  <h3 class="font-bold text-lg" data-i18n="discussion.welcome_title">Welcome!</h3>
-                  <p class="text-slate-600" data-i18n="discussion.welcome_body">Select a topic to begin.</p>
-                </div>
-                <div id="threadDetailView"
-                  class="hidden h-full flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                  <div id="commentsList" class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-gray-50">
-                  </div>
-                  <div class="p-4 bg-white border-t border-gray-100">
-                    <form id="replyToThreadForm" class="flex gap-2">
-                      <input type="text" placeholder="Write a comment..."
-                        class="flex-1 bg-gray-100 border-0 focus:ring-2 focus:ring-brand-500 rounded-xl px-4 py-3 transition-all"
-                        data-i18n-placeholder="comment.placeholder" required>
-                      <button type="submit"
-                        class="bg-brand-700 hover:bg-brand-800 text-white p-3 rounded-xl transition-colors active:scale-95"><i
-                          data-lucide="send" class="w-5 h-5"></i></button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-              <div id="tab_files" class="tab-panel hidden animate-fade-in max-w-3xl space-y-6">
-                <form id="uploadFormContainer">
-                  <label
-                    class="border-2 border-dashed border-gray-300 rounded-2xl p-10 flex flex-col items-center justify-center text-slate-500 hover:bg-gray-100/50 hover:border-brand-400 transition-all cursor-pointer group">
-                    <div
-                      class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                      <i data-lucide="upload-cloud"
-                        class="w-8 h-8 text-slate-400 group-hover:text-brand-500 transition-colors"></i>
+
+        <!-- Tab Contents -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30">
+          
+          <!-- DESCRIPTION TAB -->
+          <div id="tab_description" class="tab-panel prose prose-slate max-w-3xl mx-auto animate-fade-in p-6 md:p-8"></div>
+
+          <!-- DISCUSSION TAB -->
+          <div id="tab_discussion" class="tab-panel hidden h-full animate-fade-in p-0 lg:p-6">
+             <div class="flex flex-col lg:flex-row h-full lg:border lg:border-gray-200 lg:rounded-xl lg:bg-white lg:shadow-sm overflow-hidden">
+                <!-- LEFT: THREAD LIST -->
+                <div class="w-full lg:w-72 flex flex-col flex-shrink-0 bg-gray-50 border-b lg:border-b-0 lg:border-r border-gray-200 h-64 lg:h-auto">
+                    <div class="p-3 border-b border-gray-200 flex justify-between items-center bg-white">
+                        <h3 class="font-bold text-xs text-slate-500 uppercase">Topics</h3>
                     </div>
-                    <p class="font-medium text-slate-900" data-i18n="files.upload_label">Click to upload or drag & drop
-                    </p>
-                    <p class="text-sm" data-i18n="files.upload_hint">Max 10MB per file</p>
-                    <input id="fileInput" type="file" class="hidden" />
-                  </label>
-                </form>
-                <div id="filesList" class="space-y-3"></div>
-                <div id="emptyFiles" class="hidden p-8 text-center text-slate-500" data-i18n="files.empty">No files
-                  uploaded.</div>
-              </div>
-            </div>
+                    <!-- Creation Form -->
+                    <div class="p-3 bg-gray-50 border-b border-gray-200">
+                        <form id="newThreadForm" class="flex gap-1">
+                            <input id="threadTitle" class="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none" placeholder="New Topic..." autocomplete="off">
+                            <button class="bg-brand-600 hover:bg-brand-700 text-white px-3 rounded text-lg font-bold shadow-sm transition-colors">+</button>
+                        </form>
+                    </div>
+                    <!-- The List -->
+                    <div id="threadsList" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar"></div>
+                </div>
+
+                <!-- RIGHT: CHAT AREA -->
+                <div class="flex-1 flex flex-col min-w-0 bg-white relative min-h-[400px]">
+                    <!-- Default Welcome Message -->
+                    <div id="thread-welcome" class="absolute inset-0 flex items-center justify-center text-slate-400 flex-col gap-2 p-6 text-center">
+                        <i data-lucide="message-square" class="w-10 h-10 opacity-20"></i>
+                        <p>Select a topic from the list to begin discussion.</p>
+                    </div>
+                    
+                    <!-- Actual Thread Detail View (Toggled by JS) -->
+                    <div id="threadDetailView" class="hidden absolute inset-0 flex flex-col bg-white z-10">
+                        <div id="commentsList" class="flex-1 overflow-y-auto p-4 custom-scrollbar"></div>
+                        <div class="p-3 border-t border-gray-100 bg-gray-50">
+                            <form id="replyToThreadForm" class="flex gap-2">
+                                <input class="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none shadow-sm" placeholder="Write a reply...">
+                                <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors">Send</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+             </div>
           </div>
-          <div class="hidden lg:flex flex-col w-96 border-l border-gray-200 bg-white">
-            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h3 class="font-display font-bold text-slate-900" data-i18n="discussion.topics">Discussion Topics</h3>
-            </div>
-            <div class="p-4">
-              <form id="newThreadForm" class="flex gap-2">
-                <input id="threadTitle" type="text" required
-                  class="flex-1 bg-gray-100 border-0 focus:ring-2 focus:ring-brand-500 rounded-xl px-4 py-2 text-sm"
-                  data-i18n-placeholder="thread.placeholder">
-                <button type="submit"
-                  class="text-xs font-bold text-brand-700 bg-brand-50 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-colors"
-                  data-i18n="thread.create">+ New</button>
-              </form>
-            </div>
-            <div id="threadsList" class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2"></div>
+
+          <!-- FILES TAB -->
+          <div id="tab_files" class="tab-panel hidden animate-fade-in max-w-3xl mx-auto p-6 md:p-8">
+             <form id="uploadFormContainer">
+               <label class="block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
+                 <i data-lucide="upload-cloud" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
+                 <span class="text-sm text-slate-500 font-medium">Click to Upload File</span>
+                 <input id="fileInput" type="file" class="hidden">
+               </label>
+             </form>
+             <div id="filesList" class="mt-6 space-y-3"></div>
+             <div id="emptyFiles" class="hidden text-center py-8 text-slate-400 text-sm">No files uploaded yet.</div>
           </div>
+
         </div>
       </div>
     </div>
   </main>
 
-  <!-- ================= FOOTER ================= -->
-  <footer class="site-footer">
-    <div class="container">
-      <small>
-        <div class="footer-text">
-          © <span id="year"></span> Agrovoltaicos sin Fronteras •&nbsp;
-          <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
-        </div>
-        <div class="footer-logos">
-          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank"
-            rel="noopener noreferrer">
-            <img src="static/b2ua.jpg" alt="Biosphere 2 Agrivoltaics">
-          </a>
-          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer">
-            <img src="static/unam.png" alt="UNAM">
-          </a>
-          <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana"
-            target="_blank" rel="noopener noreferrer">
-            <img src="static/aal.png" alt="AAL - Alianza Agrovoltaica Latinoamericana" style="background-color: white;">
-          </a>
-          <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer">
-            <img src="static/rame.png" alt="Rame - Red Agrivoltaica de México" style="background-color: white;">
-          </a>
-        </div>
-      </small>
-    </div>
-  </footer>
-
-  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <!-- ================= LOGIC ================= -->
   <script type="module">
+    import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
-    import { 
-        initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, 
-        setFlash, fmtDateTime, escapeHtml, getAvatarUrl 
-    } from './ui.js';
+    import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl } from './ui.js';
+
+    // Inject Layout with 'archive' active state
+    renderLayout('archive');
 
     let eventLogic;
     
     // --- PAGE-SPECIFIC STATE & I18N ---
     const state = { language: localStorage.getItem("lang") || "en", events: [], selectedEvent: null, threads: [], selectedThreadId: null, comments: [], files: [], filters: { search: "", year: "all", tags: new Set(), hasRecording: false } };
-    const t = { en: { tagline: "Seminar series on agrivoltaics in the Americas", nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", admin: "Admin" }, auth: { signin: "Sign in", signout: "Sign out", required: "Please sign in to view event details." }, search: { placeholder: "Search by title, speaker..." }, back: { archive: "Back to Archive" }, tabs: { description: "Description", discussion: "Discussion", files: "Files" }, discussion: { welcome_title: "Welcome!", welcome_body: "Select a topic to begin.", topics: "Discussion Topics" }, thread: { placeholder: "Start a new topic...", create: "New" }, comment: { placeholder: "Write a comment..." }, files: { upload_label: "Click to upload or drag & drop", upload_hint: "Max 10MB per file", empty: "No files uploaded.", delete_confirm: "Are you sure?" }, archive: { title: "Event Archive", empty: "No past events found matching your filters.", recordings_only: "Recordings only", filter_by_tags: "Filter by Tag", all_years: "All Years", watch_recording: "Watch Recording" }, open: "View Details", footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." } }, es: { tagline: "Serie de seminarios sobre agrovoltaicos en las Américas", nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", admin: "Admin" }, auth: { signin: "Iniciar sesión", signout: "Cerrar sesión", required: "Por favor, inicia sesión para ver los detalles." }, search: { placeholder: "Buscar por título, ponente..." }, back: { archive: "Volver al Archivo" }, tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" }, discussion: { welcome_title: "¡Bienvenido!", welcome_body: "Selecciona un tema para comenzar.", topics: "Temas de Discusión" }, thread: { placeholder: "Iniciar un nuevo tema...", create: "Nuevo" }, comment: { placeholder: "Escribe un comentario..." }, files: { upload_label: "Haz clic o arrastra para subir", upload_hint: "Máx 10MB por archivo", empty: "No hay archivos subidos.", delete_confirm: "¿Estás seguro?" }, archive: { title: "Archivo de Eventos", empty: "No se encontraron eventos pasados con sus filtros.", recordings_only: "Solo con grabación", filter_by_tags: "Filtrar por Etiqueta", all_years: "Todos los Años", watch_recording: "Ver Grabación" }, open: "Ver Detalles", footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." } } };
+    
+    const t = { 
+        en: { 
+            auth: { signin: "Sign in", signout: "Sign out", required: "Please sign in to view event details." }, 
+            search: { placeholder: "Search by title, speaker..." }, 
+            tabs: { description: "Description", discussion: "Discussion", files: "Files" }, 
+            discussion: { welcome_title: "Welcome!", welcome_body: "Select a topic to begin.", topics: "Discussion Topics" }, 
+            files: { upload_label: "Click to upload or drag & drop", upload_hint: "Max 10MB per file", empty: "No files uploaded." }, 
+            archive: { title: "Event Archive", empty: "No past events found matching your filters.", recordings_only: "Recordings only", filter_by_tags: "Filter by Tag", all_years: "All Years", watch_recording: "Watch Recording" }, 
+        }, 
+        es: { 
+            auth: { signin: "Ingresar", signout: "Salir", required: "Por favor, inicia sesión para ver los detalles." }, 
+            search: { placeholder: "Buscar por título, ponente..." }, 
+            tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" }, 
+            discussion: { welcome_title: "¡Bienvenido!", welcome_body: "Selecciona un tema para comenzar.", topics: "Temas de Discusión" }, 
+            files: { upload_label: "Haz clic o arrastra para subir", upload_hint: "Máx 10MB por archivo", empty: "No hay archivos subidos." }, 
+            archive: { title: "Archivo de Eventos", empty: "No se encontraron eventos pasados con sus filtros.", recordings_only: "Solo con grabación", filter_by_tags: "Filtrar por Etiqueta", all_years: "Todos los Años", watch_recording: "Ver Grabación" }, 
+        } 
+    };
     const localTr = (key, fallback = "") => tr(t, state.language, key, fallback);
 
     // --- PAGE-SPECIFIC FUNCTIONS ---
@@ -390,6 +251,15 @@
       }
     }
 
+    function handleLangSwitch() { 
+        state.language = state.language === 'en' ? 'es' : 'en'; 
+        localStorage.setItem("lang", state.language); 
+        applyI18n(t, state.language); 
+        buildFilters(); 
+        renderArchiveList(); 
+        if (state.selectedEvent && eventLogic) eventLogic.reRender(); 
+    }
+
     async function loadEvents() { 
         hide($('#content-area')); 
         show($('#archiveLoader')); 
@@ -399,6 +269,7 @@
         renderArchiveList(); 
         hide($('#archiveLoader')); 
         show($('#content-area')); 
+        
         const eid = new URLSearchParams(window.location.search).get("event"); 
         if (eid && eventLogic) { 
             if (authState.session) { 
@@ -421,7 +292,7 @@
         const allTags = new Set(state.events.flatMap(e => e.topic_tags || [])); 
         if (allTags.size > 0) { 
             show($('#tagsFilterBar')); 
-            tagsContainer.innerHTML = [...allTags].sort().map(tag => `<button data-tag="${escapeHtml(tag)}" class="chip px-3 py-1.5 bg-white text-slate-600 rounded-full text-xs font-semibold border border-gray-200 hover:bg-brand-50 hover:border-brand-200 hover:text-brand-800 transition-colors">${escapeHtml(tag)}</button>`).join(''); 
+            tagsContainer.innerHTML = [...allTags].sort().map(tag => `<button data-tag="${escapeHtml(tag)}" class="px-3 py-1 bg-white text-slate-600 rounded-full text-xs font-semibold border border-gray-200 hover:bg-brand-50 hover:border-brand-200 hover:text-brand-800 transition-colors shadow-sm">${escapeHtml(tag)}</button>`).join(''); 
         } else { 
             hide($('#tagsFilterBar')); 
         } 
@@ -448,11 +319,10 @@
             } 
             return true; 
         }); 
-        if (filtered.length > 0) { 
-            hide(empty); show(list); 
-        } else { 
-            show(empty); hide(list); 
-        } 
+        
+        if (filtered.length > 0) { hide(empty); show(list); } 
+        else { show(empty); hide(list); return; } 
+
         const cards = await Promise.all(filtered.map(async (ev) => { 
             const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en, 
                   desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en, 
@@ -465,20 +335,41 @@
                     if (avatarUrl) avatarHtml = `<img src="${avatarUrl}" alt="${escapeHtml(speaker.full_name)}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>`; 
                 } 
             } 
-            return `<article class="group bg-white rounded-3xl p-4 border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-brand-200 transition-all duration-300 flex flex-col" data-open-event="${ev.id}"><div class="flex-grow flex flex-col"><div class="flex justify-between items-start mb-3"><div class="flex flex-col"><span class="text-xs font-bold uppercase tracking-wider text-brand-700 mb-1">${fmtDateTime(ev.start_time, { dateStyle: 'long' })}</span><h4 class="font-display font-bold text-lg text-slate-800 group-hover:text-brand-700 transition-colors">${escapeHtml(title)}</h4></div><span class="px-3 py-1 bg-gray-100 text-slate-700 border-gray-200 text-[10px] font-bold uppercase tracking-widest rounded-full border">Completed</span></div>${desc ? `<p class="text-slate-600 mb-4 text-sm line-clamp-2">${escapeHtml(desc)}</p>` : ''}${speaker ? `<div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center text-gray-600 font-semibold text-sm">${avatarHtml}<span ${avatarHtml ? `style="display:none;"` : ''}>${initials}</span></div><div><p class="text-sm font-bold text-slate-800">${escapeHtml(speaker.full_name)}</p><p class="text-xs text-slate-500">${escapeHtml(speaker.affiliation)}</p></div></div>` : '<div class="flex-grow"></div>'}</div><div class="mt-auto pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3"><div class="flex items-center gap-2 flex-wrap">${ev.recording_url ? `<a href="${escapeHtml(ev.recording_url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-700 rounded-full text-xs font-semibold hover:bg-red-100 transition-colors"><i data-lucide="youtube" class="w-3.5 h-3.5"></i> <span data-i18n="archive.watch_recording"></span></a>` : ''}${(ev.topic_tags || []).map(tag => `<span class="px-2.5 py-1 bg-gray-100 text-slate-600 rounded-full text-xs font-semibold">#${escapeHtml(tag)}</span>`).join('')}</div><button class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-slate-400 group-hover:bg-brand-700 group-hover:text-white group-hover:border-transparent transition-all"><i data-lucide="arrow-right" class="w-5 h-5"></i></button></div></article>`; 
+            return `
+            <article class="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden flex flex-col h-full" data-open-event="${ev.id}">
+                <div class="p-5 flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-brand-700 mb-1">${fmtDateTime(ev.start_time, { dateStyle: 'long' })}</span>
+                            <h4 class="font-display font-bold text-lg text-slate-800 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h4>
+                        </div>
+                    </div>
+                    ${desc ? `<p class="text-slate-500 text-xs mb-4 line-clamp-2 flex-1">${escapeHtml(desc)}</p>` : '<div class="flex-1"></div>'}
+                    
+                    ${speaker ? `
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 overflow-hidden ring-1 ring-gray-200 flex items-center justify-center text-slate-400 font-bold text-[10px]">
+                            ${avatarHtml || initials}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold text-slate-700 truncate">${escapeHtml(speaker.full_name)}</span>
+                            <span class="text-[10px] text-slate-500 truncate">${escapeHtml(speaker.affiliation)}</span>
+                        </div>
+                    </div>` : ''}
+
+                    <div class="pt-3 border-t border-gray-50 flex flex-wrap items-center justify-between gap-3 mt-auto">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            ${ev.recording_url ? `<a href="${escapeHtml(ev.recording_url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-bold hover:bg-red-100 transition-colors border border-red-100"><i data-lucide="youtube" class="w-3 h-3"></i> <span data-i18n="archive.watch_recording">Watch</span></a>` : ''}
+                            ${(ev.topic_tags || []).slice(0,2).map(tag => `<span class="px-2 py-0.5 bg-gray-100 text-slate-500 rounded text-[10px] font-semibold border border-gray-200">#${escapeHtml(tag)}</span>`).join('')}
+                        </div>
+                        <button class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-slate-400 group-hover:bg-brand-500 group-hover:text-white transition-all"><i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+            </article>`; 
         })); 
         list.innerHTML = cards.join(''); 
         lucide.createIcons(); 
         applyI18n(t, state.language); 
-    }
-
-    function handleLangSwitch() { 
-        state.language = state.language === 'en' ? 'es' : 'en'; 
-        localStorage.setItem("lang", state.language); 
-        applyI18n(t, state.language); 
-        buildFilters(); 
-        renderArchiveList(); 
-        if (state.selectedEvent && eventLogic) eventLogic.reRender(); 
     }
 
     // --- MAIN EXECUTION ---
@@ -490,22 +381,30 @@
       
       // Wire page-specific listeners
       $$('.tab-link').forEach(tab => tab.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab, e.currentTarget)));
-      $('#search').addEventListener('input', () => { clearTimeout(this.searchTimer); this.searchTimer = setTimeout(() => { state.filters.search = $('#search').value; renderArchiveList(); }, 300); });
+      let searchTimer;
+      $('#search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.filters.search = $('#search').value; renderArchiveList(); }, 300); });
       $('#yearFilter').addEventListener('change', (e) => { state.filters.year = e.target.value; renderArchiveList(); });
       $('#hasRecording').addEventListener('change', (e) => { state.filters.hasRecording = e.target.checked; renderArchiveList(); });
       $('#tagsFilter').addEventListener('click', (e) => { const btn = e.target.closest('[data-tag]'); if (!btn) return; const tag = btn.dataset.tag; if (state.filters.tags.has(tag)) { state.filters.tags.delete(tag); btn.classList.remove('bg-brand-100', 'border-brand-300', 'text-brand-900'); } else { state.filters.tags.add(tag); btn.classList.add('bg-brand-100', 'border-brand-300', 'text-brand-900'); } renderArchiveList(); });
       document.body.addEventListener('click', e => {
         const card = e.target.closest('[data-open-event]'); 
         if (card && eventLogic) { e.preventDefault(); eventLogic.openEvent(card.dataset.openEvent); }
+        if (e.target.closest('#btnProfile') || e.target.id === 'userName') window.location.href = 'profile.html';
       });
 
       await initAuth({ 
           onAuthReady: () => renderHeader(authState, t, state.language), 
-          onAuthChange: () => renderHeader(authState, t, state.language) 
+          onAuthChange: () => {
+              renderHeader(authState, t, state.language);
+              if(authState.profile?.avatar_url) {
+                  getAvatarUrl(authState.profile.avatar_url).then(url => {
+                      if(url) { const i = $('#userAvatar'); if(i) { i.src = url; show(i); hide($('#userInitial')); } }
+                  });
+              }
+          }
       });
       await loadEvents();
     })();
   </script>
 </body>
-
 </html>
