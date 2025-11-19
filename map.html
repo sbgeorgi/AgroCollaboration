@@ -485,18 +485,24 @@
       }
     };
 
-    function handleLangSwitch() {
-      const newLang = (localStorage.getItem("lang") || "en") === 'en' ? 'es' : 'en';
-      localStorage.setItem("lang", newLang);
-      // Apply I18N to injected header/footer and local content
-      applySharedI18n(t, newLang);
-      
-      // Update dynamic language switcher offset in layout
+    // Helper to update the visual toggle button
+    function updateLangToggleUI(lang) {
       const s = document.querySelector('#langSwitchDesktop div:last-child');
       if(s) {
-          s.style.transform = newLang === 'es' ? 'translateX(100%)' : 'translateX(0)';
-          s.innerText = newLang.toUpperCase();
+          s.style.transform = lang === 'es' ? 'translateX(100%)' : 'translateX(0)';
+          s.innerText = lang.toUpperCase();
       }
+    }
+
+    // 1. Handle Click Event (Toggle Language)
+    function handleLangSwitch() {
+      const currentLang = localStorage.getItem("lang") || "en";
+      const newLang = currentLang === 'en' ? 'es' : 'en'; // Toggle
+      
+      localStorage.setItem("lang", newLang); // Save preference
+      
+      applySharedI18n(t, newLang); // Apply text
+      updateLangToggleUI(newLang); // Apply visual button state
     }
 
     (async function main() {
@@ -509,10 +515,18 @@
           if (e.target.id === 'userName') window.location.href = 'profile.html';
         });
 
+        // Determine initial language (Default to English, do not toggle)
+        const initialLang = localStorage.getItem("lang") || "en";
+
         // Initialize Auth and Header Logic
         await initAuth({
           onAuthReady: (currentAuthState) => {
-             renderHeader(currentAuthState, t, localStorage.getItem("lang") || "en");
+             // Render header with the CORRECT stored language
+             renderHeader(currentAuthState, t, initialLang);
+             
+             // Update the toggle UI immediately after header renders
+             updateLangToggleUI(initialLang);
+
              if(currentAuthState.profile?.avatar_url) {
                  getAvatarUrl(currentAuthState.profile.avatar_url).then(url => {
                      const img = document.getElementById('userAvatar');
@@ -520,14 +534,21 @@
                  });
              }
           },
-          onAuthChange: (currentAuthState) => renderHeader(currentAuthState, t, localStorage.getItem("lang") || "en")
+          // Ensure language persists on auth state change
+          onAuthChange: (currentAuthState) => {
+            const currentLang = localStorage.getItem("lang") || "en";
+            renderHeader(currentAuthState, t, currentLang);
+            updateLangToggleUI(currentLang);
+          }
         });
 
         // Initialize Map Logic
         initMap();
 
-        // Apply translations and icons
-        handleLangSwitch(); // Ensure correct state on load
+        // Apply translations to the body content immediately
+        applySharedI18n(t, initialLang);
+        
+        // Initialize Icons
         lucide.createIcons();
 
         // Fix Leaflet sizing issues due to layout changes
@@ -541,5 +562,6 @@
       }
     })();
   </script>
+
 </body>
 </html>

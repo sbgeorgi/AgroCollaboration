@@ -77,19 +77,14 @@
         <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-6 py-6">
 
           <!-- ================= HERO SECTION ================= -->
-          <section id="hero-section" class="relative overflow-hidden rounded-[1.25rem] bg-white border border-gray-200 shadow-sm group p-5 md:p-6">
+          <section id="hero-section" class="relative overflow-hidden rounded-[1.25rem] bg-white border border-gray-200 shadow-sm group p-4 md:p-5">
              <div class="absolute inset-0 opacity-[0.02]" style="background-image: radial-gradient(#0369a1 1px, transparent 1px); background-size: 20px 20px;"></div>
             
-            <div class="relative z-10 flex flex-col">
-              <div class="flex flex-col-reverse md:flex-row md:items-start justify-between gap-6">
-                <div class="flex-1 pt-1">
-                   <!-- Live Banner -->
-                   <a id="siteBanner" href="#" class="hidden inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm pl-2 pr-3 py-1 rounded-full text-[11px] font-semibold text-brand-700 border border-brand-100 shadow-sm hover:border-brand-300 transition-all mb-3">
-                    <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span></span>
-                    <span id="bannerText" class="truncate max-w-[350px]"></span>
-                  </a>
-                  
-                  <h2 class="font-display font-bold text-2xl md:text-3xl text-slate-900 tracking-tight mb-2" data-i18n="intro.title">
+            <div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                
+                <!-- Left: Title & Desc -->
+                <div class="flex-1 min-w-0 pb-1">
+                  <h2 class="font-display font-bold text-2xl md:text-3xl text-slate-900 tracking-tight mb-1" data-i18n="intro.title">
                     Agrovoltaicos <span class="text-brand-600">sin Fronteras</span>
                   </h2>
                   <p class="text-slate-500 text-sm leading-relaxed max-w-3xl">
@@ -97,24 +92,29 @@
                   </p>
                 </div>
 
-                <!-- Host Card (Updated Logos) -->
-                <div class="flex-none self-start bg-slate-50/50 rounded-lg border border-gray-100 p-2.5 flex items-center gap-3">
-                    <div class="flex -space-x-2">
-                      <img src="static/b2ua.jpg" class="w-7 h-7 rounded-full border border-white object-cover" alt="UA">
-                      <img src="static/unam.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white" alt="UNAM">
-                      <img src="static/aal.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white" alt="AAL">
-                      <img src="static/rame.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white" alt="RAME">
+                <!-- Right: Host Card & Banner -->
+                <div class="flex flex-col md:items-end gap-2 flex-none">
+                    <!-- Host Info -->
+                    <div class="bg-slate-50/50 rounded-lg border border-gray-100 p-2.5 flex items-center gap-3 w-fit">
+                        <div class="flex -space-x-2">
+                          <img src="static/b2ua.jpg" class="w-7 h-7 rounded-full border border-white object-cover" alt="UA">
+                          <img src="static/unam.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white" alt="UNAM">
+                          <img src="static/aal.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white" alt="AAL">
+                          <img src="static/rame.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white" alt="RAME">
+                        </div>
+                        <div class="flex flex-col">
+                          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Hosted By</span>
+                          <span class="text-[10px] font-bold text-slate-700">UA, UNAM, AAL & RAME</span>
+                        </div>
                     </div>
-                    <div class="flex flex-col">
-                      <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Hosted By</span>
-                      <span class="text-[10px] font-bold text-slate-700">UA, UNAM, AAL & RAME</span>
-                    </div>
-                    <div class="w-px h-6 bg-gray-200 mx-1 hidden sm:block"></div>
-                    <div class="hidden sm:flex flex-col justify-center">
-                         <div class="text-[10px] font-medium text-slate-500 flex items-center gap-1.5"><i data-lucide="video" class="w-3 h-3"></i> Bi-monthly Seminar</div>
-                    </div>
+                    
+                    <!-- Live Banner (Moved Here) -->
+                    <a id="siteBanner" href="#" class="hidden inline-flex items-center gap-2 bg-brand-50 pl-2 pr-3 py-1 rounded-full text-[10px] font-semibold text-brand-700 border border-brand-100 hover:border-brand-300 transition-all">
+                        <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span></span>
+                        <span id="bannerText" class="truncate max-w-[300px]"></span>
+                    </a>
                 </div>
-              </div>
+
             </div>
           </section>
 
@@ -138,7 +138,7 @@
             <div id="eventsLoader" class="py-12 flex justify-center"><div class="w-6 h-6 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div></div>
 
             <div id="content-area" class="hidden flex-col gap-4">
-              <div id="schedule-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in"></div>
+              <div id="schedule-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in"></div>
               
               <div id="schedule-calendar" class="hidden h-[600px] flex flex-col bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm animate-fade-in">
                 <div class="flex items-center justify-between p-3 border-b border-gray-100 bg-gray-50/50">
@@ -307,7 +307,7 @@
         }
     }
 
-    // --- STREAMLINED CARD RENDERER ---
+    // --- UPDATED CARD RENDERER ---
     async function renderEventsList() {
         const list = $('#schedule-list');
         const term = ($('#search').value || '').toLowerCase();
@@ -315,7 +315,6 @@
         
         const filtered = state.events.filter(e => {
              const end = new Date(e.start_time); end.setHours(end.getHours()+2);
-             // Default view: future events + past 7 days. Search view: everything matching.
              if(!term && end < now && (now - end > 86400000 * 7)) return false;
              if(!term) return true;
              return (JSON.stringify(e) + (e.topic_tags||[]).join(' ')).toLowerCase().includes(term);
@@ -330,25 +329,52 @@
             const start = new Date(ev.start_time);
             const isPast = start < now;
             
-            // Speaker Stack
+            // 1. Speaker Stack with HOVER POPUP TOOLTIPS & ROUNDED IMAGE FIX
             const speakers = ev.event_speakers || [];
-            const avas = await Promise.all(speakers.slice(0, 3).map(async s => {
+            const speakerItems = await Promise.all(speakers.slice(0, 4).map(async s => {
                 const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
-                return img ? `<img src="${img}" class="w-full h-full object-cover">` : `<span class="text-[9px] font-bold">${(s.name||'?')[0]}</span>`;
+                const content = img 
+                    ? `<img src="${img}" class="w-full h-full object-cover rounded-full" alt="${escapeHtml(s.name)}">` 
+                    : `<span class="text-[11px] font-bold select-none">${(s.name||'?')[0]}</span>`;
+                
+                // Note: Image has rounded-full, container has rounded-full but NO overflow-hidden (allows tooltip to overflow)
+                return `<div class="relative group/tooltip w-10 h-10 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-slate-500 shadow-sm relative z-0 hover:z-10 transition-all">
+                    ${content}
+                    <!-- Custom CSS Tooltip -->
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] font-semibold rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
+                        ${escapeHtml(s.name)}
+                        <!-- Little Triangle Arrow -->
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-800"></div>
+                    </div>
+                </div>`;
             }));
             
-            const speakerHtml = avas.length ? 
-                `<div class="flex -space-x-2">
-                   ${avas.map(a => `<div class="w-6 h-6 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-slate-500 overflow-hidden">${a}</div>`).join('')}
-                   ${speakers.length > 3 ? `<div class="w-6 h-6 rounded-full ring-2 ring-white bg-gray-50 flex items-center justify-center text-[8px] font-bold">+${speakers.length-3}</div>` : ''}
+            const speakerHtml = speakerItems.length ? 
+                `<div class="flex -space-x-3">
+                   ${speakerItems.join('')}
+                   ${speakers.length > 4 ? `<div class="w-10 h-10 rounded-full ring-2 ring-white bg-gray-50 flex items-center justify-center text-[10px] font-bold text-slate-600 relative z-0 cursor-default" title="+${speakers.length-4} more speakers">+${speakers.length-4}</div>` : ''}
+                 </div>` : '';
+
+            // 2. Tags (Visible pills)
+            const tags = ev.topic_tags && ev.topic_tags.length ? 
+                `<div class="flex flex-wrap gap-1.5 mb-4 mt-auto">
+                    ${ev.topic_tags.map(tag => `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider border border-slate-200">${escapeHtml(tag)}</span>`).join('')}
+                </div>` : '';
+
+            // 3. Host (Larger, clearer section)
+            const hostHtml = ev.host_org ? 
+                `<div class="flex flex-col items-end text-right max-w-[60%]">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Hosted By</span>
+                    <span class="font-bold text-slate-700 text-sm leading-tight line-clamp-2">${escapeHtml(ev.host_org)}</span>
                  </div>` : '';
 
             const langCode = ev.language === 'es' ? 'ES' : (ev.language === 'bi' ? 'EN/ES' : 'EN');
             
-            return `<article class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col h-full ${isPast ? 'opacity-70 grayscale-[0.3]' : ''}" data-open-event="${ev.id}">
-                <div class="p-4 flex flex-col h-full">
+            // Note: Article does NOT have overflow-hidden, to let tooltips pop
+            return `<article class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-brand-200 transition-all cursor-pointer flex flex-col h-full ${isPast ? 'opacity-70 grayscale-[0.3]' : ''}" data-open-event="${ev.id}">
+                <div class="p-5 flex flex-col h-full relative">
                     <!-- Compact Header: Date | Time | Lang -->
-                    <div class="flex items-center justify-between mb-2 text-xs font-bold text-slate-400 uppercase tracking-wide">
+                    <div class="flex items-center justify-between mb-3 text-xs font-bold text-slate-400 uppercase tracking-wide">
                         <div class="flex items-center gap-2">
                             <span class="${isPast ? 'text-slate-500' : 'text-brand-600'}">
                                 ${start.toLocaleDateString(state.language, {month:'short', day:'numeric'}).toUpperCase()}
@@ -363,18 +389,24 @@
                     </div>
 
                     <!-- Title -->
-                    <h3 class="font-display font-bold text-[15px] text-slate-800 leading-snug mb-1.5 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h3>
+                    <h3 class="font-display font-bold text-lg text-slate-800 leading-tight mb-2 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h3>
                     
                     <!-- Desc -->
-                    <p class="text-[13px] text-slate-500 line-clamp-2 mb-4 flex-1 leading-relaxed">${escapeHtml(desc||'')}</p>
+                    <p class="text-[13px] text-slate-500 line-clamp-2 mb-3 leading-relaxed">${escapeHtml(desc||'')}</p>
                     
-                    <!-- Footer: Speakers Left, Host Right -->
-                    <div class="flex items-center justify-between pt-3 border-t border-gray-50 mt-auto">
+                    <!-- Render Tags -->
+                    ${tags}
+                    
+                    <!-- Spacer to push footer down -->
+                    ${!tags ? '<div class="mt-auto"></div>' : ''}
+
+                    <!-- Footer: Speakers Left, Large Host Right -->
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-100 -mx-5 px-5 bg-slate-50/30">
                         <div class="flex items-center gap-2">
                             ${speakerHtml}
-                            ${!speakerHtml ? '<span class="text-[10px] text-slate-400 italic">TBA</span>' : ''}
+                            ${!speakerHtml ? '<span class="text-[10px] text-slate-400 italic">Speaker TBA</span>' : ''}
                         </div>
-                        ${ev.host_org ? `<div class="text-[10px] font-bold text-slate-400 truncate max-w-[100px] text-right">${escapeHtml(ev.host_org)}</div>` : ''}
+                        ${hostHtml}
                     </div>
                 </div>
             </article>`;

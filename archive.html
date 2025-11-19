@@ -19,7 +19,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="styles.css">
 
-  <!-- External Tailwind Config (Extracted) -->
+  <!-- External Tailwind Config -->
   <script src="theme.js"></script>
   
   <!-- Custom CSS -->
@@ -44,27 +44,21 @@
         transform: translateX(-50%) translateY(-150%);
         background-color: #0f172a;
         color: white;
-        padding: 10px 20px;
+        padding: 8px 16px;
         border-radius: 9999px;
         font-weight: 500;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         z-index: 9999;
         transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        opacity: 0;
+        display: flex; align-items: center; gap: 8px; opacity: 0;
     }
-    #flash.visible {
-        transform: translateX(-50%) translateY(0);
-        opacity: 1;
-    }
+    #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
     
     /* Markdown Styles */
-    .prose p { margin-bottom: 1em; line-height: 1.7; }
-    .prose ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
-    .prose h1, .prose h2, .prose h3 { color: #0f172a; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .prose p { margin-bottom: 1em; line-height: 1.6; color: #334155; }
+    .prose ul { list-style-type: disc; padding-left: 1.2em; margin-bottom: 1em; }
+    .prose h1, .prose h2, .prose h3 { color: #0f172a; font-weight: 700; margin-top: 1.2em; margin-bottom: 0.5em; font-family: 'Plus Jakarta Sans', sans-serif; }
     .prose a { color: #0369a1; text-decoration: underline; text-decoration-color: #bae6fd; text-underline-offset: 2px; }
   </style>
 
@@ -75,26 +69,27 @@
 <body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
   <!-- ================= MAIN APP CONTAINER ================= -->
-  <!-- Note: Header and Footer are injected by layout.js -->
   <main class="flex-1 relative overflow-hidden bg-gray-50">
 
-    <!-- ================= VIEW: ARCHIVE (Modified for Layout) ================= -->
+    <!-- ================= VIEW: ARCHIVE ================= -->
     <div id="view-archive" class="absolute inset-0 flex flex-col overflow-hidden transition-all duration-500 cubic-bezier transform translate-x-0 opacity-100">
       <div class="flex-1 overflow-y-auto custom-scrollbar">
         <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-6 py-6">
           
-          <section class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+          <!-- Archive Controls Section -->
+          <section class="bg-white rounded-[1.25rem] border border-gray-200 shadow-sm overflow-hidden flex flex-col min-h-[80vh]">
+            
             <!-- Controls Header -->
-            <div class="p-4 md:p-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between sticky top-0 bg-white/90 backdrop-blur-md z-20">
-              <h3 class="font-display font-bold text-2xl text-slate-800 self-start md:self-center" data-i18n="archive.title">Event Archive</h3>
+            <div class="p-4 md:p-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-20">
+              <h3 class="font-display font-bold text-xl md:text-2xl text-slate-800 self-start md:self-center" data-i18n="archive.title">Event Archive</h3>
               
               <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
                 <div class="relative w-full sm:w-64">
-                  <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                  <input id="search" type="search" class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all text-sm" data-i18n-placeholder="search.placeholder">
+                  <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"></i>
+                  <input id="search" type="search" class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all text-sm" data-i18n-placeholder="search.placeholder">
                 </div>
-                <select id="yearFilter" class="w-full sm:w-auto px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all text-slate-700 font-medium text-sm cursor-pointer"></select>
-                <label class="flex items-center gap-2 cursor-pointer bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-gray-100 transition-colors w-full sm:w-auto justify-center select-none">
+                <select id="yearFilter" class="w-full sm:w-auto px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all text-slate-700 font-medium text-sm cursor-pointer"></select>
+                <label class="flex items-center gap-2 cursor-pointer bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-gray-100 transition-colors w-full sm:w-auto justify-center select-none">
                   <input type="checkbox" id="hasRecording" class="w-4 h-4 rounded text-brand-600 border-gray-300 focus:ring-brand-500">
                   <span data-i18n="archive.recordings_only">Recordings only</span>
                 </label>
@@ -109,74 +104,74 @@
               </div>
             </div>
 
+            <!-- Loader -->
             <div id="archiveLoader" class="py-20 flex items-center justify-center">
               <div class="w-8 h-8 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
             </div>
 
+            <!-- Grid Area -->
             <div id="content-area" class="p-4 md:p-6 bg-gray-50/30 flex-1 hidden">
-              <div id="archiveList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 animate-fade-in"></div>
+              <!-- Grid matching index.html layout -->
+              <div id="archiveList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in"></div>
             </div>
             
+            <!-- Empty State -->
             <div id="emptyArchive" class="hidden py-20 text-center text-slate-400 text-sm" data-i18n="archive.empty">No past events found matching your filters.</div>
           </section>
         </div>
       </div>
     </div>
 
-    <!-- ================= VIEW: DETAIL ================= -->
+    <!-- ================= VIEW: DETAIL (Identical to Index) ================= -->
     <div id="view-detail" class="absolute inset-0 flex flex-col bg-slate-900/10 backdrop-blur-[2px] translate-x-full transition-transform duration-500 cubic-bezier z-50">
       <div class="absolute inset-0" onclick="document.getElementById('backToScheduleBtn')?.click()"></div>
-      <div class="relative flex-1 md:m-4 lg:mx-auto lg:max-w-[1600px] w-full bg-white md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-white/40 h-full">
-        <!-- Header -->
-        <div id="compactEventHeaderContainer" class="flex-none p-5 border-b border-gray-100 bg-white z-20 sticky top-0"></div>
+      <div class="relative flex-1 md:m-4 lg:mx-auto lg:max-w-[1400px] w-full bg-white md:rounded-xl shadow-2xl flex flex-col overflow-hidden border border-white/40 h-full">
         
-        <!-- Tabs Navigation -->
+        <!-- Sticky Header -->
+        <div id="compactEventHeaderContainer" class="flex-none p-4 border-b border-gray-100 bg-white z-20 sticky top-0"></div>
+        
+        <!-- Navigation -->
         <div class="flex-none px-6 border-b border-gray-100 flex gap-6 bg-white">
-          <button class="tab-link py-3 text-sm font-bold text-brand-600 border-b-2 border-brand-500" data-tab="description" data-i18n="tabs.description">Description</button>
-          <button class="tab-link py-3 text-sm font-bold text-slate-400 border-b-2 border-transparent" data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
-          <button class="tab-link py-3 text-sm font-bold text-slate-400 border-b-2 border-transparent" data-tab="files" data-i18n="tabs.files">Files</button>
+          <button class="tab-link py-3 text-xs font-bold text-brand-600 border-b-2 border-brand-500 uppercase tracking-wide" data-tab="description" data-i18n="tabs.description">Description</button>
+          <button class="tab-link py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent uppercase tracking-wide hover:text-slate-600" data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
+          <button class="tab-link py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent uppercase tracking-wide hover:text-slate-600" data-tab="files" data-i18n="tabs.files">Files</button>
         </div>
 
-        <!-- Tab Contents -->
+        <!-- Scrollable Content -->
         <div class="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30">
           
           <!-- DESCRIPTION TAB -->
-          <div id="tab_description" class="tab-panel prose prose-slate max-w-3xl mx-auto animate-fade-in p-6 md:p-8"></div>
+          <div id="tab_description" class="tab-panel animate-fade-in p-6 md:p-8"></div>
 
           <!-- DISCUSSION TAB -->
           <div id="tab_discussion" class="tab-panel hidden h-full animate-fade-in p-0 lg:p-6">
              <div class="flex flex-col lg:flex-row h-full lg:border lg:border-gray-200 lg:rounded-xl lg:bg-white lg:shadow-sm overflow-hidden">
-                <!-- LEFT: THREAD LIST -->
-                <div class="w-full lg:w-72 flex flex-col flex-shrink-0 bg-gray-50 border-b lg:border-b-0 lg:border-r border-gray-200 h-64 lg:h-auto">
-                    <div class="p-3 border-b border-gray-200 flex justify-between items-center bg-white">
+                <!-- Left: Topics -->
+                <div class="w-full lg:w-64 flex flex-col flex-shrink-0 bg-gray-50 border-b lg:border-b-0 lg:border-r border-gray-200 h-48 lg:h-auto">
+                    <div class="p-3 border-b border-gray-200 bg-white flex justify-between items-center">
                         <h3 class="font-bold text-xs text-slate-500 uppercase">Topics</h3>
                     </div>
-                    <!-- Creation Form -->
-                    <div class="p-3 bg-gray-50 border-b border-gray-200">
+                    <div class="p-2 bg-gray-50 border-b border-gray-200">
                         <form id="newThreadForm" class="flex gap-1">
-                            <input id="threadTitle" class="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none" placeholder="New Topic..." autocomplete="off">
-                            <button class="bg-brand-600 hover:bg-brand-700 text-white px-3 rounded text-lg font-bold shadow-sm transition-colors">+</button>
+                            <input id="threadTitle" class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-brand-500 outline-none" placeholder="New Topic..." autocomplete="off">
+                            <button class="bg-brand-600 hover:bg-brand-700 text-white px-2 rounded text-lg font-bold shadow-sm leading-none pb-0.5">+</button>
                         </form>
                     </div>
-                    <!-- The List -->
-                    <div id="threadsList" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar"></div>
+                    <div id="threadsList" class="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar"></div>
                 </div>
 
-                <!-- RIGHT: CHAT AREA -->
+                <!-- Right: Chat -->
                 <div class="flex-1 flex flex-col min-w-0 bg-white relative min-h-[400px]">
-                    <!-- Default Welcome Message -->
                     <div id="thread-welcome" class="absolute inset-0 flex items-center justify-center text-slate-400 flex-col gap-2 p-6 text-center">
-                        <i data-lucide="message-square" class="w-10 h-10 opacity-20"></i>
-                        <p>Select a topic from the list to begin discussion.</p>
+                        <i data-lucide="message-square" class="w-8 h-8 opacity-20"></i>
+                        <p class="text-sm">Select a topic to view discussion.</p>
                     </div>
-                    
-                    <!-- Actual Thread Detail View (Toggled by JS) -->
                     <div id="threadDetailView" class="hidden absolute inset-0 flex flex-col bg-white z-10">
                         <div id="commentsList" class="flex-1 overflow-y-auto p-4 custom-scrollbar"></div>
                         <div class="p-3 border-t border-gray-100 bg-gray-50">
                             <form id="replyToThreadForm" class="flex gap-2">
-                                <input class="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none shadow-sm" placeholder="Write a reply...">
-                                <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors">Send</button>
+                                <input class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none shadow-sm" placeholder="Write a reply...">
+                                <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide shadow-sm transition-colors">Send</button>
                             </form>
                         </div>
                     </div>
@@ -187,7 +182,7 @@
           <!-- FILES TAB -->
           <div id="tab_files" class="tab-panel hidden animate-fade-in max-w-3xl mx-auto p-6 md:p-8">
              <form id="uploadFormContainer">
-               <label class="block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
+               <label class="block border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:bg-white hover:border-brand-300 transition-all">
                  <i data-lucide="upload-cloud" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
                  <span class="text-sm text-slate-500 font-medium">Click to Upload File</span>
                  <input id="fileInput" type="file" class="hidden">
@@ -214,7 +209,6 @@
 
     let eventLogic;
     
-    // --- PAGE-SPECIFIC STATE & I18N ---
     const state = { language: localStorage.getItem("lang") || "en", events: [], selectedEvent: null, threads: [], selectedThreadId: null, comments: [], files: [], filters: { search: "", year: "all", tags: new Set(), hasRecording: false } };
     
     const t = { 
@@ -224,7 +218,7 @@
             tabs: { description: "Description", discussion: "Discussion", files: "Files" }, 
             discussion: { welcome_title: "Welcome!", welcome_body: "Select a topic to begin.", topics: "Discussion Topics" }, 
             files: { upload_label: "Click to upload or drag & drop", upload_hint: "Max 10MB per file", empty: "No files uploaded." }, 
-            archive: { title: "Event Archive", empty: "No past events found matching your filters.", recordings_only: "Recordings only", filter_by_tags: "Filter by Tag", all_years: "All Years", watch_recording: "Watch Recording" }, 
+            archive: { title: "Event Archive", empty: "No past events found matching your filters.", recordings_only: "Recordings only", filter_by_tags: "Filter by Tag", all_years: "All Years", watch_recording: "Watch" }, 
         }, 
         es: { 
             auth: { signin: "Ingresar", signout: "Salir", required: "Por favor, inicia sesión para ver los detalles." }, 
@@ -232,19 +226,19 @@
             tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" }, 
             discussion: { welcome_title: "¡Bienvenido!", welcome_body: "Selecciona un tema para comenzar.", topics: "Temas de Discusión" }, 
             files: { upload_label: "Haz clic o arrastra para subir", upload_hint: "Máx 10MB por archivo", empty: "No hay archivos subidos." }, 
-            archive: { title: "Archivo de Eventos", empty: "No se encontraron eventos pasados con sus filtros.", recordings_only: "Solo con grabación", filter_by_tags: "Filtrar por Etiqueta", all_years: "Todos los Años", watch_recording: "Ver Grabación" }, 
+            archive: { title: "Archivo de Eventos", empty: "No se encontraron eventos pasados con sus filtros.", recordings_only: "Solo con grabación", filter_by_tags: "Filtrar por Etiqueta", all_years: "Todos los Años", watch_recording: "Ver" }, 
         } 
     };
     const localTr = (key, fallback = "") => tr(t, state.language, key, fallback);
 
-    // --- PAGE-SPECIFIC FUNCTIONS ---
     function showView(viewName) {
       const archiveView = $('#view-archive');
       const detailView = $('#view-detail');
       if (viewName === 'archive' || viewName === 'schedule') {
         detailView.classList.add('translate-x-full');
         archiveView.classList.remove('-translate-x-1/4', 'opacity-50', 'pointer-events-none');
-        window.history.pushState({}, '', window.location.pathname);
+        // Clean up URL
+        if (viewName === 'archive') window.history.pushState({}, '', window.location.pathname);
       } else if (viewName === 'event') {
         archiveView.classList.add('-translate-x-1/4', 'opacity-50', 'pointer-events-none');
         detailView.classList.remove('translate-x-full');
@@ -299,12 +293,14 @@
         yearSel.value = state.filters.year; 
     }
 
+    // --- RENDER FUNCTION (Identical to Index, but swapped logic for Recording Button) ---
     async function renderArchiveList() { 
         const list = $("#archiveList"), empty = $("#emptyArchive"); 
         const { search, year, tags, hasRecording } = state.filters; 
         const now = new Date(); 
+        
         const filtered = state.events.filter(e => { 
-            if (new Date(e.start_time) >= now) return false; 
+            if (new Date(e.start_time) >= now) return false; // Ensure past only
             if (hasRecording && !e.recording_url) return false; 
             if (year !== 'all' && new Date(e.start_time).getFullYear() != year) return false; 
             if (tags.size > 0) { 
@@ -323,53 +319,95 @@
         if (filtered.length > 0) { hide(empty); show(list); } 
         else { show(empty); hide(list); return; } 
 
-        const cards = await Promise.all(filtered.map(async (ev) => { 
-            const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en, 
-                  desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en, 
-                  speaker = (ev.event_speakers || []).find(s => s.primary_speaker)?.profile || (ev.event_speakers || [])[0]?.profile; 
-            let avatarHtml = '', initials = ''; 
-            if (speaker) { 
-                initials = (speaker.full_name || '').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2); 
-                if (speaker.avatar_url) { 
-                    const avatarUrl = await getAvatarUrl(speaker.avatar_url); 
-                    if (avatarUrl) avatarHtml = `<img src="${avatarUrl}" alt="${escapeHtml(speaker.full_name)}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>`; 
-                } 
-            } 
-            return `
-            <article class="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden flex flex-col h-full" data-open-event="${ev.id}">
-                <div class="p-5 flex flex-col h-full">
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-brand-700 mb-1">${fmtDateTime(ev.start_time, { dateStyle: 'long' })}</span>
-                            <h4 class="font-display font-bold text-lg text-slate-800 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h4>
-                        </div>
+        const html = await Promise.all(filtered.map(async ev => { 
+            const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
+            const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
+            const start = new Date(ev.start_time);
+            
+            // 1. Speaker Stack with HOVER POPUP TOOLTIPS (Copied from Index)
+            const speakers = ev.event_speakers || [];
+            const speakerItems = await Promise.all(speakers.slice(0, 4).map(async s => {
+                const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
+                const content = img 
+                    ? `<img src="${img}" class="w-full h-full object-cover rounded-full" alt="${escapeHtml(s.name)}">` 
+                    : `<span class="text-[11px] font-bold select-none">${(s.name||'?')[0]}</span>`;
+                
+                return `<div class="relative group/tooltip w-10 h-10 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-slate-500 shadow-sm relative z-0 hover:z-10 transition-all">
+                    ${content}
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] font-semibold rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
+                        ${escapeHtml(s.name)}
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-800"></div>
                     </div>
-                    ${desc ? `<p class="text-slate-500 text-xs mb-4 line-clamp-2 flex-1">${escapeHtml(desc)}</p>` : '<div class="flex-1"></div>'}
-                    
-                    ${speaker ? `
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-8 h-8 rounded-full bg-gray-100 overflow-hidden ring-1 ring-gray-200 flex items-center justify-center text-slate-400 font-bold text-[10px]">
-                            ${avatarHtml || initials}
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-xs font-bold text-slate-700 truncate">${escapeHtml(speaker.full_name)}</span>
-                            <span class="text-[10px] text-slate-500 truncate">${escapeHtml(speaker.affiliation)}</span>
-                        </div>
-                    </div>` : ''}
+                </div>`;
+            }));
+            
+            const speakerHtml = speakerItems.length ? 
+                `<div class="flex -space-x-3">
+                   ${speakerItems.join('')}
+                   ${speakers.length > 4 ? `<div class="w-10 h-10 rounded-full ring-2 ring-white bg-gray-50 flex items-center justify-center text-[10px] font-bold text-slate-600 relative z-0 cursor-default" title="+${speakers.length-4} more speakers">+${speakers.length-4}</div>` : ''}
+                 </div>` : '';
 
-                    <div class="pt-3 border-t border-gray-50 flex flex-wrap items-center justify-between gap-3 mt-auto">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            ${ev.recording_url ? `<a href="${escapeHtml(ev.recording_url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-bold hover:bg-red-100 transition-colors border border-red-100"><i data-lucide="youtube" class="w-3 h-3"></i> <span data-i18n="archive.watch_recording">Watch</span></a>` : ''}
-                            ${(ev.topic_tags || []).slice(0,2).map(tag => `<span class="px-2 py-0.5 bg-gray-100 text-slate-500 rounded text-[10px] font-semibold border border-gray-200">#${escapeHtml(tag)}</span>`).join('')}
+            // 2. Tags & RECORDING BUTTON (Replaces Zoom logic)
+            // We place the "Watch" button alongside tags for visibility
+            const recordingBtn = ev.recording_url 
+                ? `<a href="${escapeHtml(ev.recording_url)}" target="_blank" onclick="event.stopPropagation()" class="flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-wider border border-red-200 hover:bg-red-100 transition-colors z-20 relative shadow-sm"><i data-lucide="youtube" class="w-3 h-3"></i> ${localTr('archive.watch_recording')}</a>` 
+                : '';
+
+            const tagPills = (ev.topic_tags || []).map(tag => `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider border border-slate-200">${escapeHtml(tag)}</span>`).join('');
+            
+            // Combine Recording Button + Tags into one section
+            const tagsSection = (recordingBtn || tagPills) 
+                ? `<div class="flex flex-wrap gap-1.5 mb-4 mt-auto">
+                     ${recordingBtn}
+                     ${tagPills}
+                   </div>` 
+                : '<div class="mt-auto"></div>';
+
+            // 3. Host (Same layout as Index)
+            const hostHtml = ev.host_org ? 
+                `<div class="flex flex-col items-end text-right max-w-[60%]">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Hosted By</span>
+                    <span class="font-bold text-slate-700 text-sm leading-tight line-clamp-2">${escapeHtml(ev.host_org)}</span>
+                 </div>` : '';
+            
+            const langCode = ev.language === 'es' ? 'ES' : (ev.language === 'bi' ? 'EN/ES' : 'EN');
+
+            return `<article class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-brand-200 transition-all cursor-pointer flex flex-col h-full" data-open-event="${ev.id}">
+                <div class="p-5 flex flex-col h-full relative">
+                    <!-- Header: Date | Time | Lang (No Zoom Icon) -->
+                    <div class="flex items-center justify-between mb-3 text-xs font-bold text-slate-400 uppercase tracking-wide">
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-500">
+                                ${start.toLocaleDateString(state.language, {month:'short', day:'numeric'}).toUpperCase()}
+                            </span>
+                            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                            <span>${fmtDateTime(ev.start_time,{timeStyle:'short'})}</span>
                         </div>
-                        <button class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-slate-400 group-hover:bg-brand-500 group-hover:text-white transition-all"><i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+                        <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-[4px] text-[10px]">${langCode}</span>
+                    </div>
+
+                    <!-- Title -->
+                    <h3 class="font-display font-bold text-lg text-slate-800 leading-tight mb-2 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h3>
+                    
+                    <!-- Description -->
+                    <p class="text-[13px] text-slate-500 line-clamp-2 mb-3 leading-relaxed">${escapeHtml(desc||'')}</p>
+                    
+                    <!-- Tags & Recording Button -->
+                    ${tagsSection}
+                    
+                    <!-- Footer -->
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-100 -mx-5 px-5 bg-slate-50/30">
+                        <div class="flex items-center gap-2">
+                            ${speakerHtml}
+                            ${!speakerHtml ? '<span class="text-[10px] text-slate-400 italic">Speaker TBA</span>' : ''}
+                        </div>
+                        ${hostHtml}
                     </div>
                 </div>
             </article>`; 
         })); 
-        list.innerHTML = cards.join(''); 
+        list.innerHTML = html.join(''); 
         lucide.createIcons(); 
-        applyI18n(t, state.language); 
     }
 
     // --- MAIN EXECUTION ---
@@ -379,16 +417,36 @@
 
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
       
-      // Wire page-specific listeners
       $$('.tab-link').forEach(tab => tab.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab, e.currentTarget)));
+      
       let searchTimer;
       $('#search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.filters.search = $('#search').value; renderArchiveList(); }, 300); });
       $('#yearFilter').addEventListener('change', (e) => { state.filters.year = e.target.value; renderArchiveList(); });
       $('#hasRecording').addEventListener('change', (e) => { state.filters.hasRecording = e.target.checked; renderArchiveList(); });
-      $('#tagsFilter').addEventListener('click', (e) => { const btn = e.target.closest('[data-tag]'); if (!btn) return; const tag = btn.dataset.tag; if (state.filters.tags.has(tag)) { state.filters.tags.delete(tag); btn.classList.remove('bg-brand-100', 'border-brand-300', 'text-brand-900'); } else { state.filters.tags.add(tag); btn.classList.add('bg-brand-100', 'border-brand-300', 'text-brand-900'); } renderArchiveList(); });
+      
+      $('#tagsFilter').addEventListener('click', (e) => { 
+          const btn = e.target.closest('[data-tag]'); 
+          if (!btn) return; 
+          const tag = btn.dataset.tag; 
+          if (state.filters.tags.has(tag)) { 
+              state.filters.tags.delete(tag); 
+              btn.classList.remove('bg-brand-100', 'border-brand-300', 'text-brand-900'); 
+          } else { 
+              state.filters.tags.add(tag); 
+              btn.classList.add('bg-brand-100', 'border-brand-300', 'text-brand-900'); 
+          } 
+          renderArchiveList(); 
+      });
+      
       document.body.addEventListener('click', e => {
         const card = e.target.closest('[data-open-event]'); 
-        if (card && eventLogic) { e.preventDefault(); eventLogic.openEvent(card.dataset.openEvent); }
+        // Don't open detail view if clicking the recording button link
+        if (card && !e.target.closest('a') && eventLogic) { 
+            e.preventDefault(); 
+            card.classList.add('scale-95'); 
+            setTimeout(()=>card.classList.remove('scale-95'),100);
+            eventLogic.openEvent(card.dataset.openEvent); 
+        }
         if (e.target.closest('#btnProfile') || e.target.id === 'userName') window.location.href = 'profile.html';
       });
 
