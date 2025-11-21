@@ -24,7 +24,6 @@ export function initEventLogic(deps) {
   let currentFilesChannel = null;
   let currentLikesChannel = null;
   let currentRSVPFollowsChannel = null;
-  let commentsPollInterval = null;
   
   // Cache
   const profileCache = new Map();
@@ -149,22 +148,55 @@ export function initEventLogic(deps) {
       file_type: file.type
     });
     
+    // Note: We don't manually refresh here because the Realtime subscription (added in openEvent) 
+    // will catch the INSERT and trigger loadAndRenderFiles automatically.
     if (insertError) setFlash('Upload failed', 4000); else setFlash('Upload complete!', 3000);
     e.target.value = '';
   }
 
+  // UPDATED: Improved Delete File with Instant UI Update
   async function deleteFile(fileId, filePath, btn) {
     if (!confirm('Delete this file?')) return;
+    
     const bucketName = btn.dataset.bucket || 'attachments';
-    btn.disabled = true; btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i>`; lucideRefresh();
     
+    // 1. Visual Feedback: Set spinner
+    const originalContent = btn.innerHTML;
+    btn.disabled = true; 
+    btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i>`; 
+    lucideRefresh();
+    
+    // 2. Delete from Storage first
     const { error: storageError } = await supabase.storage.from(bucketName).remove([filePath]);
-    if (storageError) { setFlash('Delete failed', 4000); btn.disabled = false; return; }
+    if (storageError) { 
+      setFlash('Delete failed', 4000); 
+      // Revert button state on error
+      btn.disabled = false; 
+      btn.innerHTML = originalContent;
+      lucideRefresh();
+      return; 
+    }
     
-    await supabase.from('attachments').delete().eq('id', fileId);
+    // 3. Delete from Database
+    const { error: dbError } = await supabase.from('attachments').delete().eq('id', fileId);
+
+    if (dbError) {
+        setFlash('Database error', 4000);
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+        lucideRefresh();
+        return;
+    }
+
+    // 4. SUCCESS: Update Local State and Re-render immediately
+    if (state.files) {
+        state.files = state.files.filter(f => f.id !== fileId);
+        renderFiles();
+        setFlash('File deleted', 3000);
+    }
   }
 
-  // --- THREADS LOGIC (Restored Management) ---
+  // --- THREADS LOGIC ---
 
   async function loadAndRenderThreads() {
     if (!state.selectedEvent) return;
@@ -206,7 +238,6 @@ export function initEventLogic(deps) {
     
     listEl.innerHTML = state.threads.map(thread => {
       const isActive = String(thread.id) === String(state.selectedThreadId);
-      const name = formatName(thread.created_by_profile);
       const canManage = canManageThread(thread);
 
       const actionsMenu = canManage ? `
@@ -285,7 +316,7 @@ export function initEventLogic(deps) {
     }
   }
 
-  // --- COMMENTS LOGIC (Restored Full Functionality) ---
+  // --- COMMENTS LOGIC ---
 
   async function loadCommentsForThread(threadId) {
     const { data, error } = await supabase
@@ -344,7 +375,6 @@ export function initEventLogic(deps) {
       ? `<img src="${user.public_avatar_url}" alt="${escapeHtml(name)}" class="w-full h-full object-cover">`
       : `<span class="font-bold text-slate-600 text-xs">${initialLetter(name)}</span>`;
 
-    const likeActive = c.liked_by_me ? 'text-rose-600 fill-current' : 'text-slate-400';
     const likesCount = Number(c.likes_count || 0);
 
     return `
@@ -657,13 +687,33 @@ export function initEventLogic(deps) {
     loadAndRenderFiles();
     subscribeToLikes();
 
+    // --- THREADS SUBSCRIPTION ---
     if (currentThreadsChannel) supabase.removeChannel(currentThreadsChannel);
     currentThreadsChannel = supabase.channel(`threads-${eventId}`).on('postgres_changes', {event:'*', schema:'public', table:'threads', filter:`event_id=eq.${eventId}`}, loadAndRenderThreads).subscribe();
     
+    // --- COMMENTS SUBSCRIPTION ---
     if (currentCommentsChannel) supabase.removeChannel(currentCommentsChannel);
     currentCommentsChannel = supabase.channel(`comments-${eventId}`).on('postgres_changes', {event:'*', schema:'public', table:'comments', filter:`event_id=eq.${eventId}`}, () => {
         if(state.selectedThreadId) loadCommentsForThread(state.selectedThreadId);
     }).subscribe();
+
+    // --- UPDATED: FILES SUBSCRIPTION ---
+    if (currentFilesChannel) supabase.removeChannel(currentFilesChannel);
+    currentFilesChannel = supabase.channel(`files-${eventId}`)
+      .on(
+        'postgres_changes', 
+        {
+          event: '*', 
+          schema: 'public', 
+          table: 'attachments', 
+          filter: `event_id=eq.${eventId}`
+        }, 
+        () => {
+          // Auto-reload files list on INSERT or DELETE from other users
+          loadAndRenderFiles();
+        }
+      )
+      .subscribe();
 
     $('.tab-link[data-tab="description"]')?.click();
   }
@@ -679,6 +729,20 @@ export function initEventLogic(deps) {
   $('#newThreadForm')?.addEventListener('submit', handleNewThread);
   $('#replyToThreadForm')?.addEventListener('submit', handleNewComment);
   $('#fileInput')?.addEventListener('change', handleFileUpload);
+  
+  // --- UPDATED: FILE LISTENER (Correctly placed here) ---
+  $('#filesList')?.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-delete-file]');
+      if (!btn) return;
+
+      e.preventDefault();
+      
+      const fileId = btn.dataset.deleteFile;
+      const filePath = btn.dataset.filePath;
+      
+      await deleteFile(fileId, filePath, btn);
+  });
+
   $('#threadsList')?.addEventListener('click', e => {
       // Dropdown logic
       const menuBtn = e.target.closest('[data-thread-menu]');

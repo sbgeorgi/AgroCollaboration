@@ -124,7 +124,7 @@
 
     <!-- ================= VIEW: DETAIL (Identical to Index) ================= -->
     <div id="view-detail" class="absolute inset-0 flex flex-col bg-slate-900/10 backdrop-blur-[2px] translate-x-full transition-transform duration-500 cubic-bezier z-50">
-      <div class="absolute inset-0" onclick="document.getElementById('backToScheduleBtn')?.click()"></div>
+<div class="absolute inset-0" onclick="document.getElementById('back-to-schedule')?.click()"></div>
       <div class="relative flex-1 md:m-4 lg:mx-auto lg:max-w-[1400px] w-full bg-white md:rounded-xl shadow-2xl flex flex-col overflow-hidden border border-white/40 h-full">
         
         <!-- Sticky Header -->
@@ -412,7 +412,24 @@
 
     // --- MAIN EXECUTION ---
     (async function main() {
-      const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify: () => {}, bytesToSize: () => {}, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide };
+const deps = { 
+    supabase, 
+    authState, 
+    tr: localTr, 
+    state, 
+    $, 
+    $$, 
+    setFlash, 
+    fmtDateTime, 
+    escapeHtml, 
+    linkify,      // <-- Uses the imported function from ui.js
+    bytesToSize,  // <-- Uses the imported function from ui.js
+    showView, 
+    getAvatarUrl, 
+    applyI18n: () => applyI18n(t, state.language), 
+    show, 
+    hide 
+};
       eventLogic = initEventLogic(deps);
 
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });

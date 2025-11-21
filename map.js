@@ -364,8 +364,11 @@ async function handleFormSubmit(e) {
     e.preventDefault();
     const btn = $('#saveBtn');
     btn.disabled = true; btn.textContent = tr('form.saving');
+    
     try {
         if (state.selectedCollaborators.length === 0) throw new Error(tr('notifications.no_collaborators'));
+        
+        // 1. Handle Media Uploads
         const uploadedMediaData = [];
         for (const { file, type } of state.uploadedMedia) {
             const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${file.name.split('.').pop()}`;
@@ -375,11 +378,26 @@ async function handleFormSubmit(e) {
             const { data: { publicUrl } } = supabase.storage.from('map_media').getPublicUrl(filePath);
             uploadedMediaData.push({ url: publicUrl, type });
         }
+
+        // 2. Handle Media Deletions
         for (const deleted of state.deletedMedia) {
             const mediaPath = deleted.url.split('/map_media/')[1];
             if (mediaPath) await supabase.storage.from('map_media').remove([mediaPath]);
         }
+
+        // 3. Combine Media
         const allMedia = [...state.existingMedia, ...uploadedMediaData];
+
+        // --- FIX START: Generate legacy image_url ---
+        // The database requires 'image_url' (NOT NULL). We grab the first image from allMedia, 
+        // or the first video if no image, or an empty string.
+        let legacyImageUrl = "";
+        if (allMedia.length > 0) {
+            const firstImage = allMedia.find(m => m.type === 'image');
+            legacyImageUrl = firstImage ? firstImage.url : allMedia[0].url;
+        }
+        // --- FIX END ---
+
         const pointData = {
             name: $('#name').value,
             project_name: $('#project_name').value,
@@ -389,7 +407,11 @@ async function handleFormSubmit(e) {
             area: $('#area').value,
             associated_crops: $('#associated_crops').value,
             av_system_type: $('#av_system_type').value,
-            media_url: allMedia,
+            
+            // Add these two lines:
+            media_url: allMedia,         // JSONB field (New way)
+            image_url: legacyImageUrl,   // Text field (Old way, Required by DB)
+
             affiliation: $('#affiliation').value || null,
             link: $('#link').value || null,
             description: $('#description').value || null,
@@ -402,18 +424,24 @@ async function handleFormSubmit(e) {
             generating_capacity_kw: parseFloat($('#generating_capacity_kw').value) || null,
             keywords: $('#keywords').value.split(',').map(k => k.trim()).filter(Boolean) || [],
         };
+
         const { data: savedPoint, error } = $('#pointId').value
             ? await supabase.from('map_points').update(pointData).eq('id', $('#pointId').value).select().single()
             : await supabase.from('map_points').insert(pointData).select().single();
+
         if (error) throw error;
+
+        // Handle Collaborators
         const pointId = savedPoint.id;
         const { error: deleteError } = await supabase.from('project_collaborators').delete().eq('project_id', pointId);
         if (deleteError) throw deleteError;
+        
         const collaboratorRows = state.selectedCollaborators.map(user => ({ project_id: pointId, user_id: user.id }));
         if (collaboratorRows.length > 0) {
             const { error: insertError } = await supabase.from('project_collaborators').insert(collaboratorRows);
             if (insertError) throw insertError;
         }
+
         setFlash(tr('notifications.save_success'));
         closeEditPanel();
         await loadMapPoints();
