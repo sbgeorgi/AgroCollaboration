@@ -139,7 +139,7 @@
                 <div id="tagFilters" class="space-y-0.5"></div>
             </div>
 
-            <!-- REINSTATED KPI STATS (Footer of Sidebar) -->
+            <!-- STATS (Footer of Sidebar) -->
             <div class="p-4 bg-slate-50 border-t border-gray-200 mt-auto">
                 <div class="grid grid-cols-2 gap-2">
                     <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
@@ -406,15 +406,19 @@
         members.forEach(m => {
             const p = state.positions.get(m.id);
             if(!p || isNaN(p.x) || isNaN(p.y)) return;
+            
+            // Use full_name or generic fallback (never username)
+            const displayName = m.full_name || 'Member';
+            
             const el = document.createElement('div'); el.className = 'network-node';
             el.style.left = p.x+'px'; el.style.top = p.y+'px';
             el.innerHTML = `
             <div class="node-pill flex items-center gap-3 pl-1 pr-4 py-1 bg-white border border-gray-200 rounded-full shadow-sm transition-all duration-200 min-w-[140px] group-hover:border-brand-400 group-hover:shadow-lg group-hover:ring-2 group-hover:ring-brand-100">
                 <div class="node-avatar w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-xs font-bold overflow-hidden shrink-0 ring-2 ring-white shadow-sm">
-                    ${(m.full_name||"?")[0]}
+                    ${displayName[0].toUpperCase()}
                 </div>
                 <div class="min-w-0">
-                    <span class="node-name text-xs font-bold text-slate-700 leading-tight block">${m.full_name}</span>
+                    <span class="node-name text-xs font-bold text-slate-700 leading-tight block">${displayName}</span>
                     ${m.affiliation ? `<span class="node-affiliation text-[9px] text-slate-400 leading-tight truncate max-w-[120px] block mt-0.5">${m.affiliation}</span>` : ''}
                 </div>
             </div>`;
@@ -462,7 +466,8 @@
             const q = state.searchQuery.toLowerCase();
             ids = new Set([...ids].filter(id => {
                 const m = state.profileById.get(id);
-                return (m.full_name||'').toLowerCase().includes(q) || (m.affiliation||'').toLowerCase().includes(q);
+                const name = m.full_name || "";
+                return name.toLowerCase().includes(q) || (m.affiliation||'').toLowerCase().includes(q);
             }));
         }
         
@@ -483,8 +488,10 @@
         $('#members-table-body').innerHTML = list.map(m => {
             const isSp = state.isSpeaker.has(m.id);
             const isOrg = ['organizer','admin'].includes(m.role);
+            const displayName = m.full_name || 'Member'; // Validated full name only
+            
             return `<tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="document.dispatchEvent(new CustomEvent('openProfile',{detail:'${m.id}'}))">
-              <td class="py-2.5 px-6 border-b border-gray-50 font-medium text-slate-900">${highlight(m.full_name, state.searchQuery)}</td>
+              <td class="py-2.5 px-6 border-b border-gray-50 font-medium text-slate-900">${highlight(displayName, state.searchQuery)}</td>
               <td class="py-2.5 px-6 border-b border-gray-50 text-slate-500 hidden md:table-cell">${highlight(m.affiliation, state.searchQuery)}</td>
               <td class="py-2.5 px-6 border-b border-gray-50 text-slate-400 truncate max-w-xs hidden lg:table-cell">${m.fields_of_study||'—'}</td>
               <td class="py-2.5 px-6 border-b border-gray-50 text-xs space-x-1">
@@ -508,9 +515,12 @@
     async function openProfileModal(m) {
         if(!m) return;
         const modal = $('#profileModal'), over = $('#modalOverlay');
-        $('#modalName').innerText = m.full_name;
+        const displayName = m.full_name || 'Member';
+        
+        $('#modalName').innerText = displayName;
         $('#modalAffiliation').innerText = m.affiliation || 'No affiliation';
-        $('#modalAvatarInitial').innerText = m.full_name[0];
+        $('#modalAvatarInitial').innerText = displayName[0].toUpperCase();
+        
         hide($('#modalAvatarImage')); show($('#modalAvatarInitial'));
         if(m.avatar_url) getAvatarUrl(m.avatar_url).then(u=>{if(u){ $('#modalAvatarImage').src=u; show($('#modalAvatarImage')); hide($('#modalAvatarInitial'));}});
         

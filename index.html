@@ -13,7 +13,9 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,7 +23,7 @@
 
   <!-- External Tailwind Config -->
   <script src="theme.js"></script>
-  
+
   <!-- Custom CSS -->
   <style type="text/tailwindcss">
     @layer utilities {
@@ -66,54 +68,71 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
+<body
+  class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
   <!-- ================= MAIN APP CONTAINER ================= -->
   <main class="flex-1 relative overflow-hidden bg-gray-50">
 
     <!-- ================= VIEW: SCHEDULE (Default) ================= -->
-    <div id="view-schedule" class="absolute inset-0 flex flex-col overflow-hidden transition-all duration-500 cubic-bezier transform translate-x-0 opacity-100">
+    <div id="view-schedule"
+      class="absolute inset-0 flex flex-col overflow-hidden transition-all duration-500 cubic-bezier transform translate-x-0 opacity-100">
       <div class="flex-1 overflow-y-auto custom-scrollbar">
         <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-6 py-6">
 
           <!-- ================= HERO SECTION ================= -->
-          <section id="hero-section" class="relative overflow-hidden rounded-[1.25rem] bg-white border border-gray-200 shadow-sm group p-4 md:p-5">
-             <div class="absolute inset-0 opacity-[0.02]" style="background-image: radial-gradient(#0369a1 1px, transparent 1px); background-size: 20px 20px;"></div>
-            
+          <section id="hero-section"
+            class="relative overflow-hidden rounded-[1.25rem] bg-white border border-gray-200 shadow-sm group p-4 md:p-5">
+            <div class="absolute inset-0 opacity-[0.02]"
+              style="background-image: radial-gradient(#0369a1 1px, transparent 1px); background-size: 20px 20px;">
+            </div>
+
             <div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                
-                <!-- Left: Title & Desc -->
-                <div class="flex-1 min-w-0 pb-1">
-                  <h2 class="font-display font-bold text-2xl md:text-3xl text-slate-900 tracking-tight mb-1" data-i18n="intro.title">
-                    Agrovoltaicos <span class="text-brand-600">sin Fronteras</span>
-                  </h2>
-                  <p class="text-slate-500 text-sm leading-relaxed max-w-3xl">
-                    A participatory seminar series presenting the latest advances in agrivoltaics research and development across the Americas.
-                  </p>
+
+              <!-- Left: Title & Desc -->
+              <div class="flex-1 min-w-0 pb-1">
+                <h2 class="font-display font-bold text-2xl md:text-3xl text-slate-900 tracking-tight mb-1"
+                  data-i18n="intro.title">
+                  Agrovoltaicos <span class="text-brand-600">sin Fronteras</span>
+                </h2>
+                <p class="text-slate-500 text-sm leading-relaxed max-w-3xl">
+                  A participatory seminar series presenting the latest advances in agrivoltaics research and development
+                  across the Americas.
+                </p>
+              </div>
+
+              <!-- Right: Host Card & Banner -->
+              <div class="flex flex-col md:items-end gap-3 flex-none">
+                <!-- Host Info -->
+                <div
+                  class="bg-slate-50/50 rounded-lg border border-gray-100 p-2.5 flex items-center gap-3 w-fit backdrop-blur-sm">
+                  <div class="flex -space-x-2">
+                    <img src="static/b2ua.jpg" class="w-7 h-7 rounded-full border border-white object-cover" alt="UA">
+                    <img src="static/unam.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white"
+                      alt="UNAM">
+                    <img src="static/aal.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white"
+                      alt="AAL">
+                    <img src="static/rame.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white"
+                      alt="RAME">
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Hosted By</span>
+                    <span class="text-[10px] font-bold text-slate-700">UA, UNAM, AAL & RAME</span>
+                  </div>
                 </div>
 
-                <!-- Right: Host Card & Banner -->
-                <div class="flex flex-col md:items-end gap-2 flex-none">
-                    <!-- Host Info -->
-                    <div class="bg-slate-50/50 rounded-lg border border-gray-100 p-2.5 flex items-center gap-3 w-fit">
-                        <div class="flex -space-x-2">
-                          <img src="static/b2ua.jpg" class="w-7 h-7 rounded-full border border-white object-cover" alt="UA">
-                          <img src="static/unam.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white" alt="UNAM">
-                          <img src="static/aal.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white" alt="AAL">
-                          <img src="static/rame.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white" alt="RAME">
-                        </div>
-                        <div class="flex flex-col">
-                          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Hosted By</span>
-                          <span class="text-[10px] font-bold text-slate-700">UA, UNAM, AAL & RAME</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Live Banner (Moved Here) -->
-                    <a id="siteBanner" href="#" class="hidden inline-flex items-center gap-2 bg-brand-50 pl-2 pr-3 py-1 rounded-full text-[10px] font-semibold text-brand-700 border border-brand-100 hover:border-brand-300 transition-all">
-                        <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span></span>
-                        <span id="bannerText" class="truncate max-w-[300px]"></span>
-                    </a>
+                <!-- Live Banner -->
+                <!-- Note: 'pointer-events-none' added so it doesn't act like a button unless we add a link later -->
+                <div id="siteBanner"
+                  class="hidden pointer-events-none animate-fade-in inline-flex items-center gap-2 bg-amber-50 pl-2 pr-3 py-1.5 rounded-full text-[11px] font-bold text-amber-700 border border-amber-200 shadow-sm max-w-[300px] md:max-w-[400px]">
+                  <span class="relative flex h-2 w-2 flex-none">
+                    <span
+                      class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                  </span>
+                  <span id="bannerText" class="truncate leading-tight"></span>
                 </div>
+              </div>
 
             </div>
           </section>
@@ -121,35 +140,49 @@
           <!-- ================= CONTENT AREA ================= -->
           <section class="flex flex-col gap-4 flex-1 min-h-0 pb-10">
             <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
-              <h3 class="font-display font-bold text-lg text-slate-800 self-start md:self-center" data-i18n="schedule.title">Upcoming Talks</h3>
+              <h3 class="font-display font-bold text-lg text-slate-800 self-start md:self-center"
+                data-i18n="schedule.title">Upcoming Talks</h3>
 
               <div class="flex items-center gap-2 w-full md:w-auto">
                 <div class="flex bg-white p-0.5 rounded-lg border border-gray-200 shadow-sm">
-                  <button id="btn-view-list" class="p-1.5 rounded bg-brand-50 text-brand-700 shadow-sm transition-all"><i data-lucide="list" class="w-4 h-4"></i></button>
-                  <button id="btn-view-cal" class="p-1.5 rounded text-slate-400 hover:text-slate-700 transition-all"><i data-lucide="calendar" class="w-4 h-4"></i></button>
+                  <button id="btn-view-list"
+                    class="p-1.5 rounded bg-brand-50 text-brand-700 shadow-sm transition-all"><i data-lucide="list"
+                      class="w-4 h-4"></i></button>
+                  <button id="btn-view-cal" class="p-1.5 rounded text-slate-400 hover:text-slate-700 transition-all"><i
+                      data-lucide="calendar" class="w-4 h-4"></i></button>
                 </div>
                 <div class="relative flex-1 md:w-64">
-                  <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"></i>
-                  <input id="search" type="search" class="w-full pl-9 pr-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all" data-i18n-placeholder="search.placeholder">
+                  <i data-lucide="search"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"></i>
+                  <input id="search" type="search"
+                    class="w-full pl-9 pr-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all"
+                    data-i18n-placeholder="search.placeholder">
                 </div>
               </div>
             </div>
 
-            <div id="eventsLoader" class="py-12 flex justify-center"><div class="w-6 h-6 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div></div>
+            <div id="eventsLoader" class="py-12 flex justify-center">
+              <div class="w-6 h-6 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
+            </div>
 
             <div id="content-area" class="hidden flex-col gap-4">
-              <div id="schedule-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in"></div>
-              
-              <div id="schedule-calendar" class="hidden h-[600px] flex flex-col bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm animate-fade-in">
+              <div id="schedule-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in">
+              </div>
+
+              <div id="schedule-calendar"
+                class="hidden h-[600px] flex flex-col bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm animate-fade-in">
                 <div class="flex items-center justify-between p-3 border-b border-gray-100 bg-gray-50/50">
-                  <button id="calPrev" class="p-1 rounded hover:bg-white"><i data-lucide="chevron-left" class="w-5 h-5 text-slate-500"></i></button>
+                  <button id="calPrev" class="p-1 rounded hover:bg-white"><i data-lucide="chevron-left"
+                      class="w-5 h-5 text-slate-500"></i></button>
                   <h4 id="calLabel" class="font-bold text-sm text-slate-800">Month Year</h4>
-                  <button id="calNext" class="p-1 rounded hover:bg-white"><i data-lucide="chevron-right" class="w-5 h-5 text-slate-500"></i></button>
+                  <button id="calNext" class="p-1 rounded hover:bg-white"><i data-lucide="chevron-right"
+                      class="w-5 h-5 text-slate-500"></i></button>
                 </div>
                 <div id="calendarGrid" class="flex-1 grid grid-cols-7 bg-gray-100 gap-px overflow-y-auto"></div>
               </div>
 
-              <div id="emptyEvents" class="hidden py-12 text-center text-slate-400 text-sm" data-i18n="schedule.empty">No events found.</div>
+              <div id="emptyEvents" class="hidden py-12 text-center text-slate-400 text-sm" data-i18n="schedule.empty">
+                No events found.</div>
             </div>
           </section>
         </div>
@@ -157,73 +190,92 @@
     </div>
 
     <!-- ================= VIEW: DETAIL ================= -->
-    <div id="view-detail" class="absolute inset-0 flex flex-col bg-slate-900/10 backdrop-blur-[2px] translate-x-full transition-transform duration-500 cubic-bezier z-50">
+    <div id="view-detail"
+      class="absolute inset-0 flex flex-col bg-slate-900/10 backdrop-blur-[2px] translate-x-full transition-transform duration-500 cubic-bezier z-50">
       <div class="absolute inset-0" onclick="document.getElementById('back-to-schedule')?.click()"></div>
-      <div class="relative flex-1 md:m-4 lg:mx-auto lg:max-w-[1400px] w-full bg-white md:rounded-xl shadow-2xl flex flex-col overflow-hidden border border-white/40 h-full">
-        
+      <div
+        class="relative flex-1 md:m-4 lg:mx-auto lg:max-w-[1400px] w-full bg-white md:rounded-xl shadow-2xl flex flex-col overflow-hidden border border-white/40 h-full">
+
         <!-- Sticky Header -->
-        <div id="compactEventHeaderContainer" class="flex-none p-4 border-b border-gray-100 bg-white z-20 sticky top-0"></div>
-        
+        <div id="compactEventHeaderContainer" class="flex-none p-4 border-b border-gray-100 bg-white z-20 sticky top-0">
+        </div>
+
         <!-- Navigation -->
         <div class="flex-none px-6 border-b border-gray-100 flex gap-6 bg-white">
-          <button class="tab-link py-3 text-xs font-bold text-brand-600 border-b-2 border-brand-500 uppercase tracking-wide" data-tab="description" data-i18n="tabs.description">Description</button>
-          <button class="tab-link py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent uppercase tracking-wide hover:text-slate-600" data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
-          <button class="tab-link py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent uppercase tracking-wide hover:text-slate-600" data-tab="files" data-i18n="tabs.files">Files</button>
+          <button
+            class="tab-link py-3 text-xs font-bold text-brand-600 border-b-2 border-brand-500 uppercase tracking-wide"
+            data-tab="description" data-i18n="tabs.description">Description</button>
+          <button
+            class="tab-link py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent uppercase tracking-wide hover:text-slate-600"
+            data-tab="discussion" data-i18n="tabs.discussion">Discussion</button>
+          <button
+            class="tab-link py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent uppercase tracking-wide hover:text-slate-600"
+            data-tab="files" data-i18n="tabs.files">Files</button>
         </div>
 
         <!-- Scrollable Content -->
         <div class="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30">
-          
+
           <!-- DESCRIPTION TAB (Layout handled in JS) -->
           <div id="tab_description" class="tab-panel animate-fade-in p-6 md:p-8"></div>
 
           <!-- DISCUSSION TAB -->
           <div id="tab_discussion" class="tab-panel hidden h-full animate-fade-in p-0 lg:p-6">
-             <div class="flex flex-col lg:flex-row h-full lg:border lg:border-gray-200 lg:rounded-xl lg:bg-white lg:shadow-sm overflow-hidden">
-                <!-- Left: Topics -->
-                <div class="w-full lg:w-64 flex flex-col flex-shrink-0 bg-gray-50 border-b lg:border-b-0 lg:border-r border-gray-200 h-48 lg:h-auto">
-                    <div class="p-3 border-b border-gray-200 bg-white flex justify-between items-center">
-                        <h3 class="font-bold text-xs text-slate-500 uppercase">Topics</h3>
-                    </div>
-                    <div class="p-2 bg-gray-50 border-b border-gray-200">
-                        <form id="newThreadForm" class="flex gap-1">
-                            <input id="threadTitle" class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-brand-500 outline-none" placeholder="New Topic..." autocomplete="off">
-                            <button class="bg-brand-600 hover:bg-brand-700 text-white px-2 rounded text-lg font-bold shadow-sm leading-none pb-0.5">+</button>
-                        </form>
-                    </div>
-                    <div id="threadsList" class="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar"></div>
+            <div
+              class="flex flex-col lg:flex-row h-full lg:border lg:border-gray-200 lg:rounded-xl lg:bg-white lg:shadow-sm overflow-hidden">
+              <!-- Left: Topics -->
+              <div
+                class="w-full lg:w-64 flex flex-col flex-shrink-0 bg-gray-50 border-b lg:border-b-0 lg:border-r border-gray-200 h-48 lg:h-auto">
+                <div class="p-3 border-b border-gray-200 bg-white flex justify-between items-center">
+                  <h3 class="font-bold text-xs text-slate-500 uppercase">Topics</h3>
                 </div>
+                <div class="p-2 bg-gray-50 border-b border-gray-200">
+                  <form id="newThreadForm" class="flex gap-1">
+                    <input id="threadTitle"
+                      class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-brand-500 outline-none"
+                      placeholder="New Topic..." autocomplete="off">
+                    <button
+                      class="bg-brand-600 hover:bg-brand-700 text-white px-2 rounded text-lg font-bold shadow-sm leading-none pb-0.5">+</button>
+                  </form>
+                </div>
+                <div id="threadsList" class="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar"></div>
+              </div>
 
-                <!-- Right: Chat -->
-                <div class="flex-1 flex flex-col min-w-0 bg-white relative min-h-[400px]">
-                    <div id="thread-welcome" class="absolute inset-0 flex items-center justify-center text-slate-400 flex-col gap-2 p-6 text-center">
-                        <i data-lucide="message-square" class="w-8 h-8 opacity-20"></i>
-                        <p class="text-sm">Select a topic to view discussion.</p>
-                    </div>
-                    <div id="threadDetailView" class="hidden absolute inset-0 flex flex-col bg-white z-10">
-                        <div id="commentsList" class="flex-1 overflow-y-auto p-4 custom-scrollbar"></div>
-                        <div class="p-3 border-t border-gray-100 bg-gray-50">
-                            <form id="replyToThreadForm" class="flex gap-2">
-                                <input class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none shadow-sm" placeholder="Write a reply...">
-                                <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide shadow-sm transition-colors">Send</button>
-                            </form>
-                        </div>
-                    </div>
+              <!-- Right: Chat -->
+              <div class="flex-1 flex flex-col min-w-0 bg-white relative min-h-[400px]">
+                <div id="thread-welcome"
+                  class="absolute inset-0 flex items-center justify-center text-slate-400 flex-col gap-2 p-6 text-center">
+                  <i data-lucide="message-square" class="w-8 h-8 opacity-20"></i>
+                  <p class="text-sm">Select a topic to view discussion.</p>
                 </div>
-             </div>
+                <div id="threadDetailView" class="hidden absolute inset-0 flex flex-col bg-white z-10">
+                  <div id="commentsList" class="flex-1 overflow-y-auto p-4 custom-scrollbar"></div>
+                  <div class="p-3 border-t border-gray-100 bg-gray-50">
+                    <form id="replyToThreadForm" class="flex gap-2">
+                      <input
+                        class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none shadow-sm"
+                        placeholder="Write a reply...">
+                      <button type="submit"
+                        class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide shadow-sm transition-colors">Send</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- FILES TAB -->
           <div id="tab_files" class="tab-panel hidden animate-fade-in max-w-3xl mx-auto p-6 md:p-8">
-             <form id="uploadFormContainer">
-               <label class="block border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:bg-white hover:border-brand-300 transition-all">
-                 <i data-lucide="upload-cloud" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
-                 <span class="text-sm text-slate-500 font-medium">Click to Upload File</span>
-                 <input id="fileInput" type="file" class="hidden">
-               </label>
-             </form>
-             <div id="filesList" class="mt-6 space-y-3"></div>
-             <div id="emptyFiles" class="hidden text-center py-8 text-slate-400 text-sm">No files uploaded yet.</div>
+            <form id="uploadFormContainer">
+              <label
+                class="block border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:bg-white hover:border-brand-300 transition-all">
+                <i data-lucide="upload-cloud" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
+                <span class="text-sm text-slate-500 font-medium">Click to Upload File</span>
+                <input id="fileInput" type="file" class="hidden">
+              </label>
+            </form>
+            <div id="filesList" class="mt-6 space-y-3"></div>
+            <div id="emptyFiles" class="hidden text-center py-8 text-slate-400 text-sm">No files uploaded yet.</div>
           </div>
 
         </div>
@@ -232,7 +284,7 @@
   </main>
 
   <!-- ================= LOGIC ================= -->
-  <script type="module">
+ <script type="module">
     import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
@@ -242,7 +294,15 @@
     renderLayout('schedule');
 
     let eventLogic;
-    const state = { language: localStorage.getItem("lang") || "en", events: [], selectedEvent: null, calendarMonth: new Date() };
+    
+    // 1. ADD activeBanner to state
+    const state = { 
+        language: localStorage.getItem("lang") || "en", 
+        events: [], 
+        activeBanner: null, // <--- Added this
+        selectedEvent: null, 
+        calendarMonth: new Date() 
+    };
     
     const t = { 
         en: { 
@@ -280,22 +340,49 @@
         if(eventLogic) eventLogic.reRender();
     }
     
+    // 2. REWRITE renderBanner to use the banners table data
     function renderBanner() {
-        const next = state.events.filter(e => new Date(e.start_time) > new Date()).sort((a,b)=>new Date(a.start_time)-new Date(b.start_time))[0];
         const banner = $('#siteBanner');
-        if(next) {
-            const title = state.language === 'es' ? (next.title_es||next.title_en) : next.title_en;
-            $('#bannerText').innerHTML = `<span class="font-bold opacity-80">${fmtDateTime(next.start_time, {month:'short', day:'numeric'})}:</span> ${escapeHtml(title)}`;
-            banner.dataset.openEvent = next.id;
+        const textEl = $('#bannerText');
+        
+        // Priority 1: Manual Banner from Admin
+        if (state.activeBanner) {
+            const text = state.language === 'es' ? (state.activeBanner.text_es || state.activeBanner.text_en) : state.activeBanner.text_en;
+            textEl.innerText = text;
             show(banner);
             banner.style.display = 'inline-flex';
-        } else hide(banner);
+            return;
+        } 
+
+        // Priority 2: Fallback to "Next Event" if no manual banner
+        const next = state.events.filter(e => new Date(e.start_time) > new Date()).sort((a,b)=>new Date(a.start_time)-new Date(b.start_time))[0];
+        if(next) {
+            const title = state.language === 'es' ? (next.title_es||next.title_en) : next.title_en;
+            // Make it clickable if it's an event
+            banner.classList.remove('pointer-events-none');
+            banner.classList.add('cursor-pointer', 'hover:bg-amber-100');
+            banner.dataset.openEvent = next.id;
+            
+            textEl.innerHTML = `<span class="opacity-70 font-medium">Next:</span> ${escapeHtml(title)}`;
+            show(banner);
+            banner.style.display = 'inline-flex';
+        } else {
+            hide(banner);
+        }
     }
 
     async function loadEvents() {
         hide($('#content-area')); show($('#eventsLoader'));
-        const { data } = await supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", {ascending:true});
-        state.events = data || [];
+        
+        // 3. FETCH Events AND Banner in parallel
+        const [eventsRes, bannerRes] = await Promise.all([
+            supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", {ascending:true}),
+            supabase.from("banners").select("*").eq("is_active", true).limit(1).maybeSingle()
+        ]);
+
+        state.events = eventsRes.data || [];
+        state.activeBanner = bannerRes.data || null;
+
         renderEventsList(); renderScheduleCalendar(); renderBanner();
         hide($('#eventsLoader')); show($('#content-area'));
         
@@ -307,7 +394,7 @@
         }
     }
 
-    // --- UPDATED CARD RENDERER ---
+    // --- UPDATED CARD RENDERER (Keep your existing function here, just ensuring logic remains) ---
     async function renderEventsList() {
         const list = $('#schedule-list');
         const term = ($('#search').value || '').toLowerCase();
@@ -329,7 +416,6 @@
             const start = new Date(ev.start_time);
             const isPast = start < now;
             
-            // 1. Speaker Stack with HOVER POPUP TOOLTIPS & ROUNDED IMAGE FIX
             const speakers = ev.event_speakers || [];
             const speakerItems = await Promise.all(speakers.slice(0, 4).map(async s => {
                 const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
@@ -337,13 +423,10 @@
                     ? `<img src="${img}" class="w-full h-full object-cover rounded-full" alt="${escapeHtml(s.name)}">` 
                     : `<span class="text-[11px] font-bold select-none">${(s.name||'?')[0]}</span>`;
                 
-                // Note: Image has rounded-full, container has rounded-full but NO overflow-hidden (allows tooltip to overflow)
                 return `<div class="relative group/tooltip w-10 h-10 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-slate-500 shadow-sm relative z-0 hover:z-10 transition-all">
                     ${content}
-                    <!-- Custom CSS Tooltip -->
                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] font-semibold rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
                         ${escapeHtml(s.name)}
-                        <!-- Little Triangle Arrow -->
                         <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-800"></div>
                     </div>
                 </div>`;
@@ -355,13 +438,11 @@
                    ${speakers.length > 4 ? `<div class="w-10 h-10 rounded-full ring-2 ring-white bg-gray-50 flex items-center justify-center text-[10px] font-bold text-slate-600 relative z-0 cursor-default" title="+${speakers.length-4} more speakers">+${speakers.length-4}</div>` : ''}
                  </div>` : '';
 
-            // 2. Tags (Visible pills)
             const tags = ev.topic_tags && ev.topic_tags.length ? 
                 `<div class="flex flex-wrap gap-1.5 mb-4 mt-auto">
                     ${ev.topic_tags.map(tag => `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider border border-slate-200">${escapeHtml(tag)}</span>`).join('')}
                 </div>` : '';
 
-            // 3. Host (Larger, clearer section)
             const hostHtml = ev.host_org ? 
                 `<div class="flex flex-col items-end text-right max-w-[60%]">
                     <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Hosted By</span>
@@ -370,10 +451,8 @@
 
             const langCode = ev.language === 'es' ? 'ES' : (ev.language === 'bi' ? 'EN/ES' : 'EN');
             
-            // Note: Article does NOT have overflow-hidden, to let tooltips pop
             return `<article class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-brand-200 transition-all cursor-pointer flex flex-col h-full ${isPast ? 'opacity-70 grayscale-[0.3]' : ''}" data-open-event="${ev.id}">
                 <div class="p-5 flex flex-col h-full relative">
-                    <!-- Compact Header: Date | Time | Lang -->
                     <div class="flex items-center justify-between mb-3 text-xs font-bold text-slate-400 uppercase tracking-wide">
                         <div class="flex items-center gap-2">
                             <span class="${isPast ? 'text-slate-500' : 'text-brand-600'}">
@@ -388,19 +467,11 @@
                         </div>
                     </div>
 
-                    <!-- Title -->
                     <h3 class="font-display font-bold text-lg text-slate-800 leading-tight mb-2 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h3>
-                    
-                    <!-- Desc -->
                     <p class="text-[13px] text-slate-500 line-clamp-2 mb-3 leading-relaxed">${escapeHtml(desc||'')}</p>
-                    
-                    <!-- Render Tags -->
                     ${tags}
-                    
-                    <!-- Spacer to push footer down -->
                     ${!tags ? '<div class="mt-auto"></div>' : ''}
 
-                    <!-- Footer: Speakers Left, Large Host Right -->
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100 -mx-5 px-5 bg-slate-50/30">
                         <div class="flex items-center gap-2">
                             ${speakerHtml}
@@ -461,8 +532,16 @@
        });
        
        await loadEvents();
+       // 4. Add Banner Subscription to auto-update if admin changes it
+       supabase.channel('public:banners').on('postgres_changes', {event:'*', schema:'public', table:'banners'}, async () => {
+          const { data } = await supabase.from("banners").select("*").eq("is_active", true).limit(1).maybeSingle();
+          state.activeBanner = data;
+          renderBanner();
+       }).subscribe();
+       
        supabase.channel('public:events').on('postgres_changes', {event:'*', schema:'public', table:'events'}, loadEvents).subscribe();
     })();
   </script>
 </body>
+
 </html>
