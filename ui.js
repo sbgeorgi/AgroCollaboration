@@ -8,17 +8,16 @@
 export const $ = (sel) => document.querySelector(sel);
 export const $$ = (sel) => document.querySelectorAll(sel);
 
-// Updated to handle inline styles properly
 export const show = (el) => {
   if (!el) return;
   el.classList.remove('hidden');
-  el.style.display = ''; // Clears inline 'display: none' so CSS takes over
+  el.style.display = ''; 
 };
 
 export const hide = (el) => {
   if (!el) return;
   el.classList.add('hidden');
-  el.style.display = 'none'; // Forces inline hide
+  el.style.display = 'none'; 
 };
 
 export function tr(t, lang, key, fallback = "") {
@@ -130,14 +129,18 @@ export async function renderHeader(authState, t, lang) {
   });
 
   const preloadFingerprint = document.documentElement.getAttribute('data-auth-fingerprint');
+  // Optimization: If what was preloaded matches exactly what we are about to render,
+  // just cleanup and exit to avoid repaints, but only if we haven't rendered this state yet.
   if (preloadFingerprint === fingerprint && headerState.lastRenderedFingerprint === null) {
     headerState.lastRenderedFingerprint = fingerprint;
+    // Important: remove the style tag so future dynamic changes (like signOut) work normally
     document.getElementById('auth-preload-style')?.remove();
     document.documentElement.removeAttribute('data-auth-fingerprint');
     applyI18n(t, lang);
     updateActiveNav();
     return;
   }
+  
   if (headerState.lastRenderedFingerprint === fingerprint) return;
   headerState.lastRenderedFingerprint = fingerprint;
 
@@ -199,6 +202,8 @@ export async function renderHeader(authState, t, lang) {
       </nav>
     `;
   }
+  
+  // Cleanup preload style once rendering is complete
   document.getElementById('auth-preload-style')?.remove();
   applyI18n(t, lang);
   updateActiveNav();

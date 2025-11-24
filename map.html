@@ -14,16 +14,18 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-  <!-- Fonts -->
+  <!-- Fonts (Updated to include Poppins for Headers) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Global Styles -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- External Tailwind Config (Extracted) -->
+  <!-- External Tailwind Config -->
   <script src="theme.js"></script>
 
   <!-- Custom CSS -->
@@ -40,7 +42,7 @@
 
     html, body { height: 100%; overflow: hidden; }
     
-    /* Flash Message */
+    /* Flash Message (Matching Admin/Archive style) */
     #flash {
         position: fixed;
         top: 80px;
@@ -66,24 +68,15 @@
     }
   </style>
 
-  <!-- Map Specific Styles (Adapted to New Theme) -->
+  <!-- Map Specific Styles (Adapted to Global Theme) -->
   <style>
-    :root {
-      --color-brand: #0284c7; /* brand-600 */
-      --color-brand-dark: #0369a1; /* brand-700 */
-      --color-brand-light: #e0f2fe; /* brand-100 */
-      --text-primary: #1e293b; /* slate-800 */
-      --text-secondary: #64748b; /* slate-500 */
-      --border: #e2e8f0; /* gray-200 */
-      --bg-input: #f9fafb; /* gray-50 */
-    }
-
     /* Leaflet Override */
     .leaflet-container {
       width: 100% !important;
       height: 100% !important;
       font-family: 'Inter', sans-serif !important;
       z-index: 0;
+      background: #f8fafc; /* Match page bg */
     }
 
     /* Panel Transitions */
@@ -113,7 +106,7 @@
     .grid-form select,
     .grid-form textarea {
       background: var(--bg-input);
-      border: 1px solid var(--border);
+      border: 1px solid transparent;
       padding: 10px 14px;
       border-radius: 12px;
       font-size: 14px;
@@ -121,6 +114,14 @@
       color: var(--text-primary);
       width: 100%;
       font-family: inherit;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .grid-form input:hover,
+    .grid-form select:hover,
+    .grid-form textarea:hover {
+       background: white;
+       box-shadow: 0 0 0 1px var(--border);
     }
 
     .grid-form input:focus,
@@ -210,7 +211,7 @@
     /* Upload Area */
     .media-upload-area {
       background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-      border: 2px dashed #cbd5e1;
+      border: 2px dashed var(--border);
       border-radius: 12px;
       padding: 24px;
       text-align: center;
@@ -218,7 +219,10 @@
       position: relative;
       cursor: pointer;
     }
-    .media-upload-area:hover { border-color: var(--color-brand-dark); background: var(--color-brand-light); }
+    .media-upload-area:hover { 
+      border-color: var(--color-brand); 
+      background: var(--color-brand-light); 
+    }
     .media-preview-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -231,6 +235,7 @@
       border-radius: 8px;
       overflow: hidden;
       background: #e2e8f0;
+      border: 1px solid var(--border);
     }
     .media-preview-item img, .media-preview-item video {
       width: 100%;
@@ -298,14 +303,14 @@
       font-size: 12px;
       font-weight: 600;
       color: var(--color-brand-dark);
-      border: 1px solid rgba(14, 165, 233, 0.2);
+      border: 1px solid var(--border);
     }
     .selected-user-pill img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
     .selected-user-pill button { margin-left: 4px; color: var(--color-brand-dark); opacity: 0.6; }
     .selected-user-pill button:hover { opacity: 1; }
 
     /* Table Styles */
-    #projects-table th { cursor: pointer; user-select: none; }
+    #projects-table th { cursor: pointer; user-select: none; font-family: 'Poppins', sans-serif; }
     #projects-table th:hover { background-color: #f8fafc; }
     #projects-table th .sort-icon { opacity: 0.3; transition: opacity 0.2s; display: inline-block; vertical-align: middle; margin-left: 4px; width: 14px; height: 14px; }
     #projects-table th.sort-asc .sort-icon, #projects-table th.sort-desc .sort-icon { opacity: 1; color: var(--color-brand); }
@@ -334,7 +339,7 @@
     <div class="w-full h-full max-w-[1800px] px-4 sm:px-6 py-6 flex flex-col lg:flex-row gap-6 relative">
 
       <!-- MAP PANEL (Top on mobile, Left on desktop) -->
-      <div class="flex-[2] relative rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-white z-0 flex flex-col">
+      <div class="flex-[2] relative rounded-[1.5rem] overflow-hidden border border-gray-200 shadow-sm bg-white z-0 flex flex-col">
         
         <!-- Map container -->
         <div id="map" class="flex-1 w-full h-full z-10"></div>
@@ -426,7 +431,7 @@
       </div>
 
       <!-- TABLE PANEL (Bottom on mobile, Right on desktop) -->
-      <div class="flex-1 lg:flex-[0.8] rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-white flex flex-col relative">
+      <div class="flex-1 lg:flex-[0.8] rounded-[1.5rem] overflow-hidden border border-gray-200 shadow-sm bg-white flex flex-col relative">
         <div class="flex-1 overflow-y-auto custom-scrollbar">
           <table id="projects-table" class="w-full text-left border-collapse">
             <thead class="bg-white sticky top-0 z-10 shadow-sm text-xs font-bold uppercase text-slate-500 tracking-wider">

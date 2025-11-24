@@ -1,9 +1,8 @@
 // C:\HELLOWORLD\AgroCollaboration\auth.js
 /**
  * AUTHENTICATION MODULE
- * This module handles all Supabase authentication logic, session management, and
- * profile fetching. It does NOT handle any direct DOM manipulation or UI rendering.
- * It communicates with other parts of the app via callbacks.
+ * Handles Supabase auth, session management, profile fetching, and 
+ * CRITICALLY: Updates the local cache for the preloader to prevent UI flickering.
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -31,19 +30,37 @@ export const authState = {
   isPasswordRecovery: false,
 };
 
+// Helper to update the cache used by auth-preloader.js
+function updateAuthCache() {
+  if (authState.session && authState.profile) {
+    localStorage.setItem('asf_auth_cache', JSON.stringify({
+      expiry: Date.now() + (1000 * 60 * 60 * 24), // 24 hours
+      data: {
+        session: { user: { id: authState.session.user.id } }, // Minimal session data needed
+        profile: authState.profile
+      }
+    }));
+  } else {
+    localStorage.removeItem('asf_auth_cache');
+  }
+}
+
 export async function fetchProfile(userId, { refresh = false } = {}) {
   if (!userId) return null;
   if (!refresh && authState.profileCache.has(userId)) return authState.profileCache.get(userId);
-  const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
-    
-  if (data?.avatar_url) {
-      const { data: urlData } = await supabase.storage.from("avatars").createSignedUrl(data.avatar_url, 3600);
-      if (urlData?.signedUrl) {
-          data.avatar_url = urlData.signedUrl;
-      }
+  
+  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
+  
+  if (data) {
+    // Handle Avatar URL signing
+    if (data.avatar_url && !data.avatar_url.startsWith('http')) {
+        const { data: urlData } = await supabase.storage.from("avatars").createSignedUrl(data.avatar_url, 3600);
+        if (urlData?.signedUrl) {
+            data.avatar_url = urlData.signedUrl;
+        }
+    }
+    authState.profileCache.set(userId, data);
   }
-    
-  if (data) authState.profileCache.set(userId, data);
   return data;
 }
 
@@ -54,6 +71,7 @@ export async function ensureProfile() {
   let profile = await fetchProfile(uid);
 
   if (!profile) {
+    // Create default profile if none exists
     const { data: newProfile, error: insertErr } = await supabase
       .from("profiles")
       .insert({ 
@@ -63,6 +81,7 @@ export async function ensureProfile() {
       })
       .select()
       .single();
+      
     if (insertErr) console.error("Profile insert error:", insertErr);
     profile = newProfile;
     if (profile) authState.profileCache.set(uid, profile);
@@ -75,6 +94,9 @@ export async function ensureProfile() {
     profile?.affiliation &&
     profile?.work_email
   );
+
+  // UPDATE CACHE HERE TO FIX FLICKER
+  updateAuthCache();
 
   if (!authState.isPasswordRecovery && sessionStorage.getItem('justLoggedIn') && !authState.profileComplete) {
     sessionStorage.removeItem('justLoggedIn');
@@ -97,6 +119,9 @@ export async function initAuth(callbacks = {}) {
 
   if (session && !authState.isPasswordRecovery) {
     await ensureProfile();
+  } else {
+    // Ensure cache is cleared if no session on init
+    updateAuthCache();
   }
 
   if (callbacks.onAuthReady) {
@@ -125,6 +150,8 @@ export async function initAuth(callbacks = {}) {
       authState.profile = null;
       authState.isPasswordRecovery = false;
       sessionStorage.removeItem('justLoggedIn');
+      // Clear cache on logout
+      updateAuthCache();
     }
 
     if (callbacks.onAuthChange) {
@@ -159,4 +186,8 @@ export async function signInWithEmail(email, options = {}) {
 
 export async function signOut() {
   await supabase.auth.signOut();
+  authState.session = null;
+  authState.profile = null;
+  updateAuthCache(); // Explicitly clear cache
+  window.location.reload();
 }

@@ -1,5 +1,5 @@
 // layout.js
-import { $ } from './ui.js'; // Assuming you export $ from ui.js, or you can redefine it here
+import { $ } from './ui.js';
 
 export function renderLayout(activePage) {
   const app = document.querySelector('body');
@@ -76,7 +76,7 @@ export function renderLayout(activePage) {
     <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
       <div class="footer-text text-center md:text-left">
         &copy; <span id="year">${new Date().getFullYear()}</span> Agrovoltaicos sin Fronteras •&nbsp;
-        <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
+        <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in the Americas.</span>
       </div>
       <div class="footer-logos flex gap-4 items-center opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300">
           <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank"><img src="static/b2ua.jpg" class="h-6 w-auto mix-blend-multiply" alt="Biosphere 2"></a>
@@ -89,8 +89,6 @@ export function renderLayout(activePage) {
   `;
 
   // 5. Inject into DOM
-  // Insert Header at the top
   app.insertAdjacentHTML('afterbegin', headerHTML);
-  // Insert Footer at the bottom
   app.insertAdjacentHTML('beforeend', footerHTML);
 }
