@@ -141,10 +141,22 @@
                         <input type="text" id="username" required pattern="[a-zA-Z0-9_-]+" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="janedoe" />
                     </div>
 
-                    <!-- Affiliation -->
-                    <div class="space-y-1.5">
+                    <!-- Affiliation (Autocomplete/Searchable) -->
+                    <div class="space-y-1.5 relative" id="affiliation-wrapper">
                         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="affiliation"><span data-i18n="profile.affiliation">Affiliation</span> <span class="text-red-500">*</span></label>
-                        <input type="text" id="affiliation" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="University / Organization" />
+                        <div class="relative">
+                            <input type="text" id="affiliation" required autocomplete="off" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="Search or type University / Organization" />
+                            
+                            <!-- Search Icon (Decorative) -->
+                            <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                            </div>
+
+                            <!-- Autocomplete Dropdown -->
+                            <ul id="affiliation-list" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto overflow-x-hidden">
+                                <!-- Items injected via JS -->
+                            </ul>
+                        </div>
                     </div>
 
                     <!-- Work Email -->
@@ -208,18 +220,19 @@
         language: localStorage.getItem("lang") || "en",
         profile: null,
         avatarFile: null,
-        avatarRemoved: false
+        avatarRemoved: false,
+        existingAffiliations: [] // Store fetched affiliations here
     };
 
     const t = {
         en: {
             auth: { signin_prompt_title: "Please Sign In", signin_prompt_body: "Access to your profile dashboard requires authentication.", signin_prompt_button: "Go to Sign In" },
-            profile: { title: "Edit Profile", full_name: "Full Name", username: "Username", affiliation: "Affiliation", work_email: "Work Email", personal_website: "Personal Website", professional_website: "Lab Website", google_scholar: "Google Scholar Profile", fields_section: "Research Interests", fields_hint: "e.g. Solar energy, water conservation...", save: "Save Changes", saving: "Saving...", saved: "Dashboard updated successfully", remove_image: "Remove Picture", upload_error: "Failed to upload image. Please try again." },
+            profile: { title: "Edit Profile", full_name: "Full Name", username: "Username", affiliation: "Affiliation", work_email: "Work Email", personal_website: "Personal Website", professional_website: "Lab Website", google_scholar: "Google Scholar Profile", fields_section: "Research Interests", fields_hint: "e.g. Solar energy, water conservation...", save: "Save Changes", saving: "Saving...", saved: "Dashboard updated successfully", remove_image: "Remove Picture", upload_error: "Failed to upload image. Please try again.", no_affiliation_results: "No matches found. Typing will create a new one." },
             back: { general: "Go Back" }
         },
         es: {
             auth: { signin_prompt_title: "Inicia Sesión", signin_prompt_body: "El acceso al panel de perfil requiere autenticación.", signin_prompt_button: "Iniciar Sesión" },
-            profile: { title: "Editar Perfil", full_name: "Nombre Completo", username: "Usuario", affiliation: "Afiliación", work_email: "Correo Trabajo", personal_website: "Sitio Personal", professional_website: "Sitio Laboratorio", google_scholar: "Perfil Google Scholar", fields_section: "Intereses de Investigación", fields_hint: "ej. Energía solar, conservación de agua...", save: "Guardar Cambios", saving: "Guardando...", saved: "Panel actualizado con éxito", remove_image: "Eliminar Foto", upload_error: "Error al subir la imagen. Por favor intenta de nuevo." },
+            profile: { title: "Editar Perfil", full_name: "Nombre Completo", username: "Usuario", affiliation: "Afiliación", work_email: "Correo Trabajo", personal_website: "Sitio Personal", professional_website: "Sitio Laboratorio", google_scholar: "Perfil Google Scholar", fields_section: "Intereses de Investigación", fields_hint: "ej. Energía solar, conservación de agua...", save: "Guardar Cambios", saving: "Guardando...", saved: "Panel actualizado con éxito", remove_image: "Eliminar Foto", upload_error: "Error al subir la imagen. Por favor intenta de nuevo.", no_affiliation_results: "No se encontraron coincidencias. Escribir creará uno nuevo." },
             back: { general: "Regresar" }
         }
     };
@@ -251,16 +264,41 @@
             show(profileEl);
             hide(loadingEl);
             
-            // Fetch fresh data for the form
-            await loadProfileData();
+            // Start fetching data in parallel
+            await Promise.all([
+                loadProfileData(),
+                fetchExistingAffiliations()
+            ]);
+        }
+    }
+
+    // --- Data Fetching ---
+
+    async function fetchExistingAffiliations() {
+        try {
+            // Fetch all non-null affiliations
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('affiliation')
+                .not('affiliation', 'is', null)
+                .neq('affiliation', '');
+
+            if (error) throw error;
+
+            // Deduplicate logic
+            const uniqueSet = new Set(data.map(item => item.affiliation.trim()));
+            state.existingAffiliations = Array.from(uniqueSet).sort((a, b) => a.localeCompare(b));
+            
+        } catch (err) {
+            console.error('Error fetching affiliations:', err);
+            // Non-blocking error, user just won't get autocomplete
         }
     }
 
     async function loadProfileData() {
         if (!authState.session) return;
         
-        // Fetch full profile data directly from Supabase to ensure we have all fields (e.g. fields_of_study)
-        // which might not be present in the global authState.profile depending on auth.js implementation
+        // Fetch full profile data directly from Supabase
         const { data, error } = await supabase
             .from("profiles")
             .select("*")
@@ -327,6 +365,56 @@
     function updatePreviewText() {
         $('#displayUsername').textContent = '@' + ($('#username').value || 'username');
         $('#displayEmail').textContent = $('#workEmail').value || 'user@example.com';
+    }
+
+    // --- Autocomplete Logic ---
+    function setupAffiliationAutocomplete() {
+        const input = $('#affiliation');
+        const list = $('#affiliation-list');
+        const wrapper = $('#affiliation-wrapper');
+
+        const renderList = (items) => {
+            list.innerHTML = '';
+            if (items.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'px-4 py-3 text-sm text-slate-400 italic bg-gray-50';
+                li.textContent = localTr('profile.no_affiliation_results');
+                list.appendChild(li);
+            } else {
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'px-4 py-2.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer border-b border-gray-50 last:border-none transition-colors';
+                    li.textContent = item;
+                    li.addEventListener('click', () => {
+                        input.value = item;
+                        hide(list);
+                    });
+                    list.appendChild(li);
+                });
+            }
+            show(list);
+        };
+
+        const handleInput = () => {
+            const val = input.value.toLowerCase();
+            const filtered = state.existingAffiliations.filter(aff => 
+                aff.toLowerCase().includes(val)
+            );
+            // If empty string, show first 20, else show matches
+            const toShow = val === '' ? state.existingAffiliations.slice(0, 50) : filtered;
+            renderList(toShow);
+        };
+
+        // Event Listeners for Autocomplete
+        input.addEventListener('focus', handleInput);
+        input.addEventListener('input', handleInput);
+
+        // Hide when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!wrapper.contains(e.target)) {
+                hide(list);
+            }
+        });
     }
 
     async function saveProfile(e) {
@@ -439,6 +527,9 @@
                 window.location.href = 'index.html';
             }
         });
+
+        // Initialize Autocomplete Events
+        setupAffiliationAutocomplete();
     }
 
     // --- Main ---
@@ -447,7 +538,7 @@
         bindEvents();
         lucide.createIcons();
 
-        // Initialize Auth exactly like archive.html
+        // Initialize Auth
         await initAuth({
             onAuthReady: () => {
                 // Render Header once auth is ready
