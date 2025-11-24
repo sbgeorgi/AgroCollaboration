@@ -13,38 +13,22 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
+  <!-- Global Styles -->
+  <link rel="stylesheet" href="styles.css">
+
   <!-- FullCalendar -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales-all.global.min.js"></script>
 
   <!-- External Tailwind Config -->
-  <script src="tailwind.config.js"></script>
-  <script>
-    // Ensure config matches archive.html if external file fails or for immediate apply
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            display: ['Plus Jakarta Sans', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8',
-              500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e', 950: '#082f49',
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <script src="theme.js"></script>
 
-  <!-- Custom CSS -->
+  <!-- Custom Admin & Calendar Overrides -->
   <style type="text/tailwindcss">
     @layer utilities {
       .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -58,58 +42,42 @@
 
     html, body { height: 100%; overflow: hidden; }
     
-    /* Flash Notification */
-    #flash {
-        position: fixed;
-        top: 80px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-150%);
-        background-color: #0f172a;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 9999px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        z-index: 9999;
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        display: flex; align-items: center; gap: 8px; opacity: 0;
-    }
-    #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-    /* Form Inputs */
+    /* Input Field matching styles.css via Tailwind layer for Admin Form ease */
     .input-field {
-        @apply w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all text-sm text-slate-800 placeholder:text-slate-400;
+        @apply w-full px-4 py-2.5 bg-[var(--bg-input)] border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-light)] focus:border-[var(--color-brand)] transition-all text-sm text-slate-800 placeholder:text-slate-400 shadow-inner;
+    }
+    .input-field:hover {
+        @apply bg-white shadow-sm;
     }
     .label-text {
         @apply block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5;
     }
 
-    /* FullCalendar Theme Overrides (Matching Brand Blue) */
+    /* FullCalendar Theme Overrides (Matching Organic Tech Palette) */
     :root {
         --fc-bg-color: transparent;
         --fc-border-color: #e2e8f0;
         --fc-text-color: #334155;
         --fc-neutral-bg-color: #f8fafc;
-        --fc-today-bg-color: #f0f9ff;
-        --fc-event-bg-color: #0284c7;
-        --fc-event-border-color: #0284c7;
+        --fc-today-bg-color: var(--color-brand-light);
+        --fc-event-bg-color: var(--color-brand);
+        --fc-event-border-color: var(--color-brand);
         --fc-event-text-color: #ffffff;
         --fc-button-bg-color: #ffffff;
         --fc-button-border-color: #e2e8f0;
         --fc-button-text-color: #64748b;
-        --fc-button-active-bg-color: #0284c7;
-        --fc-button-active-border-color: #0284c7;
+        --fc-button-active-bg-color: var(--color-brand);
+        --fc-button-active-border-color: var(--color-brand);
         --fc-button-active-text-color: #fff;
         --fc-button-hover-bg-color: #f1f5f9;
     }
     .fc { font-family: 'Inter', sans-serif; font-size: 0.85rem; }
-    .fc .fc-toolbar-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 1.25rem; color: #1e293b; }
+    .fc .fc-toolbar-title { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.25rem; color: var(--color-brand-dark); }
     .fc .fc-button { border-radius: 0.75rem; font-weight: 600; text-transform: capitalize; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
     .fc-col-header-cell-cushion, .fc-daygrid-day-number { color: #64748b !important; font-weight: 600; text-decoration: none !important; }
 
     /* Modal Styles */
-    dialog::backdrop { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); }
+    dialog::backdrop { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); }
     dialog[open] { animation: modal-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes modal-pop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
   </style>
@@ -120,75 +88,20 @@
 
 <body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
-  <!-- ================= HEADER (Matched to CSS: Sticky, 72px height, Max-width 1800) ================= -->
-  <header class="site-header bg-white border-b border-gray-200 sticky top-0 z-50 px-4">
-    <div class="container mx-auto h-[72px] flex items-center justify-between max-w-[1800px]">
-      <!-- Brand -->
-      <a href="index.html" class="brand group flex items-center gap-3">
-        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="w-10 h-10">
-        <div class="brand-text">
-          <div class="title font-display font-extrabold text-slate-900 text-lg group-hover:text-brand-700 transition-colors">Agrovoltaicos sin Fronteras</div>
-          <!-- Subtitle visible only on desktop per CSS -->
-          <div class="subtitle text-slate-500 text-xs hidden md:block" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
-        </div>
-      </a>
-      
-      <button id="mobileMenuBtn" class="mobile-menu-btn md:hidden text-slate-600 hover:bg-gray-100 rounded-lg p-2" aria-label="Open menu" aria-expanded="false">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-      </button>
-
-      <!-- Desktop Nav -->
-      <nav class="nav hidden md:flex items-center gap-6">
-        <!-- Links match CSS: font-weight 700 (bold), text-secondary (slate-500) -->
-        <a href="index.html" class="link text-sm font-bold text-slate-500 hover:text-brand-700 px-3 py-1 rounded-full transition-colors" data-i18n="nav.schedule">Schedule</a>
-        <a href="archive.html" class="link text-sm font-bold text-slate-500 hover:text-brand-700 px-3 py-1 rounded-full transition-colors" data-i18n="nav.archive">Archive</a>
-        <a href="about.html" class="link text-sm font-bold text-slate-500 hover:text-brand-700 px-3 py-1 rounded-full transition-colors" data-i18n="nav.about">About</a>
-        <a href="network.html" class="link text-sm font-bold text-slate-500 hover:text-brand-700 px-3 py-1 rounded-full transition-colors" data-i18n="nav.network">Network</a>
-        <a href="map.html" class="link text-sm font-bold text-slate-500 hover:text-brand-700 px-3 py-1 rounded-full transition-colors" data-i18n="nav.map">Map</a>
-        <a href="admin.html" id="btnAdmin" class="link text-sm font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full transition-all" data-i18n="nav.admin" style="display: none;">Admin</a>
-        
-        <div class="divider border-r border-gray-200 h-6 mx-2"></div>
-        
-        <!-- Language Switcher (CSS: .lang-switch-slider) -->
-        <div id="langSwitchDesktop" class="lang-switch-slider flex border border-gray-200 bg-gray-50 hover:border-brand-300 cursor-pointer rounded-full p-1 relative w-16 justify-between" data-lang="en">
-          <div class="absolute bg-white shadow-sm rounded-full h-[calc(100%-8px)] w-[calc(50%-4px)] top-1 left-1 transition-transform duration-300 ease-cubic" style="transform: var(--lang-offset, translateX(0))"></div>
-          <span class="text-[10px] font-bold text-slate-500 z-10 px-2">EN</span>
-          <span class="text-[10px] font-bold text-slate-500 z-10 px-2">ES</span>
-        </div>
-        
-        <!-- Auth Section -->
-        <div class="auth-area flex items-center gap-3">
-          <button id="btnProfile" class="profile-button w-9 h-9 rounded-full bg-brand-500 text-white shadow-sm ring-2 ring-white hover:ring-brand-200 transition-all flex items-center justify-center overflow-hidden" style="display: none" aria-label="Open profile" onclick="window.location.href='profile.html'">
-            <span id="userInitial" class="font-bold text-xs"></span>
-            <img id="userAvatar" class="rounded-full object-cover w-full h-full" style="display: none;" alt="User Avatar" />
-          </button>
-          <span id="userName" class="text-sm font-bold text-slate-700 hover:text-brand-600 cursor-pointer" style="display: none;"></span>
-          <a href="signin.html" id="btnSignIn" class="text-sm font-bold text-slate-700 hover:text-brand-600 transition-colors" data-i18n="auth.signin">Sign in</a>
-          <button id="btnSignOut" class="text-xs font-medium text-slate-400 hover:text-red-600 transition-colors" data-i18n="auth.signout" style="display: none">Sign out</button>
-        </div>
-      </nav>
-    </div>
-  </header>
-
-  <!-- ================= MOBILE MENU OVERLAY ================= -->
-  <div id="mobileNavOverlay" class="mobile-nav-overlay fixed inset-0 z-[60] bg-slate-900/20 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-    <div class="mobile-nav-content absolute right-0 top-0 bottom-0 w-72 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col p-4">
-      <!-- Injected by JS -->
-    </div>
-  </div>
+  <!-- Note: Header/Footer injected by layout.js -->
 
   <!-- ================= MAIN CONTENT ================= -->
   <main class="flex-1 relative overflow-hidden bg-gray-50">
-    <div id="flash"></div>
+    <div id="flash" class="flash"></div>
 
     <!-- Scrollable Container -->
     <div class="absolute inset-0 overflow-y-auto custom-scrollbar">
-      <div class="max-w-[1800px] mx-auto px-4 sm:px-6 py-6 flex flex-col h-full">
+      <div class="max-w-[1800px] mx-auto px-4 sm:px-6 py-6 flex flex-col h-full min-h-full">
         
         <!-- Access Denied View -->
         <div id="accessDenied" class="hidden m-auto max-w-md w-full">
-            <div class="bg-white rounded-2xl p-8 text-center border border-gray-200 shadow-lg">
-                <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div class="bg-white/80 backdrop-blur-md rounded-2xl p-8 text-center border border-gray-200 shadow-xl">
+                <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100">
                     <i data-lucide="lock" class="w-8 h-8"></i>
                 </div>
                 <h2 class="font-display font-bold text-2xl text-slate-800 mb-2" data-i18n="access_denied.title">Access Denied</h2>
@@ -204,10 +117,10 @@
             
             <!-- LEFT PANEL: TOOLS & FORM -->
             <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 overflow-hidden h-full">
-                <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm flex flex-col overflow-hidden h-full">
-                    <div class="p-5 border-b border-gray-100 bg-white sticky top-0 z-10">
+                <div class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm flex flex-col overflow-hidden h-full">
+                    <div class="p-5 border-b border-gray-100 bg-white/50 sticky top-0 z-10">
                         <h2 class="font-display font-bold text-xl text-slate-800 flex items-center gap-2">
-                            <i data-lucide="settings-2" class="w-5 h-5 text-brand-500"></i>
+                            <i data-lucide="settings-2" class="w-5 h-5 text-brand-600"></i>
                             <span data-i18n="admin.title">Organizer Tools</span>
                         </h2>
                     </div>
@@ -276,7 +189,7 @@
                         </form>
                     </div>
                     <div class="p-4 border-t border-gray-100 bg-gray-50">
-                        <button type="submit" form="createEventForm" class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-md transition-all flex justify-center items-center gap-2" data-i18n="event.create">
+                        <button type="submit" form="createEventForm" class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-brand-500/20 hover:shadow-xl hover:shadow-brand-500/30 transition-all flex justify-center items-center gap-2" data-i18n="event.create">
                             <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Event
                         </button>
                     </div>
@@ -285,15 +198,15 @@
 
             <!-- RIGHT PANEL: CALENDAR -->
             <div class="lg:col-span-8 xl:col-span-9 h-full">
-                <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm h-full flex flex-col overflow-hidden">
-                    <div class="p-4 border-b border-gray-100 flex items-center justify-between gap-4 bg-white sticky top-0 z-10">
+                <div class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm h-full flex flex-col overflow-hidden">
+                    <div class="p-4 border-b border-gray-100 flex items-center justify-between gap-4 bg-white/50 sticky top-0 z-10">
                         <h2 class="font-display font-bold text-xl text-slate-800" data-i18n="calendar.title">Event Calendar</h2>
                         <div class="relative w-64">
                             <i data-lucide="filter" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                            <input id="tagFilterInput" class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-500 outline-none" data-i18n-placeholder="tags.filter">
+                            <input id="tagFilterInput" class="w-full pl-9 pr-4 py-2 bg-[var(--bg-input)] border border-transparent hover:bg-white focus:bg-white focus:border-[var(--color-brand)] rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-brand-light)] outline-none transition-all" data-i18n-placeholder="tags.filter">
                         </div>
                     </div>
-                    <div class="flex-1 p-4 bg-white min-h-[500px]">
+                    <div class="flex-1 p-4 bg-white/50 min-h-[500px]">
                         <div id="calendar" class="h-full"></div>
                     </div>
                 </div>
@@ -303,33 +216,6 @@
       </div>
     </div>
   </main>
-
-  <!-- ================= FOOTER (Matched to CSS: Padding 24px, Round Logos 40px, Text Secondary) ================= -->
-  <footer class="site-footer bg-white border-t border-gray-200 p-6 mt-auto z-10">
-    <div class="mx-auto flex flex-col md:flex-row justify-between items-center gap-4 max-w-[1800px] text-xs text-slate-500">
-      <!-- Text Section -->
-      <div class="footer-text flex items-center flex-wrap justify-center md:justify-start gap-1">
-        <span>&copy; <span id="year"></span> Agrovoltaicos sin Fronteras •</span>
-        <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in Latin America.</span>
-      </div>
-      
-      <!-- Logos Section (CSS: w-40px h-40px rounded-50% object-cover) -->
-      <div class="footer-logos flex gap-2 items-center">
-          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank" rel="noopener noreferrer">
-            <img src="static/b2ua.jpg" class="w-10 h-10 rounded-full object-cover border border-gray-100" alt="Biosphere 2 Agrivoltaics">
-          </a>
-          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank" rel="noopener noreferrer">
-            <img src="static/unam.png" class="w-10 h-10 rounded-full object-cover border border-gray-100 bg-white" alt="UNAM">
-          </a>
-          <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana" target="_blank" rel="noopener noreferrer">
-            <img src="static/aal.png" class="w-10 h-10 rounded-full object-cover border border-gray-100 bg-white" alt="AAL">
-          </a>
-          <a href="https://redagvmx.com" target="_blank" rel="noopener noreferrer">
-            <img src="static/rame.png" class="w-10 h-10 rounded-full object-cover border border-gray-100 bg-white" alt="RAME">
-          </a>
-      </div>
-    </div>
-  </footer>
 
   <!-- ================= EDIT MODAL ================= -->
   <dialog id="edit-event-modal" class="rounded-2xl p-0 bg-white shadow-2xl max-w-2xl w-full m-auto backdrop:bg-slate-900/50">
@@ -391,8 +277,12 @@
 
   <!-- ================= LOGIC ================= -->
   <script type="module">
+    import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, setFlash, escapeHtml, getAvatarUrl } from './ui.js';
+
+    // Inject Layout logic (Handles Header/Footer and active states)
+    renderLayout('admin');
 
     // --- PAGE-SPECIFIC STATE & I18N ---
     const state = { 
@@ -403,12 +293,9 @@
       calendar: null 
     };
     
-    // Merged Translation Object (Global + Admin Specific)
+    // Merged Translation Object (Admin Specific)
     const t = {
       en: {
-        tagline: "A seminar series to share advances in agrivoltaics in the Americas",
-        nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
-        auth: { signin: "Sign in", signout: "Sign out" },
         admin: { title: "Organizer Tools" },
         calendar: { title: "Event Calendar" },
         event: {
@@ -428,13 +315,9 @@
           update_event: "Could not update event",
           delete_event: "Could not delete event",
           load_profiles: "Could not load user profiles"
-        },
-        footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." }
+        }
       },
       es: {
-        tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas",
-        nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
-        auth: { signin: "Ingresar", signout: "Salir" },
         admin: { title: "Herramientas de Organizador" },
         calendar: { title: "Calendario de Eventos" },
         event: {
@@ -454,8 +337,7 @@
           update_event: "No se pudo actualizar el evento",
           delete_event: "No se pudo eliminar el evento",
           load_profiles: "Error cargando perfiles"
-        },
-        footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." }
+        }
       }
     };
 
@@ -469,10 +351,13 @@
     function applyPageI18n() {
       applyI18n(t, state.language);
       if (state.calendar) state.calendar.setOption('locale', state.language === 'es' ? 'es' : 'en');
-      // Update dynamic language switcher offset if needed
+      
+      // Sync language switcher from header (injected by layout)
       const offset = state.language === 'es' ? '100%' : '0%';
-      const slider = document.querySelector('#langSwitchDesktop div');
-      if(slider) slider.style.setProperty('--lang-offset', `translateX(${offset})`);
+      const slider = document.querySelector('#langSwitchDesktop div:last-child');
+      if(slider) {
+          slider.style.transform = `translateX(${offset})`;
+      }
     }
 
     function handleLangSwitch() { 
@@ -490,7 +375,7 @@
         
         // Load data
         await loadProfiles();
-        await loadBanner(); // <--- ADD THIS LINE
+        await loadBanner();
         renderSpeakerFields('speakersContainer');
         
         if (!state.calendar) initializeCalendar();
@@ -565,21 +450,13 @@
     };
 
     const loadBanner = async () => {
-      // Get the most recent banner
-      const { data, error } = await supabase
-        .from('banners')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const { data, error } = await supabase.from('banners').select('*').order('created_at', { ascending: false }).limit(1).maybeSingle();
 
       if (data && data.is_active) {
         $('#bannerTextEn').value = data.text_en;
         $('#bannerTextEs').value = data.text_es || '';
         updateBannerUI(true);
       } else {
-        // If inactive, we still might want to show the last text used, 
-        // or clear it. Here we keep it if it exists for easy reactivation.
         if (data) {
             $('#bannerTextEn').value = data.text_en;
             $('#bannerTextEs').value = data.text_es || '';
@@ -593,8 +470,8 @@
       title: state.language === 'es' ? (ev.title_es || ev.title_en) : (ev.title_en || ev.title_es),
       start: ev.start_time,
       end: ev.end_time,
-      backgroundColor: ev.status === 'canceled' ? '#64748b' : '#0ea5e9', // slate-500 vs brand-500
-      borderColor: ev.status === 'canceled' ? '#64748b' : '#0ea5e9',
+      backgroundColor: ev.status === 'canceled' ? '#64748b' : '#16a34a', // slate-500 vs brand green
+      borderColor: ev.status === 'canceled' ? '#64748b' : '#16a34a',
       extendedProps: ev
     }));
 
@@ -757,15 +634,12 @@
         return;
       }
 
-      // 1. Deactivate all existing banners first
       await supabase.from('banners').update({ is_active: false }).neq('id', '00000000-0000-0000-0000-000000000000'); 
 
-      // 2. Insert the new active banner
       const { error } = await supabase.from('banners').insert({
         text_en,
         text_es,
         is_active: true,
-        // FIX: Use authState.profile.id instead of authState.user.id
         created_by: authState.profile.id 
       });
 
@@ -778,11 +652,8 @@
       }
     });
 
-    // Banner Deactivate Button
     $('#clearBannerBtn')?.addEventListener('click', async () => {
-      // Deactivate all banners
       const { error } = await supabase.from('banners').update({ is_active: false }).neq('id', '00000000-0000-0000-0000-000000000000'); 
-      
       if (error) {
         setFlash("Error deactivating", 3000);
       } else {
@@ -839,7 +710,9 @@
     $("#btnDeleteEvent")?.addEventListener("click", () => deleteEvent($("#editEventId").value));
     $('#addSpeakerBtn')?.addEventListener('click', () => addSpeakerField('speakersContainer'));
     $('#addEditSpeakerBtn')?.addEventListener('click', () => addSpeakerField('editSpeakersContainer'));
-    document.body.addEventListener('click', e => {
+    
+    // Global listener for profile clicks (header injected by layout)
+    document.addEventListener('click', e => {
       if (e.target.closest('.remove-speaker-btn')) e.target.closest('.speaker-row').remove();
       if (e.target.closest('#btnProfile') || e.target.id === 'userName') window.location.href = 'profile.html';
     });
@@ -848,21 +721,19 @@
     (async function main() {
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
       await initAuth({ 
-          onAuthReady: () => renderHeader(authState, t, state.language), 
-          onAuthChange: () => {
+          onAuthReady: () => {
               renderHeader(authState, t, state.language);
               if(authState.profile?.avatar_url) {
                   getAvatarUrl(authState.profile.avatar_url).then(url => {
                       if(url) { const i = $('#userAvatar'); if(i) { i.src = url; show(i); hide($('#userInitial')); } }
                   });
               }
-          }
+          }, 
+          onAuthChange: () => renderHeader(authState, t, state.language)
       });
       applyPageI18n();
       await checkAccess();
       lucide.createIcons();
-
-      document.getElementById('year').innerText = new Date().getFullYear();
     })();
   </script>
 </body>
