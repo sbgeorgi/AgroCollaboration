@@ -53,7 +53,7 @@
         @apply block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5;
     }
 
-    /* FullCalendar Theme Overrides (Matching Organic Tech Palette) */
+    /* FullCalendar Theme Overrides */
     :root {
         --fc-bg-color: transparent;
         --fc-border-color: #e2e8f0;
@@ -393,23 +393,25 @@
 
     const createProfileOptions = (selectedId) => `<option value="">-- Link Profile --</option>${state.profiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.full_name || '')}</option>`).join('')}`;
 
-    // Improved Speaker Row HTML
+    // Improved Speaker Row HTML (Vertically Stacked to fix squeezing)
     const addSpeakerField = (containerId, speaker = {}) => {
       const container = $(`#${containerId}`);
       const row = document.createElement('div');
-      row.className = 'speaker-row flex flex-col md:flex-row gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm items-start md:items-center';
+      row.className = 'speaker-row flex flex-col gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm mb-3 transition-all hover:shadow-md';
       row.innerHTML = `
-        <div class="flex-1 w-full grid grid-cols-1 md:grid-cols-3 gap-2">
-            <input type="text" class="speaker-name input-field !py-1.5" placeholder="${tr(t, state.language, 'speakers.name')}" value="${escapeHtml(speaker.name || '')}" required>
-            <input type="text" class="speaker-affiliation input-field !py-1.5" placeholder="${tr(t, state.language, 'speakers.affiliation')}" value="${escapeHtml(speaker.affiliation || '')}">
-            <select class="speaker-profile input-field !py-1.5">${createProfileOptions(speaker.profile_id)}</select>
+        <div class="w-full space-y-2">
+            <input type="text" class="speaker-name input-field w-full" placeholder="${tr(t, state.language, 'speakers.name')}" value="${escapeHtml(speaker.name || '')}" required>
+            <input type="text" class="speaker-affiliation input-field w-full" placeholder="${tr(t, state.language, 'speakers.affiliation')}" value="${escapeHtml(speaker.affiliation || '')}">
+            <select class="speaker-profile input-field w-full cursor-pointer">${createProfileOptions(speaker.profile_id)}</select>
         </div>
-        <div class="flex items-center gap-2 mt-2 md:mt-0">
-            <label class="flex items-center gap-1 text-xs text-slate-600 cursor-pointer select-none bg-gray-100 px-2 py-1.5 rounded hover:bg-gray-200 transition-colors">
-                <input type="checkbox" class="speaker-primary rounded text-brand-600 focus:ring-brand-500 border-gray-300" ${speaker.primary_speaker ? 'checked' : ''}>
+        <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+            <label class="flex items-center gap-2 text-xs text-slate-600 font-medium cursor-pointer select-none hover:text-brand-600 transition-colors">
+                <input type="checkbox" class="speaker-primary rounded border-gray-300 text-brand-600 focus:ring-brand-500" ${speaker.primary_speaker ? 'checked' : ''}>
                 <span>${tr(t, state.language, 'speakers.primary')}</span>
             </label>
-            <button type="button" class="remove-speaker-btn text-red-500 hover:bg-red-50 p-1.5 rounded-full transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            <button type="button" class="remove-speaker-btn text-slate-400 hover:text-red-500 p-1.5 rounded-full hover:bg-red-50 transition-all" title="${tr(t, state.language, 'speakers.remove')}">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
         </div>
       `;
       container.appendChild(row);
@@ -530,7 +532,7 @@
       const el = $('#calendar');
       if (!el || !window.FullCalendar) return;
       state.calendar = new FullCalendar.Calendar(el, {
-        initialView: 'timeGridWeek',
+        initialView: 'dayGridMonth', // Changed to Month as default
         headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
         editable: true, selectable: true, selectMirror: true,
         slotMinTime: '08:00:00', slotMaxTime: '20:00:00', height: '100%',

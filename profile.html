@@ -194,10 +194,20 @@
                         </div>
                     </div>
 
-                    <!-- Research Interests -->
+                    <!-- Research Interests (Tags) -->
                     <div class="space-y-1.5 md:col-span-2">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="fieldsOfStudy" data-i18n="profile.fields_section">Research Interests</label>
-                        <textarea id="fieldsOfStudy" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400 min-h-[100px] resize-y" placeholder="Agrivoltaics, Crop Science, Renewable Energy..." data-i18n-placeholder="profile.fields_hint"></textarea>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="fieldsOfStudy" data-i18n="profile.fields_section">Research Interests (tags, comma-separated)</label>
+                        <textarea id="fieldsOfStudy" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400 min-h-[100px] resize-y" placeholder="Agrivoltaics, carbon fluxes, soil monitoring..." data-i18n-placeholder="profile.fields_hint"></textarea>
+                        <p class="mt-1 text-xs text-slate-500" data-i18n="profile.fields_help">
+                            Enter short keywords separated by commas (e.g. agrivoltaics, carbon fluxes, remote sensing). These will appear as tags on your profile.
+                        </p>
+                        <div id="fieldsOfStudyTags" class="mt-2 flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <!-- Profile Description (Optional) -->
+                    <div class="space-y-1.5 md:col-span-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="description" data-i18n="profile.description_section">Profile Description (optional)</label>
+                        <textarea id="description" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400 min-h-[100px] resize-y" placeholder="Brief bio, current projects, and how you collaborate..." data-i18n-placeholder="profile.description_hint"></textarea>
                     </div>
 
                 </div>
@@ -227,12 +237,52 @@
     const t = {
         en: {
             auth: { signin_prompt_title: "Please Sign In", signin_prompt_body: "Access to your profile dashboard requires authentication.", signin_prompt_button: "Go to Sign In" },
-            profile: { title: "Edit Profile", full_name: "Full Name", username: "Username", affiliation: "Affiliation", work_email: "Work Email", personal_website: "Personal Website", professional_website: "Lab Website", google_scholar: "Google Scholar Profile", fields_section: "Research Interests", fields_hint: "e.g. Solar energy, water conservation...", save: "Save Changes", saving: "Saving...", saved: "Dashboard updated successfully", remove_image: "Remove Picture", upload_error: "Failed to upload image. Please try again.", no_affiliation_results: "No matches found. Typing will create a new one." },
+            profile: { 
+                title: "Edit Profile", 
+                full_name: "Full Name", 
+                username: "Username", 
+                affiliation: "Affiliation", 
+                work_email: "Work Email", 
+                personal_website: "Personal Website", 
+                professional_website: "Lab Website", 
+                google_scholar: "Google Scholar Profile", 
+                fields_section: "Research Interests (tags, comma-separated)", 
+                fields_hint: "e.g. agrivoltaics, carbon fluxes, remote sensing...", 
+                fields_help: "Enter short keywords separated by commas (e.g. agrivoltaics, carbon fluxes, remote sensing). These will appear as tags on your profile.", 
+                description_section: "Profile Description (optional)",
+                description_hint: "Brief bio, current projects, and how you collaborate (optional).",
+                save: "Save Changes", 
+                saving: "Saving...", 
+                saved: "Dashboard updated successfully", 
+                remove_image: "Remove Picture", 
+                upload_error: "Failed to upload image. Please try again.", 
+                no_affiliation_results: "No matches found. Typing will create a new one." 
+            },
             back: { general: "Go Back" }
         },
         es: {
             auth: { signin_prompt_title: "Inicia Sesión", signin_prompt_body: "El acceso al panel de perfil requiere autenticación.", signin_prompt_button: "Iniciar Sesión" },
-            profile: { title: "Editar Perfil", full_name: "Nombre Completo", username: "Usuario", affiliation: "Afiliación", work_email: "Correo Trabajo", personal_website: "Sitio Personal", professional_website: "Sitio Laboratorio", google_scholar: "Perfil Google Scholar", fields_section: "Intereses de Investigación", fields_hint: "ej. Energía solar, conservación de agua...", save: "Guardar Cambios", saving: "Guardando...", saved: "Panel actualizado con éxito", remove_image: "Eliminar Foto", upload_error: "Error al subir la imagen. Por favor intenta de nuevo.", no_affiliation_results: "No se encontraron coincidencias. Escribir creará uno nuevo." },
+            profile: { 
+                title: "Editar Perfil", 
+                full_name: "Nombre Completo", 
+                username: "Usuario", 
+                affiliation: "Afiliación", 
+                work_email: "Correo Trabajo", 
+                personal_website: "Sitio Personal", 
+                professional_website: "Sitio Laboratorio", 
+                google_scholar: "Perfil Google Scholar", 
+                fields_section: "Intereses de investigación (etiquetas separadas por comas)", 
+                fields_hint: "ej. agrovoltaica, flujos de carbono, teledetección...", 
+                fields_help: "Introduce palabras clave cortas separadas por comas (ej. agrovoltaica, flujos de carbono, teledetección). Se mostrarán como etiquetas en tu perfil.", 
+                description_section: "Descripción del perfil (opcional)",
+                description_hint: "Breve biografía, proyectos actuales y cómo colaboras (opcional).",
+                save: "Guardar Cambios", 
+                saving: "Guardando...", 
+                saved: "Panel actualizado con éxito", 
+                remove_image: "Eliminar Foto", 
+                upload_error: "Error al subir la imagen. Por favor intenta de nuevo.", 
+                no_affiliation_results: "No se encontraron coincidencias. Escribir creará uno nuevo." 
+            },
             back: { general: "Regresar" }
         }
     };
@@ -317,7 +367,7 @@
         }
 
         // Populate Form
-        const fields = ['fullName', 'username', 'affiliation', 'workEmail', 'personalWebsite', 'professionalWebsite', 'googleScholar', 'fieldsOfStudy'];
+        const fields = ['fullName', 'username', 'affiliation', 'workEmail', 'personalWebsite', 'professionalWebsite', 'googleScholar', 'fieldsOfStudy', 'description'];
         fields.forEach(id => {
             const dbKey = id.replace(/[A-Z]/g, m => '_' + m.toLowerCase()); // camelToSnake
             const el = $(`#${id}`);
@@ -329,6 +379,7 @@
         if(!$('#username').value) $('#username').value = authState.session.user.email.split('@')[0];
 
         updatePreviewText();
+        renderFieldsTags();
 
         // Handle Avatar
         if (state.profile.avatar_url) {
@@ -365,6 +416,32 @@
     function updatePreviewText() {
         $('#displayUsername').textContent = '@' + ($('#username').value || 'username');
         $('#displayEmail').textContent = $('#workEmail').value || 'user@example.com';
+    }
+
+    function renderFieldsTags() {
+        const container = $('#fieldsOfStudyTags');
+        if (!container) return;
+        const textarea = $('#fieldsOfStudy');
+        if (!textarea) return;
+
+        const raw = textarea.value || '';
+        const tags = raw
+            .split(',')
+            .map(tag => tag.trim())
+            .filter(tag => tag.length > 0);
+
+        container.innerHTML = '';
+
+        if (tags.length === 0) {
+            return;
+        }
+
+        tags.forEach(tag => {
+            const pill = document.createElement('span');
+            pill.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-100';
+            pill.textContent = tag;
+            container.appendChild(pill);
+        });
     }
 
     // --- Autocomplete Logic ---
@@ -460,6 +537,7 @@
                 professional_website: $('#professionalWebsite').value.trim() || null,
                 google_scholar: $('#googleScholar').value.trim() || null,
                 fields_of_study: $('#fieldsOfStudy').value.trim() || null,
+                description: $('#description').value.trim() || null,
             };
 
             const { error } = await supabase.from('profiles').upsert(updates);
@@ -515,6 +593,9 @@
         $('#fullName').addEventListener('input', updateInitials);
         $('#username').addEventListener('input', updatePreviewText);
         $('#workEmail').addEventListener('input', updatePreviewText);
+
+        // Tags preview from Research Interests
+        $('#fieldsOfStudy').addEventListener('input', renderFieldsTags);
 
         // Form Submit
         $('#profileForm').addEventListener('submit', saveProfile);

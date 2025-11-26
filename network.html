@@ -214,11 +214,37 @@
           </div>
       </div>
       <div class="p-6 overflow-y-auto custom-scrollbar space-y-6">
-          <div id="modalEmailSection" class="hidden"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Contact</h3><a id="modalEmail" href="#" class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 w-full"><i data-lucide="mail" class="w-4 h-4 text-slate-400"></i><span class="email-text truncate"></span></a></div>
-          <div id="modalLinksSection" class="hidden"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Links</h3><div id="modalLinks" class="flex flex-col gap-2"></div></div>
-          <div id="modalFieldsSection" class="hidden"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Interests</h3><div id="modalFields" class="flex flex-wrap gap-2"></div></div>
-          <div><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Network Connections</h3><div id="modalConnections" class="flex flex-wrap gap-2"></div></div>
-      </div>
+  <div id="modalEmailSection" class="hidden">
+    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Contact</h3>
+    <a id="modalEmail" href="#" class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 w-full">
+      <i data-lucide="mail" class="w-4 h-4 text-slate-400"></i>
+      <span class="email-text truncate"></span>
+    </a>
+  </div>
+
+  <div id="modalLinksSection" class="hidden">
+    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Links</h3>
+    <div id="modalLinks" class="flex flex-col gap-2"></div>
+  </div>
+
+  <!-- NEW: Profile Description -->
+  <div id="modalDescriptionSection" class="hidden">
+    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+      Profile
+    </h3>
+    <p id="modalDescription" class="text-sm text-slate-700 leading-relaxed whitespace-pre-line"></p>
+  </div>
+
+  <div id="modalFieldsSection" class="hidden">
+    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Interests</h3>
+    <div id="modalFields" class="flex flex-wrap gap-2"></div>
+  </div>
+
+  <div>
+    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Network Connections</h3>
+    <div id="modalConnections" class="flex flex-wrap gap-2"></div>
+  </div>
+</div>
   </div>
 
   <!-- ================= LOGIC ================= -->
@@ -513,32 +539,97 @@
     }
 
     async function openProfileModal(m) {
-        if(!m) return;
-        const modal = $('#profileModal'), over = $('#modalOverlay');
-        const displayName = m.full_name || 'Member';
-        
-        $('#modalName').innerText = displayName;
-        $('#modalAffiliation').innerText = m.affiliation || 'No affiliation';
-        $('#modalAvatarInitial').innerText = displayName[0].toUpperCase();
-        
-        hide($('#modalAvatarImage')); show($('#modalAvatarInitial'));
-        if(m.avatar_url) getAvatarUrl(m.avatar_url).then(u=>{if(u){ $('#modalAvatarImage').src=u; show($('#modalAvatarImage')); hide($('#modalAvatarInitial'));}});
-        
-        if(m.work_email) { $('#modalEmail').href=`mailto:${m.work_email}`; $('.email-text').innerText=m.work_email; show($('#modalEmailSection')); } else hide($('#modalEmailSection'));
-        
-        const ld = $('#modalLinks'); ld.innerHTML=''; let hl=false;
-        [['personal_website','Website','globe'],['professional_website','Work','building'],['google_scholar','Scholar','graduation-cap']].forEach(([k,l,i])=>{
-             if(m[k]) { hl=true; ld.insertAdjacentHTML('beforeend', `<a href="${m[k]}" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-brand-50 hover:border-brand-300 transition-all group"><span class="flex items-center gap-2 text-sm font-medium text-slate-700"><i data-lucide="${i}" class="w-4 h-4 text-slate-400 group-hover:text-brand-500"></i> ${l}</span><i data-lucide="external-link" class="w-3 h-3 text-slate-300"></i></a>`); }
-        });
-        if(hl) { show($('#modalLinksSection')); lucide.createIcons(); } else hide($('#modalLinksSection'));
-        
-        const fd = $('#modalFields'); fd.innerHTML='';
-        const tags = new Set(); for(const [t,s] of state.tagIndex) if(s.has(m.id)) tags.add(state.allCanonicalToDisplay.get(t));
-        if(tags.size) { tags.forEach(t=>fd.insertAdjacentHTML('beforeend', `<span class="px-2 py-1 rounded bg-gray-100 text-slate-600 text-xs font-bold border border-gray-200">${t}</span>`)); show($('#modalFieldsSection')); } else hide($('#modalFieldsSection'));
-        
-        show(over); show(modal);
-        requestAnimationFrame(()=>{ over.classList.remove('opacity-0','pointer-events-none'); modal.classList.remove('opacity-0','pointer-events-none','scale-95'); });
+    if(!m) return;
+    const modal = $('#profileModal'), over = $('#modalOverlay');
+    const displayName = m.full_name || 'Member';
+    
+    $('#modalName').innerText = displayName;
+    $('#modalAffiliation').innerText = m.affiliation || 'No affiliation';
+    $('#modalAvatarInitial').innerText = displayName[0].toUpperCase();
+    
+    hide($('#modalAvatarImage')); 
+    show($('#modalAvatarInitial'));
+    if(m.avatar_url) getAvatarUrl(m.avatar_url).then(u => {
+        if(u){
+            $('#modalAvatarImage').src = u;
+            show($('#modalAvatarImage'));
+            hide($('#modalAvatarInitial'));
+        }
+    });
+    
+    // Contact
+    if(m.work_email) { 
+        $('#modalEmail').href = `mailto:${m.work_email}`; 
+        $('.email-text').innerText = m.work_email; 
+        show($('#modalEmailSection')); 
+    } else {
+        hide($('#modalEmailSection'));
     }
+    
+    // Links
+    const ld = $('#modalLinks'); 
+    ld.innerHTML = ''; 
+    let hl = false;
+    [['personal_website','Website','globe'],
+     ['professional_website','Work','building'],
+     ['google_scholar','Scholar','graduation-cap']
+    ].forEach(([k,l,i]) => {
+        if(m[k]) { 
+            hl = true; 
+            ld.insertAdjacentHTML(
+                'beforeend', 
+                `<a href="${m[k]}" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-brand-50 hover:border-brand-300 transition-all group">
+                    <span class="flex items-center gap-2 text-sm font-medium text-slate-700">
+                        <i data-lucide="${i}" class="w-4 h-4 text-slate-400 group-hover:text-brand-500"></i> ${l}
+                    </span>
+                    <i data-lucide="external-link" class="w-3 h-3 text-slate-300"></i>
+                </a>`
+            ); 
+        }
+    });
+    if(hl) { 
+        show($('#modalLinksSection')); 
+        lucide.createIcons(); 
+    } else {
+        hide($('#modalLinksSection'));
+    }
+
+    // NEW: Description
+    const descSection = $('#modalDescriptionSection');
+    const descEl = $('#modalDescription');
+    if (m.description && m.description.trim().length > 0) {
+        descEl.innerText = m.description.trim();
+        show(descSection);
+    } else {
+        descEl.innerText = '';
+        hide(descSection);
+    }
+    
+    // Interests (tags)
+    const fd = $('#modalFields'); 
+    fd.innerHTML = '';
+    const tags = new Set(); 
+    for(const [t,s] of state.tagIndex) {
+        if(s.has(m.id)) tags.add(state.allCanonicalToDisplay.get(t));
+    }
+    if(tags.size) { 
+        tags.forEach(t => 
+            fd.insertAdjacentHTML('beforeend', 
+                `<span class="px-2 py-1 rounded bg-gray-100 text-slate-600 text-xs font-bold border border-gray-200">${t}</span>`
+            )
+        ); 
+        show($('#modalFieldsSection')); 
+    } else {
+        hide($('#modalFieldsSection'));
+    }
+    
+    show(over); 
+    show(modal);
+    requestAnimationFrame(() => { 
+        over.classList.remove('opacity-0','pointer-events-none'); 
+        modal.classList.remove('opacity-0','pointer-events-none','scale-95'); 
+    });
+}
 
     (async function() {
         initSharedUI({ onLangSwitch: () => location.reload(), onSignOut: signOut });

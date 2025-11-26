@@ -615,7 +615,7 @@ export function initEventLogic(deps) {
 
     let accessCard = '';
     if (!isPast && ev.zoom_url) {
-        accessCard = `<a href="${ev.zoom_url}" target="_blank" class="block w-full text-center py-3 bg-[#0077b6] hover:bg-[#023e8a] text-white font-bold rounded-lg transition-colors shadow-sm mb-1"><i data-lucide="video" class="inline w-4 h-4 mr-2"></i>Join via Zoom</a>`;
+        accessCard = `<a href="${ev.zoom_url}" target="_blank" class="block w-full text-center py-3 bg-[#0077b6] hover:bg-[#023e8a] text-white font-bold rounded-lg transition-colors shadow-sm mb-1"><i data-lucide="video" class="inline w-4 h-4 mr-2"></i>Register/Join via Zoom</a>`;
     } else if (ev.recording_url) {
         accessCard = `<a href="${ev.recording_url}" target="_blank" class="block w-full text-center py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg transition-colors shadow-sm mb-1"><i data-lucide="play-circle" class="inline w-4 h-4 mr-2"></i>Watch Recording</a>`;
     } else {

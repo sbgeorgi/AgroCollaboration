@@ -339,7 +339,7 @@
     <div class="w-full h-full max-w-[1800px] px-4 sm:px-6 py-6 flex flex-col lg:flex-row gap-6 relative">
 
       <!-- MAP PANEL (Top on mobile, Left on desktop) -->
-      <div class="flex-[2] relative rounded-[1.5rem] overflow-hidden border border-gray-200 shadow-sm bg-white z-0 flex flex-col">
+      <div class="flex-1 lg:flex-[1.4] relative rounded-[1.5rem] overflow-hidden border border-gray-200 shadow-sm bg-white z-0 flex flex-col">
         
         <!-- Map container -->
         <div id="map" class="flex-1 w-full h-full z-10"></div>
@@ -385,34 +385,49 @@
                 <div id="mediaPreviewGrid" class="media-preview-grid"></div>
               </div>
 
-              <!-- Collaborators -->
+              <!-- Collaborators (Not Required anymore) -->
               <div class="col-span-2">
-                <label for="userSearch" data-i18n="form.collaborators">Collaborators (Required)</label>
+                <label for="userSearch" data-i18n="form.collaborators">Collaborators</label>
                 <div id="selectedUsers"></div>
                 <div class="user-search-wrapper">
                   <input type="text" id="userSearch" placeholder="Search for users..." autocomplete="off">
                   <div id="userSearchResults" class="custom-scrollbar"></div>
                 </div>
-                <input type="text" id="collaborators_hidden_required" required style="height:0; padding:0; border:none; position:absolute; opacity:0;">
               </div>
 
               <!-- Basic Info -->
               <div><label for="name" data-i18n="form.institution">Institution (Required)</label><input id="name" required /></div>
               <div><label for="project_name" data-i18n="form.project_name">Project Name (Required)</label><input id="project_name" required /></div>
+              
               <div><label for="latitude" data-i18n="form.latitude">Latitude (Required)</label><input id="latitude" type="number" step="any" required /></div>
               <div><label for="longitude" data-i18n="form.longitude">Longitude (Required)</label><input id="longitude" type="number" step="any" required /></div>
-              <div><label for="start_year" data-i18n="form.start_year">Start Year (Required)</label><input id="start_year" type="number" required /></div>
-              <div><label for="area" data-i18n="form.area">Area (ha or m2) (Required)</label><input id="area" required /></div>
               
-              <div class="col-span-2"><label for="associated_crops" data-i18n="form.associated_crops">Associated Crop(s) (Required)</label><input id="associated_crops" required /></div>
-              <div class="col-span-2"><label for="av_system_type" data-i18n="form.av_system_type">AV System Type (Required)</label><input id="av_system_type" placeholder="e.g., Static, Tracking, Height..." required /></div>
+              <div>
+                <label for="system_category" data-i18n="form.system_category">System Type (Required)</label>
+                <select id="system_category" required>
+                  <option value="Crops">Crops</option>
+                  <option value="Livestock">Livestock</option>
+                  <option value="Ecovoltaics">Ecovoltaics</option>
+                  <option value="Aquaculture">Aquaculture</option>
+                  <option value="Mixed">Mixed</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              
+              <div><label for="start_year" data-i18n="form.start_year">Start Year (Required)</label><input id="start_year" type="number" required /></div>
+              
+              <div class="col-span-2"><label for="associated_crops" data-i18n="form.associated_crops">Target Species / Crops (Required)</label><input id="associated_crops" required placeholder="e.g. Tomatoes, Sheep, Native Pollinators..." /></div>
+              <div class="col-span-2"><label for="av_system_type" data-i18n="form.av_system_type">AV System Tech (Required)</label><input id="av_system_type" placeholder="e.g., Elevated, Tracking, Vertical..." required /></div>
               
               <div class="col-span-2"><hr class="border-gray-200 my-2"></div>
               
               <div><label for="generating_capacity_kw" data-i18n="form.generating_capacity_kw">Capacity (kW)</label><input id="generating_capacity_kw" type="number" step="any" /></div>
+              <div><label for="area" data-i18n="form.area">Area (ha or m2) (Required)</label><input id="area" required /></div>
+              
               <div><label for="keywords" data-i18n="form.keywords">Keywords</label><input id="keywords" placeholder="Research, Commercial..." /></div>
-              <div><label for="affiliation" data-i18n="form.affiliation">Affiliation</label><input id="affiliation" /></div>
               <div><label for="link" data-i18n="form.link">Website Link</label><input id="link" type="url" /></div>
+              
+              <div class="col-span-2"><label for="affiliation" data-i18n="form.affiliation">Affiliation</label><input id="affiliation" /></div>
               
               <div class="col-span-2"><label for="description" data-i18n="form.description">Description</label><textarea id="description"></textarea></div>
               <div class="col-span-2"><label for="leadership" data-i18n="form.leadership">Leadership</label><textarea id="leadership" placeholder="HTML allowed"></textarea></div>
@@ -431,28 +446,52 @@
       </div>
 
       <!-- TABLE PANEL (Bottom on mobile, Right on desktop) -->
-      <div class="flex-1 lg:flex-[0.8] rounded-[1.5rem] overflow-hidden border border-gray-200 shadow-sm bg-white flex flex-col relative">
+      <div class="flex-1 lg:flex-[1.2] rounded-[1.5rem] overflow-hidden border border-gray-200 shadow-sm bg-white flex flex-col relative">
         <div class="flex-1 overflow-y-auto custom-scrollbar">
           <table id="projects-table" class="w-full text-left border-collapse">
             <thead class="bg-white sticky top-0 z-10 shadow-sm text-xs font-bold uppercase text-slate-500 tracking-wider">
-              <tr>
-                <th class="p-4 border-b border-gray-100" data-sort="project_name">
-                  <div class="flex items-center gap-1"><span data-i18n="table.project_name">Project</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div>
-                </th>
-                <th class="p-4 border-b border-gray-100" data-sort="name">
-                  <div class="flex items-center gap-1"><span data-i18n="table.institution">Inst.</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div>
-                </th>
-                <th class="p-4 border-b border-gray-100 hidden sm:table-cell" data-sort="start_year">
-                  <div class="flex items-center gap-1"><span data-i18n="table.start_year">Year</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div>
-                </th>
-                <th class="p-4 border-b border-gray-100 hidden md:table-cell" data-sort="generating_capacity_kw">
-                  <div class="flex items-center gap-1"><span data-i18n="table.capacity">kW</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div>
-                </th>
-                <th class="p-4 border-b border-gray-100 hidden lg:table-cell" data-sort="area">
-                  <div class="flex items-center gap-1"><span data-i18n="table.area">Area</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div>
-                </th>
-              </tr>
-            </thead>
+  <tr>
+    <!-- Project Name -->
+    <th class="p-4 border-b border-gray-100" data-sort="project_name">
+      <div class="flex items-center gap-1">
+        <span data-i18n="table.project_name">Project Name</span>
+        <i class="sort-icon" data-lucide="chevrons-up-down"></i>
+      </div>
+    </th>
+
+    <!-- Institution -->
+    <th class="p-4 border-b border-gray-100" data-sort="name">
+      <div class="flex items-center gap-1">
+        <span data-i18n="table.institution">Institution</span>
+        <i class="sort-icon" data-lucide="chevrons-up-down"></i>
+      </div>
+    </th>
+
+    <!-- System Type -->
+    <th class="p-4 border-b border-gray-100" data-sort="system_category">
+      <div class="flex items-center gap-1">
+        <span data-i18n="table.category">System Type</span>
+        <i class="sort-icon" data-lucide="chevrons-up-down"></i>
+      </div>
+    </th>
+
+    <!-- Capacity (kW) -->
+    <th class="p-4 border-b border-gray-100" data-sort="generating_capacity_kw">
+      <div class="flex items-center gap-1">
+        <span data-i18n="table.capacity">Capacity (kW)</span>
+        <i class="sort-icon" data-lucide="chevrons-up-down"></i>
+      </div>
+    </th>
+
+    <!-- Area (ha) -->
+    <th class="p-4 border-b border-gray-100" data-sort="area">
+      <div class="flex items-center gap-1">
+        <span>Area (ha)</span>
+        <i class="sort-icon" data-lucide="chevrons-up-down"></i>
+      </div>
+    </th>
+  </tr>
+</thead>
             <tbody class="text-sm text-slate-700 divide-y divide-gray-50">
               <!-- Rows injected by JS -->
             </tbody>
@@ -479,14 +518,74 @@
       en: { 
         auth: { signin: "Sign in", signout: "Sign out" }, 
         map: { add: "Add New Point", add_panel_title: "Add New Point" }, 
-        form: { media: "Media", collaborators: "Collaborators (Required)", institution: "Institution (Required)", project_name: "Project Name (Required)", latitude: "Latitude (Required)", longitude: "Longitude (Required)", start_year: "Start Year", area: "Area (ha or m2)", associated_crops: "Associated Crop(s)", av_system_type: "AV System Type", generating_capacity_kw: "Capacity (kW)", keywords: "Keywords", affiliation: "Affiliation", link: "Website Link", description: "Description", leadership: "Leadership", facilities: "Facilities", equipment: "Equipment", capabilities: "Capabilities", experiments: "Experiments", cancel: "Cancel", save: "Save Point" }, 
-        table: { project_name: "Project Name", institution: "Institution", start_year: "Year", capacity: "Capacity", area: "Area" } 
+        form: { 
+          media: "Media", 
+          collaborators: "Collaborators", 
+          institution: "Institution (Required)", 
+          project_name: "Project Name (Required)", 
+          latitude: "Latitude (Required)", 
+          longitude: "Longitude (Required)", 
+          start_year: "Start Year (Required)", 
+          area: "Area (ha or m2) (Required)", 
+          associated_crops: "Target Species / Crops (Required)", 
+          av_system_type: "AV System Tech (Required)", 
+          system_category: "System Type (Required)", 
+          generating_capacity_kw: "Capacity (kW)", 
+          keywords: "Keywords", 
+          affiliation: "Affiliation", 
+          link: "Website Link", 
+          description: "Description", 
+          leadership: "Leadership", 
+          facilities: "Facilities", 
+          equipment: "Equipment", 
+          capabilities: "Capabilities", 
+          experiments: "Experiments", 
+          cancel: "Cancel", 
+          save: "Save Point" 
+        }, 
+        table: { 
+          project_name: "Project Name", 
+          institution: "Institution", 
+          start_year: "Year", 
+          capacity: "Capacity (kW)", 
+          category: "System Type" 
+        } 
       },
       es: { 
         auth: { signin: "Ingresar", signout: "Salir" }, 
         map: { add: "Añadir Nuevo Punto", add_panel_title: "Añadir Nuevo Punto" }, 
-        form: { media: "Multimedia", collaborators: "Colaboradores (Obligatorio)", institution: "Institución (Obligatorio)", project_name: "Nombre del Proyecto (Obligatorio)", latitude: "Latitud (Obligatorio)", longitude: "Longitud (Obligatorio)", start_year: "Año de Inicio", area: "Superficie (ha o m2)", associated_crops: "Cultivo(s) Asociado(s)", av_system_type: "Tipo de Sistema AV", generating_capacity_kw: "Capacidad (kW)", keywords: "Palabras Clave", affiliation: "Afiliación", link: "Sitio Web", description: "Descripción", leadership: "Liderazgo", facilities: "Instalaciones", equipment: "Equipamiento", capabilities: "Capacidades", experiments: "Experimentos", cancel: "Cancelar", save: "Guardar Punto" }, 
-        table: { project_name: "Nombre del Proyecto", institution: "Institución", start_year: "Año", capacity: "Capacidad", area: "Área" } 
+        form: { 
+          media: "Multimedia", 
+          collaborators: "Colaboradores", 
+          institution: "Institución (Obligatorio)", 
+          project_name: "Nombre del Proyecto (Obligatorio)", 
+          latitude: "Latitud (Obligatorio)", 
+          longitude: "Longitud (Obligatorio)", 
+          start_year: "Año de Inicio (Obligatorio)", 
+          area: "Superficie (ha o m2) (Obligatorio)", 
+          associated_crops: "Especies Objetivo / Cultivos (Obligatorio)", 
+          av_system_type: "Tecnología de Sistema AV (Obligatorio)", 
+          system_category: "Tipo de Sistema (Obligatorio)", 
+          generating_capacity_kw: "Capacidad (kW)", 
+          keywords: "Palabras Clave", 
+          affiliation: "Afiliación", 
+          link: "Sitio Web", 
+          description: "Descripción", 
+          leadership: "Liderazgo", 
+          facilities: "Instalaciones", 
+          equipment: "Equipamiento", 
+          capabilities: "Capacidades", 
+          experiments: "Experimentos", 
+          cancel: "Cancelar", 
+          save: "Guardar Punto" 
+        }, 
+        table: { 
+          project_name: "Nombre del Proyecto", 
+          institution: "Institución", 
+          start_year: "Año", 
+          capacity: "Capacidad (kW)", 
+          category: "Tipo de Sistema" 
+        } 
       }
     };
 
@@ -535,7 +634,11 @@
              if(currentAuthState.profile?.avatar_url) {
                  getAvatarUrl(currentAuthState.profile.avatar_url).then(url => {
                      const img = document.getElementById('userAvatar');
-                     if(url && img) { img.src = url; show(img); hide(document.getElementById('userInitial')); }
+                     if(url && img) { 
+                       img.src = url; 
+                       show(img); 
+                       hide(document.getElementById('userInitial')); 
+                     }
                  });
              }
           },
