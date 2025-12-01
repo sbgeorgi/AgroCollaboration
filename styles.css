@@ -416,7 +416,7 @@ main.container > .card {
   flex-direction: column;
   z-index: 999;
   box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
-  padding: 24px;
+  padding: 0; /* Handled inside nav */
 }
 
 .is-open .mobile-nav-content {
@@ -441,31 +441,32 @@ main.container > .card {
   align-items: center;
   text-align: center;
   height: 100%;
-  padding-top: 60px;
+  padding: 24px;
+  padding-top: 80px; /* Space for close btn */
 }
 
+/* Cleaner Link Style with better spacing */
 .mobile-nav-content .link {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 600;
   color: var(--text-primary);
   width: 100%;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
 }
 
-.mobile-nav-content .link:first-of-type { border-top: 1px solid var(--border); }
-.mobile-nav-content .link.active { color: var(--color-brand); }
+.mobile-nav-content .link:hover {
+  background: var(--bg-main);
+}
+
+.mobile-nav-content .link.active {
+  color: var(--color-brand-dark);
+  background: var(--color-brand-light);
+}
+
 .mobile-nav-content .divider { display: none; }
-
-.mobile-nav-content .auth-area {
-  margin-top: auto;
-  width: 100%;
-  padding-top: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
 
 .mobile-nav-content .auth-area .profile-button {
   width: 80px;

@@ -13,7 +13,9 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,7 +23,7 @@
 
   <!-- External Tailwind Config (Extracted) -->
   <script src="theme.js"></script>
-  
+
   <!-- Custom CSS -->
   <style type="text/tailwindcss">
     @layer utilities {
@@ -47,7 +49,8 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
+<body
+  class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
   <!-- Note: Header is injected by layout.js -->
 
@@ -55,87 +58,95 @@
   <main class="flex-1 relative overflow-hidden bg-gray-50">
     <div class="absolute inset-0 flex flex-col overflow-hidden">
       <div class="flex-1 overflow-y-auto custom-scrollbar">
-        
+
         <!-- Container matches Archive.html: max-w-[1800px] -->
         <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-6 py-6 pb-16">
-            
-            <!-- Main Card -->
-            <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden">
-              
-              <!-- Hero Image (Reduced height ~30%) -->
-              <div class="relative h-48 md:h-64 w-full group">
-                 <img src="static/agrivUA.jpg" 
-                      alt="Agrivoltaic solar panels over a field of crops at the University of Arizona"
-                      class="w-full h-full object-cover">
-                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                 <div class="absolute bottom-6 left-6 md:left-10 text-white">
-                    <h1 class="font-display font-bold text-3xl md:text-4xl tracking-tight mb-1 drop-shadow-md">About the Seminar</h1>
-                    <p class="text-sm md:text-base opacity-90 font-medium drop-shadow-sm">Bridging research across the Americas</p>
-                 </div>
-              </div>
 
-              <!-- Content Text Area (Full width) -->
-              <div class="p-8 md:p-12 w-full">
-                
-                <!-- English Content -->
-                <div class="prose prose-lg max-w-none animate-fade-in" data-lang-content="en">
-                  <h2>What is Agrivoltaics?</h2>
-                  <p>
-                    Agrivoltaics is the integration of solar photovoltaics with agricultural production in the same space. 
-                    Agrivoltaics is a highly diverse field that can include energy production from household to utility scale, 
-                    and agricultural production from horticulture to field crops to livestock and more. Topics covered in this 
-                    seminar series will include agrivoltaic system design, crop yield and responses, business models, community 
-                    engagement, governance and legal frameworks, and much more.
-                  </p>
+          <!-- Main Card -->
+          <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden">
 
-                  <h2>Attend the seminars:</h2>
-                  <p>
-                    To attend the seminars, simply 
-                    <a href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" 
-                       target="_blank" rel="noopener noreferrer">register here</a> 
-                    and you will receive the zoom meeting link to your email. This link will work for all future seminars, 
-                    so you only need to register once.
-                  </p>
-
-                  <h2>Contact Us:</h2>
-                  <p>
-                    Agrovoltaicos sin Fronteras is jointly hosted by UNAM and the University of Arizona. 
-                    For more information, please contact Christine Lamanna 
-                    <a href="mailto:clamanna@arizona.edu">clamanna@arizona.edu</a>.
-                  </p>
-                </div>
-
-                <!-- Spanish Content -->
-                <div class="prose prose-lg max-w-none hidden animate-fade-in" data-lang-content="es">
-                  <h2>¿Qué son los Agrovoltaicos?</h2>
-                  <p>
-                    Los Agrovoltaicos son la integración de la energía solar fotovoltaica con la producción agrícola en un mismo espacio. 
-                    Es un campo muy diverso que abarca la producción de energía desde el hogar hasta la escala de servicios públicos, 
-                    y la producción agrícola desde la horticultura hasta los cultivos extensivos, la ganadería y más. 
-                    Los temas que se abordarán en esta serie de seminarios incluirán el diseño de sistemas agrovoltaicos, 
-                    el rendimiento y las respuestas de los cultivos, los modelos de negocio, la participación comunitaria, 
-                    la gobernanza y los marcos legales, y mucho más.
-                  </p>
-
-                  <h2>Asista a los seminarios:</h2>
-                  <p>
-                    Para asistir a los seminarios, simplemente 
-                    <a href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" 
-                       target="_blank" rel="noopener noreferrer">regístrese aquí</a> 
-                    y recibirá el enlace de la reunión de Zoom en su correo electrónico. 
-                    Este enlace funcionará para todos los seminarios futuros, por lo que solo necesita registrarse una vez.
-                  </p>
-
-                  <h2>Contáctenos:</h2>
-                  <p>
-                    Agrovoltaicos sin Fronteras es un evento conjunto de la UNAM y la Universidad de Arizona. 
-                    Para obtener más información, comuníquese con Christine Lamanna 
-                    <a href="mailto:clamanna@arizona.edu">clamanna@arizona.edu</a>.
-                  </p>
-                </div>
-
+            <!-- Hero Image (Reduced height ~30%) -->
+            <div class="relative h-48 md:h-64 w-full group">
+              <img src="static/agrivUA.jpg"
+                alt="Agrivoltaic solar panels over a field of crops at the University of Arizona"
+                class="w-full h-full object-cover">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+              <div class="absolute bottom-6 left-6 md:left-10 text-white">
+                <h1 class="font-display font-bold text-3xl md:text-4xl tracking-tight mb-1 drop-shadow-md">About the
+                  Seminar</h1>
+                <p class="text-sm md:text-base opacity-90 font-medium drop-shadow-sm">Bridging research across the
+                  Americas</p>
               </div>
             </div>
+
+            <!-- Content Text Area (Full width) -->
+            <div class="p-8 md:p-12 w-full">
+
+              <!-- English Content -->
+              <div class="prose prose-lg max-w-none animate-fade-in" data-lang-content="en">
+                <h2>What is Agrivoltaics?</h2>
+                <p>
+                  Agrivoltaics is the integration of solar photovoltaics with agricultural production in the same space.
+                  Agrivoltaics is a highly diverse field that can include energy production from household to utility
+                  scale,
+                  and agricultural production from horticulture to field crops to livestock and more. Topics covered in
+                  this
+                  seminar series will include agrivoltaic system design, crop yield and responses, business models,
+                  community
+                  engagement, governance and legal frameworks, and much more.
+                </p>
+
+                <h2>Attend the seminars:</h2>
+                <p>
+                  To attend the seminars, simply
+                  <a href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" target="_blank"
+                    rel="noopener noreferrer">register here</a>
+                  and you will receive the zoom meeting link to your email. This link will work for all future seminars,
+                  so you only need to register once.
+                </p>
+
+                <h2>Contact Us:</h2>
+                <p>
+                  Agrovoltaicos sin Fronteras is jointly hosted by UNAM and the University of Arizona.
+                  For more information, please contact Christine Lamanna
+                  <a href="mailto:clamanna@arizona.edu">clamanna@arizona.edu</a>.
+                </p>
+              </div>
+
+              <!-- Spanish Content -->
+              <div class="prose prose-lg max-w-none hidden animate-fade-in" data-lang-content="es">
+                <h2>¿Qué son los Agrovoltaicos?</h2>
+                <p>
+                  Los Agrovoltaicos son la integración de la energía solar fotovoltaica con la producción agrícola en un
+                  mismo espacio.
+                  Es un campo muy diverso que abarca la producción de energía desde el hogar hasta la escala de
+                  servicios públicos,
+                  y la producción agrícola desde la horticultura hasta los cultivos extensivos, la ganadería y más.
+                  Los temas que se abordarán en esta serie de seminarios incluirán el diseño de sistemas agrovoltaicos,
+                  el rendimiento y las respuestas de los cultivos, los modelos de negocio, la participación comunitaria,
+                  la gobernanza y los marcos legales, y mucho más.
+                </p>
+
+                <h2>Asista a los seminarios:</h2>
+                <p>
+                  Para asistir a los seminarios, simplemente
+                  <a href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" target="_blank"
+                    rel="noopener noreferrer">regístrese aquí</a>
+                  y recibirá el enlace de la reunión de Zoom en su correo electrónico.
+                  Este enlace funcionará para todos los seminarios futuros, por lo que solo necesita registrarse una
+                  vez.
+                </p>
+
+                <h2>Contáctenos:</h2>
+                <p>
+                  Agrovoltaicos sin Fronteras es un evento conjunto de la UNAM y la Universidad de Arizona.
+                  Para obtener más información, comuníquese con Christine Lamanna
+                  <a href="mailto:clamanna@arizona.edu">clamanna@arizona.edu</a>.
+                </p>
+              </div>
+
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -155,61 +166,72 @@
     const state = { language: localStorage.getItem("lang") || "en" };
     // Merged translations (Auth/Nav/Footer removed as they are in layout.js)
     const t = {
-      en: { tagline: "A seminar series to share advances in agrivoltaics in the Americas" },
-      es: { tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas" }
+      en: {
+        tagline: "A seminar series to share advances in agrivoltaics in the Americas",
+        nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
+        auth: { signin: "Sign in", signout: "Sign out" },
+        footer: { note: "Bilingual, community-driven seminar on agrivoltaics in the Americas." }
+      },
+      es: {
+        tagline: "Una serie de seminarios para compartir avances en agrovoltaicos en las Américas",
+        nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
+        auth: { signin: "Ingresar", signout: "Salir" },
+        footer: { note: "Seminario bilingüe impulsado por la comunidad sobre agrovoltaica en las Américas." }
+      }
     };
-    
-    function applyPageI18n() {
-        // Apply global strings (like tagline in header which is injected)
-        applyI18n(t, state.language); 
-        
-        const s = document.querySelector('#langSwitchDesktop div:last-child');
-        if(s) {
-            s.style.transform = state.language === 'es' ? 'translateX(100%)' : 'translateX(0)';
-            s.innerText = state.language.toUpperCase();
-        }
 
-        $$("[data-lang-content]").forEach(el => {
-            if (el.dataset.langContent === state.language) show(el);
-            else hide(el);
-        });
+    function applyPageI18n() {
+      // Apply global strings (like tagline in header which is injected)
+      applyI18n(t, state.language);
+
+      const s = document.querySelector('#langSwitchDesktop div:last-child');
+      if (s) {
+        s.style.transform = state.language === 'es' ? 'translateX(100%)' : 'translateX(0)';
+        s.innerText = state.language.toUpperCase();
+      }
+
+      $$("[data-lang-content]").forEach(el => {
+        if (el.dataset.langContent === state.language) show(el);
+        else hide(el);
+      });
     }
 
-    function handleLangSwitch() { 
-      state.language = state.language === 'en' ? 'es' : 'en'; 
-      localStorage.setItem("lang", state.language); 
+    function handleLangSwitch() {
+      state.language = state.language === 'en' ? 'es' : 'en';
+      localStorage.setItem("lang", state.language);
       applyPageI18n();
     }
-    
+
     (async function main() {
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
-      
+
       // --- Fix: Global listener for dynamically injected header profile link ---
       document.addEventListener('click', e => {
         if (e.target.closest('#btnProfile') || e.target.closest('#userName')) {
-            window.location.href = 'profile.html';
+          window.location.href = 'profile.html';
         }
       });
       // -----------------------------------------------------------------------
 
-      await initAuth({ 
-          onAuthReady: () => {
-              // Still need renderHeader to handle Auth UI state (signin/signout buttons)
-              renderHeader(authState, t, state.language);
-              const y = document.getElementById('year'); if(y) y.innerText = new Date().getFullYear();
-              if(authState.profile?.avatar_url) {
-                  getAvatarUrl(authState.profile.avatar_url).then(url => {
-                      const img = document.getElementById('userAvatar');
-                      if(url && img) { img.src = url; show(img); hide(document.getElementById('userInitial')); }
-                  });
-              }
-          }, 
-          onAuthChange: () => renderHeader(authState, t, state.language) 
+      await initAuth({
+        onAuthReady: () => {
+          // Still need renderHeader to handle Auth UI state (signin/signout buttons)
+          renderHeader(authState, t, state.language);
+          const y = document.getElementById('year'); if (y) y.innerText = new Date().getFullYear();
+          if (authState.profile?.avatar_url) {
+            getAvatarUrl(authState.profile.avatar_url).then(url => {
+              const img = document.getElementById('userAvatar');
+              if (url && img) { img.src = url; show(img); hide(document.getElementById('userInitial')); }
+            });
+          }
+        },
+        onAuthChange: () => renderHeader(authState, t, state.language)
       });
       applyPageI18n();
-      const y = document.getElementById('year'); if(y) y.innerText = new Date().getFullYear();
+      const y = document.getElementById('year'); if (y) y.innerText = new Date().getFullYear();
     })();
   </script>
 
 </body>
+
 </html>

@@ -63,8 +63,8 @@ export function renderLayout(activePage) {
     </div>
   </header>
   
-  <!-- Mobile Overlay -->
-  <div id="mobileNavOverlay" class="mobile-nav-overlay fixed inset-0 z-[60] bg-slate-900/20 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+  <!-- Mobile Overlay - Removed 'hidden' class to allow CSS visibility transition -->
+  <div id="mobileNavOverlay" class="mobile-nav-overlay fixed inset-0 z-[60] bg-slate-900/20 backdrop-blur-sm opacity-0 transition-opacity duration-300">
     <div class="mobile-nav-content absolute right-0 top-0 bottom-0 w-72 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col p-4"></div>
   </div>
   `;

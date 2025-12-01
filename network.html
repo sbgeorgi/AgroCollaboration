@@ -2,459 +2,594 @@
 <html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Member Network • Agrovoltaicos sin Fronteras</title>
-  <meta name="description" content="Interactive network visualization of our community members and their connections.">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Member Network • Agrovoltaicos sin Fronteras</title>
+    <meta name="description"
+        content="Interactive network visualization of our community members and their connections.">
 
-  <!-- Critical pre-render script -->
-  <script src="auth-preloader.js"></script>
+    <!-- Critical pre-render script -->
+    <script src="auth-preloader.js"></script>
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="styles.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
 
-  <!-- External Tailwind Config (Extracted) -->
-  <script src="theme.js"></script>
+    <!-- External Tailwind Config (Extracted) -->
+    <script src="theme.js"></script>
 
-  <!-- Custom CSS -->
-  <style>
-    /* Mobile: Allow Scroll. Desktop: Hidden (Dashboard style) */
-    body { overflow-y: auto; }
-    @media (min-width: 768px) { body { overflow: hidden; } }
+    <!-- Custom CSS -->
+    <style>
+        /* Mobile: Allow Scroll. Desktop: Hidden (Dashboard style) */
+        body {
+            overflow-y: auto;
+        }
 
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; background-clip: content-box; border: 2px solid transparent; }
-    .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; }
+        @media (min-width: 768px) {
+            body {
+                overflow: hidden;
+            }
+        }
 
-    /* Graph Canvas Styles */
-    #network-container { 
-        cursor: grab; 
-        background-image: radial-gradient(#e2e8f0 1px, transparent 1px); 
-        background-size: 24px 24px; 
-        touch-action: none; 
-    }
-    #network-container:active { cursor: grabbing; }
-    
-    #networkCanvas { transform-origin: 0 0; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-    #networkNodes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-    .network-connections { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
 
-    .network-node { position: absolute; transform: translate(-50%, -50%); cursor: pointer; pointer-events: auto; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10; }
-    .network-node:hover { z-index: 50; transform: translate(-50%, -50%) scale(1.1); }
-    .org-node { z-index: 5; }
-    .network-edge { fill: none; stroke: #cbd5e1; stroke-width: 1.5px; stroke-opacity: 0.5; }
-    
-    th.sort-asc::after { content: ' ▲'; font-size: 10px; margin-left: 4px; }
-    th.sort-desc::after { content: ' ▼'; font-size: 10px; margin-left: 4px; }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
 
-    #flash {
-        position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-150%);
-        background-color: #0f172a; color: white; padding: 10px 20px; border-radius: 9999px;
-        font-weight: 500; font-size: 0.9rem; z-index: 9999; opacity: 0;
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-    }
-    #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
-  </style>
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+            background-clip: content-box;
+            border: 2px solid transparent;
+        }
 
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+        }
+
+        /* Graph Canvas Styles */
+        #network-container {
+            cursor: grab;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+            touch-action: none;
+        }
+
+        #network-container:active {
+            cursor: grabbing;
+        }
+
+        #networkCanvas {
+            transform-origin: 0 0;
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #networkNodes {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .network-connections {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: visible;
+        }
+
+        .network-node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+
+        .network-node:hover {
+            z-index: 50;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .org-node {
+            z-index: 5;
+        }
+
+        .network-edge {
+            fill: none;
+            stroke: #cbd5e1;
+            stroke-width: 1.5px;
+            stroke-opacity: 0.5;
+        }
+
+        th.sort-asc::after {
+            content: ' ▲';
+            font-size: 10px;
+            margin-left: 4px;
+        }
+
+        th.sort-desc::after {
+            content: ' ▼';
+            font-size: 10px;
+            margin-left: 4px;
+        }
+
+        #flash {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-150%);
+            background-color: #0f172a;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            z-index: 9999;
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        #flash.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body class="text-slate-800 flex flex-col h-full selection:bg-brand-100 selection:text-brand-900 font-sans bg-gray-50">
 
-  <!-- Note: Header is injected by layout.js -->
+    <!-- Note: Header is injected by layout.js -->
 
-  <div id="flash" role="status" aria-live="polite"></div>
+    <div id="flash" role="status" aria-live="polite"></div>
 
-  <!-- ================= MAIN CONTENT ================= -->
-  <main class="flex-1 relative bg-gray-50 overflow-visible md:overflow-hidden">
-    
-    <!-- Loader & Auth Gate -->
-    <div id="loadingScreen" class="absolute inset-0 bg-gray-50 z-[60] flex flex-col items-center justify-center transition-opacity duration-500 fixed md:absolute">
-      <div class="w-8 h-8 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin mb-4"></div>
-      <span class="text-sm font-medium text-slate-500 animate-pulse">Building network graph...</span>
-    </div>
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="flex-1 relative bg-gray-50 overflow-visible md:overflow-hidden">
 
-    <div id="signinGate" class="absolute inset-0 bg-gray-50/90 backdrop-blur-sm z-[55] flex items-center justify-center fixed md:absolute" style="display:none;">
-      <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 max-w-md text-center mx-4">
-        <div class="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i data-lucide="lock" class="w-6 h-6 text-brand-600"></i>
-        </div>
-        <h2 class="font-display font-bold text-2xl text-slate-900 mb-2">Member Network</h2>
-        <p class="text-slate-500 mb-6 text-sm">Sign in to visualize connections between researchers, organizations, and topics.</p>
-        <a href="signin.html" class="inline-flex items-center justify-center px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors w-full">Sign In</a>
-      </div>
-    </div>
-
-    <!-- CONTAINER -->
-    <div class="max-w-[1800px] mx-auto w-full h-auto md:h-full flex flex-col md:flex-row gap-4 p-4 md:p-6 relative">
-
-        <!-- LEFT SIDEBAR: CONTROLS & STATS -->
-        <aside class="flex-none w-full md:w-80 bg-white border border-gray-200 rounded-2xl flex flex-col shadow-sm overflow-hidden h-auto md:h-full shrink-0">
-        
-            <!-- Header & Search -->
-            <div class="p-5 border-b border-gray-100 space-y-4">
-                <h2 class="font-display font-bold text-lg text-brand-700 flex items-center gap-2">
-                <i data-lucide="share-2" class="w-5 h-5"></i> Explore Network
-                </h2>
-                
-                <div class="relative z-30">
-                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                    <input type="text" id="searchInput" class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all outline-none" placeholder="Search people, orgs...">
-                    <div id="autocompleteResults" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar p-1 z-50"></div>
-                </div>
-
-                <div class="space-y-1">
-                    <div class="relative">
-                    <select id="eventFilter" class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
-                        <option value="all">All Events</option>
-                    </select>
-                    <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
-                    </div>
-                </div>
-
-                <!-- Role Chips -->
-                <div class="flex flex-wrap gap-2">
-                    <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white" data-role="all">All</button>
-                    <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50" data-role="speakers">Speakers</button>
-                    <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50" data-role="organizers">Hosts</button>
-                </div>
-            </div>
-
-            <!-- Tag Filters (Scrollable) -->
-            <div class="flex-1 overflow-y-auto custom-scrollbar p-5 min-h-[200px] md:min-h-0">
-                <div class="flex items-center justify-between mb-2">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Interests & Tags</label>
-                    <button id="clearFiltersBtn" class="text-[10px] font-bold text-brand-600 hover:underline">Clear</button>
-                </div>
-                <div id="selectedTagsContainer" class="flex flex-wrap gap-1.5 mb-3 empty:hidden"></div>
-                <div id="tagFilters" class="space-y-0.5"></div>
-            </div>
-
-            <!-- STATS (Footer of Sidebar) -->
-            <div class="p-4 bg-slate-50 border-t border-gray-200 mt-auto">
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                        <span id="statMembers" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
-                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Members</span>
-                    </div>
-                    <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                        <span id="statConnections" class="block text-xl font-display font-bold text-brand-600 leading-none mb-0.5">0</span>
-                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Connections</span>
-                    </div>
-                    <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                        <span id="statOrgs" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
-                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Orgs</span>
-                    </div>
-                    <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                        <span id="statEvents" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
-                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Events</span>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- RIGHT COLUMN -->
-        <div class="flex-1 flex flex-col gap-4 min-w-0 h-auto md:h-full">
-        
-            <!-- CARD 2: GRAPH (Top) -->
-            <section id="network-container" class="md:flex-[2] bg-white border border-gray-200 rounded-2xl shadow-sm relative overflow-hidden h-[500px] md:h-auto shrink-0">
-                <div id="networkCanvas">
-                    <svg class="network-connections" id="networkConnections"></svg>
-                    <div id="networkNodes"></div>
-                </div>
-                
-                <div class="absolute top-4 right-4 flex gap-2 z-40">
-                    <button id="resetViewBtn" class="px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
-                    Reset View
-                    </button>
-                </div>
-            </section>
-
-            <!-- CARD 3: TABLE (Bottom) -->
-            <section class="md:flex-1 bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden h-[500px] md:h-auto shrink-0">
-                <div class="overflow-auto custom-scrollbar flex-1">
-                    <table class="w-full text-left border-collapse">
-                    <thead class="bg-gray-50 sticky top-0 z-20 shadow-sm">
-                        <tr>
-                            <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort="name">Name</th>
-                            <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hidden md:table-cell" data-sort="affiliation">Affiliation</th>
-                            <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-1/3 hidden lg:table-cell" data-sort="interests">Interests</th>
-                            <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort="role">Role</th>
-                        </tr>
-                    </thead>
-                    <tbody id="members-table-body" class="divide-y divide-gray-100 text-sm text-slate-700"></tbody>
-                    </table>
-                </div>
-            </section>
+        <!-- Loader & Auth Gate -->
+        <div id="loadingScreen"
+            class="absolute inset-0 bg-gray-50 z-[60] flex flex-col items-center justify-center transition-opacity duration-500 fixed md:absolute">
+            <div class="w-8 h-8 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin mb-4"></div>
+            <span class="text-sm font-medium text-slate-500 animate-pulse">Building network graph...</span>
         </div>
 
-    </div>
-  </main>
+        <div id="signinGate"
+            class="absolute inset-0 bg-gray-50/90 backdrop-blur-sm z-[55] flex items-center justify-center fixed md:absolute"
+            style="display:none;">
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 max-w-md text-center mx-4">
+                <div class="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="lock" class="w-6 h-6 text-brand-600"></i>
+                </div>
+                <h2 class="font-display font-bold text-2xl text-slate-900 mb-2">Member Network</h2>
+                <p class="text-slate-500 mb-6 text-sm">Sign in to visualize connections between researchers,
+                    organizations, and topics.</p>
+                <a href="signin.html"
+                    class="inline-flex items-center justify-center px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors w-full">Sign
+                    In</a>
+            </div>
+        </div>
 
-  <!-- Note: Modal is now injected by clickprofile.js -->
+        <!-- CONTAINER -->
+        <div class="max-w-[1800px] mx-auto w-full h-auto md:h-full flex flex-col md:flex-row gap-4 p-4 md:p-6 relative">
 
-  <!-- ================= LOGIC ================= -->
-  <script type="module">
-    import { renderLayout } from './layout.js';
-    import { supabase, authState, initAuth, signOut } from './auth.js';
-    import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatarUrl } from './ui.js';
-    import { initProfileModal, openProfileModal } from './clickprofile.js'; 
-    
-    renderLayout('network');
+            <!-- LEFT SIDEBAR: CONTROLS & STATS -->
+            <aside
+                class="flex-none w-full md:w-80 bg-white border border-gray-200 rounded-2xl flex flex-col shadow-sm overflow-hidden h-auto md:h-full shrink-0">
 
-    const state = {
-        members: [], profileById: new Map(), isSpeaker: new Set(), speakersByProfileId: new Map(),
-        eventsById: new Map(), orgIndex: new Map(), tagIndex: new Map(), tagCounts: new Map(),
-        allCanonicalToDisplay: new Map(), connections: [], nodes: new Map(),
-        positions: new Map(), panOffset: { x: 0, y: 0 }, zoom: 1,
-        sort: { key: "name", dir: "asc" }, roleFilter: "all", eventFilterId: "all", searchQuery: "", selectedTags: new Set(),
-        lang: localStorage.getItem("lang") || "en"
-    };
+                <!-- Header & Search -->
+                <div class="p-5 border-b border-gray-100 space-y-4">
+                    <h2 class="font-display font-bold text-lg text-brand-700 flex items-center gap-2">
+                        <i data-lucide="share-2" class="w-5 h-5"></i> Explore Network
+                    </h2>
 
-    const t = {
-      en: { auth: { signin: "Sign in", signout: "Sign out" } },
-      es: { auth: { signin: "Ingresar", signout: "Salir" } }
-    };
+                    <div class="relative z-30">
+                        <i data-lucide="search"
+                            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="searchInput"
+                            class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all outline-none"
+                            placeholder="Search people, orgs...">
+                        <div id="autocompleteResults"
+                            class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar p-1 z-50">
+                        </div>
+                    </div>
 
-    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-    const highlight = (text, q) => { if (!q || !text) return text || ""; try { const rx = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "ig"); return (text + "").replace(rx, '<span class="bg-yellow-100 text-yellow-800 px-0.5 rounded">$1</span>'); } catch { return text; } };
-    const debounce = (fn, ms = 200) => { let t = null; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
-    
-    async function loadNetworkData() {
-        const [profiles, speakers, events] = await Promise.all([
-            supabase.from('profiles').select('*').order('full_name'),
-            supabase.from('event_speakers').select('event_id, profile_id'),
-            supabase.from('events').select('id, title_en, title_es, start_time, topic_tags').order('start_time', { ascending: false })
-        ]);
-        state.members = profiles.data || [];
-        state.members.forEach(m => state.profileById.set(m.id, m));
-        (events.data||[]).forEach(e => state.eventsById.set(e.id, e));
-        
-        const select = $('#eventFilter');
-        select.innerHTML = '<option value="all">All Events</option>'; 
-        state.eventsById.forEach(e => select.add(new Option(new Date(e.start_time).toLocaleDateString() + ' - ' + e.title_en, e.id)));
-        
-        (speakers.data||[]).forEach(s => {
-            if(!s.profile_id) return;
-            state.isSpeaker.add(s.profile_id);
-            if(!state.speakersByProfileId.has(s.profile_id)) state.speakersByProfileId.set(s.profile_id, new Set());
-            state.speakersByProfileId.get(s.profile_id).add(s.event_id);
-        });
+                    <div class="space-y-1">
+                        <div class="relative">
+                            <select id="eventFilter"
+                                class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
+                                <option value="all">All Events</option>
+                            </select>
+                            <i data-lucide="chevron-down"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
 
-        // Indices & Tags
-        state.members.forEach(m => {
-            const org = m.affiliation?.trim();
-            if(org) { if(!state.orgIndex.has(org)) state.orgIndex.set(org, new Set()); state.orgIndex.get(org).add(m.id); }
-            
-            const rawTags = (m.fields_of_study || "").split(",").map(s => s.trim()).filter(Boolean);
-            if(state.speakersByProfileId.has(m.id)) {
-                 state.speakersByProfileId.get(m.id).forEach(eid => {
-                     const ev = state.eventsById.get(eid);
-                     if(ev?.topic_tags) rawTags.push(...ev.topic_tags);
-                 });
-            }
-            const unique = new Set(rawTags.map(t => t.toLowerCase()));
-            unique.forEach(u => {
-                const display = rawTags.find(r => r.toLowerCase() === u) || u;
-                if(!state.tagIndex.has(u)) state.tagIndex.set(u, new Set());
-                state.tagIndex.get(u).add(m.id);
-                state.allCanonicalToDisplay.set(u, display);
-                state.tagCounts.set(u, (state.tagCounts.get(u)||0)+1);
-            });
-        });
-        
-        // Connections
-        const conns = []; const processed = new Set();
-        state.orgIndex.forEach(idsSet => {
-            const ids = Array.from(idsSet);
-            for(let i=0; i<ids.length; i++) {
-                for(let j=i+1; j<ids.length; j++) {
-                    const key = [ids[i], ids[j]].sort().join('-');
-                    if(!processed.has(key)) { conns.push({source:ids[i], target:ids[j]}); processed.add(key); }
-                }
-            }
-        });
-        state.connections = conns;
-        
-        $('#statMembers').innerText = state.members.length;
-        $('#statConnections').innerText = conns.length;
-        $('#statOrgs').innerText = state.orgIndex.size;
-        $('#statEvents').innerText = state.eventsById.size;
-        
-        populateTagFilters();
-        onFiltersChanged();
-    }
+                    <!-- Role Chips -->
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            class="px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white"
+                            data-role="all">All</button>
+                        <button
+                            class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"
+                            data-role="speakers">Speakers</button>
+                        <button
+                            class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"
+                            data-role="organizers">Hosts</button>
+                    </div>
+                </div>
 
-    function populateTagFilters() {
-        const c = $('#tagFilters'); c.innerHTML = '';
-        Array.from(state.tagCounts.entries()).sort((a,b)=>b[1]-a[1]).slice(0,50).forEach(([tag, count]) => {
-           const row = document.createElement('div');
-           row.className = 'flex items-center justify-between px-2 py-1 hover:bg-gray-50 rounded cursor-pointer group';
-           const isSel = state.selectedTags.has(tag);
-           row.innerHTML = `<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-sm border ${isSel?'bg-brand-500 border-brand-500':'border-gray-300'} flex items-center justify-center">${isSel?'<svg width="8" height="8" viewBox="0 0 24 24" stroke="white" stroke-width="4" fill="none"><polyline points="20 6 9 17 4 12"/></svg>':''}</div><span class="text-xs text-slate-600">${state.allCanonicalToDisplay.get(tag)}</span></div><span class="text-[10px] text-slate-300 font-bold">${count}</span>`;
-           row.onclick = () => { if(isSel) state.selectedTags.delete(tag); else state.selectedTags.add(tag); onFiltersChanged(); };
-           c.appendChild(row);
-        });
-        
-        const selC = $('#selectedTagsContainer'); selC.innerHTML = '';
-        state.selectedTags.forEach(t => selC.insertAdjacentHTML('beforeend', `<span class="px-2 py-0.5 bg-brand-50 text-brand-700 border border-brand-100 rounded text-[10px] font-bold flex items-center gap-1">${state.allCanonicalToDisplay.get(t)} <button onclick="document.dispatchEvent(new CustomEvent('remTag',{detail:'${t}'}))">×</button></span>`));
-    }
-    document.addEventListener('remTag', e => { state.selectedTags.delete(e.detail); onFiltersChanged(); });
+                <!-- Tag Filters (Scrollable) -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-5 min-h-[200px] md:min-h-0">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Interests &
+                            Tags</label>
+                        <button id="clearFiltersBtn"
+                            class="text-[10px] font-bold text-brand-600 hover:underline">Clear</button>
+                    </div>
+                    <div id="selectedTagsContainer" class="flex flex-wrap gap-1.5 mb-3 empty:hidden"></div>
+                    <div id="tagFilters" class="space-y-0.5"></div>
+                </div>
 
-    /**
-     * Improved Layout Algorithm:
-     * Instead of a spiral/radial cluster which creates a square/circular blob,
-     * this uses a Horizontal Row Packing algorithm. It lays out organization clusters
-     * side-by-side to fill a wider aspect ratio (2.5:1), ensuring efficient use of 
-     * horizontal screen space.
-     */
-    function calculatePositions(members) {
-        const byOrg = new Map();
-        members.forEach(m => {
-            const o = m.affiliation?.trim() || "Unaffiliated";
-            if(!byOrg.has(o)) byOrg.set(o, []);
-            byOrg.get(o).push(m);
-        });
+                <!-- STATS (Footer of Sidebar) -->
+                <div class="p-4 bg-slate-50 border-t border-gray-200 mt-auto">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
+                            <span id="statMembers"
+                                class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Members</span>
+                        </div>
+                        <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
+                            <span id="statConnections"
+                                class="block text-xl font-display font-bold text-brand-600 leading-none mb-0.5">0</span>
+                            <span
+                                class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Connections</span>
+                        </div>
+                        <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
+                            <span id="statOrgs"
+                                class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Orgs</span>
+                        </div>
+                        <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
+                            <span id="statEvents"
+                                class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Events</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
 
-        const clusters = [];
-        for(const [name, list] of byOrg.entries()) {
-            const count = list.length;
-            // Radius needed to fit members on perimeter without overlap.
-            // Approx 45px arc per node. Min radius 140px.
-            const ringR = Math.max(140, (count * 45) / (2 * Math.PI));
-            // Calculate total bounding box size (diameter + padding)
-            const size = (ringR * 2) + 120;
-            clusters.push({ name, list, ringR, size });
-        }
-        
-        // Sort clusters by size (largest first) to pack them nicely
-        clusters.sort((a,b) => b.list.length - a.list.length);
-        
-        const pos = new Map();
-        
-        // Layout Config: Target a wide aspect ratio (e.g., 2500px wide rows)
-        // This ensures that if there are 6 orgs, they spread out horizontally
-        // rather than clustering in a small circle.
-        const ROW_Target_WIDTH = 2500; 
-        const CLUSTER_GAP = 100;
-        
-        let currentRowX = 0;
-        let currentRowY = 0;
-        let rowItems = [];
-        let maxRowHeight = 0;
-        
-        // Helper to finalize a row's positions
-        const flushRow = () => {
-             // Center the row horizontally relative to 0
-             const rowTotalWidth = currentRowX - CLUSTER_GAP; // remove trailing gap
-             let startX = -(rowTotalWidth / 2);
-             
-             rowItems.forEach(c => {
-                 // Calculate Center Point for this Org
-                 const cx = startX + (c.size / 2);
-                 const cy = currentRowY + (c.size / 2); // Center vertically in current row stack
-                 
-                 // 1. Place Org Node
-                 pos.set(`org-${c.name}`, { x: cx, y: cy });
-                 
-                 // 2. Place Member Nodes in Ring
-                 if(c.list.length > 0) {
-                     const step = (Math.PI * 2) / c.list.length;
-                     c.list.forEach((m, i) => {
-                         const angle = step * i;
-                         // Stagger radius slightly for organic look (zig-zag ring)
-                         const r = c.ringR + (i % 2 === 0 ? 0 : 40);
-                         pos.set(m.id, {
-                             x: cx + Math.cos(angle) * r,
-                             y: cy + Math.sin(angle) * r
-                         });
-                     });
-                 }
-                 
-                 startX += c.size + CLUSTER_GAP;
-             });
-             
-             currentRowY += maxRowHeight + CLUSTER_GAP;
-             currentRowX = 0;
-             rowItems = [];
-             maxRowHeight = 0;
+            <!-- RIGHT COLUMN -->
+            <div class="flex-1 flex flex-col gap-4 min-w-0 h-auto md:h-full">
+
+                <!-- CARD 2: GRAPH (Top) -->
+                <section id="network-container"
+                    class="md:flex-[2] bg-white border border-gray-200 rounded-2xl shadow-sm relative overflow-hidden h-[500px] md:h-auto shrink-0">
+                    <div id="networkCanvas">
+                        <svg class="network-connections" id="networkConnections"></svg>
+                        <div id="networkNodes"></div>
+                    </div>
+
+                    <div class="absolute top-4 right-4 flex gap-2 z-40">
+                        <button id="resetViewBtn"
+                            class="px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
+                            Reset View
+                        </button>
+                    </div>
+                </section>
+
+                <!-- CARD 3: TABLE (Bottom) -->
+                <section
+                    class="md:flex-1 bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden h-[500px] md:h-auto shrink-0">
+                    <div class="overflow-auto custom-scrollbar flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-50 sticky top-0 z-20 shadow-sm">
+                                <tr>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                        data-sort="name">Name</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hidden md:table-cell"
+                                        data-sort="affiliation">Affiliation</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-1/3 hidden lg:table-cell"
+                                        data-sort="interests">Interests</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                        data-sort="role">Role</th>
+                                </tr>
+                            </thead>
+                            <tbody id="members-table-body" class="divide-y divide-gray-100 text-sm text-slate-700">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Note: Modal is now injected by clickprofile.js -->
+
+    <!-- ================= LOGIC ================= -->
+    <script type="module">
+        import { renderLayout } from './layout.js';
+        import { supabase, authState, initAuth, signOut } from './auth.js';
+        import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatarUrl } from './ui.js';
+        import { initProfileModal, openProfileModal } from './clickprofile.js';
+
+        renderLayout('network');
+
+        const state = {
+            members: [], profileById: new Map(), isSpeaker: new Set(), speakersByProfileId: new Map(),
+            eventsById: new Map(), orgIndex: new Map(), tagIndex: new Map(), tagCounts: new Map(),
+            allCanonicalToDisplay: new Map(), connections: [], nodes: new Map(),
+            positions: new Map(), panOffset: { x: 0, y: 0 }, zoom: 1,
+            sort: { key: "name", dir: "asc" }, roleFilter: "all", eventFilterId: "all", searchQuery: "", selectedTags: new Set(),
+            lang: localStorage.getItem("lang") || "en"
         };
 
-        // Pack Clusters into Rows
-        clusters.forEach(c => {
-            // Check if adding this cluster exceeds target width
-            if (currentRowX + c.size > ROW_Target_WIDTH && rowItems.length > 0) {
-                flushRow();
+        const t = {
+            en: {
+                auth: { signin: "Sign in", signout: "Sign out" },
+                nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
+                footer: { note: "Bilingual, community-driven seminar on agrivoltaics in the Americas." }
+            },
+            es: {
+                auth: { signin: "Ingresar", signout: "Salir" },
+                nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
+                footer: { note: "Seminario bilingüe impulsado por la comunidad sobre agrovoltaica en las Américas." }
             }
-            
-            rowItems.push(c);
-            currentRowX += c.size + CLUSTER_GAP;
-            if (c.size > maxRowHeight) maxRowHeight = c.size;
-        });
-        
-        // Flush remaining items
-        if (rowItems.length > 0) flushRow();
-        
-        // Center the entire block vertically around 0
-        const totalBlockHeight = currentRowY - CLUSTER_GAP;
-        const verticalOffset = -(totalBlockHeight / 2);
-        
-        for (const [key, p] of pos.entries()) {
-            p.y += verticalOffset;
+        };
+
+        const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+        const highlight = (text, q) => { if (!q || !text) return text || ""; try { const rx = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "ig"); return (text + "").replace(rx, '<span class="bg-yellow-100 text-yellow-800 px-0.5 rounded">$1</span>'); } catch { return text; } };
+        const debounce = (fn, ms = 200) => { let t = null; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+
+        async function loadNetworkData() {
+            const [profiles, speakers, events] = await Promise.all([
+                supabase.from('profiles').select('*').order('full_name'),
+                supabase.from('event_speakers').select('event_id, profile_id'),
+                supabase.from('events').select('id, title_en, title_es, start_time, topic_tags').order('start_time', { ascending: false })
+            ]);
+            state.members = profiles.data || [];
+            state.members.forEach(m => state.profileById.set(m.id, m));
+            (events.data || []).forEach(e => state.eventsById.set(e.id, e));
+
+            const select = $('#eventFilter');
+            select.innerHTML = '<option value="all">All Events</option>';
+            state.eventsById.forEach(e => select.add(new Option(new Date(e.start_time).toLocaleDateString() + ' - ' + e.title_en, e.id)));
+
+            (speakers.data || []).forEach(s => {
+                if (!s.profile_id) return;
+                state.isSpeaker.add(s.profile_id);
+                if (!state.speakersByProfileId.has(s.profile_id)) state.speakersByProfileId.set(s.profile_id, new Set());
+                state.speakersByProfileId.get(s.profile_id).add(s.event_id);
+            });
+
+            // Indices & Tags
+            state.members.forEach(m => {
+                const org = m.affiliation?.trim();
+                if (org) { if (!state.orgIndex.has(org)) state.orgIndex.set(org, new Set()); state.orgIndex.get(org).add(m.id); }
+
+                const rawTags = (m.fields_of_study || "").split(",").map(s => s.trim()).filter(Boolean);
+                if (state.speakersByProfileId.has(m.id)) {
+                    state.speakersByProfileId.get(m.id).forEach(eid => {
+                        const ev = state.eventsById.get(eid);
+                        if (ev?.topic_tags) rawTags.push(...ev.topic_tags);
+                    });
+                }
+                const unique = new Set(rawTags.map(t => t.toLowerCase()));
+                unique.forEach(u => {
+                    const display = rawTags.find(r => r.toLowerCase() === u) || u;
+                    if (!state.tagIndex.has(u)) state.tagIndex.set(u, new Set());
+                    state.tagIndex.get(u).add(m.id);
+                    state.allCanonicalToDisplay.set(u, display);
+                    state.tagCounts.set(u, (state.tagCounts.get(u) || 0) + 1);
+                });
+            });
+
+            // Connections
+            const conns = []; const processed = new Set();
+            state.orgIndex.forEach(idsSet => {
+                const ids = Array.from(idsSet);
+                for (let i = 0; i < ids.length; i++) {
+                    for (let j = i + 1; j < ids.length; j++) {
+                        const key = [ids[i], ids[j]].sort().join('-');
+                        if (!processed.has(key)) { conns.push({ source: ids[i], target: ids[j] }); processed.add(key); }
+                    }
+                }
+            });
+            state.connections = conns;
+
+            $('#statMembers').innerText = state.members.length;
+            $('#statConnections').innerText = conns.length;
+            $('#statOrgs').innerText = state.orgIndex.size;
+            $('#statEvents').innerText = state.eventsById.size;
+
+            populateTagFilters();
+            onFiltersChanged();
         }
 
-        return pos;
-    }
+        function populateTagFilters() {
+            const c = $('#tagFilters'); c.innerHTML = '';
+            Array.from(state.tagCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 50).forEach(([tag, count]) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between px-2 py-1 hover:bg-gray-50 rounded cursor-pointer group';
+                const isSel = state.selectedTags.has(tag);
+                row.innerHTML = `<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-sm border ${isSel ? 'bg-brand-500 border-brand-500' : 'border-gray-300'} flex items-center justify-center">${isSel ? '<svg width="8" height="8" viewBox="0 0 24 24" stroke="white" stroke-width="4" fill="none"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div><span class="text-xs text-slate-600">${state.allCanonicalToDisplay.get(tag)}</span></div><span class="text-[10px] text-slate-300 font-bold">${count}</span>`;
+                row.onclick = () => { if (isSel) state.selectedTags.delete(tag); else state.selectedTags.add(tag); onFiltersChanged(); };
+                c.appendChild(row);
+            });
 
-    function renderGraph(members) {
-        const c = $('#network-container');
-        if(c.offsetWidth===0) return;
-        state.positions = calculatePositions(members);
-        
-        const svg = $('#networkConnections'); const nodes = $('#networkNodes');
-        svg.innerHTML = ''; nodes.innerHTML = '';
-        
-        // Render Org Nodes
-        new Set(members.map(m=>m.affiliation?.trim()||"Unaffiliated")).forEach(org => {
-            const p = state.positions.get(`org-${org}`);
-            if(!p || isNaN(p.x) || isNaN(p.y)) return;
-            const el = document.createElement('div'); el.className = 'network-node org-node';
-            el.style.left = p.x+'px'; el.style.top = p.y+'px';
-            el.innerHTML = `<div class="node-pill flex flex-col items-center justify-center bg-green-50 border border-green-200 text-green-800 px-4 py-2 gap-0 shadow-sm transition-all duration-200 min-w-[auto] rounded-full"><span class="org-label font-display font-bold text-sm text-center leading-tight">${org}</span></div>`;
-            el.onclick = (e) => { e.stopPropagation(); $('#searchInput').value=org; onFiltersChanged(); };
-            nodes.appendChild(el);
-        });
-        
-        // Render Edges
-        let paths = '';
-        members.forEach(m => {
-            const mp = state.positions.get(m.id);
-            const op = state.positions.get(`org-${m.affiliation?.trim()||"Unaffiliated"}`);
-            if(mp && op && !isNaN(mp.x) && !isNaN(mp.y) && !isNaN(op.x) && !isNaN(op.y)) {
-                paths += `<path d="M ${mp.x} ${mp.y} L ${op.x} ${op.y}" class="network-edge"/>`;
+            const selC = $('#selectedTagsContainer'); selC.innerHTML = '';
+            state.selectedTags.forEach(t => selC.insertAdjacentHTML('beforeend', `<span class="px-2 py-0.5 bg-brand-50 text-brand-700 border border-brand-100 rounded text-[10px] font-bold flex items-center gap-1">${state.allCanonicalToDisplay.get(t)} <button onclick="document.dispatchEvent(new CustomEvent('remTag',{detail:'${t}'}))">×</button></span>`));
+        }
+        document.addEventListener('remTag', e => { state.selectedTags.delete(e.detail); onFiltersChanged(); });
+
+        /**
+         * Improved Layout Algorithm:
+         * Instead of a spiral/radial cluster which creates a square/circular blob,
+         * this uses a Horizontal Row Packing algorithm. It lays out organization clusters
+         * side-by-side to fill a wider aspect ratio (2.5:1), ensuring efficient use of 
+         * horizontal screen space.
+         */
+        function calculatePositions(members) {
+            const byOrg = new Map();
+            members.forEach(m => {
+                const o = m.affiliation?.trim() || "Unaffiliated";
+                if (!byOrg.has(o)) byOrg.set(o, []);
+                byOrg.get(o).push(m);
+            });
+
+            const clusters = [];
+            for (const [name, list] of byOrg.entries()) {
+                const count = list.length;
+                // Radius needed to fit members on perimeter without overlap.
+                // Approx 45px arc per node. Min radius 140px.
+                const ringR = Math.max(140, (count * 45) / (2 * Math.PI));
+                // Calculate total bounding box size (diameter + padding)
+                const size = (ringR * 2) + 120;
+                clusters.push({ name, list, ringR, size });
             }
-        });
-        svg.innerHTML = paths;
-        
-        // Render Member Nodes
-        members.forEach(m => {
-            const p = state.positions.get(m.id);
-            if(!p || isNaN(p.x) || isNaN(p.y)) return;
-            
-            const displayName = m.full_name || 'Member';
-            
-            const el = document.createElement('div'); el.className = 'network-node';
-            el.style.left = p.x+'px'; el.style.top = p.y+'px';
-            el.innerHTML = `
+
+            // Sort clusters by size (largest first) to pack them nicely
+            clusters.sort((a, b) => b.list.length - a.list.length);
+
+            const pos = new Map();
+
+            // Layout Config: Target a wide aspect ratio (e.g., 2500px wide rows)
+            // This ensures that if there are 6 orgs, they spread out horizontally
+            // rather than clustering in a small circle.
+            const ROW_Target_WIDTH = 2500;
+            const CLUSTER_GAP = 100;
+
+            let currentRowX = 0;
+            let currentRowY = 0;
+            let rowItems = [];
+            let maxRowHeight = 0;
+
+            // Helper to finalize a row's positions
+            const flushRow = () => {
+                // Center the row horizontally relative to 0
+                const rowTotalWidth = currentRowX - CLUSTER_GAP; // remove trailing gap
+                let startX = -(rowTotalWidth / 2);
+
+                rowItems.forEach(c => {
+                    // Calculate Center Point for this Org
+                    const cx = startX + (c.size / 2);
+                    const cy = currentRowY + (c.size / 2); // Center vertically in current row stack
+
+                    // 1. Place Org Node
+                    pos.set(`org-${c.name}`, { x: cx, y: cy });
+
+                    // 2. Place Member Nodes in Ring
+                    if (c.list.length > 0) {
+                        const step = (Math.PI * 2) / c.list.length;
+                        c.list.forEach((m, i) => {
+                            const angle = step * i;
+                            // Stagger radius slightly for organic look (zig-zag ring)
+                            const r = c.ringR + (i % 2 === 0 ? 0 : 40);
+                            pos.set(m.id, {
+                                x: cx + Math.cos(angle) * r,
+                                y: cy + Math.sin(angle) * r
+                            });
+                        });
+                    }
+
+                    startX += c.size + CLUSTER_GAP;
+                });
+
+                currentRowY += maxRowHeight + CLUSTER_GAP;
+                currentRowX = 0;
+                rowItems = [];
+                maxRowHeight = 0;
+            };
+
+            // Pack Clusters into Rows
+            clusters.forEach(c => {
+                // Check if adding this cluster exceeds target width
+                if (currentRowX + c.size > ROW_Target_WIDTH && rowItems.length > 0) {
+                    flushRow();
+                }
+
+                rowItems.push(c);
+                currentRowX += c.size + CLUSTER_GAP;
+                if (c.size > maxRowHeight) maxRowHeight = c.size;
+            });
+
+            // Flush remaining items
+            if (rowItems.length > 0) flushRow();
+
+            // Center the entire block vertically around 0
+            const totalBlockHeight = currentRowY - CLUSTER_GAP;
+            const verticalOffset = -(totalBlockHeight / 2);
+
+            for (const [key, p] of pos.entries()) {
+                p.y += verticalOffset;
+            }
+
+            return pos;
+        }
+
+        function renderGraph(members) {
+            const c = $('#network-container');
+            if (c.offsetWidth === 0) return;
+            state.positions = calculatePositions(members);
+
+            const svg = $('#networkConnections'); const nodes = $('#networkNodes');
+            svg.innerHTML = ''; nodes.innerHTML = '';
+
+            // Render Org Nodes
+            new Set(members.map(m => m.affiliation?.trim() || "Unaffiliated")).forEach(org => {
+                const p = state.positions.get(`org-${org}`);
+                if (!p || isNaN(p.x) || isNaN(p.y)) return;
+                const el = document.createElement('div'); el.className = 'network-node org-node';
+                el.style.left = p.x + 'px'; el.style.top = p.y + 'px';
+                el.innerHTML = `<div class="node-pill flex flex-col items-center justify-center bg-green-50 border border-green-200 text-green-800 px-4 py-2 gap-0 shadow-sm transition-all duration-200 min-w-[auto] rounded-full"><span class="org-label font-display font-bold text-sm text-center leading-tight">${org}</span></div>`;
+                el.onclick = (e) => { e.stopPropagation(); $('#searchInput').value = org; onFiltersChanged(); };
+                nodes.appendChild(el);
+            });
+
+            // Render Edges
+            let paths = '';
+            members.forEach(m => {
+                const mp = state.positions.get(m.id);
+                const op = state.positions.get(`org-${m.affiliation?.trim() || "Unaffiliated"}`);
+                if (mp && op && !isNaN(mp.x) && !isNaN(mp.y) && !isNaN(op.x) && !isNaN(op.y)) {
+                    paths += `<path d="M ${mp.x} ${mp.y} L ${op.x} ${op.y}" class="network-edge"/>`;
+                }
+            });
+            svg.innerHTML = paths;
+
+            // Render Member Nodes
+            members.forEach(m => {
+                const p = state.positions.get(m.id);
+                if (!p || isNaN(p.x) || isNaN(p.y)) return;
+
+                const displayName = m.full_name || 'Member';
+
+                const el = document.createElement('div'); el.className = 'network-node';
+                el.style.left = p.x + 'px'; el.style.top = p.y + 'px';
+                el.innerHTML = `
             <div class="node-pill flex items-center gap-3 pl-1 pr-4 py-1 bg-white border border-gray-200 rounded-full shadow-sm transition-all duration-200 min-w-[140px] group-hover:border-brand-400 group-hover:shadow-lg group-hover:ring-2 group-hover:ring-brand-100">
                 <div class="node-avatar w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-xs font-bold overflow-hidden shrink-0 ring-2 ring-white shadow-sm">
                     ${displayName[0].toUpperCase()}
@@ -464,156 +599,157 @@
                     ${m.affiliation ? `<span class="node-affiliation text-[9px] text-slate-400 leading-tight truncate max-w-[120px] block mt-0.5">${m.affiliation}</span>` : ''}
                 </div>
             </div>`;
-            if(m.avatar_url) getAvatarUrl(m.avatar_url).then(u=>{if(u) el.querySelector('.node-avatar').innerHTML=`<img src="${u}" class="w-full h-full object-cover">`});
-            
-            el.onclick = (e) => { 
-                e.stopPropagation(); 
-                openProfileModal(m, state.allCanonicalToDisplay, state.tagIndex); 
-            };
-            nodes.appendChild(el);
-        });
-        
-        fitGraph();
-    }
+                if (m.avatar_url) getAvatarUrl(m.avatar_url).then(u => { if (u) el.querySelector('.node-avatar').innerHTML = `<img src="${u}" class="w-full h-full object-cover">` });
 
-    function fitGraph() {
-        const pts = Array.from(state.positions.values()).filter(p => !isNaN(p.x) && !isNaN(p.y));
-        if(!pts.length) return;
-        let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
-        pts.forEach(p=>{ if(p.x<minX)minX=p.x; if(p.x>maxX)maxX=p.x; if(p.y<minY)minY=p.y; if(p.y>maxY)maxY=p.y; });
-        
-        const w = maxX-minX + 300; 
-        const h = maxY-minY + 300;
-        const c = $('#network-container');
-        const scale = Math.min(c.offsetWidth/w, c.offsetHeight/h, 1.2);
-        
-        if(isFinite(scale)) {
-            state.zoom = scale;
-            state.panOffset.x = (c.offsetWidth/2) - ((minX+maxX)/2)*scale;
-            state.panOffset.y = (c.offsetHeight/2) - ((minY+maxY)/2)*scale;
-            updateTransform();
-        }
-    }
-    
-    function updateTransform() {
-        $('#networkCanvas').style.transform = `translate(${state.panOffset.x}px, ${state.panOffset.y}px) scale(${state.zoom})`;
-    }
+                el.onclick = (e) => {
+                    e.stopPropagation();
+                    openProfileModal(m, state.allCanonicalToDisplay, state.tagIndex);
+                };
+                nodes.appendChild(el);
+            });
 
-    function getFiltered() {
-        let ids = new Set(state.members.map(m=>m.id));
-        if(state.roleFilter === 'speakers') ids = new Set([...ids].filter(id => state.isSpeaker.has(id)));
-        else if(state.roleFilter === 'organizers') ids = new Set([...ids].filter(id => ['organizer','admin'].includes(state.profileById.get(id).role)));
-        
-        if(state.eventFilterId !== 'all') {
-             ids = new Set([...ids].filter(id => state.speakersByProfileId.get(id)?.has(state.eventFilterId)));
+            fitGraph();
         }
-        
-        if(state.searchQuery) {
-            const q = state.searchQuery.toLowerCase();
-            ids = new Set([...ids].filter(id => {
-                const m = state.profileById.get(id);
-                const name = m.full_name || "";
-                return name.toLowerCase().includes(q) || (m.affiliation||'').toLowerCase().includes(q);
-            }));
-        }
-        
-        if(state.selectedTags.size > 0) {
-             ids = new Set([...ids].filter(id => {
-                 for(const t of state.selectedTags) if(state.tagIndex.get(t)?.has(id)) return true;
-                 return false;
-             }));
-        }
-        
-        const res = [...ids].map(id => state.profileById.get(id));
-        const k = state.sort.key; const d = state.sort.dir === 'asc' ? 1 : -1;
-        res.sort((a,b) => (a[k==='name'?'full_name':k]||"").localeCompare(b[k==='name'?'full_name':k]||"") * d);
-        return res;
-    }
 
-    function renderTable(list) {
-        $('#members-table-body').innerHTML = list.map(m => {
-            const isSp = state.isSpeaker.has(m.id);
-            const isOrg = ['organizer','admin'].includes(m.role);
-            const displayName = m.full_name || 'Member';
-            
-            return `<tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="document.dispatchEvent(new CustomEvent('openProfile',{detail:'${m.id}'}))">
+        function fitGraph() {
+            const pts = Array.from(state.positions.values()).filter(p => !isNaN(p.x) && !isNaN(p.y));
+            if (!pts.length) return;
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            pts.forEach(p => { if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x; if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y; });
+
+            const w = maxX - minX + 300;
+            const h = maxY - minY + 300;
+            const c = $('#network-container');
+            const scale = Math.min(c.offsetWidth / w, c.offsetHeight / h, 1.2);
+
+            if (isFinite(scale)) {
+                state.zoom = scale;
+                state.panOffset.x = (c.offsetWidth / 2) - ((minX + maxX) / 2) * scale;
+                state.panOffset.y = (c.offsetHeight / 2) - ((minY + maxY) / 2) * scale;
+                updateTransform();
+            }
+        }
+
+        function updateTransform() {
+            $('#networkCanvas').style.transform = `translate(${state.panOffset.x}px, ${state.panOffset.y}px) scale(${state.zoom})`;
+        }
+
+        function getFiltered() {
+            let ids = new Set(state.members.map(m => m.id));
+            if (state.roleFilter === 'speakers') ids = new Set([...ids].filter(id => state.isSpeaker.has(id)));
+            else if (state.roleFilter === 'organizers') ids = new Set([...ids].filter(id => ['organizer', 'admin'].includes(state.profileById.get(id).role)));
+
+            if (state.eventFilterId !== 'all') {
+                ids = new Set([...ids].filter(id => state.speakersByProfileId.get(id)?.has(state.eventFilterId)));
+            }
+
+            if (state.searchQuery) {
+                const q = state.searchQuery.toLowerCase();
+                ids = new Set([...ids].filter(id => {
+                    const m = state.profileById.get(id);
+                    const name = m.full_name || "";
+                    return name.toLowerCase().includes(q) || (m.affiliation || '').toLowerCase().includes(q);
+                }));
+            }
+
+            if (state.selectedTags.size > 0) {
+                ids = new Set([...ids].filter(id => {
+                    for (const t of state.selectedTags) if (state.tagIndex.get(t)?.has(id)) return true;
+                    return false;
+                }));
+            }
+
+            const res = [...ids].map(id => state.profileById.get(id));
+            const k = state.sort.key; const d = state.sort.dir === 'asc' ? 1 : -1;
+            res.sort((a, b) => (a[k === 'name' ? 'full_name' : k] || "").localeCompare(b[k === 'name' ? 'full_name' : k] || "") * d);
+            return res;
+        }
+
+        function renderTable(list) {
+            $('#members-table-body').innerHTML = list.map(m => {
+                const isSp = state.isSpeaker.has(m.id);
+                const isOrg = ['organizer', 'admin'].includes(m.role);
+                const displayName = m.full_name || 'Member';
+
+                return `<tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="document.dispatchEvent(new CustomEvent('openProfile',{detail:'${m.id}'}))">
               <td class="py-2.5 px-6 border-b border-gray-50 font-medium text-slate-900">${highlight(displayName, state.searchQuery)}</td>
               <td class="py-2.5 px-6 border-b border-gray-50 text-slate-500 hidden md:table-cell">${highlight(m.affiliation, state.searchQuery)}</td>
-              <td class="py-2.5 px-6 border-b border-gray-50 text-slate-400 truncate max-w-xs hidden lg:table-cell">${m.fields_of_study||'—'}</td>
+              <td class="py-2.5 px-6 border-b border-gray-50 text-slate-400 truncate max-w-xs hidden lg:table-cell">${m.fields_of_study || '—'}</td>
               <td class="py-2.5 px-6 border-b border-gray-50 text-xs space-x-1">
                  ${isOrg ? '<span class="px-2 py-0.5 rounded bg-brand-50 text-brand-700 font-bold border border-brand-100">Host</span>' : ''}
                  ${isSp ? '<span class="px-2 py-0.5 rounded bg-orange-50 text-orange-700 font-bold border border-orange-100">Speaker</span>' : ''}
                  ${!isOrg && !isSp ? '<span class="px-2 py-0.5 rounded bg-gray-100 text-slate-500 font-bold border border-gray-200">Member</span>' : ''}
               </td>
             </tr>`;
-        }).join('');
-    }
-    
-    document.addEventListener('openProfile', e => {
-        openProfileModal(state.profileById.get(e.detail), state.allCanonicalToDisplay, state.tagIndex);
-    });
+            }).join('');
+        }
 
-    function onFiltersChanged() {
-        state.searchQuery = $('#searchInput').value;
-        populateTagFilters();
-        const list = getFiltered();
-        renderTable(list);
-        renderGraph(list);
-    }
-
-    (async function() {
-        initSharedUI({ onLangSwitch: () => location.reload(), onSignOut: signOut });
-        
-        initProfileModal();
-
-        document.addEventListener('click', e => {
-            if (e.target.closest('#btnProfile') || e.target.closest('#userName')) {
-                window.location.href = 'profile.html';
-            }
+        document.addEventListener('openProfile', e => {
+            openProfileModal(state.profileById.get(e.detail), state.allCanonicalToDisplay, state.tagIndex);
         });
 
-        await initAuth({
-            onAuthReady: async () => {
-                renderHeader(authState, t, state.lang);
-                if (!authState.session) {
-                     $('#signinGate').style.display='flex';
-                     $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
-                } else {
-                     $('#signinGate').style.display='none';
-                     applyI18n(t, state.lang);
-                     await loadNetworkData();
-                     $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
+        function onFiltersChanged() {
+            state.searchQuery = $('#searchInput').value;
+            populateTagFilters();
+            const list = getFiltered();
+            renderTable(list);
+            renderGraph(list);
+        }
+
+        (async function () {
+            initSharedUI({ onLangSwitch: () => location.reload(), onSignOut: signOut });
+
+            initProfileModal();
+
+            document.addEventListener('click', e => {
+                if (e.target.closest('#btnProfile') || e.target.closest('#userName')) {
+                    window.location.href = 'profile.html';
                 }
-            },
-            onAuthChange: () => {
-                renderHeader(authState, t, state.lang);
-                if(!authState.session) location.reload(); 
-            }
-        });
-        
-        $$('[data-role]').forEach(b => b.onclick = e => {
-             $$('[data-role]').forEach(x => { x.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"; });
-             e.target.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white";
-             state.roleFilter = e.target.dataset.role; onFiltersChanged();
-        });
-        
-        $('#eventFilter').onchange = e => { state.eventFilterId = e.target.value; onFiltersChanged(); };
-        $('#searchInput').oninput = debounce(onFiltersChanged);
-        $('#clearFiltersBtn').onclick = () => { state.searchQuery=''; $('#searchInput').value=''; state.selectedTags.clear(); $('[data-role="all"]').click(); $('#eventFilter').value='all'; state.eventFilterId='all'; };
-        $('#resetViewBtn').onclick = fitGraph;
-        
-        // Canvas Interaction (Mouse + Touch)
-        const cv = $('#network-container'); let drag=false, sx=0, sy=0;
-        cv.onmousedown = e => { if(e.target.id==='networkCanvas' || e.target===cv) { drag=true; sx=e.clientX-state.panOffset.x; sy=e.clientY-state.panOffset.y; cv.style.cursor='grabbing'; }};
-        window.onmousemove = e => { if(drag) { state.panOffset.x=e.clientX-sx; state.panOffset.y=e.clientY-sy; updateTransform(); }};
-        window.onmouseup = () => { drag=false; cv.style.cursor='grab'; };
-        cv.onwheel = e => { e.preventDefault(); const s = e.deltaY>0?0.9:1.1; state.zoom = clamp(state.zoom*s, 0.1, 5); updateTransform(); };
-        cv.ontouchstart = e => { if(e.target.id==='networkCanvas' || e.target===cv) { drag=true; sx = e.touches[0].clientX - state.panOffset.x; sy = e.touches[0].clientY - state.panOffset.y; }};
-        cv.ontouchmove = e => { if(drag) { e.preventDefault(); state.panOffset.x = e.touches[0].clientX - sx; state.panOffset.y = e.touches[0].clientY - sy; updateTransform(); }};
-        cv.ontouchend = () => { drag = false; };
+            });
 
-        lucide.createIcons();
-    })();
-  </script>
+            await initAuth({
+                onAuthReady: async () => {
+                    renderHeader(authState, t, state.lang);
+                    if (!authState.session) {
+                        $('#signinGate').style.display = 'flex';
+                        $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
+                    } else {
+                        $('#signinGate').style.display = 'none';
+                        applyI18n(t, state.lang);
+                        await loadNetworkData();
+                        $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
+                    }
+                },
+                onAuthChange: () => {
+                    renderHeader(authState, t, state.lang);
+                    if (!authState.session) location.reload();
+                }
+            });
+
+            $$('[data-role]').forEach(b => b.onclick = e => {
+                $$('[data-role]').forEach(x => { x.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"; });
+                e.target.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white";
+                state.roleFilter = e.target.dataset.role; onFiltersChanged();
+            });
+
+            $('#eventFilter').onchange = e => { state.eventFilterId = e.target.value; onFiltersChanged(); };
+            $('#searchInput').oninput = debounce(onFiltersChanged);
+            $('#clearFiltersBtn').onclick = () => { state.searchQuery = ''; $('#searchInput').value = ''; state.selectedTags.clear(); $('[data-role="all"]').click(); $('#eventFilter').value = 'all'; state.eventFilterId = 'all'; };
+            $('#resetViewBtn').onclick = fitGraph;
+
+            // Canvas Interaction (Mouse + Touch)
+            const cv = $('#network-container'); let drag = false, sx = 0, sy = 0;
+            cv.onmousedown = e => { if (e.target.id === 'networkCanvas' || e.target === cv) { drag = true; sx = e.clientX - state.panOffset.x; sy = e.clientY - state.panOffset.y; cv.style.cursor = 'grabbing'; } };
+            window.onmousemove = e => { if (drag) { state.panOffset.x = e.clientX - sx; state.panOffset.y = e.clientY - sy; updateTransform(); } };
+            window.onmouseup = () => { drag = false; cv.style.cursor = 'grab'; };
+            cv.onwheel = e => { e.preventDefault(); const s = e.deltaY > 0 ? 0.9 : 1.1; state.zoom = clamp(state.zoom * s, 0.1, 5); updateTransform(); };
+            cv.ontouchstart = e => { if (e.target.id === 'networkCanvas' || e.target === cv) { drag = true; sx = e.touches[0].clientX - state.panOffset.x; sy = e.touches[0].clientY - state.panOffset.y; } };
+            cv.ontouchmove = e => { if (drag) { e.preventDefault(); state.panOffset.x = e.touches[0].clientX - sx; state.panOffset.y = e.touches[0].clientY - sy; updateTransform(); } };
+            cv.ontouchend = () => { drag = false; };
+
+            lucide.createIcons();
+        })();
+    </script>
 </body>
+
 </html>

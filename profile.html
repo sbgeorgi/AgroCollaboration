@@ -2,26 +2,28 @@
 <html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Profile Dashboard • Agrovoltaicos sin Fronteras</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Profile Dashboard • Agrovoltaicos sin Fronteras</title>
 
-  <!-- Critical pre-render script to prevent UI flicker -->
-  <script src="auth-preloader.js"></script>
+    <!-- Critical pre-render script to prevent UI flicker -->
+    <script src="auth-preloader.js"></script>
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="styles.css">
-  <script src="theme.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="theme.js"></script>
 
-  <!-- Custom CSS -->
-  <style type="text/tailwindcss">
-    @layer utilities {
+    <!-- Custom CSS -->
+    <style type="text/tailwindcss">
+        @layer utilities {
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     }
@@ -56,693 +58,758 @@
     .avatar-container:hover .avatar-overlay { opacity: 1; }
   </style>
 
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body class="text-slate-800 flex flex-col h-full overflow-hidden font-sans">
 
-  <!-- Main App Container (Header/Footer injected via layout.js) -->
-  <main class="flex-1 relative overflow-hidden bg-gray-50 overflow-y-auto">
-    
-    <!-- View: Loading Spinner -->
-    <div id="view-loading" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-50">
-        <div class="w-10 h-10 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
-    </div>
+    <!-- Main App Container (Header/Footer injected via layout.js) -->
+    <main class="flex-1 relative overflow-hidden bg-gray-50 overflow-y-auto">
 
-    <!-- View: Auth Required Prompt -->
-    <div id="view-auth-required" class="hidden min-h-full flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 max-w-md w-full text-center">
-            <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i data-lucide="lock" class="w-8 h-8"></i>
-            </div>
-            <h2 class="font-display font-bold text-2xl text-slate-800 mb-3" data-i18n="auth.signin_prompt_title">Please Sign In</h2>
-            <p class="text-slate-500 mb-8 leading-relaxed" data-i18n="auth.signin_prompt_body">Access to your profile dashboard requires authentication.</p>
-            <a href="signin.html?return_to=profile.html" class="block w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-brand-200" data-i18n="auth.signin_prompt_button">Go to Sign In</a>
+        <!-- View: Loading Spinner -->
+        <div id="view-loading" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-50">
+            <div class="w-10 h-10 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
         </div>
-    </div>
 
-    <!-- View: Profile Form -->
-    <div id="view-profile" class="hidden max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
-        <form id="profileForm" class="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
-            
-            <!-- Left Panel: Identity & Actions -->
-            <div class="flex flex-col gap-6">
-                <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm p-8 flex flex-col items-center text-center relative overflow-hidden">
-                    
-                    <!-- Avatar -->
-                    <label class="avatar-container w-40 h-40 rounded-full bg-gray-100 border-4 border-white shadow-lg relative cursor-pointer overflow-hidden mb-6 group ring-1 ring-gray-200">
-                        <img id="avatarImg" class="hidden w-full h-full object-cover" alt="Avatar" />
-                        <span id="avatarInitials" class="w-full h-full flex items-center justify-center text-4xl font-bold text-brand-300">U</span>
-                        <div class="avatar-overlay absolute inset-0 flex items-center justify-center text-white">
-                            <i data-lucide="camera" class="w-8 h-8"></i>
-                        </div>
-                        <input type="file" id="avatarInput" hidden accept="image/*" />
-                    </label>
-
-                    <div class="mb-1">
-                        <h2 id="displayUsername" class="font-display font-bold text-xl text-slate-800">@username</h2>
-                        <p id="displayEmail" class="text-sm text-slate-400 font-medium">user@example.com</p>
-                    </div>
-
-                    <button type="button" id="removeAvatarBtn" class="hidden mt-2 text-xs font-bold text-red-500 hover:text-red-600 hover:bg-red-50 px-3 py-1 rounded-full transition-colors" data-i18n="profile.remove_image">Remove Picture</button>
+        <!-- View: Auth Required Prompt -->
+        <div id="view-auth-required" class="hidden min-h-full flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 max-w-md w-full text-center">
+                <div
+                    class="w-16 h-16 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="lock" class="w-8 h-8"></i>
                 </div>
-
-                <!-- Actions -->
-                <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm p-6 flex flex-col gap-3">
-                    <button type="submit" id="saveBtn" class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all shadow-md shadow-brand-100 flex items-center justify-center gap-2">
-                        <i data-lucide="save" class="w-4 h-4"></i>
-                        <span data-i18n="profile.save">Save Changes</span>
-                    </button>
-                    <button type="button" id="backBtn" class="w-full py-3 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-slate-600 font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
-                        <span data-i18n="back.general">Go Back</span>
-                    </button>
-                </div>
+                <h2 class="font-display font-bold text-2xl text-slate-800 mb-3" data-i18n="auth.signin_prompt_title">
+                    Please Sign In</h2>
+                <p class="text-slate-500 mb-8 leading-relaxed" data-i18n="auth.signin_prompt_body">Access to your
+                    profile dashboard requires authentication.</p>
+                <a href="signin.html?return_to=profile.html"
+                    class="block w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-brand-200"
+                    data-i18n="auth.signin_prompt_button">Go to Sign In</a>
             </div>
+        </div>
 
-            <!-- Right Panel: Details Form -->
-            <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm p-6 md:p-8">
-                <div class="flex items-center justify-between border-b border-gray-100 pb-6 mb-8">
-                    <h1 class="font-display font-bold text-2xl text-slate-800" data-i18n="profile.title">Edit Profile</h1>
-                    <span class="text-xs font-semibold text-slate-400 bg-gray-50 px-2 py-1 rounded border border-gray-200"><span class="text-red-500">*</span> Required</span>
+        <!-- View: Profile Form -->
+        <div id="view-profile" class="hidden max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
+            <form id="profileForm" class="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
+
+                <!-- Left Panel: Identity & Actions -->
+                <div class="flex flex-col gap-6">
+                    <div
+                        class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm p-8 flex flex-col items-center text-center relative overflow-hidden">
+
+                        <!-- Avatar -->
+                        <label
+                            class="avatar-container w-40 h-40 rounded-full bg-gray-100 border-4 border-white shadow-lg relative cursor-pointer overflow-hidden mb-6 group ring-1 ring-gray-200">
+                            <img id="avatarImg" class="hidden w-full h-full object-cover" alt="Avatar" />
+                            <span id="avatarInitials"
+                                class="w-full h-full flex items-center justify-center text-4xl font-bold text-brand-300">U</span>
+                            <div class="avatar-overlay absolute inset-0 flex items-center justify-center text-white">
+                                <i data-lucide="camera" class="w-8 h-8"></i>
+                            </div>
+                            <input type="file" id="avatarInput" hidden accept="image/*" />
+                        </label>
+
+                        <div class="mb-1">
+                            <h2 id="displayUsername" class="font-display font-bold text-xl text-slate-800">@username
+                            </h2>
+                            <p id="displayEmail" class="text-sm text-slate-400 font-medium">user@example.com</p>
+                        </div>
+
+                        <button type="button" id="removeAvatarBtn"
+                            class="hidden mt-2 text-xs font-bold text-red-500 hover:text-red-600 hover:bg-red-50 px-3 py-1 rounded-full transition-colors"
+                            data-i18n="profile.remove_image">Remove Picture</button>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm p-6 flex flex-col gap-3">
+                        <button type="submit" id="saveBtn"
+                            class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all shadow-md shadow-brand-100 flex items-center justify-center gap-2">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            <span data-i18n="profile.save">Save Changes</span>
+                        </button>
+                        <button type="button" id="backBtn"
+                            class="w-full py-3 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-slate-600 font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+                            <span data-i18n="back.general">Go Back</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-                    
-                    <!-- Full Name -->
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="fullName"><span data-i18n="profile.full_name">Full Name</span> <span class="text-red-500">*</span></label>
-                        <input type="text" id="fullName" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="e.g. Dr. Jane Doe" />
+                <!-- Right Panel: Details Form -->
+                <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm p-6 md:p-8">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-6 mb-8">
+                        <h1 class="font-display font-bold text-2xl text-slate-800" data-i18n="profile.title">Edit
+                            Profile</h1>
+                        <span
+                            class="text-xs font-semibold text-slate-400 bg-gray-50 px-2 py-1 rounded border border-gray-200"><span
+                                class="text-red-500">*</span> Required</span>
                     </div>
 
-                    <!-- Username -->
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="username"><span data-i18n="profile.username">Username</span> <span class="text-red-500">*</span></label>
-                        <input type="text" id="username" required pattern="[a-zA-Z0-9_-]+" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="janedoe" />
-                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
 
-                    <!-- Affiliation (Autocomplete/Searchable) -->
-                    <div class="space-y-1.5 relative md:col-span-2" id="affiliation-wrapper">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="affiliation"><span data-i18n="profile.affiliation">Affiliation</span> <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <input type="text" id="affiliation" required autocomplete="off" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="Search or type University / Organization" />
-                            
-                            <!-- Search Icon (Decorative) -->
-                            <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                        <!-- Full Name -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
+                                for="fullName"><span data-i18n="profile.full_name">Full Name</span> <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="fullName" required
+                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
+                                placeholder="e.g. Dr. Jane Doe" />
+                        </div>
+
+                        <!-- Username -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
+                                for="username"><span data-i18n="profile.username">Username</span> <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="username" required pattern="[a-zA-Z0-9_-]+"
+                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
+                                placeholder="janedoe" />
+                        </div>
+
+                        <!-- Affiliation (Autocomplete/Searchable) -->
+                        <div class="space-y-1.5 relative md:col-span-2" id="affiliation-wrapper">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
+                                for="affiliation"><span data-i18n="profile.affiliation">Affiliation</span> <span
+                                    class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <input type="text" id="affiliation" required autocomplete="off"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
+                                    placeholder="Search or type University / Organization" />
+
+                                <!-- Search Icon (Decorative) -->
+                                <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                                </div>
+
+                                <!-- Autocomplete Dropdown -->
+                                <ul id="affiliation-list"
+                                    class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto overflow-x-hidden">
+                                    <!-- Items injected via JS -->
+                                </ul>
                             </div>
-
-                            <!-- Autocomplete Dropdown -->
-                            <ul id="affiliation-list" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto overflow-x-hidden">
-                                <!-- Items injected via JS -->
-                            </ul>
                         </div>
-                    </div>
 
-                    <!-- Department (Autocomplete Dependent) -->
-                    <div class="space-y-1.5 relative" id="department-wrapper">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="department" data-i18n="profile.department">Department</label>
-                        <div class="relative">
-                            <input type="text" id="department" autocomplete="off" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="e.g. Dept of Agriculture" />
-                            
-                             <!-- Icon -->
-                             <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                        <!-- Department (Autocomplete Dependent) -->
+                        <div class="space-y-1.5 relative" id="department-wrapper">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="department"
+                                data-i18n="profile.department">Department</label>
+                            <div class="relative">
+                                <input type="text" id="department" autocomplete="off"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
+                                    placeholder="e.g. Dept of Agriculture" />
+
+                                <!-- Icon -->
+                                <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                                </div>
+
+                                <!-- Autocomplete Dropdown -->
+                                <ul id="department-list"
+                                    class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto overflow-x-hidden">
+                                </ul>
                             </div>
-
-                            <!-- Autocomplete Dropdown -->
-                            <ul id="department-list" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto overflow-x-hidden"></ul>
                         </div>
-                    </div>
 
-                    <!-- Working Group (Autocomplete Dependent) -->
-                    <div class="space-y-1.5 relative" id="workingGroup-wrapper">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="workingGroup" data-i18n="profile.working_group">Working Group</label>
-                        <div class="relative">
-                            <input type="text" id="workingGroup" autocomplete="off" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="e.g. Soil Analysis Group" />
-                            
-                             <!-- Icon -->
-                             <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                        <!-- Working Group (Autocomplete Dependent) -->
+                        <div class="space-y-1.5 relative" id="workingGroup-wrapper">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="workingGroup"
+                                data-i18n="profile.working_group">Working Group</label>
+                            <div class="relative">
+                                <input type="text" id="workingGroup" autocomplete="off"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
+                                    placeholder="e.g. Soil Analysis Group" />
+
+                                <!-- Icon -->
+                                <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                                </div>
+
+                                <!-- Autocomplete Dropdown -->
+                                <ul id="workingGroup-list"
+                                    class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto overflow-x-hidden">
+                                </ul>
                             </div>
-
-                            <!-- Autocomplete Dropdown -->
-                            <ul id="workingGroup-list" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto overflow-x-hidden"></ul>
                         </div>
-                    </div>
 
-                    <!-- Work Email -->
-                    <div class="space-y-1.5 md:col-span-2">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="workEmail"><span data-i18n="profile.work_email">Work Email</span> <span class="text-red-500">*</span></label>
-                        <input type="email" id="workEmail" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="jane@university.edu" />
-                    </div>
-
-                    <div class="col-span-1 md:col-span-2 border-t border-gray-100 my-2"></div>
-
-                    <!-- Personal Website -->
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="personalWebsite" data-i18n="profile.personal_website">Personal Website</label>
-                        <div class="relative">
-                            <i data-lucide="globe" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                            <input type="url" id="personalWebsite" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="https://" />
+                        <!-- Work Email -->
+                        <div class="space-y-1.5 md:col-span-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
+                                for="workEmail"><span data-i18n="profile.work_email">Work Email</span> <span
+                                    class="text-red-500">*</span></label>
+                            <input type="email" id="workEmail" required
+                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
+                                placeholder="jane@university.edu" />
                         </div>
-                    </div>
 
-                    <!-- Professional Website -->
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="professionalWebsite" data-i18n="profile.professional_website">Lab Website</label>
-                        <div class="relative">
-                            <i data-lucide="flask-conical" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                            <input type="url" id="professionalWebsite" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="https://" />
+                        <div class="col-span-1 md:col-span-2 border-t border-gray-100 my-2"></div>
+
+                        <!-- Personal Website -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
+                                for="personalWebsite" data-i18n="profile.personal_website">Personal Website</label>
+                            <div class="relative">
+                                <i data-lucide="globe"
+                                    class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                <input type="url" id="personalWebsite"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
+                                    placeholder="https://" />
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Google Scholar -->
-                    <div class="space-y-1.5 md:col-span-2">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="googleScholar" data-i18n="profile.google_scholar">Google Scholar</label>
-                        <div class="relative">
-                            <i data-lucide="graduation-cap" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                            <input type="url" id="googleScholar" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400" placeholder="https://scholar.google.com/..." />
+                        <!-- Professional Website -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
+                                for="professionalWebsite" data-i18n="profile.professional_website">Lab Website</label>
+                            <div class="relative">
+                                <i data-lucide="flask-conical"
+                                    class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                <input type="url" id="professionalWebsite"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
+                                    placeholder="https://" />
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Research Interests (Tags) -->
-                    <div class="space-y-1.5 md:col-span-2">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="fieldsOfStudy" data-i18n="profile.fields_section">Research Interests (tags, comma-separated)</label>
-                        <textarea id="fieldsOfStudy" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400 min-h-[100px] resize-y" placeholder="Agrivoltaics, carbon fluxes, soil monitoring..." data-i18n-placeholder="profile.fields_hint"></textarea>
-                        <p class="mt-1 text-xs text-slate-500" data-i18n="profile.fields_help">
-                            Enter short keywords separated by commas (e.g. agrivoltaics, carbon fluxes, remote sensing). These will appear as tags on your profile.
-                        </p>
-                        <div id="fieldsOfStudyTags" class="mt-2 flex flex-wrap gap-2"></div>
-                    </div>
+                        <!-- Google Scholar -->
+                        <div class="space-y-1.5 md:col-span-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="googleScholar"
+                                data-i18n="profile.google_scholar">Google Scholar</label>
+                            <div class="relative">
+                                <i data-lucide="graduation-cap"
+                                    class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                <input type="url" id="googleScholar"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
+                                    placeholder="https://scholar.google.com/..." />
+                            </div>
+                        </div>
 
-                    <!-- Profile Description (Optional) -->
-                    <div class="space-y-1.5 md:col-span-2">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="description" data-i18n="profile.description_section">Profile Description (optional)</label>
-                        <textarea id="description" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400 min-h-[100px] resize-y" placeholder="Brief bio, current projects, and how you collaborate..." data-i18n-placeholder="profile.description_hint"></textarea>
-                    </div>
+                        <!-- Research Interests (Tags) -->
+                        <div class="space-y-1.5 md:col-span-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="fieldsOfStudy"
+                                data-i18n="profile.fields_section">Research Interests (tags, comma-separated)</label>
+                            <textarea id="fieldsOfStudy"
+                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400 min-h-[100px] resize-y"
+                                placeholder="Agrivoltaics, carbon fluxes, soil monitoring..."
+                                data-i18n-placeholder="profile.fields_hint"></textarea>
+                            <p class="mt-1 text-xs text-slate-500" data-i18n="profile.fields_help">
+                                Enter short keywords separated by commas (e.g. agrivoltaics, carbon fluxes, remote
+                                sensing). These will appear as tags on your profile.
+                            </p>
+                            <div id="fieldsOfStudyTags" class="mt-2 flex flex-wrap gap-2"></div>
+                        </div>
 
+                        <!-- Profile Description (Optional) -->
+                        <div class="space-y-1.5 md:col-span-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="description"
+                                data-i18n="profile.description_section">Profile Description (optional)</label>
+                            <textarea id="description"
+                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400 min-h-[100px] resize-y"
+                                placeholder="Brief bio, current projects, and how you collaborate..."
+                                data-i18n-placeholder="profile.description_hint"></textarea>
+                        </div>
+
+                    </div>
                 </div>
-            </div>
-        </form>
-    </div>
+            </form>
+        </div>
 
-  </main>
+    </main>
 
-  <!-- Logic -->
-  <script type="module">
-    import { renderLayout } from './layout.js';
-    import { supabase, authState, initAuth, signOut } from './auth.js';
-    import { renderHeader, $, $$, show, hide, applyI18n, tr, setFlash, getAvatarUrl } from './ui.js';
+    <!-- Logic -->
+    <script type="module">
+        import { renderLayout } from './layout.js';
+        import { supabase, authState, initAuth, signOut } from './auth.js';
+        import { renderHeader, $, $$, show, hide, applyI18n, tr, setFlash, getAvatarUrl } from './ui.js';
 
-    // 1. Inject Layout (Passing null/empty as this isn't a navigation tab)
-    renderLayout('');
+        // 1. Inject Layout (Passing null/empty as this isn't a navigation tab)
+        renderLayout('');
 
-    const state = {
-        language: localStorage.getItem("lang") || "en",
-        profile: null,
-        avatarFile: null,
-        avatarRemoved: false,
-        existingAffiliations: [], // Store fetched affiliations here
-        deptSuggestions: [],      // Store dependent departments
-        wgSuggestions: []         // Store dependent working groups
-    };
+        const state = {
+            language: localStorage.getItem("lang") || "en",
+            profile: null,
+            avatarFile: null,
+            avatarRemoved: false,
+            existingAffiliations: [], // Store fetched affiliations here
+            deptSuggestions: [],      // Store dependent departments
+            wgSuggestions: []         // Store dependent working groups
+        };
 
-    const t = {
-        en: {
-            auth: { signin_prompt_title: "Please Sign In", signin_prompt_body: "Access to your profile dashboard requires authentication.", signin_prompt_button: "Go to Sign In" },
-            profile: { 
-                title: "Edit Profile", 
-                full_name: "Full Name", 
-                username: "Username", 
-                affiliation: "Affiliation", 
-                department: "Department",
-                working_group: "Working Group",
-                work_email: "Work Email", 
-                personal_website: "Personal Website", 
-                professional_website: "Lab Website", 
-                google_scholar: "Google Scholar Profile", 
-                fields_section: "Research Interests (tags, comma-separated)", 
-                fields_hint: "e.g. agrivoltaics, carbon fluxes, remote sensing...", 
-                fields_help: "Enter short keywords separated by commas (e.g. agrivoltaics, carbon fluxes, remote sensing). These will appear as tags on your profile.", 
-                description_section: "Profile Description (optional)",
-                description_hint: "Brief bio, current projects, and how you collaborate (optional).",
-                save: "Save Changes", 
-                saving: "Saving...", 
-                saved: "Dashboard updated successfully", 
-                remove_image: "Remove Picture", 
-                upload_error: "Failed to upload image. Please try again.", 
-                no_affiliation_results: "No matches found. Typing will create a new one.",
-                no_results: "No existing options found."
+        const t = {
+            en: {
+                auth: { signin_prompt_title: "Please Sign In", signin_prompt_body: "Access to your profile dashboard requires authentication.", signin_prompt_button: "Go to Sign In" },
+                profile: {
+                    title: "Edit Profile",
+                    full_name: "Full Name",
+                    username: "Username",
+                    affiliation: "Affiliation",
+                    department: "Department",
+                    working_group: "Working Group",
+                    work_email: "Work Email",
+                    personal_website: "Personal Website",
+                    professional_website: "Lab Website",
+                    google_scholar: "Google Scholar Profile",
+                    fields_section: "Research Interests (tags, comma-separated)",
+                    fields_hint: "e.g. agrivoltaics, carbon fluxes, remote sensing...",
+                    fields_help: "Enter short keywords separated by commas (e.g. agrivoltaics, carbon fluxes, remote sensing). These will appear as tags on your profile.",
+                    description_section: "Profile Description (optional)",
+                    description_hint: "Brief bio, current projects, and how you collaborate (optional).",
+                    save: "Save Changes",
+                    saving: "Saving...",
+                    saved: "Dashboard updated successfully",
+                    remove_image: "Remove Picture",
+                    upload_error: "Failed to upload image. Please try again.",
+                    no_affiliation_results: "No matches found. Typing will create a new one.",
+                    no_results: "No existing options found."
+                },
+                back: { general: "Go Back" }
             },
-            back: { general: "Go Back" }
-        },
-        es: {
-            auth: { signin_prompt_title: "Inicia Sesión", signin_prompt_body: "El acceso al panel de perfil requiere autenticación.", signin_prompt_button: "Iniciar Sesión" },
-            profile: { 
-                title: "Editar Perfil", 
-                full_name: "Nombre Completo", 
-                username: "Usuario", 
-                affiliation: "Afiliación", 
-                department: "Departamento",
-                working_group: "Grupo de Trabajo",
-                work_email: "Correo Trabajo", 
-                personal_website: "Sitio Personal", 
-                professional_website: "Sitio Laboratorio", 
-                google_scholar: "Perfil Google Scholar", 
-                fields_section: "Intereses de investigación (etiquetas separadas por comas)", 
-                fields_hint: "ej. agrovoltaica, flujos de carbono, teledetección...", 
-                fields_help: "Introduce palabras clave cortas separadas por comas (ej. agrovoltaica, flujos de carbono, teledetección). Se mostrarán como etiquetas en tu perfil.", 
-                description_section: "Descripción del perfil (opcional)",
-                description_hint: "Breve biografía, proyectos actuales y cómo colaboras (opcional).",
-                save: "Guardar Cambios", 
-                saving: "Guardando...", 
-                saved: "Panel actualizado con éxito", 
-                remove_image: "Eliminar Foto", 
-                upload_error: "Error al subir la imagen. Por favor intenta de nuevo.", 
-                no_affiliation_results: "No se encontraron coincidencias. Escribir creará uno nuevo.",
-                no_results: "No se encontraron opciones existentes."
-            },
-            back: { general: "Regresar" }
-        }
-    };
+            es: {
+                auth: { signin_prompt_title: "Inicia Sesión", signin_prompt_body: "El acceso al panel de perfil requiere autenticación.", signin_prompt_button: "Iniciar Sesión" },
+                profile: {
+                    title: "Editar Perfil",
+                    full_name: "Nombre Completo",
+                    username: "Usuario",
+                    affiliation: "Afiliación",
+                    department: "Departamento",
+                    working_group: "Grupo de Trabajo",
+                    work_email: "Correo Trabajo",
+                    personal_website: "Sitio Personal",
+                    professional_website: "Sitio Laboratorio",
+                    google_scholar: "Perfil Google Scholar",
+                    fields_section: "Intereses de investigación (etiquetas separadas por comas)",
+                    fields_hint: "ej. agrovoltaica, flujos de carbono, teledetección...",
+                    fields_help: "Introduce palabras clave cortas separadas por comas (ej. agrovoltaica, flujos de carbono, teledetección). Se mostrarán como etiquetas en tu perfil.",
+                    description_section: "Descripción del perfil (opcional)",
+                    description_hint: "Breve biografía, proyectos actuales y cómo colaboras (opcional).",
+                    save: "Guardar Cambios",
+                    saving: "Guardando...",
+                    saved: "Panel actualizado con éxito",
+                    remove_image: "Eliminar Foto",
+                    upload_error: "Error al subir la imagen. Por favor intenta de nuevo.",
+                    no_affiliation_results: "No se encontraron coincidencias. Escribir creará uno nuevo.",
+                    no_results: "No se encontraron opciones existentes."
+                },
+                back: { general: "Regresar" }
+            }
+        };
 
-    function localTr(key) { return tr(t, state.language, key); }
+        function localTr(key) { return tr(t, state.language, key); }
 
-    function handleLangSwitch() {
-        state.language = state.language === "en" ? "es" : "en";
-        localStorage.setItem("lang", state.language);
-        applyI18n(t, state.language);
-        renderHeader(authState, t, state.language); 
-    }
-
-    // --- Routing Logic ---
-    async function handleRoute() {
-        const loadingEl = $('#view-loading');
-        const authReqEl = $('#view-auth-required');
-        const profileEl = $('#view-profile');
-
-        if (!authState.session) {
-            hide(loadingEl);
-            hide(profileEl);
-            show(authReqEl);
-        } else {
-            hide(authReqEl);
-            show(profileEl);
-            hide(loadingEl);
-            
-            await Promise.all([
-                loadProfileData(),
-                fetchExistingAffiliations()
-            ]);
-        }
-    }
-
-    // --- Data Fetching ---
-
-    // 1. Fetch Affiliations (Global)
-    async function fetchExistingAffiliations() {
-        try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('affiliation')
-                .not('affiliation', 'is', null)
-                .neq('affiliation', '');
-
-            if (error) throw error;
-
-            const uniqueSet = new Set(data.map(item => item.affiliation.trim()));
-            state.existingAffiliations = Array.from(uniqueSet).sort((a, b) => a.localeCompare(b));
-            
-        } catch (err) {
-            console.error('Error fetching affiliations:', err);
-        }
-    }
-
-    // 2. Fetch Dependent Options (Department/Group based on Affiliation)
-    async function fetchDependentOptions(affiliationName) {
-        if(!affiliationName) {
-            state.deptSuggestions = [];
-            state.wgSuggestions = [];
-            return;
+        function handleLangSwitch() {
+            state.language = state.language === "en" ? "es" : "en";
+            localStorage.setItem("lang", state.language);
+            applyI18n(t, state.language);
+            renderHeader(authState, t, state.language);
         }
 
-        try {
-            // Fetch profiles matching this affiliation
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('department, working_group')
-                .eq('affiliation', affiliationName); // Precise match preferred for filtering
+        // --- Routing Logic ---
+        async function handleRoute() {
+            const loadingEl = $('#view-loading');
+            const authReqEl = $('#view-auth-required');
+            const profileEl = $('#view-profile');
 
-            if (error) throw error;
-
-            // Extract Departments
-            const depts = new Set(
-                data.map(i => i.department)
-                    .filter(d => d && d.trim() !== '')
-                    .map(d => d.trim())
-            );
-            state.deptSuggestions = Array.from(depts).sort((a,b) => a.localeCompare(b));
-
-            // Extract Working Groups
-            const groups = new Set(
-                data.map(i => i.working_group)
-                    .filter(w => w && w.trim() !== '')
-                    .map(w => w.trim())
-            );
-            state.wgSuggestions = Array.from(groups).sort((a,b) => a.localeCompare(b));
-
-        } catch (err) {
-            console.error('Error fetching dependent options:', err);
-        }
-    }
-
-    async function loadProfileData() {
-        if (!authState.session) return;
-        
-        const { data, error } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", authState.session.user.id)
-            .single();
-            
-        if (error) {
-            console.error("Error fetching profile:", error);
-            state.profile = {
-                full_name: authState.session.user.user_metadata?.full_name || '',
-                email: authState.session.user.email
-            };
-        } else {
-            state.profile = data || {};
-        }
-
-        // Populate Form
-        const fields = [
-            'fullName', 'username', 'affiliation', 'department', 'workingGroup', 
-            'workEmail', 'personalWebsite', 'professionalWebsite', 
-            'googleScholar', 'fieldsOfStudy', 'description'
-        ];
-        
-        fields.forEach(id => {
-            const dbKey = id.replace(/[A-Z]/g, m => '_' + m.toLowerCase());
-            const el = $(`#${id}`);
-            if(el) el.value = state.profile[dbKey] || '';
-        });
-
-        if(!$('#workEmail').value) $('#workEmail').value = authState.session.user.email;
-        if(!$('#username').value) $('#username').value = authState.session.user.email.split('@')[0];
-
-        // Trigger dependent fetch if affiliation exists
-        if(state.profile.affiliation) {
-            await fetchDependentOptions(state.profile.affiliation);
-        }
-
-        updatePreviewText();
-        renderFieldsTags();
-
-        if (state.profile.avatar_url) {
-            const url = await getAvatarUrl(state.profile.avatar_url);
-            setAvatar(url);
-        } else {
-            setAvatar(null);
-        }
-    }
-
-    function setAvatar(url) {
-        const img = $('#avatarImg');
-        const initials = $('#avatarInitials');
-        const removeBtn = $('#removeAvatarBtn');
-        
-        if (url) {
-            img.src = url;
-            show(img);
-            hide(initials);
-            show(removeBtn);
-        } else {
-            hide(img);
-            show(initials);
-            hide(removeBtn);
-            updateInitials();
-        }
-    }
-
-    function updateInitials() {
-        const name = $('#fullName').value || 'User';
-        $('#avatarInitials').textContent = name.charAt(0).toUpperCase();
-    }
-
-    function updatePreviewText() {
-        $('#displayUsername').textContent = '@' + ($('#username').value || 'username');
-        $('#displayEmail').textContent = $('#workEmail').value || 'user@example.com';
-    }
-
-    function renderFieldsTags() {
-        const container = $('#fieldsOfStudyTags');
-        if (!container) return;
-        const textarea = $('#fieldsOfStudy');
-        if (!textarea) return;
-
-        const raw = textarea.value || '';
-        const tags = raw.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-
-        container.innerHTML = '';
-        if (tags.length === 0) return;
-
-        tags.forEach(tag => {
-            const pill = document.createElement('span');
-            pill.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-100';
-            pill.textContent = tag;
-            container.appendChild(pill);
-        });
-    }
-
-    // --- Autocomplete Logic ---
-
-    // 1. Primary Affiliation Autocomplete
-    function setupAffiliationAutocomplete() {
-        const input = $('#affiliation');
-        const list = $('#affiliation-list');
-        const wrapper = $('#affiliation-wrapper');
-
-        const renderList = (items) => {
-            list.innerHTML = '';
-            if (items.length === 0) {
-                const li = document.createElement('li');
-                li.className = 'px-4 py-3 text-sm text-slate-400 italic bg-gray-50';
-                li.textContent = localTr('profile.no_affiliation_results');
-                list.appendChild(li);
+            if (!authState.session) {
+                hide(loadingEl);
+                hide(profileEl);
+                show(authReqEl);
             } else {
-                items.forEach(item => {
-                    const li = document.createElement('li');
-                    li.className = 'px-4 py-2.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer border-b border-gray-50 last:border-none transition-colors';
-                    li.textContent = item;
-                    li.addEventListener('click', async () => {
-                        input.value = item;
-                        hide(list);
-                        // Trigger lookup for Dept/WG
-                        await fetchDependentOptions(item);
-                        // Clear subsequent fields if user changes affiliation to encourage new selection? 
-                        // Opting to keep values but allow overwrite.
-                    });
-                    list.appendChild(li);
-                });
+                hide(authReqEl);
+                show(profileEl);
+                hide(loadingEl);
+
+                await Promise.all([
+                    loadProfileData(),
+                    fetchExistingAffiliations()
+                ]);
             }
-            show(list);
-        };
+        }
 
-        const handleInput = () => {
-            const val = input.value.toLowerCase();
-            const filtered = state.existingAffiliations.filter(aff => aff.toLowerCase().includes(val));
-            const toShow = val === '' ? state.existingAffiliations.slice(0, 50) : filtered;
-            renderList(toShow);
-        };
+        // --- Data Fetching ---
 
-        input.addEventListener('focus', handleInput);
-        input.addEventListener('input', handleInput);
+        // 1. Fetch Affiliations (Global)
+        async function fetchExistingAffiliations() {
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('affiliation')
+                    .not('affiliation', 'is', null)
+                    .neq('affiliation', '');
 
-        // Also trigger fetch on blur if manually typed (not clicked from list)
-        input.addEventListener('blur', async () => {
-             const val = input.value.trim();
-             if(val) await fetchDependentOptions(val);
-        });
+                if (error) throw error;
 
-        document.addEventListener('click', (e) => {
-            if (!wrapper.contains(e.target)) hide(list);
-        });
-    }
+                const uniqueSet = new Set(data.map(item => item.affiliation.trim()));
+                state.existingAffiliations = Array.from(uniqueSet).sort((a, b) => a.localeCompare(b));
 
-    // 2. Generic Autocomplete for Dept / Working Group
-    function setupGenericAutocomplete(inputId, listId, wrapperId, getSourceArray) {
-        const input = $(`#${inputId}`);
-        const list = $(`#${listId}`);
-        const wrapper = $(`#${wrapperId}`);
+            } catch (err) {
+                console.error('Error fetching affiliations:', err);
+            }
+        }
 
-        const renderList = (items) => {
-            list.innerHTML = '';
-            if (items.length === 0) {
-                const li = document.createElement('li');
-                li.className = 'px-4 py-3 text-sm text-slate-400 italic bg-gray-50';
-                li.textContent = localTr('profile.no_results');
-                list.appendChild(li);
+        // 2. Fetch Dependent Options (Department/Group based on Affiliation)
+        async function fetchDependentOptions(affiliationName) {
+            if (!affiliationName) {
+                state.deptSuggestions = [];
+                state.wgSuggestions = [];
+                return;
+            }
+
+            try {
+                // Fetch profiles matching this affiliation
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('department, working_group')
+                    .eq('affiliation', affiliationName); // Precise match preferred for filtering
+
+                if (error) throw error;
+
+                // Extract Departments
+                const depts = new Set(
+                    data.map(i => i.department)
+                        .filter(d => d && d.trim() !== '')
+                        .map(d => d.trim())
+                );
+                state.deptSuggestions = Array.from(depts).sort((a, b) => a.localeCompare(b));
+
+                // Extract Working Groups
+                const groups = new Set(
+                    data.map(i => i.working_group)
+                        .filter(w => w && w.trim() !== '')
+                        .map(w => w.trim())
+                );
+                state.wgSuggestions = Array.from(groups).sort((a, b) => a.localeCompare(b));
+
+            } catch (err) {
+                console.error('Error fetching dependent options:', err);
+            }
+        }
+
+        async function loadProfileData() {
+            if (!authState.session) return;
+
+            const { data, error } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("id", authState.session.user.id)
+                .single();
+
+            if (error) {
+                console.error("Error fetching profile:", error);
+                state.profile = {
+                    full_name: authState.session.user.user_metadata?.full_name || '',
+                    email: authState.session.user.email
+                };
             } else {
-                items.forEach(item => {
+                state.profile = data || {};
+            }
+
+            // Populate Form
+            const fields = [
+                'fullName', 'username', 'affiliation', 'department', 'workingGroup',
+                'workEmail', 'personalWebsite', 'professionalWebsite',
+                'googleScholar', 'fieldsOfStudy', 'description'
+            ];
+
+            fields.forEach(id => {
+                const dbKey = id.replace(/[A-Z]/g, m => '_' + m.toLowerCase());
+                const el = $(`#${id}`);
+                if (el) el.value = state.profile[dbKey] || '';
+            });
+
+            if (!$('#workEmail').value) $('#workEmail').value = authState.session.user.email;
+            if (!$('#username').value) $('#username').value = authState.session.user.email.split('@')[0];
+
+            // Trigger dependent fetch if affiliation exists
+            if (state.profile.affiliation) {
+                await fetchDependentOptions(state.profile.affiliation);
+            }
+
+            updatePreviewText();
+            renderFieldsTags();
+
+            if (state.profile.avatar_url) {
+                const url = await getAvatarUrl(state.profile.avatar_url);
+                setAvatar(url);
+            } else {
+                setAvatar(null);
+            }
+        }
+
+        function setAvatar(url) {
+            const img = $('#avatarImg');
+            const initials = $('#avatarInitials');
+            const removeBtn = $('#removeAvatarBtn');
+
+            if (url) {
+                img.src = url;
+                show(img);
+                hide(initials);
+                show(removeBtn);
+            } else {
+                hide(img);
+                show(initials);
+                hide(removeBtn);
+                updateInitials();
+            }
+        }
+
+        function updateInitials() {
+            const name = $('#fullName').value || 'User';
+            $('#avatarInitials').textContent = name.charAt(0).toUpperCase();
+        }
+
+        function updatePreviewText() {
+            $('#displayUsername').textContent = '@' + ($('#username').value || 'username');
+            $('#displayEmail').textContent = $('#workEmail').value || 'user@example.com';
+        }
+
+        function renderFieldsTags() {
+            const container = $('#fieldsOfStudyTags');
+            if (!container) return;
+            const textarea = $('#fieldsOfStudy');
+            if (!textarea) return;
+
+            const raw = textarea.value || '';
+            const tags = raw.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+
+            container.innerHTML = '';
+            if (tags.length === 0) return;
+
+            tags.forEach(tag => {
+                const pill = document.createElement('span');
+                pill.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-100';
+                pill.textContent = tag;
+                container.appendChild(pill);
+            });
+        }
+
+        // --- Autocomplete Logic ---
+
+        // 1. Primary Affiliation Autocomplete
+        function setupAffiliationAutocomplete() {
+            const input = $('#affiliation');
+            const list = $('#affiliation-list');
+            const wrapper = $('#affiliation-wrapper');
+
+            const renderList = (items) => {
+                list.innerHTML = '';
+                if (items.length === 0) {
                     const li = document.createElement('li');
-                    li.className = 'px-4 py-2.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer border-b border-gray-50 last:border-none transition-colors';
-                    li.textContent = item;
-                    li.addEventListener('click', () => {
-                        input.value = item;
-                        hide(list);
-                    });
+                    li.className = 'px-4 py-3 text-sm text-slate-400 italic bg-gray-50';
+                    li.textContent = localTr('profile.no_affiliation_results');
                     list.appendChild(li);
-                });
-            }
-            show(list);
-        };
-
-        const handleInput = () => {
-            const source = getSourceArray();
-            if(!source || source.length === 0) return; // Don't show dropdown if no suggestions
-
-            const val = input.value.toLowerCase();
-            const filtered = source.filter(s => s.toLowerCase().includes(val));
-            // Show all if empty, else filtered
-            const toShow = val === '' ? source : filtered;
-            renderList(toShow);
-        };
-
-        input.addEventListener('focus', handleInput);
-        input.addEventListener('input', handleInput);
-
-        document.addEventListener('click', (e) => {
-            if (!wrapper.contains(e.target)) hide(list);
-        });
-    }
-
-    async function saveProfile(e) {
-        e.preventDefault();
-        const btn = $('#saveBtn');
-        const originalContent = btn.innerHTML;
-        
-        btn.disabled = true;
-        btn.innerHTML = `<div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> <span>${localTr('profile.saving')}</span>`;
-
-        try {
-            let avatar_url = state.profile?.avatar_url;
-
-            if (state.avatarFile) {
-                const fileExt = state.avatarFile.name.split('.').pop();
-                const fileName = `${authState.session.user.id}/${Date.now()}.${fileExt}`;
-                const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, state.avatarFile);
-                if (uploadError) throw new Error(localTr('profile.upload_error'));
-
-                if (avatar_url) await supabase.storage.from('avatars').remove([avatar_url]);
-                avatar_url = fileName;
-            } 
-            else if (state.avatarRemoved && avatar_url) {
-                await supabase.storage.from('avatars').remove([avatar_url]);
-                avatar_url = null;
-            }
-
-            const updates = {
-                id: authState.session.user.id,
-                updated_at: new Date().toISOString(),
-                avatar_url,
-                full_name: $('#fullName').value.trim(),
-                username: $('#username').value.trim(),
-                affiliation: $('#affiliation').value.trim(),
-                department: $('#department').value.trim() || null,
-                working_group: $('#workingGroup').value.trim() || null,
-                work_email: $('#workEmail').value.trim(),
-                personal_website: $('#personalWebsite').value.trim() || null,
-                professional_website: $('#professionalWebsite').value.trim() || null,
-                google_scholar: $('#googleScholar').value.trim() || null,
-                fields_of_study: $('#fieldsOfStudy').value.trim() || null,
-                description: $('#description').value.trim() || null,
+                } else {
+                    items.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'px-4 py-2.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer border-b border-gray-50 last:border-none transition-colors';
+                        li.textContent = item;
+                        li.addEventListener('click', async () => {
+                            input.value = item;
+                            hide(list);
+                            // Trigger lookup for Dept/WG
+                            await fetchDependentOptions(item);
+                            // Clear subsequent fields if user changes affiliation to encourage new selection? 
+                            // Opting to keep values but allow overwrite.
+                        });
+                        list.appendChild(li);
+                    });
+                }
+                show(list);
             };
 
-            const { error } = await supabase.from('profiles').upsert(updates);
-            if (error) throw error;
+            const handleInput = () => {
+                const val = input.value.toLowerCase();
+                const filtered = state.existingAffiliations.filter(aff => aff.toLowerCase().includes(val));
+                const toShow = val === '' ? state.existingAffiliations.slice(0, 50) : filtered;
+                renderList(toShow);
+            };
 
-            state.profile = { ...state.profile, ...updates };
-            state.avatarFile = null;
-            state.avatarRemoved = false;
-            setFlash(localTr('profile.saved'));
+            input.addEventListener('focus', handleInput);
+            input.addEventListener('input', handleInput);
 
-            if(authState.profile) {
-                Object.assign(authState.profile, updates);
-                renderHeader(authState, t, state.language);
+            // Also trigger fetch on blur if manually typed (not clicked from list)
+            input.addEventListener('blur', async () => {
+                const val = input.value.trim();
+                if (val) await fetchDependentOptions(val);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!wrapper.contains(e.target)) hide(list);
+            });
+        }
+
+        // 2. Generic Autocomplete for Dept / Working Group
+        function setupGenericAutocomplete(inputId, listId, wrapperId, getSourceArray) {
+            const input = $(`#${inputId}`);
+            const list = $(`#${listId}`);
+            const wrapper = $(`#${wrapperId}`);
+
+            const renderList = (items) => {
+                list.innerHTML = '';
+                if (items.length === 0) {
+                    const li = document.createElement('li');
+                    li.className = 'px-4 py-3 text-sm text-slate-400 italic bg-gray-50';
+                    li.textContent = localTr('profile.no_results');
+                    list.appendChild(li);
+                } else {
+                    items.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'px-4 py-2.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer border-b border-gray-50 last:border-none transition-colors';
+                        li.textContent = item;
+                        li.addEventListener('click', () => {
+                            input.value = item;
+                            hide(list);
+                        });
+                        list.appendChild(li);
+                    });
+                }
+                show(list);
+            };
+
+            const handleInput = () => {
+                const source = getSourceArray();
+                if (!source || source.length === 0) return; // Don't show dropdown if no suggestions
+
+                const val = input.value.toLowerCase();
+                const filtered = source.filter(s => s.toLowerCase().includes(val));
+                // Show all if empty, else filtered
+                const toShow = val === '' ? source : filtered;
+                renderList(toShow);
+            };
+
+            input.addEventListener('focus', handleInput);
+            input.addEventListener('input', handleInput);
+
+            document.addEventListener('click', (e) => {
+                if (!wrapper.contains(e.target)) hide(list);
+            });
+        }
+
+        async function saveProfile(e) {
+            e.preventDefault();
+            const btn = $('#saveBtn');
+            const originalContent = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = `<div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> <span>${localTr('profile.saving')}</span>`;
+
+            try {
+                let avatar_url = state.profile?.avatar_url;
+
+                if (state.avatarFile) {
+                    const fileExt = state.avatarFile.name.split('.').pop();
+                    const fileName = `${authState.session.user.id}/${Date.now()}.${fileExt}`;
+                    const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, state.avatarFile);
+                    if (uploadError) throw new Error(localTr('profile.upload_error'));
+
+                    if (avatar_url) await supabase.storage.from('avatars').remove([avatar_url]);
+                    avatar_url = fileName;
+                }
+                else if (state.avatarRemoved && avatar_url) {
+                    await supabase.storage.from('avatars').remove([avatar_url]);
+                    avatar_url = null;
+                }
+
+                const updates = {
+                    id: authState.session.user.id,
+                    updated_at: new Date().toISOString(),
+                    avatar_url,
+                    full_name: $('#fullName').value.trim(),
+                    username: $('#username').value.trim(),
+                    affiliation: $('#affiliation').value.trim(),
+                    department: $('#department').value.trim() || null,
+                    working_group: $('#workingGroup').value.trim() || null,
+                    work_email: $('#workEmail').value.trim(),
+                    personal_website: $('#personalWebsite').value.trim() || null,
+                    professional_website: $('#professionalWebsite').value.trim() || null,
+                    google_scholar: $('#googleScholar').value.trim() || null,
+                    fields_of_study: $('#fieldsOfStudy').value.trim() || null,
+                    description: $('#description').value.trim() || null,
+                };
+
+                const { error } = await supabase.from('profiles').upsert(updates);
+                if (error) throw error;
+
+                state.profile = { ...state.profile, ...updates };
+                state.avatarFile = null;
+                state.avatarRemoved = false;
+                setFlash(localTr('profile.saved'));
+
+                if (authState.profile) {
+                    Object.assign(authState.profile, updates);
+                    renderHeader(authState, t, state.language);
+                }
+
+                const returnTo = new URLSearchParams(location.search).get('return_to');
+                if (returnTo) setTimeout(() => window.location.href = returnTo, 1000);
+
+            } catch (err) {
+                console.error(err);
+                setFlash(err.message || "Error saving profile");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+                lucide.createIcons();
             }
+        }
 
-            const returnTo = new URLSearchParams(location.search).get('return_to');
-            if (returnTo) setTimeout(() => window.location.href = returnTo, 1000);
+        function bindEvents() {
+            $('#avatarInput').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                state.avatarFile = file;
+                state.avatarRemoved = false;
+                const reader = new FileReader();
+                reader.onload = (ev) => setAvatar(ev.target.result);
+                reader.readAsDataURL(file);
+            });
 
-        } catch (err) {
-            console.error(err);
-            setFlash(err.message || "Error saving profile");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = originalContent;
+            $('#removeAvatarBtn').addEventListener('click', () => {
+                state.avatarFile = null;
+                state.avatarRemoved = true;
+                setAvatar(null);
+                $('#avatarInput').value = '';
+            });
+
+            $('#fullName').addEventListener('input', updateInitials);
+            $('#username').addEventListener('input', updatePreviewText);
+            $('#workEmail').addEventListener('input', updatePreviewText);
+            $('#fieldsOfStudy').addEventListener('input', renderFieldsTags);
+            $('#profileForm').addEventListener('submit', saveProfile);
+
+            $('#backBtn').addEventListener('click', () => {
+                if (document.referrer && document.referrer.includes(window.location.host)) {
+                    history.back();
+                } else {
+                    window.location.href = 'index.html';
+                }
+            });
+
+            // Initialize All Autocompletes
+            setupAffiliationAutocomplete();
+            setupGenericAutocomplete('department', 'department-list', 'department-wrapper', () => state.deptSuggestions);
+            setupGenericAutocomplete('workingGroup', 'workingGroup-list', 'workingGroup-wrapper', () => state.wgSuggestions);
+        }
+
+        // --- Main ---
+        (async function main() {
+            applyI18n(t, state.language);
+            bindEvents();
             lucide.createIcons();
-        }
-    }
 
-    function bindEvents() {
-        $('#avatarInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            state.avatarFile = file;
-            state.avatarRemoved = false;
-            const reader = new FileReader();
-            reader.onload = (ev) => setAvatar(ev.target.result);
-            reader.readAsDataURL(file);
-        });
+            await initAuth({
+                onAuthReady: () => {
+                    renderHeader(authState, t, state.language);
+                    handleRoute();
+                },
+                onAuthChange: () => {
+                    renderHeader(authState, t, state.language);
+                    handleRoute();
+                }
+            });
 
-        $('#removeAvatarBtn').addEventListener('click', () => {
-            state.avatarFile = null;
-            state.avatarRemoved = true;
-            setAvatar(null);
-            $('#avatarInput').value = '';
-        });
-
-        $('#fullName').addEventListener('input', updateInitials);
-        $('#username').addEventListener('input', updatePreviewText);
-        $('#workEmail').addEventListener('input', updatePreviewText);
-        $('#fieldsOfStudy').addEventListener('input', renderFieldsTags);
-        $('#profileForm').addEventListener('submit', saveProfile);
-
-        $('#backBtn').addEventListener('click', () => {
-            if(document.referrer && document.referrer.includes(window.location.host)) {
-                history.back();
-            } else {
-                window.location.href = 'index.html';
-            }
-        });
-
-        // Initialize All Autocompletes
-        setupAffiliationAutocomplete();
-        setupGenericAutocomplete('department', 'department-list', 'department-wrapper', () => state.deptSuggestions);
-        setupGenericAutocomplete('workingGroup', 'workingGroup-list', 'workingGroup-wrapper', () => state.wgSuggestions);
-    }
-
-    // --- Main ---
-    (async function main() {
-        applyI18n(t, state.language);
-        bindEvents();
-        lucide.createIcons();
-
-        await initAuth({
-            onAuthReady: () => {
-                renderHeader(authState, t, state.language);
-                handleRoute();
-            },
-            onAuthChange: () => {
-                renderHeader(authState, t, state.language);
-                handleRoute();
-            }
-        });
-        
-        window.addEventListener('lang-switch', handleLangSwitch);
-    })();
-  </script>
+            window.addEventListener('lang-switch', handleLangSwitch);
+        })();
+    </script>
 </body>
+
 </html>

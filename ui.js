@@ -102,8 +102,18 @@ export function updateActiveNav() {
 
 export function toggleMobileMenu(forceState) {
   const overlay = $('#mobileNavOverlay');
+  if (!overlay) return;
+  
   const showMenu = forceState !== undefined ? forceState : !overlay.classList.contains('is-open');
-  overlay.classList.toggle('is-open', showMenu);
+  
+  if (showMenu) {
+    overlay.classList.remove('hidden'); 
+    requestAnimationFrame(() => {
+        overlay.classList.add('is-open');
+    });
+  } else {
+    overlay.classList.remove('is-open');
+  }
 }
 
 export function switchTab(tabName, clickedBtn) {
@@ -129,11 +139,9 @@ export async function renderHeader(authState, t, lang) {
   });
 
   const preloadFingerprint = document.documentElement.getAttribute('data-auth-fingerprint');
-  // Optimization: If what was preloaded matches exactly what we are about to render,
-  // just cleanup and exit to avoid repaints, but only if we haven't rendered this state yet.
+  
   if (preloadFingerprint === fingerprint && headerState.lastRenderedFingerprint === null) {
     headerState.lastRenderedFingerprint = fingerprint;
-    // Important: remove the style tag so future dynamic changes (like signOut) work normally
     document.getElementById('auth-preload-style')?.remove();
     document.documentElement.removeAttribute('data-auth-fingerprint');
     applyI18n(t, lang);
@@ -142,6 +150,7 @@ export async function renderHeader(authState, t, lang) {
   }
   
   if (headerState.lastRenderedFingerprint === fingerprint) return;
+
   headerState.lastRenderedFingerprint = fingerprint;
 
   const btnProfile = $('#btnProfile'), userInitial = $('#userInitial'), userAvatar = $('#userAvatar'), userName = $('#userName'), btnSignIn = $('#btnSignIn'), btnSignOut = $('#btnSignOut'), btnAdmin = $('#btnAdmin');
@@ -150,7 +159,6 @@ export async function renderHeader(authState, t, lang) {
 
   if (authState.session && authState.profile) {
     show(btnProfile); show(btnSignOut); show(userName); hide(btnSignIn);
-    
     userName.textContent = authState.profile.full_name || authState.profile.username || '';
     
     const avatarPath = authState.profile.avatar_url;
@@ -177,40 +185,51 @@ export async function renderHeader(authState, t, lang) {
     const avatarUrl = avatarPath ? await getAvatarUrl(avatarPath) : null;
     const initial = (authState.profile?.full_name || "U").charAt(0).toUpperCase();
     
+    // Updated structure for better vertical spacing and fallback text
     mobileNavContent.innerHTML = `
       <button id="mobileNavCloseBtn" class="mobile-nav-close-btn" aria-label="Close menu">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
-      <nav>
-          <div id="langSwitchMobile" class="lang-switch-slider" data-lang="${lang}"><span>EN</span><span>ES</span></div>
-          <a href="index.html" class="link" data-i18n="nav.schedule"></a>
-          <a href="archive.html" class="link" data-i18n="nav.archive"></a>
-          <a href="about.html" class="link" data-i18n="nav.about"></a>
-          <a href="network.html" class="link" data-i18n="nav.network"></a>
-          ${isOrganizer ? `<a href="admin.html" class="link" data-i18n="nav.admin"></a>` : ''}
-          <div class="auth-area">
+      
+      <nav class="flex flex-col h-full w-full">
+          <!-- Main Links Container: Centered vertically in available space -->
+          <div class="flex-1 flex flex-col justify-center w-full gap-2 py-4">
+              <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
+              <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
+              <a href="about.html" class="link" data-i18n="nav.about">About</a>
+              <a href="network.html" class="link" data-i18n="nav.network">Network</a>
+              <a href="map.html" class="link" data-i18n="nav.map">Map</a>
+              ${isOrganizer ? `<a href="admin.html" class="link text-red-600" data-i18n="nav.admin">Admin</a>` : ''}
+          </div>
+
+          <!-- Auth & Footer Section -->
+          <div class="auth-area flex flex-col items-center w-full border-t border-gray-100 pt-6 pb-8">
+              <div id="langSwitchMobile" class="lang-switch-slider mb-6" data-lang="${lang}"><span>EN</span><span>ES</span></div>
+              
               ${authState.session && authState.profile ? `
-                  <button class="profile-button" onclick="window.location.href='profile.html'">
-                      ${avatarUrl ? `<img src="${avatarUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />` : `<span>${initial}</span>`}
+                  <button class="profile-button mb-3" onclick="window.location.href='profile.html'">
+                      ${avatarUrl ? `<img src="${avatarUrl}" class="w-full h-full object-cover" alt="User Avatar" />` : `<span>${initial}</span>`}
                   </button>
-                  <span id="userNameMobile">${escapeHtml(authState.profile.full_name || "")}</span>
-                  <button id="btnSignOutMobile" class="btn btn-secondary"><span data-i18n="auth.signout"></span></button>
+                  <span id="userNameMobile" class="font-bold text-slate-700 text-lg mb-4">${escapeHtml(authState.profile.full_name || "")}</span>
+                  <button id="btnSignOutMobile" class="px-6 py-2 rounded-full border border-gray-200 text-slate-500 font-bold text-sm hover:bg-gray-50 transition-colors w-full max-w-[200px]"><span data-i18n="auth.signout">Sign out</span></button>
               ` : `
-                  <a href="signin.html" id="btnSignInMobile" class="btn btn-primary"><span data-i18n="auth.signin"></span></a>
+                  <a href="signin.html" id="btnSignInMobile" class="btn btn-primary w-full max-w-[240px] justify-center"><span data-i18n="auth.signin">Sign in</span></a>
               `}
           </div>
       </nav>
     `;
   }
   
-  // Cleanup preload style once rendering is complete
   document.getElementById('auth-preload-style')?.remove();
   applyI18n(t, lang);
   updateActiveNav();
 }
 
 export function initSharedUI({ onLangSwitch, onSignOut }) {
-  $('#mobileMenuBtn')?.addEventListener('click', () => toggleMobileMenu(true));
+  const mobileBtn = $('#mobileMenuBtn');
+  if (mobileBtn) {
+    mobileBtn.addEventListener('click', () => toggleMobileMenu(true));
+  }
   
   document.body.addEventListener('click', e => {
     if (e.target.closest('#langSwitchDesktop') || e.target.closest('#langSwitchMobile')) {

@@ -11,17 +11,21 @@
   <script src="auth-preloader.js"></script>
 
   <!-- Leaflet Map Library -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <!-- Fonts (Updated to include Poppins for Headers) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@600;700;800&display=swap"
+    rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
+
   <!-- Global Styles -->
   <link rel="stylesheet" href="styles.css">
 
@@ -76,11 +80,13 @@
       height: 100% !important;
       font-family: 'Inter', sans-serif !important;
       z-index: 0;
-      background: #f8fafc; /* Match page bg */
+      background: #f8fafc;
+      /* Match page bg */
     }
 
     /* Panel Transitions */
-    #view-panel, #edit-panel {
+    #view-panel,
+    #edit-panel {
       transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
     }
 
@@ -90,7 +96,10 @@
       grid-template-columns: 1fr 1fr;
       gap: 16px 20px;
     }
-    .grid-form .col-span-2 { grid-column: 1 / -1; }
+
+    .grid-form .col-span-2 {
+      grid-column: 1 / -1;
+    }
 
     .grid-form label {
       font-size: 11px;
@@ -114,14 +123,14 @@
       color: var(--text-primary);
       width: 100%;
       font-family: inherit;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
     }
 
     .grid-form input:hover,
     .grid-form select:hover,
     .grid-form textarea:hover {
-       background: white;
-       box-shadow: 0 0 0 1px var(--border);
+      background: white;
+      box-shadow: 0 0 0 1px var(--border);
     }
 
     .grid-form input:focus,
@@ -147,21 +156,26 @@
       border-radius: 12px;
       overflow: hidden;
     }
+
     .carousel-track {
       display: flex;
       height: 100%;
       transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
     }
+
     .carousel-slide {
       width: 100%;
       height: 100%;
       flex-shrink: 0;
     }
-    .carousel-slide img, .carousel-slide video {
+
+    .carousel-slide img,
+    .carousel-slide video {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
+
     .carousel-btn {
       position: absolute;
       top: 50%;
@@ -181,10 +195,23 @@
       z-index: 2;
       backdrop-filter: blur(4px);
     }
-    .carousel-container:hover .carousel-btn { opacity: 1; }
-    .carousel-btn:hover { background: rgba(0, 0, 0, 0.7); }
-    .carousel-btn.prev { left: 12px; }
-    .carousel-btn.next { right: 12px; }
+
+    .carousel-container:hover .carousel-btn {
+      opacity: 1;
+    }
+
+    .carousel-btn:hover {
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    .carousel-btn.prev {
+      left: 12px;
+    }
+
+    .carousel-btn.next {
+      right: 12px;
+    }
+
     .carousel-indicators {
       position: absolute;
       bottom: 12px;
@@ -194,6 +221,7 @@
       gap: 6px;
       z-index: 2;
     }
+
     .carousel-dot {
       width: 6px;
       height: 6px;
@@ -202,6 +230,7 @@
       transition: all 0.3s;
       cursor: pointer;
     }
+
     .carousel-dot.active {
       width: 16px;
       border-radius: 4px;
@@ -219,16 +248,19 @@
       position: relative;
       cursor: pointer;
     }
-    .media-upload-area:hover { 
-      border-color: var(--color-brand); 
-      background: var(--color-brand-light); 
+
+    .media-upload-area:hover {
+      border-color: var(--color-brand);
+      background: var(--color-brand-light);
     }
+
     .media-preview-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
       gap: 12px;
       margin-top: 16px;
     }
+
     .media-preview-item {
       position: relative;
       aspect-ratio: 1;
@@ -237,11 +269,14 @@
       background: #e2e8f0;
       border: 1px solid var(--border);
     }
-    .media-preview-item img, .media-preview-item video {
+
+    .media-preview-item img,
+    .media-preview-item video {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
+
     .media-preview-remove {
       position: absolute;
       top: 2px;
@@ -259,7 +294,10 @@
     }
 
     /* User Search */
-    .user-search-wrapper { position: relative; }
+    .user-search-wrapper {
+      position: relative;
+    }
+
     #userSearchResults {
       position: absolute;
       top: 100%;
@@ -275,6 +313,7 @@
       box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
       display: none;
     }
+
     .user-search-item {
       display: flex;
       align-items: center;
@@ -284,15 +323,25 @@
       transition: background-color 0.2s;
       font-size: 14px;
     }
-    .user-search-item:hover { background-color: var(--color-brand-light); }
-    .user-search-item img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-    
+
+    .user-search-item:hover {
+      background-color: var(--color-brand-light);
+    }
+
+    .user-search-item img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
     #selectedUsers {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 10px;
     }
+
     .selected-user-pill {
       display: flex;
       align-items: center;
@@ -305,19 +354,69 @@
       color: var(--color-brand-dark);
       border: 1px solid var(--border);
     }
-    .selected-user-pill img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
-    .selected-user-pill button { margin-left: 4px; color: var(--color-brand-dark); opacity: 0.6; }
-    .selected-user-pill button:hover { opacity: 1; }
+
+    .selected-user-pill img {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .selected-user-pill button {
+      margin-left: 4px;
+      color: var(--color-brand-dark);
+      opacity: 0.6;
+    }
+
+    .selected-user-pill button:hover {
+      opacity: 1;
+    }
 
     /* Table Styles */
-    #projects-table th { cursor: pointer; user-select: none; font-family: 'Poppins', sans-serif; }
-    #projects-table th:hover { background-color: #f8fafc; }
-    #projects-table th .sort-icon { opacity: 0.3; transition: opacity 0.2s; display: inline-block; vertical-align: middle; margin-left: 4px; width: 14px; height: 14px; }
-    #projects-table th.sort-asc .sort-icon, #projects-table th.sort-desc .sort-icon { opacity: 1; color: var(--color-brand); }
-    #projects-table tbody tr.selected { background-color: var(--color-brand-light); }
-    #projects-table tbody tr.selected td:first-child { color: var(--color-brand-dark); font-weight: 700; position: relative; }
+    #projects-table th {
+      cursor: pointer;
+      user-select: none;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    #projects-table th:hover {
+      background-color: #f8fafc;
+    }
+
+    #projects-table th .sort-icon {
+      opacity: 0.3;
+      transition: opacity 0.2s;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 4px;
+      width: 14px;
+      height: 14px;
+    }
+
+    #projects-table th.sort-asc .sort-icon,
+    #projects-table th.sort-desc .sort-icon {
+      opacity: 1;
+      color: var(--color-brand);
+    }
+
+    #projects-table tbody tr.selected {
+      background-color: var(--color-brand-light);
+    }
+
+    #projects-table tbody tr.selected td:first-child {
+      color: var(--color-brand-dark);
+      font-weight: 700;
+      position: relative;
+    }
+
     #projects-table tbody tr.selected td:first-child::before {
-        content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--color-brand);
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--color-brand);
     }
   </style>
 
@@ -325,7 +424,8 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
+<body
+  class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
   <!-- Note: Header is injected by layout.js -->
 
@@ -334,25 +434,29 @@
 
   <!-- ================= MAIN CONTENT ================= -->
   <main class="flex-1 relative overflow-hidden bg-gray-50 flex flex-col items-center">
-    
+
     <!-- Inner Container (Matches Archive Width/Padding) -->
     <div class="w-full h-full max-w-[1800px] px-4 sm:px-6 py-6 flex flex-col lg:flex-row gap-6 relative">
 
       <!-- MAP PANEL (Top on mobile, Left on desktop) -->
-      <div class="flex-1 lg:flex-[1.4] relative rounded-[1.5rem] overflow-hidden border border-gray-200 shadow-sm bg-white z-0 flex flex-col">
-        
+      <div
+        class="flex-1 lg:flex-[1.4] relative rounded-[1.5rem] overflow-hidden border border-gray-200 shadow-sm bg-white z-0 flex flex-col">
+
         <!-- Map container -->
         <div id="map" class="flex-1 w-full h-full z-10"></div>
-        
+
         <!-- Floating Add Button -->
-        <button id="addPointBtn" class="hidden absolute top-4 right-4 z-20 bg-brand-600 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:bg-brand-700 transition-colors active:scale-95 items-center gap-2 border border-white/20 backdrop-blur-sm">
+        <button id="addPointBtn"
+          class="hidden absolute top-4 right-4 z-20 bg-brand-600 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:bg-brand-700 transition-colors active:scale-95 items-center gap-2 border border-white/20 backdrop-blur-sm">
           <i data-lucide="plus-circle" class="w-5 h-5"></i>
           <span data-i18n="map.add">Add Point</span>
         </button>
 
         <!-- View Panel (Slide-out over map) -->
-        <div id="view-panel" class="absolute top-0 left-0 h-full w-full md:max-w-md bg-white/95 backdrop-blur-md shadow-2xl z-30 transform -translate-x-full border-r border-gray-200 flex flex-col">
-          <button id="closeViewPanelBtn" class="absolute top-3 right-3 z-50 p-2 bg-white text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-full shadow-sm border border-gray-200 transition-all">
+        <div id="view-panel"
+          class="absolute top-0 left-0 h-full w-full md:max-w-md bg-white/95 backdrop-blur-md shadow-2xl z-30 transform -translate-x-full border-r border-gray-200 flex flex-col">
+          <button id="closeViewPanelBtn"
+            class="absolute top-3 right-3 z-50 p-2 bg-white text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-full shadow-sm border border-gray-200 transition-all">
             <i data-lucide="x" class="w-5 h-5"></i>
           </button>
           <div id="view-panel-content" class="flex-1 overflow-y-auto custom-scrollbar p-6">
@@ -361,23 +465,27 @@
         </div>
 
         <!-- Edit Panel (Slide-out over map from right) -->
-        <div id="edit-panel" class="absolute top-0 right-0 h-full w-full md:max-w-2xl bg-white shadow-2xl z-30 transform translate-x-full flex flex-col border-l border-gray-200">
+        <div id="edit-panel"
+          class="absolute top-0 right-0 h-full w-full md:max-w-2xl bg-white shadow-2xl z-30 transform translate-x-full flex flex-col border-l border-gray-200">
           <div class="p-5 border-b border-gray-100 flex justify-between items-center flex-shrink-0 bg-white z-10">
-            <h2 id="panel-title" class="font-display font-bold text-xl text-slate-800" data-i18n="map.add_panel_title">Add New Point</h2>
-            <button id="closePanelBtn" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
+            <h2 id="panel-title" class="font-display font-bold text-xl text-slate-800" data-i18n="map.add_panel_title">
+              Add New Point</h2>
+            <button id="closePanelBtn"
+              class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
               <i data-lucide="x" class="w-6 h-6"></i>
             </button>
           </div>
-          
+
           <form id="point-form" class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-gray-50/50">
             <div class="grid-form">
               <input type="hidden" id="pointId">
-              
+
               <!-- Media Upload -->
               <div class="col-span-2">
                 <label for="mediaUpload" data-i18n="form.media">Media</label>
                 <div id="mediaDropZone" class="media-upload-area group">
-                  <i data-lucide="upload-cloud" class="w-10 h-10 text-brand-300 mx-auto mb-2 group-hover:text-brand-500 transition-colors"></i>
+                  <i data-lucide="upload-cloud"
+                    class="w-10 h-10 text-brand-300 mx-auto mb-2 group-hover:text-brand-500 transition-colors"></i>
                   <div class="text-sm font-medium text-slate-600">Drop videos or images here</div>
                   <div class="text-xs text-slate-400 mt-1">Videos first. PNG, JPG, MP4 up to 10MB.</div>
                   <input type="file" id="mediaUpload" accept="image/*,video/*" multiple style="display: none;">
@@ -396,12 +504,16 @@
               </div>
 
               <!-- Basic Info -->
-              <div><label for="name" data-i18n="form.institution">Institution (Required)</label><input id="name" required /></div>
-              <div><label for="project_name" data-i18n="form.project_name">Project Name (Required)</label><input id="project_name" required /></div>
-              
-              <div><label for="latitude" data-i18n="form.latitude">Latitude (Required)</label><input id="latitude" type="number" step="any" required /></div>
-              <div><label for="longitude" data-i18n="form.longitude">Longitude (Required)</label><input id="longitude" type="number" step="any" required /></div>
-              
+              <div><label for="name" data-i18n="form.institution">Institution (Required)</label><input id="name"
+                  required /></div>
+              <div><label for="project_name" data-i18n="form.project_name">Project Name (Required)</label><input
+                  id="project_name" required /></div>
+
+              <div><label for="latitude" data-i18n="form.latitude">Latitude (Required)</label><input id="latitude"
+                  type="number" step="any" required /></div>
+              <div><label for="longitude" data-i18n="form.longitude">Longitude (Required)</label><input id="longitude"
+                  type="number" step="any" required /></div>
+
               <div>
                 <label for="system_category" data-i18n="form.system_category">System Type (Required)</label>
                 <select id="system_category" required>
@@ -413,85 +525,108 @@
                   <option value="Other">Other</option>
                 </select>
               </div>
-              
-              <div><label for="start_year" data-i18n="form.start_year">Start Year (Required)</label><input id="start_year" type="number" required /></div>
-              
-              <div class="col-span-2"><label for="associated_crops" data-i18n="form.associated_crops">Target Species / Crops (Required)</label><input id="associated_crops" required placeholder="e.g. Tomatoes, Sheep, Native Pollinators..." /></div>
-              <div class="col-span-2"><label for="av_system_type" data-i18n="form.av_system_type">AV System Tech (Required)</label><input id="av_system_type" placeholder="e.g., Elevated, Tracking, Vertical..." required /></div>
-              
-              <div class="col-span-2"><hr class="border-gray-200 my-2"></div>
-              
-              <div><label for="generating_capacity_kw" data-i18n="form.generating_capacity_kw">Capacity (kW)</label><input id="generating_capacity_kw" type="number" step="any" /></div>
-              <div><label for="area" data-i18n="form.area">Area (ha or m2) (Required)</label><input id="area" required /></div>
-              
-              <div><label for="keywords" data-i18n="form.keywords">Keywords</label><input id="keywords" placeholder="Research, Commercial..." /></div>
+
+              <div><label for="start_year" data-i18n="form.start_year">Start Year (Required)</label><input
+                  id="start_year" type="number" required /></div>
+
+              <div class="col-span-2"><label for="associated_crops" data-i18n="form.associated_crops">Target Species /
+                  Crops (Required)</label><input id="associated_crops" required
+                  placeholder="e.g. Tomatoes, Sheep, Native Pollinators..." /></div>
+              <div class="col-span-2"><label for="av_system_type" data-i18n="form.av_system_type">AV System Tech
+                  (Required)</label><input id="av_system_type" placeholder="e.g., Elevated, Tracking, Vertical..."
+                  required /></div>
+
+              <div class="col-span-2">
+                <hr class="border-gray-200 my-2">
+              </div>
+
+              <div><label for="generating_capacity_kw" data-i18n="form.generating_capacity_kw">Capacity
+                  (kW)</label><input id="generating_capacity_kw" type="number" step="any" /></div>
+              <div><label for="area" data-i18n="form.area">Area (ha or m2) (Required)</label><input id="area"
+                  required /></div>
+
+              <div><label for="keywords" data-i18n="form.keywords">Keywords</label><input id="keywords"
+                  placeholder="Research, Commercial..." /></div>
               <div><label for="link" data-i18n="form.link">Website Link</label><input id="link" type="url" /></div>
-              
-              <div class="col-span-2"><label for="affiliation" data-i18n="form.affiliation">Affiliation</label><input id="affiliation" /></div>
-              
-              <div class="col-span-2"><label for="description" data-i18n="form.description">Description</label><textarea id="description"></textarea></div>
-              <div class="col-span-2"><label for="leadership" data-i18n="form.leadership">Leadership</label><textarea id="leadership" placeholder="HTML allowed"></textarea></div>
-              <div class="col-span-2"><label for="facilities" data-i18n="form.facilities">Facilities</label><textarea id="facilities"></textarea></div>
-              <div class="col-span-2"><label for="equipment" data-i18n="form.equipment">Equipment</label><textarea id="equipment"></textarea></div>
-              <div class="col-span-2"><label for="capabilities" data-i18n="form.capabilities">Capabilities</label><textarea id="capabilities"></textarea></div>
-              <div class="col-span-2"><label for="experiments" data-i18n="form.experiments">Experiments</label><textarea id="experiments"></textarea></div>
+
+              <div class="col-span-2"><label for="affiliation" data-i18n="form.affiliation">Affiliation</label><input
+                  id="affiliation" /></div>
+
+              <div class="col-span-2"><label for="description" data-i18n="form.description">Description</label><textarea
+                  id="description"></textarea></div>
+              <div class="col-span-2"><label for="leadership" data-i18n="form.leadership">Leadership</label><textarea
+                  id="leadership" placeholder="HTML allowed"></textarea></div>
+              <div class="col-span-2"><label for="facilities" data-i18n="form.facilities">Facilities</label><textarea
+                  id="facilities"></textarea></div>
+              <div class="col-span-2"><label for="equipment" data-i18n="form.equipment">Equipment</label><textarea
+                  id="equipment"></textarea></div>
+              <div class="col-span-2"><label for="capabilities"
+                  data-i18n="form.capabilities">Capabilities</label><textarea id="capabilities"></textarea></div>
+              <div class="col-span-2"><label for="experiments" data-i18n="form.experiments">Experiments</label><textarea
+                  id="experiments"></textarea></div>
             </div>
-            
+
             <div class="mt-6 pt-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50/50 sticky bottom-0">
-              <button type="button" id="cancelBtn" class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-gray-200 rounded-lg transition-colors" data-i18n="form.cancel">Cancel</button>
-              <button type="submit" id="saveBtn" class="px-5 py-2 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition-colors" data-i18n="form.save">Save Point</button>
+              <button type="button" id="cancelBtn"
+                class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-gray-200 rounded-lg transition-colors"
+                data-i18n="form.cancel">Cancel</button>
+              <button type="submit" id="saveBtn"
+                class="px-5 py-2 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition-colors"
+                data-i18n="form.save">Save Point</button>
             </div>
           </form>
         </div>
       </div>
 
       <!-- TABLE PANEL (Bottom on mobile, Right on desktop) -->
-      <div class="flex-1 lg:flex-[1.2] rounded-[1.5rem] overflow-hidden border border-gray-200 shadow-sm bg-white flex flex-col relative">
+      <div
+        class="flex-1 lg:flex-[1.2] rounded-[1.5rem] overflow-hidden border border-gray-200 shadow-sm bg-white flex flex-col relative">
         <div class="flex-1 overflow-y-auto custom-scrollbar">
           <table id="projects-table" class="w-full text-left border-collapse">
-            <thead class="bg-white sticky top-0 z-10 shadow-sm text-xs font-bold uppercase text-slate-500 tracking-wider">
-  <tr>
-    <!-- Project Name -->
-    <th class="p-4 border-b border-gray-100" data-sort="project_name">
-      <div class="flex items-center gap-1">
-        <span data-i18n="table.project_name">Project Name</span>
-        <i class="sort-icon" data-lucide="chevrons-up-down"></i>
-      </div>
-    </th>
+            <thead
+              class="bg-white sticky top-0 z-10 shadow-sm text-xs font-bold uppercase text-slate-500 tracking-wider">
+              <tr>
+                <!-- Project Name -->
+                <th class="p-4 border-b border-gray-100" data-sort="project_name">
+                  <div class="flex items-center gap-1">
+                    <span data-i18n="table.project_name">Project Name</span>
+                    <i class="sort-icon" data-lucide="chevrons-up-down"></i>
+                  </div>
+                </th>
 
-    <!-- Institution -->
-    <th class="p-4 border-b border-gray-100" data-sort="name">
-      <div class="flex items-center gap-1">
-        <span data-i18n="table.institution">Institution</span>
-        <i class="sort-icon" data-lucide="chevrons-up-down"></i>
-      </div>
-    </th>
+                <!-- Institution -->
+                <th class="p-4 border-b border-gray-100" data-sort="name">
+                  <div class="flex items-center gap-1">
+                    <span data-i18n="table.institution">Institution</span>
+                    <i class="sort-icon" data-lucide="chevrons-up-down"></i>
+                  </div>
+                </th>
 
-    <!-- System Type -->
-    <th class="p-4 border-b border-gray-100" data-sort="system_category">
-      <div class="flex items-center gap-1">
-        <span data-i18n="table.category">System Type</span>
-        <i class="sort-icon" data-lucide="chevrons-up-down"></i>
-      </div>
-    </th>
+                <!-- System Type -->
+                <th class="p-4 border-b border-gray-100" data-sort="system_category">
+                  <div class="flex items-center gap-1">
+                    <span data-i18n="table.category">System Type</span>
+                    <i class="sort-icon" data-lucide="chevrons-up-down"></i>
+                  </div>
+                </th>
 
-    <!-- Capacity (kW) -->
-    <th class="p-4 border-b border-gray-100" data-sort="generating_capacity_kw">
-      <div class="flex items-center gap-1">
-        <span data-i18n="table.capacity">Capacity (kW)</span>
-        <i class="sort-icon" data-lucide="chevrons-up-down"></i>
-      </div>
-    </th>
+                <!-- Capacity (kW) -->
+                <th class="p-4 border-b border-gray-100" data-sort="generating_capacity_kw">
+                  <div class="flex items-center gap-1">
+                    <span data-i18n="table.capacity">Capacity (kW)</span>
+                    <i class="sort-icon" data-lucide="chevrons-up-down"></i>
+                  </div>
+                </th>
 
-    <!-- Area (ha) -->
-    <th class="p-4 border-b border-gray-100" data-sort="area">
-      <div class="flex items-center gap-1">
-        <span>Area (ha)</span>
-        <i class="sort-icon" data-lucide="chevrons-up-down"></i>
-      </div>
-    </th>
-  </tr>
-</thead>
+                <!-- Area (ha) -->
+                <th class="p-4 border-b border-gray-100" data-sort="area">
+                  <div class="flex items-center gap-1">
+                    <span>Area (ha)</span>
+                    <i class="sort-icon" data-lucide="chevrons-up-down"></i>
+                  </div>
+                </th>
+              </tr>
+            </thead>
             <tbody class="text-sm text-slate-700 divide-y divide-gray-50">
               <!-- Rows injected by JS -->
             </tbody>
@@ -509,92 +644,96 @@
     import { authState, initAuth, signOut } from './auth.js';
     import { initSharedUI, renderHeader, applyI18n as applySharedI18n, getAvatarUrl, show, hide } from './ui.js';
     import { initMap } from './map.js';
-    
+
     // Inject Layout with 'map' active state
     renderLayout('map');
 
     // Local Translation Object
     const t = {
-      en: { 
-        auth: { signin: "Sign in", signout: "Sign out" }, 
-        map: { add: "Add New Point", add_panel_title: "Add New Point" }, 
-        form: { 
-          media: "Media", 
-          collaborators: "Collaborators", 
-          institution: "Institution (Required)", 
-          project_name: "Project Name (Required)", 
-          latitude: "Latitude (Required)", 
-          longitude: "Longitude (Required)", 
-          start_year: "Start Year (Required)", 
-          area: "Area (ha or m2) (Required)", 
-          associated_crops: "Target Species / Crops (Required)", 
-          av_system_type: "AV System Tech (Required)", 
-          system_category: "System Type (Required)", 
-          generating_capacity_kw: "Capacity (kW)", 
-          keywords: "Keywords", 
-          affiliation: "Affiliation", 
-          link: "Website Link", 
-          description: "Description", 
-          leadership: "Leadership", 
-          facilities: "Facilities", 
-          equipment: "Equipment", 
-          capabilities: "Capabilities", 
-          experiments: "Experiments", 
-          cancel: "Cancel", 
-          save: "Save Point" 
-        }, 
-        table: { 
-          project_name: "Project Name", 
-          institution: "Institution", 
-          start_year: "Year", 
-          capacity: "Capacity (kW)", 
-          category: "System Type" 
-        } 
+      en: {
+        auth: { signin: "Sign in", signout: "Sign out" },
+        nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
+        footer: { note: "Bilingual, community-driven seminar on agrivoltaics in the Americas." },
+        map: { add: "Add New Point", add_panel_title: "Add New Point" },
+        form: {
+          media: "Media",
+          collaborators: "Collaborators",
+          institution: "Institution (Required)",
+          project_name: "Project Name (Required)",
+          latitude: "Latitude (Required)",
+          longitude: "Longitude (Required)",
+          start_year: "Start Year (Required)",
+          area: "Area (ha or m2) (Required)",
+          associated_crops: "Target Species / Crops (Required)",
+          av_system_type: "AV System Tech (Required)",
+          system_category: "System Type (Required)",
+          generating_capacity_kw: "Capacity (kW)",
+          keywords: "Keywords",
+          affiliation: "Affiliation",
+          link: "Website Link",
+          description: "Description",
+          leadership: "Leadership",
+          facilities: "Facilities",
+          equipment: "Equipment",
+          capabilities: "Capabilities",
+          experiments: "Experiments",
+          cancel: "Cancel",
+          save: "Save Point"
+        },
+        table: {
+          project_name: "Project Name",
+          institution: "Institution",
+          start_year: "Year",
+          capacity: "Capacity (kW)",
+          category: "System Type"
+        }
       },
-      es: { 
-        auth: { signin: "Ingresar", signout: "Salir" }, 
-        map: { add: "Añadir Nuevo Punto", add_panel_title: "Añadir Nuevo Punto" }, 
-        form: { 
-          media: "Multimedia", 
-          collaborators: "Colaboradores", 
-          institution: "Institución (Obligatorio)", 
-          project_name: "Nombre del Proyecto (Obligatorio)", 
-          latitude: "Latitud (Obligatorio)", 
-          longitude: "Longitud (Obligatorio)", 
-          start_year: "Año de Inicio (Obligatorio)", 
-          area: "Superficie (ha o m2) (Obligatorio)", 
-          associated_crops: "Especies Objetivo / Cultivos (Obligatorio)", 
-          av_system_type: "Tecnología de Sistema AV (Obligatorio)", 
-          system_category: "Tipo de Sistema (Obligatorio)", 
-          generating_capacity_kw: "Capacidad (kW)", 
-          keywords: "Palabras Clave", 
-          affiliation: "Afiliación", 
-          link: "Sitio Web", 
-          description: "Descripción", 
-          leadership: "Liderazgo", 
-          facilities: "Instalaciones", 
-          equipment: "Equipamiento", 
-          capabilities: "Capacidades", 
-          experiments: "Experimentos", 
-          cancel: "Cancelar", 
-          save: "Guardar Punto" 
-        }, 
-        table: { 
-          project_name: "Nombre del Proyecto", 
-          institution: "Institución", 
-          start_year: "Año", 
-          capacity: "Capacidad (kW)", 
-          category: "Tipo de Sistema" 
-        } 
+      es: {
+        auth: { signin: "Ingresar", signout: "Salir" },
+        nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
+        footer: { note: "Seminario bilingüe impulsado por la comunidad sobre agrovoltaica en las Américas." },
+        map: { add: "Añadir Nuevo Punto", add_panel_title: "Añadir Nuevo Punto" },
+        form: {
+          media: "Multimedia",
+          collaborators: "Colaboradores",
+          institution: "Institución (Obligatorio)",
+          project_name: "Nombre del Proyecto (Obligatorio)",
+          latitude: "Latitud (Obligatorio)",
+          longitude: "Longitud (Obligatorio)",
+          start_year: "Año de Inicio (Obligatorio)",
+          area: "Superficie (ha o m2) (Obligatorio)",
+          associated_crops: "Especies Objetivo / Cultivos (Obligatorio)",
+          av_system_type: "Tecnología de Sistema AV (Obligatorio)",
+          system_category: "Tipo de Sistema (Obligatorio)",
+          generating_capacity_kw: "Capacidad (kW)",
+          keywords: "Palabras Clave",
+          affiliation: "Afiliación",
+          link: "Sitio Web",
+          description: "Descripción",
+          leadership: "Liderazgo",
+          facilities: "Instalaciones",
+          equipment: "Equipamiento",
+          capabilities: "Capacidades",
+          experiments: "Experimentos",
+          cancel: "Cancelar",
+          save: "Guardar Punto"
+        },
+        table: {
+          project_name: "Nombre del Proyecto",
+          institution: "Institución",
+          start_year: "Año",
+          capacity: "Capacidad (kW)",
+          category: "Tipo de Sistema"
+        }
       }
     };
 
     // Helper to update the visual toggle button
     function updateLangToggleUI(lang) {
       const s = document.querySelector('#langSwitchDesktop div:last-child');
-      if(s) {
-          s.style.transform = lang === 'es' ? 'translateX(100%)' : 'translateX(0)';
-          s.innerText = lang.toUpperCase();
+      if (s) {
+        s.style.transform = lang === 'es' ? 'translateX(100%)' : 'translateX(0)';
+        s.innerText = lang.toUpperCase();
       }
     }
 
@@ -602,9 +741,9 @@
     function handleLangSwitch() {
       const currentLang = localStorage.getItem("lang") || "en";
       const newLang = currentLang === 'en' ? 'es' : 'en'; // Toggle
-      
+
       localStorage.setItem("lang", newLang); // Save preference
-      
+
       applySharedI18n(t, newLang); // Apply text
       updateLangToggleUI(newLang); // Apply visual button state
     }
@@ -625,22 +764,22 @@
         // Initialize Auth and Header Logic
         await initAuth({
           onAuthReady: (currentAuthState) => {
-             // Render header with the CORRECT stored language
-             renderHeader(currentAuthState, t, initialLang);
-             
-             // Update the toggle UI immediately after header renders
-             updateLangToggleUI(initialLang);
+            // Render header with the CORRECT stored language
+            renderHeader(currentAuthState, t, initialLang);
 
-             if(currentAuthState.profile?.avatar_url) {
-                 getAvatarUrl(currentAuthState.profile.avatar_url).then(url => {
-                     const img = document.getElementById('userAvatar');
-                     if(url && img) { 
-                       img.src = url; 
-                       show(img); 
-                       hide(document.getElementById('userInitial')); 
-                     }
-                 });
-             }
+            // Update the toggle UI immediately after header renders
+            updateLangToggleUI(initialLang);
+
+            if (currentAuthState.profile?.avatar_url) {
+              getAvatarUrl(currentAuthState.profile.avatar_url).then(url => {
+                const img = document.getElementById('userAvatar');
+                if (url && img) {
+                  img.src = url;
+                  show(img);
+                  hide(document.getElementById('userInitial'));
+                }
+              });
+            }
           },
           // Ensure language persists on auth state change
           onAuthChange: (currentAuthState) => {
@@ -655,7 +794,7 @@
 
         // Apply translations to the body content immediately
         applySharedI18n(t, initialLang);
-        
+
         // Initialize Icons
         lucide.createIcons();
 
@@ -672,4 +811,5 @@
   </script>
 
 </body>
+
 </html>

@@ -301,6 +301,8 @@
         schedule: { title: "Upcoming Talks", empty: "No events found." },
         search: { placeholder: "Search talks..." },
         tabs: { description: "Description", discussion: "Discussion", files: "Files" },
+        nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
+        footer: { note: "Bilingual, community-driven seminar on agrivoltaics in the Americas." }
       },
       es: {
         intro_title: "Agrovoltaicos sin Fronteras",
@@ -308,6 +310,8 @@
         schedule: { title: "Próximas Charlas", empty: "No hay eventos." },
         search: { placeholder: "Buscar..." },
         tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" },
+        nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
+        footer: { note: "Seminario bilingüe impulsado por la comunidad sobre agrovoltaica en las Américas." }
       }
     };
 
@@ -427,23 +431,23 @@
 
         // Right: Stacked Avatars (Restored Fancy Tooltip)
         // Right: Stacked Avatars (Fixed: Rounded image, visible tooltip)
-            const extraStackHtml = extraSpeakers.length > 0 ? await Promise.all(extraSpeakers.map(async (s, index) => {
-                 const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
-                 
-                 // CHANGE: Added 'rounded-full' directly to the image to mask corners without hiding the tooltip
-                 const avatarContent = img 
-                    ? `<img src="${img}" class="w-full h-full object-cover rounded-full" alt="${escapeHtml(s.name)}">` 
-                    : `<span class="text-[9px] font-bold select-none">${(s.name||'?')[0]}</span>`;
+        const extraStackHtml = extraSpeakers.length > 0 ? await Promise.all(extraSpeakers.map(async (s, index) => {
+          const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
 
-                 // REMOVED: 'overflow-hidden' from the parent div so the tooltip can pop out
-                 return `<div class="relative group/tooltip w-9 h-9 rounded-full ring-[2.5px] ring-white bg-gray-100 flex items-center justify-center text-slate-500 shadow-sm transition-all -ml-3 first:ml-0 z-0 hover:z-20 hover:scale-110">
+          // CHANGE: Added 'rounded-full' directly to the image to mask corners without hiding the tooltip
+          const avatarContent = img
+            ? `<img src="${img}" class="w-full h-full object-cover rounded-full" alt="${escapeHtml(s.name)}">`
+            : `<span class="text-[9px] font-bold select-none">${(s.name || '?')[0]}</span>`;
+
+          // REMOVED: 'overflow-hidden' from the parent div so the tooltip can pop out
+          return `<div class="relative group/tooltip w-9 h-9 rounded-full ring-[2.5px] ring-white bg-gray-100 flex items-center justify-center text-slate-500 shadow-sm transition-all -ml-3 first:ml-0 z-0 hover:z-20 hover:scale-110">
                     ${avatarContent}
                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] font-semibold rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
                         ${escapeHtml(s.name)}
                         <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-800"></div>
                     </div>
                  </div>`;
-            })) : [];
+        })) : [];
 
         // Counter Logic: Text to the LEFT of the thumbnail stack
         const counterHtml = extraSpeakers.length > 0
