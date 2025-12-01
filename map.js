@@ -302,7 +302,6 @@ function removeMedia(id) {
 }
 
 async function loadMapPoints() {
-    // UPDATED: Fetch all profile fields (profiles(*)) to support the modal details
     const { data, error } = await supabase
       .from('map_points')
       .select('*, project_collaborators(profiles(*))')
@@ -889,14 +888,11 @@ function wireMapUI() {
     });
     $('#closeViewPanelBtn').addEventListener('click', closeViewPanel);
     
-    // UPDATED: Global Click Listener for Profiles in View Panel
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-open-profile]');
         if (btn) {
             e.preventDefault();
             const profileId = btn.dataset.openProfile;
-            // Since we load all collaborator data in loadMapPoints, 
-            // we can find the user object within the currently selected point's collaborators
             if (state.selectedPoint && state.selectedPoint.collaborators) {
                 const user = state.selectedPoint.collaborators.find(c => c.id === profileId);
                 if (user) openProfileModal(user);
@@ -909,7 +905,8 @@ export function initMap() {
     map = L.map('map', { zoomControl: false }).setView([25, -75], 2);
     window.map = map;
     L.control.zoom({ position: 'bottomright' }).addTo(map);
-    L.tileLayer(
+
+    const defaultLayer = L.tileLayer(
       'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
       {
           attribution:
@@ -917,7 +914,61 @@ export function initMap() {
           subdomains: 'abcd',
           maxZoom: 20,
       }
-    ).addTo(map);
+    );
+
+    const satelliteLayer = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {
+          attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+      }
+    );
+
+    defaultLayer.addTo(map);
+    let isSatellite = false;
+
+    const LayerToggle = L.Control.extend({
+        options: { position: 'topleft' },
+        onAdd: function() {
+            const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+            container.style.backgroundColor = 'white';
+            container.style.width = '32px';
+            container.style.height = '32px';
+            container.style.borderRadius = '4px';
+            container.style.cursor = 'pointer';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+            container.style.justifyContent = 'center';
+            container.style.boxShadow = '0 1px 5px rgba(0,0,0,0.65)';
+            container.title = "Switch Map View";
+
+            // Default icon (Globe/Satellite indicating what you switch to)
+            const globeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
+            // Layers icon (Map indicating return to default)
+            const layersIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`;
+
+            container.innerHTML = globeIcon;
+
+            container.onclick = (e) => {
+                L.DomEvent.stopPropagation(e);
+                if (isSatellite) {
+                    map.removeLayer(satelliteLayer);
+                    defaultLayer.addTo(map);
+                    container.innerHTML = globeIcon;
+                } else {
+                    map.removeLayer(defaultLayer);
+                    satelliteLayer.addTo(map);
+                    container.innerHTML = layersIcon;
+                }
+                isSatellite = !isSatellite;
+                if (markersLayer) markersLayer.bringToFront();
+            };
+
+            return container;
+        }
+    });
+
+    map.addControl(new LayerToggle());
+
     markersLayer = L.layerGroup().addTo(map);
     wireMapUI();
     map.on('click', closeViewPanel);
