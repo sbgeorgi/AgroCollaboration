@@ -200,58 +200,14 @@
     </div>
   </main>
 
-  <!-- Note: Footer is injected by layout.js -->
-
-  <!-- ================= MODAL ================= -->
-  <div id="modalOverlay" class="fixed inset-0 z-[100] bg-slate-900/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"></div>
-  <div id="profileModal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[90%] max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-200 opacity-0 pointer-events-none transition-all duration-300 scale-95 flex flex-col max-h-[85vh]">
-      <div class="p-6 border-b border-gray-100 flex items-center gap-5 relative bg-slate-50/50 rounded-t-2xl">
-          <button id="modalCloseBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 hover:bg-white p-1 rounded-full transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
-          <div id="modalAvatar" class="w-20 h-20 rounded-full bg-white ring-4 ring-white shadow-md flex items-center justify-center text-3xl font-bold text-brand-600 overflow-hidden shrink-0"><span id="modalAvatarInitial">?</span><img id="modalAvatarImage" class="w-full h-full object-cover hidden"></div>
-          <div class="min-w-0">
-              <h2 id="modalName" class="text-xl font-display font-bold text-slate-900 leading-tight mb-1">Loading...</h2>
-              <div id="modalAffiliation" class="text-sm font-medium text-brand-600">...</div>
-          </div>
-      </div>
-      <div class="p-6 overflow-y-auto custom-scrollbar space-y-6">
-  <div id="modalEmailSection" class="hidden">
-    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Contact</h3>
-    <a id="modalEmail" href="#" class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 w-full">
-      <i data-lucide="mail" class="w-4 h-4 text-slate-400"></i>
-      <span class="email-text truncate"></span>
-    </a>
-  </div>
-
-  <div id="modalLinksSection" class="hidden">
-    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Links</h3>
-    <div id="modalLinks" class="flex flex-col gap-2"></div>
-  </div>
-
-  <!-- NEW: Profile Description -->
-  <div id="modalDescriptionSection" class="hidden">
-    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-      Profile
-    </h3>
-    <p id="modalDescription" class="text-sm text-slate-700 leading-relaxed whitespace-pre-line"></p>
-  </div>
-
-  <div id="modalFieldsSection" class="hidden">
-    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Interests</h3>
-    <div id="modalFields" class="flex flex-wrap gap-2"></div>
-  </div>
-
-  <div>
-    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Network Connections</h3>
-    <div id="modalConnections" class="flex flex-wrap gap-2"></div>
-  </div>
-</div>
-  </div>
+  <!-- Note: Modal is now injected by clickprofile.js -->
 
   <!-- ================= LOGIC ================= -->
   <script type="module">
     import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatarUrl } from './ui.js';
+    import { initProfileModal, openProfileModal } from './clickprofile.js'; // Imported Logic
     
     // Inject Layout with 'network' active state
     renderLayout('network');
@@ -276,6 +232,7 @@
     
     async function loadNetworkData() {
         const [profiles, speakers, events] = await Promise.all([
+            // Select * ensures we get department and working_group automatically
             supabase.from('profiles').select('*').order('full_name'),
             supabase.from('event_speakers').select('event_id, profile_id'),
             supabase.from('events').select('id, title_en, title_es, start_time, topic_tags').order('start_time', { ascending: false })
@@ -433,7 +390,6 @@
             const p = state.positions.get(m.id);
             if(!p || isNaN(p.x) || isNaN(p.y)) return;
             
-            // Use full_name or generic fallback (never username)
             const displayName = m.full_name || 'Member';
             
             const el = document.createElement('div'); el.className = 'network-node';
@@ -449,7 +405,12 @@
                 </div>
             </div>`;
             if(m.avatar_url) getAvatarUrl(m.avatar_url).then(u=>{if(u) el.querySelector('.node-avatar').innerHTML=`<img src="${u}" class="w-full h-full object-cover">`});
-            el.onclick = (e) => { e.stopPropagation(); openProfileModal(m); };
+            
+            // Use external logic
+            el.onclick = (e) => { 
+                e.stopPropagation(); 
+                openProfileModal(m, state.allCanonicalToDisplay, state.tagIndex); 
+            };
             nodes.appendChild(el);
         });
         
@@ -514,7 +475,7 @@
         $('#members-table-body').innerHTML = list.map(m => {
             const isSp = state.isSpeaker.has(m.id);
             const isOrg = ['organizer','admin'].includes(m.role);
-            const displayName = m.full_name || 'Member'; // Validated full name only
+            const displayName = m.full_name || 'Member';
             
             return `<tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="document.dispatchEvent(new CustomEvent('openProfile',{detail:'${m.id}'}))">
               <td class="py-2.5 px-6 border-b border-gray-50 font-medium text-slate-900">${highlight(displayName, state.searchQuery)}</td>
@@ -528,7 +489,11 @@
             </tr>`;
         }).join('');
     }
-    document.addEventListener('openProfile', e => openProfileModal(state.profileById.get(e.detail)));
+    
+    // Updated Event Listener to use external logic
+    document.addEventListener('openProfile', e => {
+        openProfileModal(state.profileById.get(e.detail), state.allCanonicalToDisplay, state.tagIndex);
+    });
 
     function onFiltersChanged() {
         state.searchQuery = $('#searchInput').value;
@@ -538,106 +503,18 @@
         renderGraph(list);
     }
 
-    async function openProfileModal(m) {
-    if(!m) return;
-    const modal = $('#profileModal'), over = $('#modalOverlay');
-    const displayName = m.full_name || 'Member';
-    
-    $('#modalName').innerText = displayName;
-    $('#modalAffiliation').innerText = m.affiliation || 'No affiliation';
-    $('#modalAvatarInitial').innerText = displayName[0].toUpperCase();
-    
-    hide($('#modalAvatarImage')); 
-    show($('#modalAvatarInitial'));
-    if(m.avatar_url) getAvatarUrl(m.avatar_url).then(u => {
-        if(u){
-            $('#modalAvatarImage').src = u;
-            show($('#modalAvatarImage'));
-            hide($('#modalAvatarInitial'));
-        }
-    });
-    
-    // Contact
-    if(m.work_email) { 
-        $('#modalEmail').href = `mailto:${m.work_email}`; 
-        $('.email-text').innerText = m.work_email; 
-        show($('#modalEmailSection')); 
-    } else {
-        hide($('#modalEmailSection'));
-    }
-    
-    // Links
-    const ld = $('#modalLinks'); 
-    ld.innerHTML = ''; 
-    let hl = false;
-    [['personal_website','Website','globe'],
-     ['professional_website','Work','building'],
-     ['google_scholar','Scholar','graduation-cap']
-    ].forEach(([k,l,i]) => {
-        if(m[k]) { 
-            hl = true; 
-            ld.insertAdjacentHTML(
-                'beforeend', 
-                `<a href="${m[k]}" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-brand-50 hover:border-brand-300 transition-all group">
-                    <span class="flex items-center gap-2 text-sm font-medium text-slate-700">
-                        <i data-lucide="${i}" class="w-4 h-4 text-slate-400 group-hover:text-brand-500"></i> ${l}
-                    </span>
-                    <i data-lucide="external-link" class="w-3 h-3 text-slate-300"></i>
-                </a>`
-            ); 
-        }
-    });
-    if(hl) { 
-        show($('#modalLinksSection')); 
-        lucide.createIcons(); 
-    } else {
-        hide($('#modalLinksSection'));
-    }
-
-    // NEW: Description
-    const descSection = $('#modalDescriptionSection');
-    const descEl = $('#modalDescription');
-    if (m.description && m.description.trim().length > 0) {
-        descEl.innerText = m.description.trim();
-        show(descSection);
-    } else {
-        descEl.innerText = '';
-        hide(descSection);
-    }
-    
-    // Interests (tags)
-    const fd = $('#modalFields'); 
-    fd.innerHTML = '';
-    const tags = new Set(); 
-    for(const [t,s] of state.tagIndex) {
-        if(s.has(m.id)) tags.add(state.allCanonicalToDisplay.get(t));
-    }
-    if(tags.size) { 
-        tags.forEach(t => 
-            fd.insertAdjacentHTML('beforeend', 
-                `<span class="px-2 py-1 rounded bg-gray-100 text-slate-600 text-xs font-bold border border-gray-200">${t}</span>`
-            )
-        ); 
-        show($('#modalFieldsSection')); 
-    } else {
-        hide($('#modalFieldsSection'));
-    }
-    
-    show(over); 
-    show(modal);
-    requestAnimationFrame(() => { 
-        over.classList.remove('opacity-0','pointer-events-none'); 
-        modal.classList.remove('opacity-0','pointer-events-none','scale-95'); 
-    });
-}
-
     (async function() {
         initSharedUI({ onLangSwitch: () => location.reload(), onSignOut: signOut });
+        
+        // Initialize Modal on Page Load (Injects HTML)
+        initProfileModal();
+
         document.addEventListener('click', e => {
-        if (e.target.closest('#btnProfile') || e.target.closest('#userName')) {
-            window.location.href = 'profile.html';
-        }
-    });
+            if (e.target.closest('#btnProfile') || e.target.closest('#userName')) {
+                window.location.href = 'profile.html';
+            }
+        });
+
         await initAuth({
             onAuthReady: async () => {
                 renderHeader(authState, t, state.lang);
@@ -667,11 +544,9 @@
         $('#searchInput').oninput = debounce(onFiltersChanged);
         $('#clearFiltersBtn').onclick = () => { state.searchQuery=''; $('#searchInput').value=''; state.selectedTags.clear(); $('[data-role="all"]').click(); $('#eventFilter').value='all'; state.eventFilterId='all'; };
         $('#resetViewBtn').onclick = fitGraph;
-        $('#modalCloseBtn').onclick = $('#modalOverlay').onclick = () => { 
-             $('#modalOverlay').classList.add('opacity-0','pointer-events-none'); 
-             $('#profileModal').classList.add('opacity-0','pointer-events-none','scale-95'); 
-             setTimeout(()=>{hide($('#profileModal'));hide($('#modalOverlay'))},300); 
-        };
+        
+        // Modal Close is now handled inside clickprofile.js, 
+        // but we keep general overlay cleanup just in case other modals exist
         
         // Canvas Interaction (Mouse + Touch)
         const cv = $('#network-container'); let drag=false, sx=0, sy=0;

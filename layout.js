@@ -32,7 +32,6 @@ export function renderLayout(activePage) {
         <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
         <div class="brand-text">
           <div class="title font-display font-bold text-slate-900 group-hover:text-brand-700 transition-colors">Agrovoltaicos sin Fronteras</div>
-          <div class="subtitle text-slate-500" data-i18n="tagline">A seminar series to share advances in agrivoltaics in the Americas</div>
         </div>
       </a>
       

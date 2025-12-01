@@ -54,12 +54,6 @@
         display: flex; align-items: center; gap: 8px; opacity: 0;
     }
     #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
-    
-    /* Markdown Styles */
-    .prose p { margin-bottom: 1em; line-height: 1.6; color: #334155; }
-    .prose ul { list-style-type: disc; padding-left: 1.2em; margin-bottom: 1em; }
-    .prose h1, .prose h2, .prose h3 { color: #0f172a; font-weight: 700; margin-top: 1.2em; margin-bottom: 0.5em; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .prose a { color: #0369a1; text-decoration: underline; text-decoration-color: #bae6fd; text-underline-offset: 2px; }
   </style>
 
   <!-- Lucide Icons -->
@@ -76,19 +70,21 @@
       <div class="flex-1 overflow-y-auto custom-scrollbar">
         <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-6 py-6">
           
-          <!-- Archive Controls Section -->
-          <section class="bg-white rounded-[1.25rem] border border-gray-200 shadow-sm overflow-hidden flex flex-col min-h-[80vh]">
-            
-            <!-- Controls Header -->
-            <div class="p-4 md:p-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-20">
-              <h3 class="font-display font-bold text-xl md:text-2xl text-slate-800 self-start md:self-center" data-i18n="archive.title">Event Archive</h3>
+          <!-- Controls Section -->
+          <section class="bg-white rounded-[1.25rem] border border-gray-200 shadow-sm p-4 md:p-5">
+            <!-- Top Row: Title & Inputs -->
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
+              <h3 class="font-display font-bold text-2xl text-slate-800 self-start md:self-center" data-i18n="archive.title">Event Archive</h3>
               
               <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                <!-- Search -->
                 <div class="relative w-full sm:w-64">
                   <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"></i>
                   <input id="search" type="search" class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all text-sm" data-i18n-placeholder="search.placeholder">
                 </div>
+                <!-- Year -->
                 <select id="yearFilter" class="w-full sm:w-auto px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all text-slate-700 font-medium text-sm cursor-pointer"></select>
+                <!-- Checkbox -->
                 <label class="flex items-center gap-2 cursor-pointer bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-gray-100 transition-colors w-full sm:w-auto justify-center select-none">
                   <input type="checkbox" id="hasRecording" class="w-4 h-4 rounded text-brand-600 border-gray-300 focus:ring-brand-500">
                   <span data-i18n="archive.recordings_only">Recordings only</span>
@@ -97,34 +93,34 @@
             </div>
 
             <!-- Tag Bar -->
-            <div id="tagsFilterBar" class="p-4 border-b border-gray-100 bg-gray-50/50 hidden">
+            <div id="tagsFilterBar" class="pt-4 border-t border-gray-100 hidden">
               <div class="flex items-center gap-x-4 gap-y-2 flex-wrap">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="archive.filter_by_tags">Filter by Tag:</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0" data-i18n="archive.filter_by_tags">Filter by Tag:</span>
                 <div id="tagsFilter" class="flex items-center gap-2 flex-wrap"></div>
               </div>
             </div>
-
-            <!-- Loader -->
-            <div id="archiveLoader" class="py-20 flex items-center justify-center">
-              <div class="w-8 h-8 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
-            </div>
-
-            <!-- Grid Area -->
-            <div id="content-area" class="p-4 md:p-6 bg-gray-50/30 flex-1 hidden">
-              <!-- Grid matching index.html layout -->
-              <div id="archiveList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in"></div>
-            </div>
-            
-            <!-- Empty State -->
-            <div id="emptyArchive" class="hidden py-20 text-center text-slate-400 text-sm" data-i18n="archive.empty">No past events found matching your filters.</div>
           </section>
+
+          <!-- Loader -->
+          <div id="archiveLoader" class="py-20 flex items-center justify-center">
+            <div class="w-8 h-8 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
+          </div>
+
+          <!-- Content Area -->
+          <div id="content-area" class="flex-1 hidden pb-10">
+            <!-- Grid matching EXACTLY index.html (cols-3 gap-5) -->
+            <div id="archiveList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in"></div>
+            <!-- Empty State -->
+            <div id="emptyArchive" class="hidden py-12 text-center text-slate-400 text-sm" data-i18n="archive.empty">No past events found matching your filters.</div>
+          </div>
+          
         </div>
       </div>
     </div>
 
-    <!-- ================= VIEW: DETAIL (Identical to Index) ================= -->
+    <!-- ================= VIEW: DETAIL ================= -->
     <div id="view-detail" class="absolute inset-0 flex flex-col bg-slate-900/10 backdrop-blur-[2px] translate-x-full transition-transform duration-500 cubic-bezier z-50">
-<div class="absolute inset-0" onclick="document.getElementById('back-to-schedule')?.click()"></div>
+      <div class="absolute inset-0" onclick="document.getElementById('back-to-schedule')?.click()"></div>
       <div class="relative flex-1 md:m-4 lg:mx-auto lg:max-w-[1400px] w-full bg-white md:rounded-xl shadow-2xl flex flex-col overflow-hidden border border-white/40 h-full">
         
         <!-- Sticky Header -->
@@ -146,7 +142,6 @@
           <!-- DISCUSSION TAB -->
           <div id="tab_discussion" class="tab-panel hidden h-full animate-fade-in p-0 lg:p-6">
              <div class="flex flex-col lg:flex-row h-full lg:border lg:border-gray-200 lg:rounded-xl lg:bg-white lg:shadow-sm overflow-hidden">
-                <!-- Left: Topics -->
                 <div class="w-full lg:w-64 flex flex-col flex-shrink-0 bg-gray-50 border-b lg:border-b-0 lg:border-r border-gray-200 h-48 lg:h-auto">
                     <div class="p-3 border-b border-gray-200 bg-white flex justify-between items-center">
                         <h3 class="font-bold text-xs text-slate-500 uppercase">Topics</h3>
@@ -159,8 +154,6 @@
                     </div>
                     <div id="threadsList" class="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar"></div>
                 </div>
-
-                <!-- Right: Chat -->
                 <div class="flex-1 flex flex-col min-w-0 bg-white relative min-h-[400px]">
                     <div id="thread-welcome" class="absolute inset-0 flex items-center justify-center text-slate-400 flex-col gap-2 p-6 text-center">
                         <i data-lucide="message-square" class="w-8 h-8 opacity-20"></i>
@@ -237,7 +230,6 @@
       if (viewName === 'archive' || viewName === 'schedule') {
         detailView.classList.add('translate-x-full');
         archiveView.classList.remove('-translate-x-1/4', 'opacity-50', 'pointer-events-none');
-        // Clean up URL
         if (viewName === 'archive') window.history.pushState({}, '', window.location.pathname);
       } else if (viewName === 'event') {
         archiveView.classList.add('-translate-x-1/4', 'opacity-50', 'pointer-events-none');
@@ -293,14 +285,14 @@
         yearSel.value = state.filters.year; 
     }
 
-    // --- RENDER FUNCTION (Identical to Index, but swapped logic for Recording Button) ---
+    // --- RENDER FUNCTION (EXACT REPLICA OF INDEX.HTML CARD STYLE) ---
     async function renderArchiveList() { 
         const list = $("#archiveList"), empty = $("#emptyArchive"); 
         const { search, year, tags, hasRecording } = state.filters; 
         const now = new Date(); 
         
         const filtered = state.events.filter(e => { 
-            if (new Date(e.start_time) >= now) return false; // Ensure past only
+            if (new Date(e.start_time) >= now) return false; 
             if (hasRecording && !e.recording_url) return false; 
             if (year !== 'all' && new Date(e.start_time).getFullYear() != year) return false; 
             if (tags.size > 0) { 
@@ -324,85 +316,123 @@
             const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
             const start = new Date(ev.start_time);
             
-            // 1. Speaker Stack with HOVER POPUP TOOLTIPS (Copied from Index)
+            // Layout Variables
+            const month = start.toLocaleDateString(state.language, {month:'short'}).toUpperCase();
+            const day = start.getDate();
+            const time = fmtDateTime(ev.start_time, {hour:'numeric', minute:'2-digit'});
+            const weekday = start.toLocaleDateString(state.language, {weekday:'long'});
+
+            // Speaker Logic
             const speakers = ev.event_speakers || [];
-            const speakerItems = await Promise.all(speakers.slice(0, 4).map(async s => {
+            const featuredSpeakers = speakers.slice(0, 2);
+            const extraSpeakers = speakers.slice(2);
+
+            // Left: Named Pills
+            const featuredHtml = await Promise.all(featuredSpeakers.map(async s => {
                 const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
-                const content = img 
-                    ? `<img src="${img}" class="w-full h-full object-cover rounded-full" alt="${escapeHtml(s.name)}">` 
-                    : `<span class="text-[11px] font-bold select-none">${(s.name||'?')[0]}</span>`;
+                const avatar = img 
+                    ? `<img src="${img}" class="w-full h-full object-cover" alt="${escapeHtml(s.name)}">` 
+                    : `<div class="w-full h-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500">${(s.name||'?')[0]}</div>`;
                 
-                return `<div class="relative group/tooltip w-10 h-10 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-slate-500 shadow-sm relative z-0 hover:z-10 transition-all">
-                    ${content}
+                return `
+                <div class="flex items-center gap-2 bg-white border border-gray-200 pr-3 pl-0.5 py-0.5 rounded-full shadow-sm hover:border-brand-300 transition-colors shrink-0 max-w-full">
+                    <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-gray-100">${avatar}</div>
+                    <span class="text-xs font-bold text-slate-700 whitespace-nowrap">${escapeHtml(s.name)}</span>
+                </div>`;
+            }));
+
+            // Right: Stacked Avatars (Rounded Img + Tooltip)
+            const extraStackHtml = extraSpeakers.length > 0 ? await Promise.all(extraSpeakers.map(async (s) => {
+                 const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
+                 // Round image directly
+                 const avatarContent = img 
+                    ? `<img src="${img}" class="w-full h-full object-cover rounded-full" alt="${escapeHtml(s.name)}">` 
+                    : `<span class="text-[9px] font-bold select-none">${(s.name||'?')[0]}</span>`;
+
+                 return `<div class="relative group/tooltip w-9 h-9 rounded-full ring-[2.5px] ring-white bg-gray-100 flex items-center justify-center text-slate-500 shadow-sm transition-all -ml-3 first:ml-0 z-0 hover:z-20 hover:scale-110">
+                    ${avatarContent}
                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] font-semibold rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
                         ${escapeHtml(s.name)}
                         <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-800"></div>
                     </div>
-                </div>`;
-            }));
+                 </div>`;
+            })) : [];
             
-            const speakerHtml = speakerItems.length ? 
-                `<div class="flex -space-x-3">
-                   ${speakerItems.join('')}
-                   ${speakers.length > 4 ? `<div class="w-10 h-10 rounded-full ring-2 ring-white bg-gray-50 flex items-center justify-center text-[10px] font-bold text-slate-600 relative z-0 cursor-default" title="+${speakers.length-4} more speakers">+${speakers.length-4}</div>` : ''}
-                 </div>` : '';
-
-            // 2. Tags & RECORDING BUTTON (Replaces Zoom logic)
-            // We place the "Watch" button alongside tags for visibility
-            const recordingBtn = ev.recording_url 
-                ? `<a href="${escapeHtml(ev.recording_url)}" target="_blank" onclick="event.stopPropagation()" class="flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-wider border border-red-200 hover:bg-red-100 transition-colors z-20 relative shadow-sm"><i data-lucide="youtube" class="w-3 h-3"></i> ${localTr('archive.watch_recording')}</a>` 
+            // Counter (Left of stack)
+            const counterHtml = extraSpeakers.length > 0 
+                ? `<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mr-1 ml-2 whitespace-nowrap">+ ${extraSpeakers.length} MORE</span>` 
                 : '';
 
-            const tagPills = (ev.topic_tags || []).map(tag => `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider border border-slate-200">${escapeHtml(tag)}</span>`).join('');
+            let speakersSection = '';
+            if (featuredHtml.length > 0) {
+                speakersSection = `
+                <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100 gap-2">
+                    <div class="flex flex-wrap gap-2 items-center flex-1 min-w-0">
+                        ${featuredHtml.join('')}
+                    </div>
+                    ${extraStackHtml.length ? `
+                    <div class="flex items-center shrink-0">
+                        ${counterHtml}
+                        <div class="flex items-center pl-1">
+                            ${extraStackHtml.join('')}
+                        </div>
+                    </div>` : ''}
+                </div>`;
+            } else {
+                speakersSection = `<div class="mt-auto pt-3 border-t border-gray-100 text-[11px] text-slate-400 italic">Speakers TBA</div>`;
+            }
+
+            // Watch Button & Tags
+            const recordingBtn = ev.recording_url 
+                ? `<a href="${escapeHtml(ev.recording_url)}" target="_blank" onclick="event.stopPropagation()" class="flex items-center gap-1 px-2.5 py-0.5 rounded-[4px] bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-wider border border-red-200 hover:bg-red-100 transition-colors z-20 relative shadow-sm"><i data-lucide="youtube" class="w-3 h-3"></i> ${localTr('archive.watch_recording')}</a>` 
+                : '';
+
+            const tagPills = (ev.topic_tags || []).map(tag => `<span class="px-2 py-0.5 rounded-[4px] bg-brand-50/70 text-brand-700 text-[10px] font-bold uppercase tracking-wider border border-brand-100/50">${escapeHtml(tag)}</span>`).join('');
             
-            // Combine Recording Button + Tags into one section
             const tagsSection = (recordingBtn || tagPills) 
-                ? `<div class="flex flex-wrap gap-1.5 mb-4 mt-auto">
+                ? `<div class="flex flex-wrap items-center gap-1.5 mt-3 mb-1">
                      ${recordingBtn}
                      ${tagPills}
                    </div>` 
-                : '<div class="mt-auto"></div>';
-
-            // 3. Host (Same layout as Index)
-            const hostHtml = ev.host_org ? 
-                `<div class="flex flex-col items-end text-right max-w-[60%]">
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Hosted By</span>
-                    <span class="font-bold text-slate-700 text-sm leading-tight line-clamp-2">${escapeHtml(ev.host_org)}</span>
-                 </div>` : '';
+                : '';
             
             const langCode = ev.language === 'es' ? 'ES' : (ev.language === 'bi' ? 'EN/ES' : 'EN');
 
-            return `<article class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-brand-200 transition-all cursor-pointer flex flex-col h-full" data-open-event="${ev.id}">
-                <div class="p-5 flex flex-col h-full relative">
-                    <!-- Header: Date | Time | Lang (No Zoom Icon) -->
-                    <div class="flex items-center justify-between mb-3 text-xs font-bold text-slate-400 uppercase tracking-wide">
-                        <div class="flex items-center gap-2">
-                            <span class="text-slate-500">
-                                ${start.toLocaleDateString(state.language, {month:'short', day:'numeric'}).toUpperCase()}
-                            </span>
-                            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                            <span>${fmtDateTime(ev.start_time,{timeStyle:'short'})}</span>
+            return `<article class="group relative flex flex-col h-full bg-white rounded-2xl border border-gray-200 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.1)] hover:border-brand-200 transition-all duration-300 cursor-pointer overflow-hidden" data-open-event="${ev.id}">
+                <div class="p-4 flex flex-col h-full relative z-10">
+                    
+                    <!-- Top: Date Block & Meta -->
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="flex flex-col items-center justify-center bg-slate-50 text-slate-700 rounded-xl px-2.5 py-1.5 border border-slate-100 group-hover:bg-brand-50 group-hover:text-brand-700 group-hover:border-brand-100 transition-colors min-w-[52px]">
+                                <span class="text-[9px] font-bold uppercase leading-none opacity-60 mb-0.5">${month}</span>
+                                <span class="text-xl font-display font-bold leading-none tracking-tight">${day}</span>
+                            </div>
+                            <div class="flex flex-col pt-0.5">
+                                <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                                    <i data-lucide="clock" class="w-3 h-3 text-brand-500"></i>
+                                    <span>${time}</span>
+                                </div>
+                                <span class="text-[10px] text-slate-400 font-medium capitalize mt-0.5">${weekday}</span>
+                            </div>
                         </div>
-                        <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-[4px] text-[10px]">${langCode}</span>
+                        
+                        <!-- Badges -->
+                        <div class="flex items-center gap-1.5">
+                             <span class="bg-gray-100 text-slate-500 px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold tracking-wide">${langCode}</span>
+                             ${(ev.recording_url) ? '<span class="w-6 h-6 flex items-center justify-center rounded-full bg-brand-50 text-brand-500"><i data-lucide="play-circle" class="w-3.5 h-3.5"></i></span>' : ''}
+                        </div>
                     </div>
 
-                    <!-- Title -->
-                    <h3 class="font-display font-bold text-lg text-slate-800 leading-tight mb-2 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h3>
-                    
-                    <!-- Description -->
-                    <p class="text-[13px] text-slate-500 line-clamp-2 mb-3 leading-relaxed">${escapeHtml(desc||'')}</p>
-                    
-                    <!-- Tags & Recording Button -->
-                    ${tagsSection}
-                    
-                    <!-- Footer -->
-                    <div class="flex items-center justify-between pt-4 border-t border-gray-100 -mx-5 px-5 bg-slate-50/30">
-                        <div class="flex items-center gap-2">
-                            ${speakerHtml}
-                            ${!speakerHtml ? '<span class="text-[10px] text-slate-400 italic">Speaker TBA</span>' : ''}
-                        </div>
-                        ${hostHtml}
+                    <!-- Middle -->
+                    <div class="mb-2">
+                        <h3 class="font-display font-bold text-[1.05rem] text-slate-900 leading-snug mb-1.5 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h3>
+                        <p class="text-[13px] text-slate-500 line-clamp-2 leading-relaxed">${escapeHtml(desc||'')}</p>
+                        ${tagsSection}
                     </div>
+                    
+                    <!-- Bottom -->
+                    ${speakersSection}
                 </div>
             </article>`; 
         })); 
@@ -412,24 +442,7 @@
 
     // --- MAIN EXECUTION ---
     (async function main() {
-const deps = { 
-    supabase, 
-    authState, 
-    tr: localTr, 
-    state, 
-    $, 
-    $$, 
-    setFlash, 
-    fmtDateTime, 
-    escapeHtml, 
-    linkify,      // <-- Uses the imported function from ui.js
-    bytesToSize,  // <-- Uses the imported function from ui.js
-    showView, 
-    getAvatarUrl, 
-    applyI18n: () => applyI18n(t, state.language), 
-    show, 
-    hide 
-};
+      const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide };
       eventLogic = initEventLogic(deps);
 
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
@@ -457,11 +470,10 @@ const deps = {
       
       document.body.addEventListener('click', e => {
         const card = e.target.closest('[data-open-event]'); 
-        // Don't open detail view if clicking the recording button link
         if (card && !e.target.closest('a') && eventLogic) { 
             e.preventDefault(); 
-            card.classList.add('scale-95'); 
-            setTimeout(()=>card.classList.remove('scale-95'),100);
+            card.classList.add('scale-[0.98]'); 
+            setTimeout(()=>card.classList.remove('scale-[0.98]'),100);
             eventLogic.openEvent(card.dataset.openEvent); 
         }
         if (e.target.closest('#btnProfile') || e.target.id === 'userName') window.location.href = 'profile.html';

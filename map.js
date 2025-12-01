@@ -1,6 +1,6 @@
-// C:\HELLOWORLD\AgroCollaboration\map.js
 import { supabase, authState } from './auth.js';
 import { getAvatarUrl as getSharedAvatarUrl, $, $$ } from './ui.js';
+import { openProfileModal } from './clickprofile.js';
 
 let map;
 let markersLayer;
@@ -302,9 +302,10 @@ function removeMedia(id) {
 }
 
 async function loadMapPoints() {
+    // UPDATED: Fetch all profile fields (profiles(*)) to support the modal details
     const { data, error } = await supabase
       .from('map_points')
-      .select('*, project_collaborators(profiles(id, full_name, avatar_url))')
+      .select('*, project_collaborators(profiles(*))')
       .order('created_at', { ascending: false });
     if (error) {
         setFlash(tr('notifications.load_error'), true);
@@ -325,7 +326,7 @@ async function loadMapPoints() {
 async function loadAllUsers() {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, full_name, avatar_url')
+      .select('*')
       .order('full_name', { ascending: true });
     if (error) {
         console.error('Error fetching users', error);
@@ -483,7 +484,7 @@ async function createViewPanelContent(point) {
                         ? collaboratorAvatars
                             .map(
                               (c) => `
-                        <div class="flex items-center gap-2 bg-slate-100 rounded-full pr-3 py-1 text-sm">
+                        <div class="flex items-center gap-2 bg-slate-100 rounded-full pr-3 py-1 text-sm cursor-pointer hover:bg-slate-200 transition-colors" data-open-profile="${c.id}">
                             <img class="w-6 h-6 rounded-full object-cover" src="${
                               c.public_avatar_url ||
                               'static/avatar_placeholder.png'
@@ -887,6 +888,21 @@ function wireMapUI() {
         if (point) openViewPanel(point);
     });
     $('#closeViewPanelBtn').addEventListener('click', closeViewPanel);
+    
+    // UPDATED: Global Click Listener for Profiles in View Panel
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-open-profile]');
+        if (btn) {
+            e.preventDefault();
+            const profileId = btn.dataset.openProfile;
+            // Since we load all collaborator data in loadMapPoints, 
+            // we can find the user object within the currently selected point's collaborators
+            if (state.selectedPoint && state.selectedPoint.collaborators) {
+                const user = state.selectedPoint.collaborators.find(c => c.id === profileId);
+                if (user) openProfileModal(user);
+            }
+        }
+    });
 }
 
 export function initMap() {

@@ -1,3 +1,5 @@
+import { openProfileModal } from './clickprofile.js';
+
 export function initEventLogic(deps) {
   const {
     supabase,
@@ -23,10 +25,10 @@ export function initEventLogic(deps) {
   let currentThreadsChannel = null;
   let currentFilesChannel = null;
   let currentLikesChannel = null;
-  let currentRSVPFollowsChannel = null;
   
   // Cache
   const profileCache = new Map();
+  let availableProfiles = []; // For the edit modal speaker selection
 
   // --- UTILITIES ---
   function isOrganizerOrAdmin() {
@@ -53,11 +55,13 @@ export function initEventLogic(deps) {
   async function ensureProfileInCache(profileId) {
     if (!profileId) return null;
     if (profileCache.has(profileId)) return profileCache.get(profileId);
+    
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, username, full_name, affiliation, avatar_url')
+      .select('*')
       .eq('id', profileId)
       .single();
+      
     if (error) return null;
     const public_avatar_url = data?.avatar_url ? await getAvatarUrl(data.avatar_url) : null;
     const enriched = { ...data, public_avatar_url };
@@ -73,6 +77,233 @@ export function initEventLogic(deps) {
 
   function lucideRefresh() {
     if (window.lucide) lucide.createIcons();
+  }
+
+  // --- ADMIN EDITING LOGIC (INJECTED) ---
+
+  async function fetchProfilesForEdit() {
+    if (availableProfiles.length > 0) return;
+    const { data } = await supabase.from('profiles').select('id, full_name, affiliation').order('full_name');
+    availableProfiles = data || [];
+  }
+
+  function createProfileOptions(selectedId) {
+    return `<option value="">-- Link Profile --</option>${availableProfiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.full_name || '')}</option>`).join('')}`;
+  }
+
+  function injectEditModal() {
+    if (document.getElementById('event-js-editor-modal')) return;
+
+    const modalHtml = `
+      <dialog id="event-js-editor-modal" class="rounded-2xl p-0 bg-white shadow-2xl max-w-2xl w-full m-auto backdrop:bg-slate-900/50">
+        <div class="flex flex-col h-full max-h-[90vh]">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h2 class="font-display font-bold text-xl text-slate-800">Edit Event Details</h2>
+                <button id="close-js-editor" class="p-2 hover:bg-gray-200 rounded-full transition-colors text-slate-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                <form id="jsEventEditForm" class="space-y-5">
+                    <input type="hidden" id="jsEditEventId">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Title (EN)</label><input id="jsEditTitleEn" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" required /></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Title (ES)</label><input id="jsEditTitleEs" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" /></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Start</label><input id="jsEditStartTime" type="datetime-local" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" required /></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">End</label><input id="jsEditEndTime" type="datetime-local" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" /></div>
+                    </div>
+
+                    <div id="anchor-description">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Description (EN)</label>
+                        <textarea id="jsEditDescEn" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm h-24 resize-y"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Description (ES)</label>
+                        <textarea id="jsEditDescEs" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm h-24 resize-y"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="anchor-details">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Language</label>
+                            <select id="jsEditEventLang" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm">
+                                <option value="bi">Bilingual</option><option value="en">English</option><option value="es">Español</option>
+                            </select>
+                        </div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Host Org</label><input id="jsEditHostOrg" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" /></div>
+                    </div>
+
+                    <div id="anchor-access">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Zoom URL</label><input id="jsEditZoomUrl" type="url" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" />
+                    </div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Recording URL</label><input id="jsEditRecordingUrl" type="url" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" /></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tags</label><input id="jsEditTags" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" placeholder="Comma separated..." /></div>
+
+                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-4" id="anchor-speakers">
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-0">Speakers</label>
+                            <button type="button" id="jsAddSpeakerBtn" class="text-xs font-bold text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-2 py-1 rounded transition-colors">+ Add</button>
+                        </div>
+                        <div id="jsEditSpeakersContainer" class="space-y-3"></div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end items-center gap-3">
+                <button type="button" id="jsCancelEdit" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-xl font-bold text-sm transition-colors">Cancel</button>
+                <button type="submit" form="jsEventEditForm" class="px-6 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold text-sm shadow-sm transition-colors">Save Changes</button>
+            </div>
+        </div>
+      </dialog>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Bind Static Listeners
+    document.getElementById('close-js-editor').onclick = () => document.getElementById('event-js-editor-modal').close();
+    document.getElementById('jsCancelEdit').onclick = () => document.getElementById('event-js-editor-modal').close();
+    document.getElementById('jsAddSpeakerBtn').onclick = () => addJsSpeakerRow();
+    document.getElementById('jsEventEditForm').onsubmit = handleJsEditSubmit;
+    
+    // Speaker Remove Listener
+    document.getElementById('jsEditSpeakersContainer').addEventListener('click', (e) => {
+        if (e.target.closest('.js-remove-speaker')) {
+            e.target.closest('.js-speaker-row').remove();
+        }
+    });
+    
+    lucideRefresh();
+  }
+
+  function addJsSpeakerRow(speaker = {}) {
+    const container = document.getElementById('jsEditSpeakersContainer');
+    const row = document.createElement('div');
+    row.className = 'js-speaker-row flex flex-col gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm';
+    row.innerHTML = `
+        <div class="w-full space-y-2">
+            <input type="text" class="js-sp-name w-full px-3 py-2 bg-slate-50 border border-transparent rounded-lg text-sm focus:bg-white focus:ring-1 focus:ring-brand-300 outline-none" placeholder="Name*" value="${escapeHtml(speaker.name || '')}" required>
+            <input type="text" class="js-sp-aff w-full px-3 py-2 bg-slate-50 border border-transparent rounded-lg text-sm focus:bg-white focus:ring-1 focus:ring-brand-300 outline-none" placeholder="Affiliation" value="${escapeHtml(speaker.affiliation || '')}">
+            <select class="js-sp-profile w-full px-3 py-2 bg-slate-50 border border-transparent rounded-lg text-sm focus:bg-white focus:ring-1 focus:ring-brand-300 outline-none cursor-pointer">${createProfileOptions(speaker.profile_id)}</select>
+        </div>
+        <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+            <label class="flex items-center gap-2 text-xs text-slate-600 font-medium cursor-pointer">
+                <input type="checkbox" class="js-sp-primary rounded border-gray-300 text-brand-600 focus:ring-brand-500" ${speaker.primary_speaker ? 'checked' : ''}>
+                <span>Primary</span>
+            </label>
+            <button type="button" class="js-remove-speaker text-slate-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+        </div>
+    `;
+    container.appendChild(row);
+    lucideRefresh();
+  }
+
+  const toLocalInputValue = (d) => { 
+      if (!d) return ""; 
+      d = new Date(d); 
+      const p = (n) => String(n).padStart(2, "0"); 
+      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; 
+  };
+
+  async function openEditModal(section) {
+    if (!state.selectedEvent) return;
+    const ev = state.selectedEvent;
+
+    injectEditModal();
+    await fetchProfilesForEdit(); // Load profiles for speaker dropdown
+
+    // Populate Fields
+    document.getElementById('jsEditEventId').value = ev.id;
+    document.getElementById('jsEditTitleEn').value = ev.title_en || '';
+    document.getElementById('jsEditTitleEs').value = ev.title_es || '';
+    document.getElementById('jsEditStartTime').value = toLocalInputValue(ev.start_time);
+    document.getElementById('jsEditEndTime').value = toLocalInputValue(ev.end_time);
+    document.getElementById('jsEditDescEn').value = ev.description_en || '';
+    document.getElementById('jsEditDescEs').value = ev.description_es || '';
+    document.getElementById('jsEditEventLang').value = ev.language || 'bi';
+    document.getElementById('jsEditHostOrg').value = ev.host_org || '';
+    document.getElementById('jsEditZoomUrl').value = ev.zoom_url || '';
+    document.getElementById('jsEditRecordingUrl').value = ev.recording_url || '';
+    document.getElementById('jsEditTags').value = (ev.topic_tags || []).join(', ');
+
+    // Populate Speakers
+    const container = document.getElementById('jsEditSpeakersContainer');
+    container.innerHTML = '';
+    const { data: speakers } = await supabase.from('event_speakers').select('*').eq('event_id', ev.id);
+    if (speakers && speakers.length) {
+        speakers.forEach(s => addJsSpeakerRow(s));
+    } else {
+        addJsSpeakerRow();
+    }
+
+    const modal = document.getElementById('event-js-editor-modal');
+    modal.showModal();
+
+    // Scroll to section (optional, since we only have one main button now)
+    if (section && section !== 'main') {
+        setTimeout(() => {
+            const anchor = document.getElementById(`anchor-${section}`);
+            if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+    } else {
+        modal.querySelector('div').scrollTop = 0;
+    }
+  }
+
+  async function handleJsEditSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('jsEditEventId').value;
+    
+    // Collect Data
+    const payload = {
+        title_en: document.getElementById('jsEditTitleEn').value.trim(),
+        title_es: document.getElementById('jsEditTitleEs').value.trim() || null,
+        description_en: document.getElementById('jsEditDescEn').value.trim() || null,
+        description_es: document.getElementById('jsEditDescEs').value.trim() || null,
+        start_time: new Date(document.getElementById('jsEditStartTime').value).toISOString(),
+        end_time: document.getElementById('jsEditEndTime').value ? new Date(document.getElementById('jsEditEndTime').value).toISOString() : null,
+        language: document.getElementById('jsEditEventLang').value,
+        host_org: document.getElementById('jsEditHostOrg').value.trim() || null,
+        zoom_url: document.getElementById('jsEditZoomUrl').value.trim() || null,
+        recording_url: document.getElementById('jsEditRecordingUrl').value.trim() || null,
+        topic_tags: document.getElementById('jsEditTags').value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+    };
+
+    // Collect Speakers
+    const speakerRows = document.querySelectorAll('.js-speaker-row');
+    const speakers = Array.from(speakerRows).map(row => ({
+        event_id: id,
+        name: row.querySelector('.js-sp-name').value.trim(),
+        affiliation: row.querySelector('.js-sp-aff').value.trim() || null,
+        profile_id: row.querySelector('.js-sp-profile').value || null,
+        primary_speaker: row.querySelector('.js-sp-primary').checked
+    })).filter(s => s.name);
+
+    // Update Event
+    const { error } = await supabase.from('events').update(payload).eq('id', id);
+    if (error) {
+        setFlash("Error updating event", 3000);
+        return;
+    }
+
+    // Update Speakers (Transaction-like: Delete then Insert)
+    await supabase.from('event_speakers').delete().eq('event_id', id);
+    if (speakers.length > 0) {
+        await supabase.from('event_speakers').insert(speakers);
+    }
+
+    setFlash("Event updated successfully!");
+    document.getElementById('event-js-editor-modal').close();
+    
+    // Reload Event Data
+    const { data: newEv } = await supabase.from('events').select('*, event_speakers(*, profile:profiles(*))').eq('id', id).single();
+    if (newEv) {
+        state.selectedEvent = newEv;
+        // Update list if exists
+        const idx = state.events.findIndex(e => e.id === id);
+        if (idx !== -1) state.events[idx] = newEv;
+        reRender();
+    }
   }
 
   // --- FILES LOGIC ---
@@ -148,36 +379,28 @@ export function initEventLogic(deps) {
       file_type: file.type
     });
     
-    // Note: We don't manually refresh here because the Realtime subscription (added in openEvent) 
-    // will catch the INSERT and trigger loadAndRenderFiles automatically.
     if (insertError) setFlash('Upload failed', 4000); else setFlash('Upload complete!', 3000);
     e.target.value = '';
   }
 
-  // UPDATED: Improved Delete File with Instant UI Update
   async function deleteFile(fileId, filePath, btn) {
     if (!confirm('Delete this file?')) return;
-    
     const bucketName = btn.dataset.bucket || 'attachments';
     
-    // 1. Visual Feedback: Set spinner
     const originalContent = btn.innerHTML;
     btn.disabled = true; 
     btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i>`; 
     lucideRefresh();
     
-    // 2. Delete from Storage first
     const { error: storageError } = await supabase.storage.from(bucketName).remove([filePath]);
     if (storageError) { 
       setFlash('Delete failed', 4000); 
-      // Revert button state on error
       btn.disabled = false; 
       btn.innerHTML = originalContent;
       lucideRefresh();
       return; 
     }
     
-    // 3. Delete from Database
     const { error: dbError } = await supabase.from('attachments').delete().eq('id', fileId);
 
     if (dbError) {
@@ -188,7 +411,6 @@ export function initEventLogic(deps) {
         return;
     }
 
-    // 4. SUCCESS: Update Local State and Re-render immediately
     if (state.files) {
         state.files = state.files.filter(f => f.id !== fileId);
         renderFiles();
@@ -271,7 +493,6 @@ export function initEventLogic(deps) {
     lucideRefresh();
   }
 
-  // Thread Action Handlers
   async function handleNewThread(e) {
     e.preventDefault();
     const input = e.target.querySelector('input');
@@ -330,7 +551,6 @@ export function initEventLogic(deps) {
 
     if (error) { console.error("Error fetching comments:", error); return; }
 
-    // Enrich profiles
     for (const c of (data || [])) {
       if (c.author?.id) {
         const cached = await ensureProfileInCache(c.author.id);
@@ -340,7 +560,6 @@ export function initEventLogic(deps) {
     
     state.comments = data || [];
     
-    // Load likes
     const ids = state.comments.map(c => c.id);
     if (ids.length) {
         const { data: likes } = await supabase.from('comment_likes').select('comment_id, profile_id').in('comment_id', ids);
@@ -379,7 +598,7 @@ export function initEventLogic(deps) {
 
     return `
       <div class="flex items-start gap-3" data-comment-root="${c.id}">
-        <button class="flex-shrink-0 w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm" data-open-profile="${user?.id || ''}">
+        <button class="flex-shrink-0 w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm hover:ring-brand-200 transition-all cursor-pointer" data-open-profile="${user?.id || ''}">
           ${avatarHtml}
         </button>
         <div class="flex-1 min-w-0">
@@ -450,7 +669,6 @@ export function initEventLogic(deps) {
     const input = form.querySelector('input, textarea');
     const content = input.value.trim();
     const parentId = form.dataset.parentId || null;
-    
     if (!content) return;
     
     const { error } = await supabase.from('comments').insert({
@@ -483,52 +701,17 @@ export function initEventLogic(deps) {
     }).subscribe();
   }
 
-  // --- PROFILE POPOVER LOGIC ---
-  let profilePopoverEl = null;
-  function ensurePopoverEl() {
-    if (profilePopoverEl) return profilePopoverEl;
-    const el = document.createElement('div');
-    el.className = 'fixed z-[999] bg-white border border-slate-200 shadow-xl rounded-xl p-4 w-72 hidden';
-    el.innerHTML = `
-      <div class="flex items-center gap-3 mb-3">
-        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden" id="pp-avatar"></div>
-        <div class="min-w-0">
-          <div class="font-bold text-slate-900 truncate" id="pp-name"></div>
-          <div class="text-xs text-slate-500 truncate" id="pp-affiliation"></div>
-        </div>
-      </div>
-      <a id="pp-view" class="block w-full text-center py-1.5 bg-brand-50 text-brand-700 font-bold text-xs rounded-lg hover:bg-brand-100 transition-colors">View Profile</a>
-    `;
-    document.body.appendChild(el);
-    profilePopoverEl = el;
-    document.addEventListener('click', (e) => {
-        if (!el.contains(e.target) && !e.target.closest('[data-open-profile]')) el.classList.add('hidden');
-    });
-    return el;
-  }
-
-  async function openProfilePopover(profileId, anchor) {
-      const el = ensurePopoverEl();
-      const p = await ensureProfileInCache(profileId);
-      if(!p) return;
-      
-      el.querySelector('#pp-name').textContent = formatName(p);
-      el.querySelector('#pp-affiliation').textContent = p.affiliation || 'No affiliation';
-      el.querySelector('#pp-avatar').innerHTML = p.public_avatar_url ? `<img src="${p.public_avatar_url}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-lg font-bold text-slate-400">${initialLetter(formatName(p))}</div>`;
-      el.querySelector('#pp-view').href = `profile.html?user=${p.id}`;
-      
-      const rect = anchor.getBoundingClientRect();
-      el.style.top = `${rect.bottom + window.scrollY + 10}px`;
-      el.style.left = `${rect.left + window.scrollX}px`;
-      el.classList.remove('hidden');
-  }
-
   // --- REVAMPED HEADER & LAYOUT LOGIC ---
   function renderEventHeader() {
     const ev = state.selectedEvent;
     if (!ev) return;
     const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
     const container = $('#compactEventHeaderContainer');
+
+    // Admin Edit Button for Header (Single Entry Point)
+    const editBtn = isOrganizerOrAdmin() 
+        ? `<button class="h-9 w-9 rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-brand-600 hover:bg-brand-50 hover:border-brand-200 transition-all flex items-center justify-center ml-2" data-edit-event-section="main" title="Edit Event Details"><i data-lucide="pencil" class="w-4 h-4"></i></button>` 
+        : '';
 
     container.innerHTML = `
       <div class="flex items-start justify-between gap-4">
@@ -554,6 +737,7 @@ export function initEventLogic(deps) {
                 <option value="interested">Interested</option>
                 <option value="going">Going</option>
              </select>
+             ${editBtn}
         </div>
       </div>
     `;
@@ -626,10 +810,16 @@ export function initEventLogic(deps) {
     const speakerList = await Promise.all(speakers.map(async s => {
         const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
         const ava = img ? `<img src="${img}" class="w-full h-full object-cover">` : `<span class="text-brand-600 font-bold">${(s.name||'?')[0]}</span>`;
-        return `<div class="flex items-center gap-3">
-             <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center overflow-hidden flex-shrink-0">${ava}</div>
+        
+        const profileId = s.profile?.id;
+        const clickAttributes = profileId 
+            ? `data-open-profile="${profileId}" class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer group/speaker"` 
+            : `class="flex items-center gap-3 p-2 -mx-2 opacity-80"`;
+            
+        return `<div ${clickAttributes}>
+             <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm ring-2 ring-transparent ${profileId ? 'group-hover/speaker:ring-brand-100' : ''} transition-all">${ava}</div>
              <div class="min-w-0">
-                <div class="text-sm font-bold text-slate-800 truncate">${escapeHtml(s.name || s.profile?.full_name)}</div>
+                <div class="text-sm font-bold text-slate-800 truncate ${profileId ? 'group-hover/speaker:text-brand-700' : ''} transition-colors">${escapeHtml(s.name || s.profile?.full_name)}</div>
                 ${s.affiliation ? `<div class="text-xs text-slate-500 truncate">${escapeHtml(s.affiliation)}</div>` : ''}
              </div>
         </div>`;
@@ -640,20 +830,20 @@ export function initEventLogic(deps) {
     holder.innerHTML = `
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         <div class="lg:col-span-8">
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">About this session</h3>
+            <h3 class="flex items-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">About this session</h3>
             <div class="prose prose-slate max-w-none prose-p:text-slate-600 prose-headings:text-slate-800">${linkify(desc || '')}</div>
         </div>
         <div class="lg:col-span-4 space-y-6">
             <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Access</h4>
+                <h4 class="flex items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Access</h4>
                 ${accessCard}
             </div>
             <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Speakers</h4>
-                <div class="space-y-4">${speakerList.length ? speakerList.join('') : '<span class="text-sm text-slate-400 italic">TBA</span>'}</div>
+                <h4 class="flex items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Speakers</h4>
+                <div class="space-y-2">${speakerList.length ? speakerList.join('') : '<span class="text-sm text-slate-400 italic">TBA</span>'}</div>
             </div>
             <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm space-y-4">
-                <div><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Language</h4><div class="text-sm font-semibold text-slate-800">${ev.language === 'bi' ? 'English & Spanish' : (ev.language === 'es' ? 'Español' : 'English')}</div></div>
+                <div><h4 class="flex items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Language</h4><div class="text-sm font-semibold text-slate-800">${ev.language === 'bi' ? 'English & Spanish' : (ev.language === 'es' ? 'Español' : 'English')}</div></div>
                 ${ev.host_org ? `<div><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Hosted By</h4><div class="text-sm font-semibold text-slate-800 flex items-center gap-1.5"><i data-lucide="building-2" class="w-3.5 h-3.5 text-slate-400"></i> ${escapeHtml(ev.host_org)}</div></div>` : ''}
                 ${tags ? `<div><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tags</h4><div class="flex flex-wrap gap-1.5">${tags}</div></div>` : ''}
             </div>
@@ -687,32 +877,17 @@ export function initEventLogic(deps) {
     loadAndRenderFiles();
     subscribeToLikes();
 
-    // --- THREADS SUBSCRIPTION ---
     if (currentThreadsChannel) supabase.removeChannel(currentThreadsChannel);
     currentThreadsChannel = supabase.channel(`threads-${eventId}`).on('postgres_changes', {event:'*', schema:'public', table:'threads', filter:`event_id=eq.${eventId}`}, loadAndRenderThreads).subscribe();
     
-    // --- COMMENTS SUBSCRIPTION ---
     if (currentCommentsChannel) supabase.removeChannel(currentCommentsChannel);
     currentCommentsChannel = supabase.channel(`comments-${eventId}`).on('postgres_changes', {event:'*', schema:'public', table:'comments', filter:`event_id=eq.${eventId}`}, () => {
         if(state.selectedThreadId) loadCommentsForThread(state.selectedThreadId);
     }).subscribe();
 
-    // --- UPDATED: FILES SUBSCRIPTION ---
     if (currentFilesChannel) supabase.removeChannel(currentFilesChannel);
     currentFilesChannel = supabase.channel(`files-${eventId}`)
-      .on(
-        'postgres_changes', 
-        {
-          event: '*', 
-          schema: 'public', 
-          table: 'attachments', 
-          filter: `event_id=eq.${eventId}`
-        }, 
-        () => {
-          // Auto-reload files list on INSERT or DELETE from other users
-          loadAndRenderFiles();
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attachments', filter: `event_id=eq.${eventId}` }, loadAndRenderFiles)
       .subscribe();
 
     $('.tab-link[data-tab="description"]')?.click();
@@ -720,7 +895,7 @@ export function initEventLogic(deps) {
 
   async function selectThread(threadId) {
     state.selectedThreadId = threadId;
-    renderThreads(); // update active state
+    renderThreads(); 
     hide($('#thread-welcome')); show($('#threadDetailView'));
     loadCommentsForThread(threadId);
   }
@@ -730,31 +905,73 @@ export function initEventLogic(deps) {
   $('#replyToThreadForm')?.addEventListener('submit', handleNewComment);
   $('#fileInput')?.addEventListener('change', handleFileUpload);
   
-  // --- UPDATED: FILE LISTENER (Correctly placed here) ---
   $('#filesList')?.addEventListener('click', async (e) => {
       const btn = e.target.closest('[data-delete-file]');
       if (!btn) return;
+      e.preventDefault();
+      await deleteFile(btn.dataset.deleteFile, btn.dataset.filePath, btn);
+  });
+  
+  // Edit Event Trigger Listener
+  document.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('[data-edit-event-section]');
+      if (editBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          openEditModal(editBtn.dataset.editEventSection);
+      }
+  });
+
+  // --- UPDATED: Profile Modal Click Listener ---
+  document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-open-profile]');
+      if (!btn) return;
 
       e.preventDefault();
-      
-      const fileId = btn.dataset.deleteFile;
-      const filePath = btn.dataset.filePath;
-      
-      await deleteFile(fileId, filePath, btn);
+      e.stopPropagation();
+
+      const profileId = btn.dataset.openProfile;
+      if (profileId) {
+          const profile = await ensureProfileInCache(profileId);
+          if (profile) {
+              // Create a display copy to avoid modifying the cache directly
+              const displayProfile = { ...profile };
+              
+              // NEW LOGIC: If this profile is a SPEAKER at the currently selected event,
+              // include the event's topic_tags as "Inferred Interests" to mimic Network page behavior.
+              if (state.selectedEvent) {
+                  const isSpeaker = state.selectedEvent.event_speakers?.some(s => s.profile_id === profileId);
+                  
+                  if (isSpeaker && state.selectedEvent.topic_tags?.length) {
+                      const existingTags = displayProfile.fields_of_study 
+                          ? displayProfile.fields_of_study.split(',').map(s => s.trim()).filter(Boolean) 
+                          : [];
+                      
+                      const eventTags = state.selectedEvent.topic_tags;
+                      
+                      // Merge and deduplicate
+                      const combined = new Set(existingTags);
+                      eventTags.forEach(t => combined.add(t));
+                      
+                      displayProfile.fields_of_study = Array.from(combined).join(', ');
+                  }
+              }
+              
+              openProfileModal(displayProfile);
+          }
+      }
   });
 
   $('#threadsList')?.addEventListener('click', e => {
-      // Dropdown logic
       const menuBtn = e.target.closest('[data-thread-menu]');
       if(menuBtn) {
           e.stopPropagation();
           const id = menuBtn.dataset.threadMenu;
           const dd = document.querySelector(`[data-thread-dropdown="${id}"]`);
-          $$('.thread-actions-dropdown').forEach(d => d !== dd && d.classList.add('hidden')); // close others
+          $$('.thread-actions-dropdown').forEach(d => d !== dd && d.classList.add('hidden')); 
           if(dd) dd.classList.toggle('hidden');
           return;
       }
-      // Actions
       const editBtn = e.target.closest('[data-edit-thread]');
       if(editBtn) { e.stopPropagation(); handleEditThread(editBtn.dataset.editThread); document.querySelectorAll('[data-thread-dropdown]').forEach(d=>d.classList.add('hidden')); return; }
       
@@ -764,7 +981,6 @@ export function initEventLogic(deps) {
       const delBtn = e.target.closest('[data-delete-thread]');
       if(delBtn) { e.stopPropagation(); handleDeleteThread(delBtn.dataset.deleteThread); document.querySelectorAll('[data-thread-dropdown]').forEach(d=>d.classList.add('hidden')); return; }
 
-      // Select
       const row = e.target.closest('[data-thread-id]');
       if(row) {
            document.querySelectorAll('[data-thread-dropdown]').forEach(d=>d.classList.add('hidden'));
@@ -772,21 +988,18 @@ export function initEventLogic(deps) {
       }
   });
 
-  // Close thread dropdowns on click outside
   document.addEventListener('click', e => {
       if(!e.target.closest('.thread-actions-menu')) $$('[data-thread-dropdown]').forEach(d=>d.classList.add('hidden'));
   });
 
-  // Comment Actions (Delegated)
   $('#commentsList')?.addEventListener('click', async e => {
       const replyBtn = e.target.closest('[data-reply-to]');
       const editBtn = e.target.closest('[data-edit-comment]');
       const delBtn = e.target.closest('[data-delete-comment]');
       const likeBtn = e.target.closest('[data-like-comment]');
-      const profileBtn = e.target.closest('[data-open-profile]');
       const cancelBtn = e.target.closest('[data-cancel-edit]');
 
-      if(profileBtn) { openProfilePopover(profileBtn.dataset.openProfile, profileBtn); return; }
+      // Note: [data-open-profile] is handled by the global listener above
 
       if(replyBtn) {
           const parentId = replyBtn.dataset.replyTo;
@@ -809,7 +1022,6 @@ export function initEventLogic(deps) {
           const c = state.comments.find(c => c.id === id);
           if(c && c.liked_by_me) await supabase.from('comment_likes').delete().match({comment_id:id, profile_id:authState.profile.id});
           else await supabase.from('comment_likes').insert({comment_id:id, profile_id:authState.profile.id});
-          // Realtime update will refresh UI
           return;
       }
 
@@ -835,7 +1047,6 @@ export function initEventLogic(deps) {
       }
   });
 
-  // Edit Comment Submit
   $('#commentsList')?.addEventListener('submit', async e => {
       if(e.target.matches('.comment-edit-form')) {
           e.preventDefault();

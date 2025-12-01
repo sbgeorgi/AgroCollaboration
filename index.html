@@ -56,12 +56,6 @@
         display: flex; align-items: center; gap: 8px; opacity: 0;
     }
     #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
-    
-    /* Markdown Styles */
-    .prose p { margin-bottom: 1em; line-height: 1.6; color: #334155; }
-    .prose ul { list-style-type: disc; padding-left: 1.2em; margin-bottom: 1em; }
-    .prose h1, .prose h2, .prose h3 { color: #0f172a; font-weight: 700; margin-top: 1.2em; margin-bottom: 0.5em; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .prose a { color: #0369a1; text-decoration: underline; text-decoration-color: #bae6fd; text-underline-offset: 2px; }
   </style>
 
   <!-- Lucide Icons -->
@@ -122,7 +116,6 @@
                 </div>
 
                 <!-- Live Banner -->
-                <!-- Note: 'pointer-events-none' added so it doesn't act like a button unless we add a link later -->
                 <div id="siteBanner"
                   class="hidden pointer-events-none animate-fade-in inline-flex items-center gap-2 bg-amber-50 pl-2 pr-3 py-1.5 rounded-full text-[11px] font-bold text-amber-700 border border-amber-200 shadow-sm max-w-[300px] md:max-w-[400px]">
                   <span class="relative flex h-2 w-2 flex-none">
@@ -216,14 +209,13 @@
         <!-- Scrollable Content -->
         <div class="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30">
 
-          <!-- DESCRIPTION TAB (Layout handled in JS) -->
+          <!-- DESCRIPTION TAB -->
           <div id="tab_description" class="tab-panel animate-fade-in p-6 md:p-8"></div>
 
           <!-- DISCUSSION TAB -->
           <div id="tab_discussion" class="tab-panel hidden h-full animate-fade-in p-0 lg:p-6">
             <div
               class="flex flex-col lg:flex-row h-full lg:border lg:border-gray-200 lg:rounded-xl lg:bg-white lg:shadow-sm overflow-hidden">
-              <!-- Left: Topics -->
               <div
                 class="w-full lg:w-64 flex flex-col flex-shrink-0 bg-gray-50 border-b lg:border-b-0 lg:border-r border-gray-200 h-48 lg:h-auto">
                 <div class="p-3 border-b border-gray-200 bg-white flex justify-between items-center">
@@ -241,7 +233,6 @@
                 <div id="threadsList" class="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar"></div>
               </div>
 
-              <!-- Right: Chat -->
               <div class="flex-1 flex flex-col min-w-0 bg-white relative min-h-[400px]">
                 <div id="thread-welcome"
                   class="absolute inset-0 flex items-center justify-center text-slate-400 flex-col gap-2 p-6 text-center">
@@ -284,7 +275,7 @@
   </main>
 
   <!-- ================= LOGIC ================= -->
- <script type="module">
+  <script type="module">
     import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
@@ -294,252 +285,294 @@
     renderLayout('schedule');
 
     let eventLogic;
-    
-    // 1. ADD activeBanner to state
-    const state = { 
-        language: localStorage.getItem("lang") || "en", 
-        events: [], 
-        activeBanner: null, // <--- Added this
-        selectedEvent: null, 
-        calendarMonth: new Date() 
+
+    const state = {
+      language: localStorage.getItem("lang") || "en",
+      events: [],
+      activeBanner: null,
+      selectedEvent: null,
+      calendarMonth: new Date()
     };
-    
-    const t = { 
-        en: { 
-            intro_title: "Agrovoltaicos sin Fronteras", 
-            auth: { signin: "Sign in", signout: "Sign out", required: "Sign in to view details." }, 
-            schedule: { title: "Upcoming Talks", empty: "No events found." }, 
-            search: { placeholder: "Search talks..." }, 
-            tabs: { description: "Description", discussion: "Discussion", files: "Files" }, 
-        }, 
-        es: { 
-            intro_title: "Agrovoltaicos sin Fronteras", 
-            auth: { signin: "Ingresar", signout: "Salir", required: "Iniciar sesión." }, 
-            schedule: { title: "Próximas Charlas", empty: "No hay eventos." }, 
-            search: { placeholder: "Buscar..." }, 
-            tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" }, 
-        } 
+
+    const t = {
+      en: {
+        intro_title: "Agrovoltaicos sin Fronteras",
+        auth: { signin: "Sign in", signout: "Sign out", required: "Sign in to view details." },
+        schedule: { title: "Upcoming Talks", empty: "No events found." },
+        search: { placeholder: "Search talks..." },
+        tabs: { description: "Description", discussion: "Discussion", files: "Files" },
+      },
+      es: {
+        intro_title: "Agrovoltaicos sin Fronteras",
+        auth: { signin: "Ingresar", signout: "Salir", required: "Iniciar sesión." },
+        schedule: { title: "Próximas Charlas", empty: "No hay eventos." },
+        search: { placeholder: "Buscar..." },
+        tabs: { description: "Descripción", discussion: "Discusión", files: "Archivos" },
+      }
     };
-    
+
     const localTr = (key, fallback = "") => tr(t, state.language, key, fallback);
 
     function showView(name) {
-       if(name==='schedule') { $('#view-detail').classList.add('translate-x-full'); $('#view-schedule').classList.remove('-translate-x-1/4','opacity-50'); }
-       else { $('#view-schedule').classList.add('-translate-x-1/4','opacity-50'); $('#view-detail').classList.remove('translate-x-full'); }
+      if (name === 'schedule') { $('#view-detail').classList.add('translate-x-full'); $('#view-schedule').classList.remove('-translate-x-1/4', 'opacity-50'); }
+      else { $('#view-schedule').classList.add('-translate-x-1/4', 'opacity-50'); $('#view-detail').classList.remove('translate-x-full'); }
     }
     function switchScheduleView(mode) {
-        if(mode==='list') { show($('#schedule-list')); hide($('#schedule-calendar')); $('#btn-view-list').classList.add('bg-brand-50','text-brand-700'); $('#btn-view-cal').classList.remove('bg-brand-50','text-brand-700'); }
-        else { hide($('#schedule-list')); show($('#schedule-calendar')); $('#btn-view-cal').classList.add('bg-brand-50','text-brand-700'); $('#btn-view-list').classList.remove('bg-brand-50','text-brand-700'); }
+      if (mode === 'list') { show($('#schedule-list')); hide($('#schedule-calendar')); $('#btn-view-list').classList.add('bg-brand-50', 'text-brand-700'); $('#btn-view-cal').classList.remove('bg-brand-50', 'text-brand-700'); }
+      else { hide($('#schedule-list')); show($('#schedule-calendar')); $('#btn-view-cal').classList.add('bg-brand-50', 'text-brand-700'); $('#btn-view-list').classList.remove('bg-brand-50', 'text-brand-700'); }
     }
-    
-    function handleLangSwitch() {
-        state.language = state.language === 'en' ? 'es' : 'en';
-        localStorage.setItem("lang", state.language);
-        applyI18n(t, state.language);
-        renderEventsList(); renderScheduleCalendar(); renderBanner();
-        if(eventLogic) eventLogic.reRender();
-    }
-    
-    // 2. REWRITE renderBanner to use the banners table data
-    function renderBanner() {
-        const banner = $('#siteBanner');
-        const textEl = $('#bannerText');
-        
-        // Priority 1: Manual Banner from Admin
-        if (state.activeBanner) {
-            const text = state.language === 'es' ? (state.activeBanner.text_es || state.activeBanner.text_en) : state.activeBanner.text_en;
-            textEl.innerText = text;
-            show(banner);
-            banner.style.display = 'inline-flex';
-            return;
-        } 
 
-        // Priority 2: Fallback to "Next Event" if no manual banner
-        const next = state.events.filter(e => new Date(e.start_time) > new Date()).sort((a,b)=>new Date(a.start_time)-new Date(b.start_time))[0];
-        if(next) {
-            const title = state.language === 'es' ? (next.title_es||next.title_en) : next.title_en;
-            // Make it clickable if it's an event
-            banner.classList.remove('pointer-events-none');
-            banner.classList.add('cursor-pointer', 'hover:bg-amber-100');
-            banner.dataset.openEvent = next.id;
-            
-            textEl.innerHTML = `<span class="opacity-70 font-medium">Next:</span> ${escapeHtml(title)}`;
-            show(banner);
-            banner.style.display = 'inline-flex';
-        } else {
-            hide(banner);
-        }
+    function handleLangSwitch() {
+      state.language = state.language === 'en' ? 'es' : 'en';
+      localStorage.setItem("lang", state.language);
+      applyI18n(t, state.language);
+      renderEventsList(); renderScheduleCalendar(); renderBanner();
+      if (eventLogic) eventLogic.reRender();
+    }
+
+    function renderBanner() {
+      const banner = $('#siteBanner');
+      const textEl = $('#bannerText');
+
+      if (state.activeBanner) {
+        const text = state.language === 'es' ? (state.activeBanner.text_es || state.activeBanner.text_en) : state.activeBanner.text_en;
+        textEl.innerText = text;
+        show(banner);
+        banner.style.display = 'inline-flex';
+        return;
+      }
+
+      const next = state.events.filter(e => new Date(e.start_time) > new Date()).sort((a, b) => new Date(a.start_time) - new Date(b.start_time))[0];
+      if (next) {
+        const title = state.language === 'es' ? (next.title_es || next.title_en) : next.title_en;
+        banner.classList.remove('pointer-events-none');
+        banner.classList.add('cursor-pointer', 'hover:bg-amber-100');
+        banner.dataset.openEvent = next.id;
+
+        textEl.innerHTML = `<span class="opacity-70 font-medium">Next:</span> ${escapeHtml(title)}`;
+        show(banner);
+        banner.style.display = 'inline-flex';
+      } else {
+        hide(banner);
+      }
     }
 
     async function loadEvents() {
-        hide($('#content-area')); show($('#eventsLoader'));
-        
-        // 3. FETCH Events AND Banner in parallel
-        const [eventsRes, bannerRes] = await Promise.all([
-            supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", {ascending:true}),
-            supabase.from("banners").select("*").eq("is_active", true).limit(1).maybeSingle()
-        ]);
+      hide($('#content-area')); show($('#eventsLoader'));
 
-        state.events = eventsRes.data || [];
-        state.activeBanner = bannerRes.data || null;
+      const [eventsRes, bannerRes] = await Promise.all([
+        supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", { ascending: true }),
+        supabase.from("banners").select("*").eq("is_active", true).limit(1).maybeSingle()
+      ]);
 
-        renderEventsList(); renderScheduleCalendar(); renderBanner();
-        hide($('#eventsLoader')); show($('#content-area'));
-        
-        const params = new URLSearchParams(window.location.search);
-        const eid = params.get("event") || params.get("e");
-        if(eid && eventLogic) {
-            if(authState.session) eventLogic.openEvent(eid);
-            else { authState.pendingDeepLinkEventId = eid; setFlash(localTr('auth.required')); }
-        }
+      state.events = eventsRes.data || [];
+      state.activeBanner = bannerRes.data || null;
+
+      renderEventsList(); renderScheduleCalendar(); renderBanner();
+      hide($('#eventsLoader')); show($('#content-area'));
+
+      const params = new URLSearchParams(window.location.search);
+      const eid = params.get("event") || params.get("e");
+      if (eid && eventLogic) {
+        if (authState.session) eventLogic.openEvent(eid);
+        else { authState.pendingDeepLinkEventId = eid; setFlash(localTr('auth.required')); }
+      }
     }
 
-    // --- UPDATED CARD RENDERER (Keep your existing function here, just ensuring logic remains) ---
+    // --- REFINED: Tags Moved Down, No Name Truncation, Fancy Tooltips, Counter Left ---
     async function renderEventsList() {
-        const list = $('#schedule-list');
-        const term = ($('#search').value || '').toLowerCase();
-        const now = new Date();
-        
-        const filtered = state.events.filter(e => {
-             const end = new Date(e.start_time); end.setHours(end.getHours()+2);
-             if(!term && end < now && (now - end > 86400000 * 7)) return false;
-             if(!term) return true;
-             return (JSON.stringify(e) + (e.topic_tags||[]).join(' ')).toLowerCase().includes(term);
-        });
-        
-        if(!filtered.length) { hide(list); show($('#emptyEvents')); $('#emptyEvents').style.display='flex'; return; }
-        show(list); hide($('#emptyEvents'));
+      const list = $('#schedule-list');
+      const term = ($('#search').value || '').toLowerCase();
+      const now = new Date();
 
-        const html = await Promise.all(filtered.map(async ev => {
-            const title = state.language === 'es' ? (ev.title_es || ev.title_en) : ev.title_en;
-            const desc = state.language === 'es' ? (ev.description_es || ev.description_en) : ev.description_en;
-            const start = new Date(ev.start_time);
-            const isPast = start < now;
-            
-            const speakers = ev.event_speakers || [];
-            const speakerItems = await Promise.all(speakers.slice(0, 4).map(async s => {
-                const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
-                const content = img 
+      const filtered = state.events.filter(e => {
+        const end = new Date(e.start_time); end.setHours(end.getHours() + 2);
+        if (!term && end < now && (now - end > 86400000 * 7)) return false;
+        if (!term) return true;
+        return (JSON.stringify(e) + (e.topic_tags || []).join(' ')).toLowerCase().includes(term);
+      });
+
+      if (!filtered.length) { hide(list); show($('#emptyEvents')); $('#emptyEvents').style.display = 'flex'; return; }
+      show(list); hide($('#emptyEvents'));
+
+      const html = await Promise.all(filtered.map(async ev => {
+        const title = state.language === 'es' ? (ev.title_es || ev.title_en) : ev.title_en;
+        const desc = state.language === 'es' ? (ev.description_es || ev.description_en) : ev.description_en;
+        const start = new Date(ev.start_time);
+        const isPast = start < now;
+
+        const month = start.toLocaleDateString(state.language, { month: 'short' }).toUpperCase();
+        const day = start.getDate();
+        const time = fmtDateTime(ev.start_time, { hour: 'numeric', minute: '2-digit' });
+        const weekday = start.toLocaleDateString(state.language, { weekday: 'long' });
+
+        // Speaker Logic: Name First 2 + Stack Rest
+        const speakers = ev.event_speakers || [];
+        const featuredSpeakers = speakers.slice(0, 2);
+        const extraSpeakers = speakers.slice(2);
+
+        // Left: Named Pills (No truncation, whitespace-nowrap)
+        const featuredHtml = await Promise.all(featuredSpeakers.map(async s => {
+          const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
+          const avatar = img
+            ? `<img src="${img}" class="w-full h-full object-cover" alt="${escapeHtml(s.name)}">`
+            : `<div class="w-full h-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500">${(s.name || '?')[0]}</div>`;
+
+          return `
+                <div class="flex items-center gap-2 bg-white border border-gray-200 pr-3 pl-0.5 py-0.5 rounded-full shadow-sm hover:border-brand-300 transition-colors shrink-0 max-w-full">
+                    <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-gray-100">${avatar}</div>
+                    <span class="text-xs font-bold text-slate-700 whitespace-nowrap">${escapeHtml(s.name)}</span>
+                </div>`;
+        }));
+
+        // Right: Stacked Avatars (Restored Fancy Tooltip)
+        // Right: Stacked Avatars (Fixed: Rounded image, visible tooltip)
+            const extraStackHtml = extraSpeakers.length > 0 ? await Promise.all(extraSpeakers.map(async (s, index) => {
+                 const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
+                 
+                 // CHANGE: Added 'rounded-full' directly to the image to mask corners without hiding the tooltip
+                 const avatarContent = img 
                     ? `<img src="${img}" class="w-full h-full object-cover rounded-full" alt="${escapeHtml(s.name)}">` 
-                    : `<span class="text-[11px] font-bold select-none">${(s.name||'?')[0]}</span>`;
-                
-                return `<div class="relative group/tooltip w-10 h-10 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-slate-500 shadow-sm relative z-0 hover:z-10 transition-all">
-                    ${content}
+                    : `<span class="text-[9px] font-bold select-none">${(s.name||'?')[0]}</span>`;
+
+                 // REMOVED: 'overflow-hidden' from the parent div so the tooltip can pop out
+                 return `<div class="relative group/tooltip w-9 h-9 rounded-full ring-[2.5px] ring-white bg-gray-100 flex items-center justify-center text-slate-500 shadow-sm transition-all -ml-3 first:ml-0 z-0 hover:z-20 hover:scale-110">
+                    ${avatarContent}
                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] font-semibold rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
                         ${escapeHtml(s.name)}
                         <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-800"></div>
                     </div>
-                </div>`;
-            }));
-            
-            const speakerHtml = speakerItems.length ? 
-                `<div class="flex -space-x-3">
-                   ${speakerItems.join('')}
-                   ${speakers.length > 4 ? `<div class="w-10 h-10 rounded-full ring-2 ring-white bg-gray-50 flex items-center justify-center text-[10px] font-bold text-slate-600 relative z-0 cursor-default" title="+${speakers.length-4} more speakers">+${speakers.length-4}</div>` : ''}
-                 </div>` : '';
+                 </div>`;
+            })) : [];
 
-            const tags = ev.topic_tags && ev.topic_tags.length ? 
-                `<div class="flex flex-wrap gap-1.5 mb-4 mt-auto">
-                    ${ev.topic_tags.map(tag => `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider border border-slate-200">${escapeHtml(tag)}</span>`).join('')}
+        // Counter Logic: Text to the LEFT of the thumbnail stack
+        const counterHtml = extraSpeakers.length > 0
+          ? `<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mr-1 ml-2 whitespace-nowrap">+ ${extraSpeakers.length} MORE</span>`
+          : '';
+
+        let speakersSection = '';
+        if (featuredHtml.length > 0) {
+          speakersSection = `
+                <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100 gap-2">
+                    <div class="flex flex-wrap gap-2 items-center flex-1 min-w-0">
+                        ${featuredHtml.join('')}
+                    </div>
+                    ${extraStackHtml.length ? `
+                    <div class="flex items-center shrink-0">
+                        ${counterHtml}
+                        <div class="flex items-center pl-1">
+                            ${extraStackHtml.join('')}
+                        </div>
+                    </div>` : ''}
+                </div>`;
+        } else {
+          speakersSection = `<div class="mt-auto pt-3 border-t border-gray-100 text-[11px] text-slate-400 italic">Speakers TBA</div>`;
+        }
+
+        const tags = ev.topic_tags && ev.topic_tags.length ?
+          `<div class="flex flex-wrap gap-1.5 mt-3 mb-1">
+                    ${ev.topic_tags.map(tag => `<span class="px-2 py-0.5 rounded-[4px] bg-brand-50/70 text-brand-700 text-[10px] font-bold uppercase tracking-wider border border-brand-100/50">${escapeHtml(tag)}</span>`).join('')}
                 </div>` : '';
 
-            const hostHtml = ev.host_org ? 
-                `<div class="flex flex-col items-end text-right max-w-[60%]">
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Hosted By</span>
-                    <span class="font-bold text-slate-700 text-sm leading-tight line-clamp-2">${escapeHtml(ev.host_org)}</span>
-                 </div>` : '';
+        const langCode = ev.language === 'es' ? 'ES' : (ev.language === 'bi' ? 'EN/ES' : 'EN');
 
-            const langCode = ev.language === 'es' ? 'ES' : (ev.language === 'bi' ? 'EN/ES' : 'EN');
-            
-            return `<article class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-brand-200 transition-all cursor-pointer flex flex-col h-full ${isPast ? 'opacity-70 grayscale-[0.3]' : ''}" data-open-event="${ev.id}">
-                <div class="p-5 flex flex-col h-full relative">
-                    <div class="flex items-center justify-between mb-3 text-xs font-bold text-slate-400 uppercase tracking-wide">
-                        <div class="flex items-center gap-2">
-                            <span class="${isPast ? 'text-slate-500' : 'text-brand-600'}">
-                                ${start.toLocaleDateString(state.language, {month:'short', day:'numeric'}).toUpperCase()}
-                            </span>
-                            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                            <span>${fmtDateTime(ev.start_time,{timeStyle:'short'})}</span>
+        return `<article class="group relative flex flex-col h-full bg-white rounded-2xl border border-gray-200 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.1)] hover:border-brand-200 transition-all duration-300 cursor-pointer overflow-hidden ${isPast ? 'opacity-70 grayscale-[0.3]' : ''}" data-open-event="${ev.id}">
+                <div class="p-4 flex flex-col h-full relative z-10">
+                    
+                    <!-- Top: Date Block & Meta -->
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-3">
+                            <!-- Block -->
+                            <div class="flex flex-col items-center justify-center bg-slate-50 text-slate-700 rounded-xl px-2.5 py-1.5 border border-slate-100 group-hover:bg-brand-50 group-hover:text-brand-700 group-hover:border-brand-100 transition-colors min-w-[52px]">
+                                <span class="text-[9px] font-bold uppercase leading-none opacity-60 mb-0.5">${month}</span>
+                                <span class="text-xl font-display font-bold leading-none tracking-tight">${day}</span>
+                            </div>
+                            <!-- Time -->
+                            <div class="flex flex-col pt-0.5">
+                                <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                                    <i data-lucide="clock" class="w-3 h-3 text-brand-500"></i>
+                                    <span>${time}</span>
+                                </div>
+                                <span class="text-[10px] text-slate-400 font-medium capitalize mt-0.5">${weekday}</span>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-2">
-                             <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-[4px] text-[10px]">${langCode}</span>
-                             ${(ev.zoom_url && !isPast) ? '<i data-lucide="video" class="w-3.5 h-3.5 text-brand-400"></i>' : ''}
+                        
+                        <!-- Badges -->
+                        <div class="flex items-center gap-1.5">
+                             <span class="bg-gray-100 text-slate-500 px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold tracking-wide">${langCode}</span>
+                             ${(ev.zoom_url && !isPast) ? '<span class="w-6 h-6 flex items-center justify-center rounded-full bg-brand-50 text-brand-500"><i data-lucide="video" class="w-3.5 h-3.5"></i></span>' : ''}
                         </div>
                     </div>
 
-                    <h3 class="font-display font-bold text-lg text-slate-800 leading-tight mb-2 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h3>
-                    <p class="text-[13px] text-slate-500 line-clamp-2 mb-3 leading-relaxed">${escapeHtml(desc||'')}</p>
-                    ${tags}
-                    ${!tags ? '<div class="mt-auto"></div>' : ''}
-
-                    <div class="flex items-center justify-between pt-4 border-t border-gray-100 -mx-5 px-5 bg-slate-50/30">
-                        <div class="flex items-center gap-2">
-                            ${speakerHtml}
-                            ${!speakerHtml ? '<span class="text-[10px] text-slate-400 italic">Speaker TBA</span>' : ''}
-                        </div>
-                        ${hostHtml}
+                    <!-- Middle -->
+                    <div class="mb-2">
+                        <h3 class="font-display font-bold text-[1.05rem] text-slate-900 leading-snug mb-1.5 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h3>
+                        <p class="text-[13px] text-slate-500 line-clamp-2 leading-relaxed">${escapeHtml(desc || '')}</p>
+                        ${tags}
                     </div>
+
+                    <!-- Bottom -->
+                    ${speakersSection}
                 </div>
             </article>`;
-        }));
-        list.innerHTML = html.join('');
-        lucide.createIcons();
+      }));
+      list.innerHTML = html.join('');
+      lucide.createIcons();
     }
-    
+
     function renderScheduleCalendar() {
-        const grid=$('#calendarGrid'), m=state.calendarMonth;
-        $('#calLabel').innerText = m.toLocaleString(state.language,{month:'long',year:'numeric'});
-        const start=new Date(m.getFullYear(),m.getMonth(),1).getDay(); 
-        const end=new Date(m.getFullYear(),m.getMonth()+1,0).getDate();
-        grid.innerHTML='';
-        for(let i=0; i<(start+6)%7; i++) grid.insertAdjacentHTML('beforeend',`<div class="bg-gray-50/50 min-h-[80px]"></div>`);
-        for(let d=1; d<=end; d++) {
-             const dateStr = `${m.getFullYear()}-${String(m.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-             const dayEvs = state.events.filter(e=>e.start_time.startsWith(dateStr));
-             const evHtml = dayEvs.map(e=>`<div class="text-[9px] truncate bg-brand-100 text-brand-800 px-1 rounded mb-0.5 cursor-pointer" data-open-event="${e.id}">${state.language==='es'?(e.title_es||e.title_en):e.title_en}</div>`).join('');
-             grid.insertAdjacentHTML('beforeend', `<div class="bg-white p-1 min-h-[80px] border-r border-b border-gray-50"><div class="text-xs font-bold text-slate-300 mb-1">${d}</div>${evHtml}</div>`);
-        }
+      const grid = $('#calendarGrid'), m = state.calendarMonth;
+      $('#calLabel').innerText = m.toLocaleString(state.language, { month: 'long', year: 'numeric' });
+      const start = new Date(m.getFullYear(), m.getMonth(), 1).getDay();
+      const end = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
+      grid.innerHTML = '';
+      for (let i = 0; i < (start + 6) % 7; i++) grid.insertAdjacentHTML('beforeend', `<div class="bg-gray-50/50 min-h-[80px]"></div>`);
+      for (let d = 1; d <= end; d++) {
+        const dateStr = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const dayEvs = state.events.filter(e => e.start_time.startsWith(dateStr));
+        const evHtml = dayEvs.map(e => `<div class="text-[9px] truncate bg-brand-100 text-brand-800 px-1 rounded mb-0.5 cursor-pointer" data-open-event="${e.id}">${state.language === 'es' ? (e.title_es || e.title_en) : e.title_en}</div>`).join('');
+        grid.insertAdjacentHTML('beforeend', `<div class="bg-white p-1 min-h-[80px] border-r border-b border-gray-50"><div class="text-xs font-bold text-slate-300 mb-1">${d}</div>${evHtml}</div>`);
+      }
     }
 
-    (async function() {
-       const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: ()=>applyI18n(t,state.language), show, hide };
-       eventLogic = initEventLogic(deps);
-       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
-       
-       $('#search').addEventListener('input', renderEventsList);
-       $('#btn-view-list').addEventListener('click', ()=>switchScheduleView('list'));
-       $('#btn-view-cal').addEventListener('click', ()=>switchScheduleView('calendar'));
-       $('#calPrev').addEventListener('click', ()=>{state.calendarMonth.setMonth(state.calendarMonth.getMonth()-1); renderScheduleCalendar()});
-       $('#calNext').addEventListener('click', ()=>{state.calendarMonth.setMonth(state.calendarMonth.getMonth()+1); renderScheduleCalendar()});
-       $$('.tab-link').forEach(b=>b.addEventListener('click', e=>switchTab(e.target.dataset.tab, e.target)));
-       
-       document.body.addEventListener('click', e=>{
-           const c = e.target.closest('[data-open-event]');
-           if(c && eventLogic) { e.preventDefault(); c.classList.add('scale-95'); setTimeout(()=>c.classList.remove('scale-95'),100); eventLogic.openEvent(c.dataset.openEvent); }
-           if(e.target.id==='btnProfile' || e.target.closest('#btnProfile') || e.target.id==='userName') window.location.href='profile.html';
-       });
+    (async function () {
+      const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide };
+      eventLogic = initEventLogic(deps);
+      initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
 
-       await initAuth({
-           onAuthReady: ()=>renderHeader(authState, t, state.language),
-           onAuthChange: async ()=>{
-               renderHeader(authState, t, state.language);
-               if(authState.profile?.avatar_url) {
-                   const url = await getAvatarUrl(authState.profile.avatar_url);
-                   const img = $('#userAvatar');
-                   if(img && url) { img.src = url; show(img); hide($('#userInitial')); }
-               }
-           }
-       });
-       
-       await loadEvents();
-       // 4. Add Banner Subscription to auto-update if admin changes it
-       supabase.channel('public:banners').on('postgres_changes', {event:'*', schema:'public', table:'banners'}, async () => {
-          const { data } = await supabase.from("banners").select("*").eq("is_active", true).limit(1).maybeSingle();
-          state.activeBanner = data;
-          renderBanner();
-       }).subscribe();
-       
-       supabase.channel('public:events').on('postgres_changes', {event:'*', schema:'public', table:'events'}, loadEvents).subscribe();
+      $('#search').addEventListener('input', renderEventsList);
+      $('#btn-view-list').addEventListener('click', () => switchScheduleView('list'));
+      $('#btn-view-cal').addEventListener('click', () => switchScheduleView('calendar'));
+      $('#calPrev').addEventListener('click', () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() - 1); renderScheduleCalendar() });
+      $('#calNext').addEventListener('click', () => { state.calendarMonth.setMonth(state.calendarMonth.getMonth() + 1); renderScheduleCalendar() });
+      $$('.tab-link').forEach(b => b.addEventListener('click', e => switchTab(e.target.dataset.tab, e.target)));
+
+      document.body.addEventListener('click', e => {
+        const c = e.target.closest('[data-open-event]');
+        if (c && eventLogic) { e.preventDefault(); c.classList.add('scale-[0.98]'); setTimeout(() => c.classList.remove('scale-[0.98]'), 100); eventLogic.openEvent(c.dataset.openEvent); }
+        if (e.target.id === 'btnProfile' || e.target.closest('#btnProfile') || e.target.id === 'userName') window.location.href = 'profile.html';
+      });
+
+      await initAuth({
+        onAuthReady: () => renderHeader(authState, t, state.language),
+        onAuthChange: async () => {
+          renderHeader(authState, t, state.language);
+          if (authState.profile?.avatar_url) {
+            const url = await getAvatarUrl(authState.profile.avatar_url);
+            const img = $('#userAvatar');
+            if (img && url) { img.src = url; show(img); hide($('#userInitial')); }
+          }
+        }
+      });
+
+      await loadEvents();
+      supabase.channel('public:banners').on('postgres_changes', { event: '*', schema: 'public', table: 'banners' }, async () => {
+        const { data } = await supabase.from("banners").select("*").eq("is_active", true).limit(1).maybeSingle();
+        state.activeBanner = data;
+        renderBanner();
+      }).subscribe();
+
+      supabase.channel('public:events').on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, loadEvents).subscribe();
     })();
   </script>
 </body>
