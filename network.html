@@ -207,9 +207,8 @@
     import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatarUrl } from './ui.js';
-    import { initProfileModal, openProfileModal } from './clickprofile.js'; // Imported Logic
+    import { initProfileModal, openProfileModal } from './clickprofile.js'; 
     
-    // Inject Layout with 'network' active state
     renderLayout('network');
 
     const state = {
@@ -232,7 +231,6 @@
     
     async function loadNetworkData() {
         const [profiles, speakers, events] = await Promise.all([
-            // Select * ensures we get department and working_group automatically
             supabase.from('profiles').select('*').order('full_name'),
             supabase.from('event_speakers').select('event_id, profile_id'),
             supabase.from('events').select('id, title_en, title_es, start_time, topic_tags').order('start_time', { ascending: false })
@@ -312,6 +310,13 @@
     }
     document.addEventListener('remTag', e => { state.selectedTags.delete(e.detail); onFiltersChanged(); });
 
+    /**
+     * Improved Layout Algorithm:
+     * Instead of a spiral/radial cluster which creates a square/circular blob,
+     * this uses a Horizontal Row Packing algorithm. It lays out organization clusters
+     * side-by-side to fill a wider aspect ratio (2.5:1), ensuring efficient use of 
+     * horizontal screen space.
+     */
     function calculatePositions(members) {
         const byOrg = new Map();
         members.forEach(m => {
@@ -319,42 +324,94 @@
             if(!byOrg.has(o)) byOrg.set(o, []);
             byOrg.get(o).push(m);
         });
-        
-        const orgs = [];
+
+        const clusters = [];
         for(const [name, list] of byOrg.entries()) {
-            const n = list.length;
-            const ringR = Math.max(140, (n * 140) / (2 * Math.PI)); 
-            orgs.push({ name, list, ringR, bubbleR: ringR + 100 });
+            const count = list.length;
+            // Radius needed to fit members on perimeter without overlap.
+            // Approx 45px arc per node. Min radius 140px.
+            const ringR = Math.max(140, (count * 45) / (2 * Math.PI));
+            // Calculate total bounding box size (diameter + padding)
+            const size = (ringR * 2) + 120;
+            clusters.push({ name, list, ringR, size });
         }
-        orgs.sort((a,b) => b.bubbleR - a.bubbleR);
+        
+        // Sort clusters by size (largest first) to pack them nicely
+        clusters.sort((a,b) => b.list.length - a.list.length);
         
         const pos = new Map();
-        let currentAngle = 0;
-        let currentDist = orgs.length > 0 ? orgs[0].bubbleR + 100 : 0; 
         
-        orgs.forEach((o, i) => {
-            let ox, oy;
-            if (i === 0) {
-                ox = 0; oy = 0;
-            } else {
-                currentAngle += 2.4; 
-                currentDist += (o.bubbleR / 8) + 20; 
-                ox = Math.cos(currentAngle) * currentDist;
-                oy = Math.sin(currentAngle) * currentDist;
+        // Layout Config: Target a wide aspect ratio (e.g., 2500px wide rows)
+        // This ensures that if there are 6 orgs, they spread out horizontally
+        // rather than clustering in a small circle.
+        const ROW_Target_WIDTH = 2500; 
+        const CLUSTER_GAP = 100;
+        
+        let currentRowX = 0;
+        let currentRowY = 0;
+        let rowItems = [];
+        let maxRowHeight = 0;
+        
+        // Helper to finalize a row's positions
+        const flushRow = () => {
+             // Center the row horizontally relative to 0
+             const rowTotalWidth = currentRowX - CLUSTER_GAP; // remove trailing gap
+             let startX = -(rowTotalWidth / 2);
+             
+             rowItems.forEach(c => {
+                 // Calculate Center Point for this Org
+                 const cx = startX + (c.size / 2);
+                 const cy = currentRowY + (c.size / 2); // Center vertically in current row stack
+                 
+                 // 1. Place Org Node
+                 pos.set(`org-${c.name}`, { x: cx, y: cy });
+                 
+                 // 2. Place Member Nodes in Ring
+                 if(c.list.length > 0) {
+                     const step = (Math.PI * 2) / c.list.length;
+                     c.list.forEach((m, i) => {
+                         const angle = step * i;
+                         // Stagger radius slightly for organic look (zig-zag ring)
+                         const r = c.ringR + (i % 2 === 0 ? 0 : 40);
+                         pos.set(m.id, {
+                             x: cx + Math.cos(angle) * r,
+                             y: cy + Math.sin(angle) * r
+                         });
+                     });
+                 }
+                 
+                 startX += c.size + CLUSTER_GAP;
+             });
+             
+             currentRowY += maxRowHeight + CLUSTER_GAP;
+             currentRowX = 0;
+             rowItems = [];
+             maxRowHeight = 0;
+        };
+
+        // Pack Clusters into Rows
+        clusters.forEach(c => {
+            // Check if adding this cluster exceeds target width
+            if (currentRowX + c.size > ROW_Target_WIDTH && rowItems.length > 0) {
+                flushRow();
             }
             
-            pos.set(`org-${o.name}`, {x:ox, y:oy});
-            
-            if(o.list.length > 0) {
-                const step = (Math.PI * 2) / o.list.length;
-                o.list.forEach((m, j) => {
-                    const ma = step * j;
-                    const stagger = (j % 2 === 0) ? 0 : 40;
-                    const finalR = o.ringR + stagger;
-                    pos.set(m.id, { x: ox + Math.cos(ma) * finalR, y: oy + Math.sin(ma) * finalR });
-                });
-            }
+            rowItems.push(c);
+            currentRowX += c.size + CLUSTER_GAP;
+            if (c.size > maxRowHeight) maxRowHeight = c.size;
         });
+        
+        // Flush remaining items
+        if (rowItems.length > 0) flushRow();
+        
+        // Center the entire block vertically around 0
+        const totalBlockHeight = currentRowY - CLUSTER_GAP;
+        const verticalOffset = -(totalBlockHeight / 2);
+        
+        for (const [key, p] of pos.entries()) {
+            p.y += verticalOffset;
+        }
+
         return pos;
     }
 
@@ -366,6 +423,7 @@
         const svg = $('#networkConnections'); const nodes = $('#networkNodes');
         svg.innerHTML = ''; nodes.innerHTML = '';
         
+        // Render Org Nodes
         new Set(members.map(m=>m.affiliation?.trim()||"Unaffiliated")).forEach(org => {
             const p = state.positions.get(`org-${org}`);
             if(!p || isNaN(p.x) || isNaN(p.y)) return;
@@ -376,6 +434,7 @@
             nodes.appendChild(el);
         });
         
+        // Render Edges
         let paths = '';
         members.forEach(m => {
             const mp = state.positions.get(m.id);
@@ -386,6 +445,7 @@
         });
         svg.innerHTML = paths;
         
+        // Render Member Nodes
         members.forEach(m => {
             const p = state.positions.get(m.id);
             if(!p || isNaN(p.x) || isNaN(p.y)) return;
@@ -406,7 +466,6 @@
             </div>`;
             if(m.avatar_url) getAvatarUrl(m.avatar_url).then(u=>{if(u) el.querySelector('.node-avatar').innerHTML=`<img src="${u}" class="w-full h-full object-cover">`});
             
-            // Use external logic
             el.onclick = (e) => { 
                 e.stopPropagation(); 
                 openProfileModal(m, state.allCanonicalToDisplay, state.tagIndex); 
@@ -490,7 +549,6 @@
         }).join('');
     }
     
-    // Updated Event Listener to use external logic
     document.addEventListener('openProfile', e => {
         openProfileModal(state.profileById.get(e.detail), state.allCanonicalToDisplay, state.tagIndex);
     });
@@ -506,7 +564,6 @@
     (async function() {
         initSharedUI({ onLangSwitch: () => location.reload(), onSignOut: signOut });
         
-        // Initialize Modal on Page Load (Injects HTML)
         initProfileModal();
 
         document.addEventListener('click', e => {
@@ -544,9 +601,6 @@
         $('#searchInput').oninput = debounce(onFiltersChanged);
         $('#clearFiltersBtn').onclick = () => { state.searchQuery=''; $('#searchInput').value=''; state.selectedTags.clear(); $('[data-role="all"]').click(); $('#eventFilter').value='all'; state.eventFilterId='all'; };
         $('#resetViewBtn').onclick = fitGraph;
-        
-        // Modal Close is now handled inside clickprofile.js, 
-        // but we keep general overlay cleanup just in case other modals exist
         
         // Canvas Interaction (Mouse + Touch)
         const cv = $('#network-container'); let drag=false, sx=0, sy=0;
