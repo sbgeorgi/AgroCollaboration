@@ -1,4 +1,5 @@
 import { openProfileModal } from './clickprofile.js';
+import { formatRichText } from './rich-text.js'; // Import formatting helper
 
 export function initEventLogic(deps) {
   const {
@@ -25,7 +26,11 @@ export function initEventLogic(deps) {
   let currentThreadsChannel = null;
   let currentFilesChannel = null;
   let currentLikesChannel = null;
-  
+
+  // Quill Instances for the Edit Modal
+  let quillEnInstance = null;
+  let quillEsInstance = null;
+
   // Cache
   const profileCache = new Map();
   let availableProfiles = []; // For the edit modal speaker selection
@@ -55,13 +60,13 @@ export function initEventLogic(deps) {
   async function ensureProfileInCache(profileId) {
     if (!profileId) return null;
     if (profileCache.has(profileId)) return profileCache.get(profileId);
-    
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', profileId)
       .single();
-      
+
     if (error) return null;
     const public_avatar_url = data?.avatar_url ? await getAvatarUrl(data.avatar_url) : null;
     const enriched = { ...data, public_avatar_url };
@@ -91,11 +96,34 @@ export function initEventLogic(deps) {
     return `<option value="">-- Link Profile --</option>${availableProfiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.full_name || '')}</option>`).join('')}`;
   }
 
+  function initQuillEditor(selector) {
+    if (!window.Quill) return null;
+    return new Quill(selector, {
+      theme: 'snow',
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline'],
+          [{ 'color': [] }, { 'background': [] }],
+          [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+          ['link', 'clean']
+        ]
+      }
+    });
+  }
+
   function injectEditModal() {
     if (document.getElementById('event-js-editor-modal')) return;
 
+    // We add inline styles for the editor within the modal to match the admin style
     const modalHtml = `
       <dialog id="event-js-editor-modal" class="rounded-2xl p-0 bg-white shadow-2xl max-w-2xl w-full m-auto backdrop:bg-slate-900/50">
+        <style>
+            .js-editor-wrapper { border: 1px solid transparent; background: #f8fafc; border-radius: 0.75rem; overflow: hidden; transition: all 0.2s; }
+            .js-editor-wrapper:focus-within { background: white; ring: 2px solid var(--color-brand-light); border-color: var(--color-brand); }
+            .js-editor-wrapper .ql-toolbar { border: none; border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.5); }
+            .js-editor-wrapper .ql-container { border: none; font-family: 'Inter', sans-serif; font-size: 0.875rem; }
+            .js-editor-wrapper .ql-editor { min-height: 100px; padding: 12px 16px; }
+        </style>
         <div class="flex flex-col h-full max-h-[90vh]">
             <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <h2 class="font-display font-bold text-xl text-slate-800">Edit Event Details</h2>
@@ -118,11 +146,15 @@ export function initEventLogic(deps) {
 
                     <div id="anchor-description">
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Description (EN)</label>
-                        <textarea id="jsEditDescEn" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm h-24 resize-y"></textarea>
+                        <div class="js-editor-wrapper">
+                            <div id="jsEditDescEn"></div>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Description (ES)</label>
-                        <textarea id="jsEditDescEs" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm h-24 resize-y"></textarea>
+                        <div class="js-editor-wrapper">
+                            <div id="jsEditDescEs"></div>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="anchor-details">
@@ -159,20 +191,24 @@ export function initEventLogic(deps) {
       </dialog>
     `;
     document.body.insertAdjacentHTML('beforeend', modalHtml);
-    
+
+    // Initialize Quill
+    quillEnInstance = initQuillEditor('#jsEditDescEn');
+    quillEsInstance = initQuillEditor('#jsEditDescEs');
+
     // Bind Static Listeners
     document.getElementById('close-js-editor').onclick = () => document.getElementById('event-js-editor-modal').close();
     document.getElementById('jsCancelEdit').onclick = () => document.getElementById('event-js-editor-modal').close();
     document.getElementById('jsAddSpeakerBtn').onclick = () => addJsSpeakerRow();
     document.getElementById('jsEventEditForm').onsubmit = handleJsEditSubmit;
-    
+
     // Speaker Remove Listener
     document.getElementById('jsEditSpeakersContainer').addEventListener('click', (e) => {
-        if (e.target.closest('.js-remove-speaker')) {
-            e.target.closest('.js-speaker-row').remove();
-        }
+      if (e.target.closest('.js-remove-speaker')) {
+        e.target.closest('.js-speaker-row').remove();
+      }
     });
-    
+
     lucideRefresh();
   }
 
@@ -198,11 +234,18 @@ export function initEventLogic(deps) {
     lucideRefresh();
   }
 
-  const toLocalInputValue = (d) => { 
-      if (!d) return ""; 
-      d = new Date(d); 
-      const p = (n) => String(n).padStart(2, "0"); 
-      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; 
+  const toLocalInputValue = (d) => {
+    if (!d) return "";
+    d = new Date(d);
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  };
+
+  // Helper to get Quill content handling empty paragraph
+  const getQuillContent = (quill) => {
+    if (!quill) return null;
+    if (quill.getText().trim().length === 0 && quill.root.innerHTML === '<p><br></p>') return null;
+    return quill.root.innerHTML;
   };
 
   async function openEditModal(section) {
@@ -218,8 +261,11 @@ export function initEventLogic(deps) {
     document.getElementById('jsEditTitleEs').value = ev.title_es || '';
     document.getElementById('jsEditStartTime').value = toLocalInputValue(ev.start_time);
     document.getElementById('jsEditEndTime').value = toLocalInputValue(ev.end_time);
-    document.getElementById('jsEditDescEn').value = ev.description_en || '';
-    document.getElementById('jsEditDescEs').value = ev.description_es || '';
+
+    // Populate Quill Editors
+    if (quillEnInstance) quillEnInstance.root.innerHTML = ev.description_en || '';
+    if (quillEsInstance) quillEsInstance.root.innerHTML = ev.description_es || '';
+
     document.getElementById('jsEditEventLang').value = ev.language || 'bi';
     document.getElementById('jsEditHostOrg').value = ev.host_org || '';
     document.getElementById('jsEditZoomUrl').value = ev.zoom_url || '';
@@ -231,9 +277,9 @@ export function initEventLogic(deps) {
     container.innerHTML = '';
     const { data: speakers } = await supabase.from('event_speakers').select('*').eq('event_id', ev.id);
     if (speakers && speakers.length) {
-        speakers.forEach(s => addJsSpeakerRow(s));
+      speakers.forEach(s => addJsSpeakerRow(s));
     } else {
-        addJsSpeakerRow();
+      addJsSpeakerRow();
     }
 
     const modal = document.getElementById('event-js-editor-modal');
@@ -241,68 +287,68 @@ export function initEventLogic(deps) {
 
     // Scroll to section (optional, since we only have one main button now)
     if (section && section !== 'main') {
-        setTimeout(() => {
-            const anchor = document.getElementById(`anchor-${section}`);
-            if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
+      setTimeout(() => {
+        const anchor = document.getElementById(`anchor-${section}`);
+        if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
     } else {
-        modal.querySelector('div').scrollTop = 0;
+      modal.querySelector('div').scrollTop = 0;
     }
   }
 
   async function handleJsEditSubmit(e) {
     e.preventDefault();
     const id = document.getElementById('jsEditEventId').value;
-    
+
     // Collect Data
     const payload = {
-        title_en: document.getElementById('jsEditTitleEn').value.trim(),
-        title_es: document.getElementById('jsEditTitleEs').value.trim() || null,
-        description_en: document.getElementById('jsEditDescEn').value.trim() || null,
-        description_es: document.getElementById('jsEditDescEs').value.trim() || null,
-        start_time: new Date(document.getElementById('jsEditStartTime').value).toISOString(),
-        end_time: document.getElementById('jsEditEndTime').value ? new Date(document.getElementById('jsEditEndTime').value).toISOString() : null,
-        language: document.getElementById('jsEditEventLang').value,
-        host_org: document.getElementById('jsEditHostOrg').value.trim() || null,
-        zoom_url: document.getElementById('jsEditZoomUrl').value.trim() || null,
-        recording_url: document.getElementById('jsEditRecordingUrl').value.trim() || null,
-        topic_tags: document.getElementById('jsEditTags').value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+      title_en: document.getElementById('jsEditTitleEn').value.trim(),
+      title_es: document.getElementById('jsEditTitleEs').value.trim() || null,
+      description_en: getQuillContent(quillEnInstance),
+      description_es: getQuillContent(quillEsInstance),
+      start_time: new Date(document.getElementById('jsEditStartTime').value).toISOString(),
+      end_time: document.getElementById('jsEditEndTime').value ? new Date(document.getElementById('jsEditEndTime').value).toISOString() : null,
+      language: document.getElementById('jsEditEventLang').value,
+      host_org: document.getElementById('jsEditHostOrg').value.trim() || null,
+      zoom_url: document.getElementById('jsEditZoomUrl').value.trim() || null,
+      recording_url: document.getElementById('jsEditRecordingUrl').value.trim() || null,
+      topic_tags: document.getElementById('jsEditTags').value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
     };
 
     // Collect Speakers
     const speakerRows = document.querySelectorAll('.js-speaker-row');
     const speakers = Array.from(speakerRows).map(row => ({
-        event_id: id,
-        name: row.querySelector('.js-sp-name').value.trim(),
-        affiliation: row.querySelector('.js-sp-aff').value.trim() || null,
-        profile_id: row.querySelector('.js-sp-profile').value || null,
-        primary_speaker: row.querySelector('.js-sp-primary').checked
+      event_id: id,
+      name: row.querySelector('.js-sp-name').value.trim(),
+      affiliation: row.querySelector('.js-sp-aff').value.trim() || null,
+      profile_id: row.querySelector('.js-sp-profile').value || null,
+      primary_speaker: row.querySelector('.js-sp-primary').checked
     })).filter(s => s.name);
 
     // Update Event
     const { error } = await supabase.from('events').update(payload).eq('id', id);
     if (error) {
-        setFlash("Error updating event", 3000);
-        return;
+      setFlash("Error updating event", 3000);
+      return;
     }
 
     // Update Speakers (Transaction-like: Delete then Insert)
     await supabase.from('event_speakers').delete().eq('event_id', id);
     if (speakers.length > 0) {
-        await supabase.from('event_speakers').insert(speakers);
+      await supabase.from('event_speakers').insert(speakers);
     }
 
     setFlash("Event updated successfully!");
     document.getElementById('event-js-editor-modal').close();
-    
+
     // Reload Event Data
     const { data: newEv } = await supabase.from('events').select('*, event_speakers(*, profile:profiles(*))').eq('id', id).single();
     if (newEv) {
-        state.selectedEvent = newEv;
-        // Update list if exists
-        const idx = state.events.findIndex(e => e.id === id);
-        if (idx !== -1) state.events[idx] = newEv;
-        reRender();
+      state.selectedEvent = newEv;
+      // Update list if exists
+      const idx = state.events.findIndex(e => e.id === id);
+      if (idx !== -1) state.events[idx] = newEv;
+      reRender();
     }
   }
 
@@ -358,17 +404,17 @@ export function initEventLogic(deps) {
   async function handleFileUpload(e) {
     const file = e.target.files?.[0];
     if (!file || !state.selectedEvent || !authState.session) return;
-    if (file.size > 10 * 1024 * 1024) { 
-      setFlash('File is too large (max 10MB).', 4000); 
-      return; 
+    if (file.size > 10 * 1024 * 1024) {
+      setFlash('File is too large (max 10MB).', 4000);
+      return;
     }
-    
+
     const filePath = `${state.selectedEvent.id}/${self.crypto.randomUUID()}-${file.name}`;
     setFlash('Uploading...', -1);
-    
+
     const { error: uploadError } = await supabase.storage.from('attachments').upload(filePath, file);
     if (uploadError) { setFlash('Upload failed', 4000); return; }
-    
+
     const { error: insertError } = await supabase.from('attachments').insert({
       event_id: state.selectedEvent.id,
       created_by: authState.session.user.id,
@@ -378,7 +424,7 @@ export function initEventLogic(deps) {
       file_size: file.size,
       file_type: file.type
     });
-    
+
     if (insertError) setFlash('Upload failed', 4000); else setFlash('Upload complete!', 3000);
     e.target.value = '';
   }
@@ -386,35 +432,35 @@ export function initEventLogic(deps) {
   async function deleteFile(fileId, filePath, btn) {
     if (!confirm('Delete this file?')) return;
     const bucketName = btn.dataset.bucket || 'attachments';
-    
+
     const originalContent = btn.innerHTML;
-    btn.disabled = true; 
-    btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i>`; 
+    btn.disabled = true;
+    btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i>`;
     lucideRefresh();
-    
+
     const { error: storageError } = await supabase.storage.from(bucketName).remove([filePath]);
-    if (storageError) { 
-      setFlash('Delete failed', 4000); 
-      btn.disabled = false; 
+    if (storageError) {
+      setFlash('Delete failed', 4000);
+      btn.disabled = false;
       btn.innerHTML = originalContent;
       lucideRefresh();
-      return; 
+      return;
     }
-    
+
     const { error: dbError } = await supabase.from('attachments').delete().eq('id', fileId);
 
     if (dbError) {
-        setFlash('Database error', 4000);
-        btn.disabled = false;
-        btn.innerHTML = originalContent;
-        lucideRefresh();
-        return;
+      setFlash('Database error', 4000);
+      btn.disabled = false;
+      btn.innerHTML = originalContent;
+      lucideRefresh();
+      return;
     }
 
     if (state.files) {
-        state.files = state.files.filter(f => f.id !== fileId);
-        renderFiles();
-        setFlash('File deleted', 3000);
+      state.files = state.files.filter(f => f.id !== fileId);
+      renderFiles();
+      setFlash('File deleted', 3000);
     }
   }
 
@@ -457,7 +503,7 @@ export function initEventLogic(deps) {
       listEl.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">No topics yet.</div>`;
       return;
     }
-    
+
     listEl.innerHTML = state.threads.map(thread => {
       const isActive = String(thread.id) === String(state.selectedThreadId);
       const canManage = canManageThread(thread);
@@ -526,14 +572,14 @@ export function initEventLogic(deps) {
   async function handleDeleteThread(threadId) {
     if (!confirm('Delete this thread and all its comments?')) return;
     const { error } = await supabase.from('threads').delete().eq('id', threadId);
-    if (error) setFlash('Failed to delete thread'); 
-    else { 
-        if (String(state.selectedThreadId) === String(threadId)) {
-            state.selectedThreadId = null;
-            hide($('#threadDetailView'));
-            show($('#thread-welcome'));
-        }
-        await loadAndRenderThreads(); 
+    if (error) setFlash('Failed to delete thread');
+    else {
+      if (String(state.selectedThreadId) === String(threadId)) {
+        state.selectedThreadId = null;
+        hide($('#threadDetailView'));
+        show($('#thread-welcome'));
+      }
+      await loadAndRenderThreads();
     }
   }
 
@@ -557,21 +603,21 @@ export function initEventLogic(deps) {
         if (cached) c.author = { ...cached };
       }
     }
-    
+
     state.comments = data || [];
-    
+
     const ids = state.comments.map(c => c.id);
     if (ids.length) {
-        const { data: likes } = await supabase.from('comment_likes').select('comment_id, profile_id').in('comment_id', ids);
-        if (likes) {
-            const counts = {};
-            const likedByMe = new Set();
-            likes.forEach(l => {
-                counts[l.comment_id] = (counts[l.comment_id] || 0) + 1;
-                if (l.profile_id === authState.profile?.id) likedByMe.add(l.comment_id);
-            });
-            state.comments = state.comments.map(c => ({ ...c, likes_count: counts[c.id] || 0, liked_by_me: likedByMe.has(c.id) }));
-        }
+      const { data: likes } = await supabase.from('comment_likes').select('comment_id, profile_id').in('comment_id', ids);
+      if (likes) {
+        const counts = {};
+        const likedByMe = new Set();
+        likes.forEach(l => {
+          counts[l.comment_id] = (counts[l.comment_id] || 0) + 1;
+          if (l.profile_id === authState.profile?.id) likedByMe.add(l.comment_id);
+        });
+        state.comments = state.comments.map(c => ({ ...c, likes_count: counts[c.id] || 0, liked_by_me: likedByMe.has(c.id) }));
+      }
     }
 
     renderComments();
@@ -670,7 +716,7 @@ export function initEventLogic(deps) {
     const content = input.value.trim();
     const parentId = form.dataset.parentId || null;
     if (!content) return;
-    
+
     const { error } = await supabase.from('comments').insert({
       content,
       thread_id: state.selectedThreadId,
@@ -697,7 +743,7 @@ export function initEventLogic(deps) {
   function subscribeToLikes() {
     if (currentLikesChannel) { supabase.removeChannel(currentLikesChannel); currentLikesChannel = null; }
     currentLikesChannel = supabase.channel(`likes`).on('postgres_changes', { event: '*', schema: 'public', table: 'comment_likes' }, () => {
-         if (state.selectedThreadId) loadCommentsForThread(state.selectedThreadId); 
+      if (state.selectedThreadId) loadCommentsForThread(state.selectedThreadId);
     }).subscribe();
   }
 
@@ -709,9 +755,9 @@ export function initEventLogic(deps) {
     const container = $('#compactEventHeaderContainer');
 
     // Admin Edit Button for Header (Single Entry Point)
-    const editBtn = isOrganizerOrAdmin() 
-        ? `<button class="h-9 w-9 rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-brand-600 hover:bg-brand-50 hover:border-brand-200 transition-all flex items-center justify-center ml-2" data-edit-event-section="main" title="Edit Event Details"><i data-lucide="pencil" class="w-4 h-4"></i></button>` 
-        : '';
+    const editBtn = isOrganizerOrAdmin()
+      ? `<button class="h-9 w-9 rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-brand-600 hover:bg-brand-50 hover:border-brand-200 transition-all flex items-center justify-center ml-2" data-edit-event-section="main" title="Edit Event Details"><i data-lucide="pencil" class="w-4 h-4"></i></button>`
+      : '';
 
     container.innerHTML = `
       <div class="flex items-start justify-between gap-4">
@@ -776,18 +822,18 @@ export function initEventLogic(deps) {
   }
 
   async function updateRSVP(id, status) {
-     if (!authState.profile) return;
-     await supabase.from('event_rsvps').upsert({ event_id: id, profile_id: authState.profile.id, status });
-     setFlash('RSVP updated');
+    if (!authState.profile) return;
+    await supabase.from('event_rsvps').upsert({ event_id: id, profile_id: authState.profile.id, status });
+    setFlash('RSVP updated');
   }
 
   async function toggleFollow(id) {
-     if (!authState.profile) return;
-     const was = state.isFollowing;
-     state.isFollowing = !was;
-     updateFollowButtonUI(state.isFollowing);
-     if (was) await supabase.from('event_follows').delete().match({ event_id: id, profile_id: authState.profile.id });
-     else await supabase.from('event_follows').insert({ event_id: id, profile_id: authState.profile.id });
+    if (!authState.profile) return;
+    const was = state.isFollowing;
+    state.isFollowing = !was;
+    updateFollowButtonUI(state.isFollowing);
+    if (was) await supabase.from('event_follows').delete().match({ event_id: id, profile_id: authState.profile.id });
+    else await supabase.from('event_follows').insert({ event_id: id, profile_id: authState.profile.id });
   }
 
   async function renderDescriptionTab() {
@@ -799,11 +845,11 @@ export function initEventLogic(deps) {
 
     let accessCard = '';
     if (!isPast && ev.zoom_url) {
-        accessCard = `<a href="${ev.zoom_url}" target="_blank" class="block w-full text-center py-3 bg-[#0077b6] hover:bg-[#023e8a] text-white font-bold rounded-lg transition-colors shadow-sm mb-1"><i data-lucide="video" class="inline w-4 h-4 mr-2"></i>Register/Join via Zoom</a>`;
+      accessCard = `<a href="${ev.zoom_url}" target="_blank" class="block w-full text-center py-3 bg-[#0077b6] hover:bg-[#023e8a] text-white font-bold rounded-lg transition-colors shadow-sm mb-1"><i data-lucide="video" class="inline w-4 h-4 mr-2"></i>Register/Join via Zoom</a>`;
     } else if (ev.recording_url) {
-        accessCard = `<a href="${ev.recording_url}" target="_blank" class="block w-full text-center py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg transition-colors shadow-sm mb-1"><i data-lucide="play-circle" class="inline w-4 h-4 mr-2"></i>Watch Recording</a>`;
+      accessCard = `<a href="${ev.recording_url}" target="_blank" class="block w-full text-center py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg transition-colors shadow-sm mb-1"><i data-lucide="play-circle" class="inline w-4 h-4 mr-2"></i>Watch Recording</a>`;
     } else {
-        accessCard = `<div class="w-full py-3 bg-gray-100 text-gray-400 font-bold text-center rounded-lg text-sm cursor-not-allowed">Access Unavailable</div>`;
+      accessCard = `<div class="w-full py-3 bg-gray-100 text-gray-400 font-bold text-center rounded-lg text-sm cursor-not-allowed">Access Unavailable</div>`;
     }
 
     const speakers = ev.event_speakers || [];
@@ -816,12 +862,28 @@ export function initEventLogic(deps) {
             ? `data-open-profile="${profileId}" class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer group/speaker"` 
             : `class="flex items-center gap-3 p-2 -mx-2 opacity-80"`;
             
+        // Flag Logic
+        const countryCode = s.profile?.country ? s.profile.country.toLowerCase() : null;
+        
+        // UPDATED: h-8 (large), rounded-md, ml-auto (pushes right), shrink-0 (prevents squash)
+        const flagHtml = countryCode 
+            ? `<img src="https://flagcdn.com/w80/${countryCode}.png" class="ml-auto h-8 w-auto rounded-md shadow-sm border border-gray-100 object-cover shrink-0" alt="${countryCode}" title="${countryCode.toUpperCase()}">`
+            : '';
+
         return `<div ${clickAttributes}>
+             <!-- Avatar -->
              <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm ring-2 ring-transparent ${profileId ? 'group-hover/speaker:ring-brand-100' : ''} transition-all">${ava}</div>
-             <div class="min-w-0">
-                <div class="text-sm font-bold text-slate-800 truncate ${profileId ? 'group-hover/speaker:text-brand-700' : ''} transition-colors">${escapeHtml(s.name || s.profile?.full_name)}</div>
+             
+             <!-- Text Container (flex-1 to take available space) -->
+             <div class="min-w-0 flex-1">
+                <div class="text-sm font-bold text-slate-800 truncate ${profileId ? 'group-hover/speaker:text-brand-700' : ''} transition-colors">
+                    ${escapeHtml(s.name || s.profile?.full_name)}
+                </div>
                 ${s.affiliation ? `<div class="text-xs text-slate-500 truncate">${escapeHtml(s.affiliation)}</div>` : ''}
              </div>
+
+             <!-- Flag (Pushed to right) -->
+             ${flagHtml}
         </div>`;
     }));
 
@@ -831,7 +893,8 @@ export function initEventLogic(deps) {
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         <div class="lg:col-span-8">
             <h3 class="flex items-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">About this session</h3>
-            <div class="prose prose-slate max-w-none prose-p:text-slate-600 prose-headings:text-slate-800">${linkify(desc || '')}</div>
+            <!-- UPDATED: Replaced prose classes with formatRichText helper -->
+            ${formatRichText(desc || '')}
         </div>
         <div class="lg:col-span-4 space-y-6">
             <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
@@ -863,26 +926,26 @@ export function initEventLogic(deps) {
     if (!authState.session) { setFlash(tr('auth.required')); return; }
     const event = state.events.find(e => String(e.id) === String(eventId));
     if (!event) return;
-    
+
     state.selectedEvent = event;
     state.selectedThreadId = null;
     showView('event');
     window.history.pushState({ event: eventId }, '', `?event=${eventId}`);
-    
+
     renderEventHeader();
     renderDescriptionTab();
-    
+
     hide($('#threadDetailView')); show($('#thread-welcome'));
     loadAndRenderThreads();
     loadAndRenderFiles();
     subscribeToLikes();
 
     if (currentThreadsChannel) supabase.removeChannel(currentThreadsChannel);
-    currentThreadsChannel = supabase.channel(`threads-${eventId}`).on('postgres_changes', {event:'*', schema:'public', table:'threads', filter:`event_id=eq.${eventId}`}, loadAndRenderThreads).subscribe();
-    
+    currentThreadsChannel = supabase.channel(`threads-${eventId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'threads', filter: `event_id=eq.${eventId}` }, loadAndRenderThreads).subscribe();
+
     if (currentCommentsChannel) supabase.removeChannel(currentCommentsChannel);
-    currentCommentsChannel = supabase.channel(`comments-${eventId}`).on('postgres_changes', {event:'*', schema:'public', table:'comments', filter:`event_id=eq.${eventId}`}, () => {
-        if(state.selectedThreadId) loadCommentsForThread(state.selectedThreadId);
+    currentCommentsChannel = supabase.channel(`comments-${eventId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'comments', filter: `event_id=eq.${eventId}` }, () => {
+      if (state.selectedThreadId) loadCommentsForThread(state.selectedThreadId);
     }).subscribe();
 
     if (currentFilesChannel) supabase.removeChannel(currentFilesChannel);
@@ -895,7 +958,7 @@ export function initEventLogic(deps) {
 
   async function selectThread(threadId) {
     state.selectedThreadId = threadId;
-    renderThreads(); 
+    renderThreads();
     hide($('#thread-welcome')); show($('#threadDetailView'));
     loadCommentsForThread(threadId);
   }
@@ -904,158 +967,152 @@ export function initEventLogic(deps) {
   $('#newThreadForm')?.addEventListener('submit', handleNewThread);
   $('#replyToThreadForm')?.addEventListener('submit', handleNewComment);
   $('#fileInput')?.addEventListener('change', handleFileUpload);
-  
+
   $('#filesList')?.addEventListener('click', async (e) => {
-      const btn = e.target.closest('[data-delete-file]');
-      if (!btn) return;
-      e.preventDefault();
-      await deleteFile(btn.dataset.deleteFile, btn.dataset.filePath, btn);
+    const btn = e.target.closest('[data-delete-file]');
+    if (!btn) return;
+    e.preventDefault();
+    await deleteFile(btn.dataset.deleteFile, btn.dataset.filePath, btn);
   });
-  
+
   // Edit Event Trigger Listener
   document.addEventListener('click', (e) => {
-      const editBtn = e.target.closest('[data-edit-event-section]');
-      if (editBtn) {
-          e.preventDefault();
-          e.stopPropagation();
-          openEditModal(editBtn.dataset.editEventSection);
-      }
+    const editBtn = e.target.closest('[data-edit-event-section]');
+    if (editBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      openEditModal(editBtn.dataset.editEventSection);
+    }
   });
 
   // --- UPDATED: Profile Modal Click Listener ---
   document.addEventListener('click', async (e) => {
-      const btn = e.target.closest('[data-open-profile]');
-      if (!btn) return;
+    const btn = e.target.closest('[data-open-profile]');
+    if (!btn) return;
 
-      e.preventDefault();
-      e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
 
-      const profileId = btn.dataset.openProfile;
-      if (profileId) {
-          const profile = await ensureProfileInCache(profileId);
-          if (profile) {
-              // Create a display copy to avoid modifying the cache directly
-              const displayProfile = { ...profile };
-              
-              // NEW LOGIC: If this profile is a SPEAKER at the currently selected event,
-              // include the event's topic_tags as "Inferred Interests" to mimic Network page behavior.
-              if (state.selectedEvent) {
-                  const isSpeaker = state.selectedEvent.event_speakers?.some(s => s.profile_id === profileId);
-                  
-                  if (isSpeaker && state.selectedEvent.topic_tags?.length) {
-                      const existingTags = displayProfile.fields_of_study 
-                          ? displayProfile.fields_of_study.split(',').map(s => s.trim()).filter(Boolean) 
-                          : [];
-                      
-                      const eventTags = state.selectedEvent.topic_tags;
-                      
-                      // Merge and deduplicate
-                      const combined = new Set(existingTags);
-                      eventTags.forEach(t => combined.add(t));
-                      
-                      displayProfile.fields_of_study = Array.from(combined).join(', ');
-                  }
-              }
-              
-              openProfileModal(displayProfile);
+    const profileId = btn.dataset.openProfile;
+    if (profileId) {
+      const profile = await ensureProfileInCache(profileId);
+      if (profile) {
+        const displayProfile = { ...profile };
+
+        if (state.selectedEvent) {
+          const isSpeaker = state.selectedEvent.event_speakers?.some(s => s.profile_id === profileId);
+
+          if (isSpeaker && state.selectedEvent.topic_tags?.length) {
+            const existingTags = displayProfile.fields_of_study
+              ? displayProfile.fields_of_study.split(',').map(s => s.trim()).filter(Boolean)
+              : [];
+
+            const eventTags = state.selectedEvent.topic_tags;
+
+            const combined = new Set(existingTags);
+            eventTags.forEach(t => combined.add(t));
+
+            displayProfile.fields_of_study = Array.from(combined).join(', ');
           }
+        }
+
+        openProfileModal(displayProfile);
       }
+    }
   });
 
   $('#threadsList')?.addEventListener('click', e => {
-      const menuBtn = e.target.closest('[data-thread-menu]');
-      if(menuBtn) {
-          e.stopPropagation();
-          const id = menuBtn.dataset.threadMenu;
-          const dd = document.querySelector(`[data-thread-dropdown="${id}"]`);
-          $$('.thread-actions-dropdown').forEach(d => d !== dd && d.classList.add('hidden')); 
-          if(dd) dd.classList.toggle('hidden');
-          return;
-      }
-      const editBtn = e.target.closest('[data-edit-thread]');
-      if(editBtn) { e.stopPropagation(); handleEditThread(editBtn.dataset.editThread); document.querySelectorAll('[data-thread-dropdown]').forEach(d=>d.classList.add('hidden')); return; }
-      
-      const pinBtn = e.target.closest('[data-toggle-pin-thread]');
-      if(pinBtn) { e.stopPropagation(); handleTogglePinThread(pinBtn.dataset.togglePinThread); document.querySelectorAll('[data-thread-dropdown]').forEach(d=>d.classList.add('hidden')); return; }
+    const menuBtn = e.target.closest('[data-thread-menu]');
+    if (menuBtn) {
+      e.stopPropagation();
+      const id = menuBtn.dataset.threadMenu;
+      const dd = document.querySelector(`[data-thread-dropdown="${id}"]`);
+      $$('.thread-actions-dropdown').forEach(d => d !== dd && d.classList.add('hidden'));
+      if (dd) dd.classList.toggle('hidden');
+      return;
+    }
+    const editBtn = e.target.closest('[data-edit-thread]');
+    if (editBtn) { e.stopPropagation(); handleEditThread(editBtn.dataset.editThread); document.querySelectorAll('[data-thread-dropdown]').forEach(d => d.classList.add('hidden')); return; }
 
-      const delBtn = e.target.closest('[data-delete-thread]');
-      if(delBtn) { e.stopPropagation(); handleDeleteThread(delBtn.dataset.deleteThread); document.querySelectorAll('[data-thread-dropdown]').forEach(d=>d.classList.add('hidden')); return; }
+    const pinBtn = e.target.closest('[data-toggle-pin-thread]');
+    if (pinBtn) { e.stopPropagation(); handleTogglePinThread(pinBtn.dataset.togglePinThread); document.querySelectorAll('[data-thread-dropdown]').forEach(d => d.classList.add('hidden')); return; }
 
-      const row = e.target.closest('[data-thread-id]');
-      if(row) {
-           document.querySelectorAll('[data-thread-dropdown]').forEach(d=>d.classList.add('hidden'));
-           selectThread(row.dataset.threadId);
-      }
+    const delBtn = e.target.closest('[data-delete-thread]');
+    if (delBtn) { e.stopPropagation(); handleDeleteThread(delBtn.dataset.deleteThread); document.querySelectorAll('[data-thread-dropdown]').forEach(d => d.classList.add('hidden')); return; }
+
+    const row = e.target.closest('[data-thread-id]');
+    if (row) {
+      document.querySelectorAll('[data-thread-dropdown]').forEach(d => d.classList.add('hidden'));
+      selectThread(row.dataset.threadId);
+    }
   });
 
   document.addEventListener('click', e => {
-      if(!e.target.closest('.thread-actions-menu')) $$('[data-thread-dropdown]').forEach(d=>d.classList.add('hidden'));
+    if (!e.target.closest('.thread-actions-menu')) $$('[data-thread-dropdown]').forEach(d => d.classList.add('hidden'));
   });
 
   $('#commentsList')?.addEventListener('click', async e => {
-      const replyBtn = e.target.closest('[data-reply-to]');
-      const editBtn = e.target.closest('[data-edit-comment]');
-      const delBtn = e.target.closest('[data-delete-comment]');
-      const likeBtn = e.target.closest('[data-like-comment]');
-      const cancelBtn = e.target.closest('[data-cancel-edit]');
+    const replyBtn = e.target.closest('[data-reply-to]');
+    const editBtn = e.target.closest('[data-edit-comment]');
+    const delBtn = e.target.closest('[data-delete-comment]');
+    const likeBtn = e.target.closest('[data-like-comment]');
+    const cancelBtn = e.target.closest('[data-cancel-edit]');
 
-      // Note: [data-open-profile] is handled by the global listener above
+    if (replyBtn) {
+      const parentId = replyBtn.dataset.replyTo;
+      const name = replyBtn.dataset.replyName;
+      const form = $('#replyToThreadForm');
+      form.dataset.parentId = parentId;
+      const oldInd = form.querySelector('.reply-indicator'); if (oldInd) oldInd.remove();
+      const ind = document.createElement('div');
+      ind.className = 'reply-indicator flex justify-between items-center px-3 py-1 text-xs bg-slate-100 text-slate-500 border-b border-slate-200';
+      ind.innerHTML = `<span>Replying to <b>${name}</b></span><button type="button">&times;</button>`;
+      form.insertBefore(ind, form.firstChild);
+      ind.querySelector('button').onclick = () => { delete form.dataset.parentId; ind.remove(); };
+      form.querySelector('input').focus();
+      return;
+    }
 
-      if(replyBtn) {
-          const parentId = replyBtn.dataset.replyTo;
-          const name = replyBtn.dataset.replyName;
-          const form = $('#replyToThreadForm');
-          form.dataset.parentId = parentId;
-          const oldInd = form.querySelector('.reply-indicator'); if(oldInd) oldInd.remove();
-          const ind = document.createElement('div');
-          ind.className = 'reply-indicator flex justify-between items-center px-3 py-1 text-xs bg-slate-100 text-slate-500 border-b border-slate-200';
-          ind.innerHTML = `<span>Replying to <b>${name}</b></span><button type="button">&times;</button>`;
-          form.insertBefore(ind, form.firstChild);
-          ind.querySelector('button').onclick = () => { delete form.dataset.parentId; ind.remove(); };
-          form.querySelector('input').focus();
-          return;
+    if (likeBtn) {
+      const id = likeBtn.dataset.likeComment;
+      if (!authState.profile) return;
+      const c = state.comments.find(c => c.id === id);
+      if (c && c.liked_by_me) await supabase.from('comment_likes').delete().match({ comment_id: id, profile_id: authState.profile.id });
+      else await supabase.from('comment_likes').insert({ comment_id: id, profile_id: authState.profile.id });
+      return;
+    }
+
+    if (editBtn) {
+      const root = editBtn.closest('[data-comment-root]');
+      root.querySelector('.comment-content').classList.add('hidden');
+      root.querySelector('.comment-edit-form').classList.remove('hidden');
+      return;
+    }
+
+    if (cancelBtn) {
+      const root = cancelBtn.closest('[data-comment-root]');
+      root.querySelector('.comment-content').classList.remove('hidden');
+      root.querySelector('.comment-edit-form').classList.add('hidden');
+      return;
+    }
+
+    if (delBtn) {
+      if (confirm('Delete this comment?')) {
+        await supabase.from('comments').delete().eq('id', delBtn.dataset.deleteComment);
+        loadCommentsForThread(state.selectedThreadId);
       }
-
-      if(likeBtn) {
-          const id = likeBtn.dataset.likeComment;
-          if(!authState.profile) return;
-          const c = state.comments.find(c => c.id === id);
-          if(c && c.liked_by_me) await supabase.from('comment_likes').delete().match({comment_id:id, profile_id:authState.profile.id});
-          else await supabase.from('comment_likes').insert({comment_id:id, profile_id:authState.profile.id});
-          return;
-      }
-
-      if(editBtn) {
-          const root = editBtn.closest('[data-comment-root]');
-          root.querySelector('.comment-content').classList.add('hidden');
-          root.querySelector('.comment-edit-form').classList.remove('hidden');
-          return;
-      }
-
-      if(cancelBtn) {
-          const root = cancelBtn.closest('[data-comment-root]');
-          root.querySelector('.comment-content').classList.remove('hidden');
-          root.querySelector('.comment-edit-form').classList.add('hidden');
-          return;
-      }
-
-      if(delBtn) {
-          if(confirm('Delete this comment?')) {
-              await supabase.from('comments').delete().eq('id', delBtn.dataset.deleteComment);
-              loadCommentsForThread(state.selectedThreadId);
-          }
-      }
+    }
   });
 
   $('#commentsList')?.addEventListener('submit', async e => {
-      if(e.target.matches('.comment-edit-form')) {
-          e.preventDefault();
-          const id = e.target.dataset.editFormFor;
-          const txt = e.target.querySelector('textarea').value.trim();
-          if(!txt) return;
-          await supabase.from('comments').update({content:txt, updated_at: new Date().toISOString()}).eq('id', id);
-          loadCommentsForThread(state.selectedThreadId);
-      }
+    if (e.target.matches('.comment-edit-form')) {
+      e.preventDefault();
+      const id = e.target.dataset.editFormFor;
+      const txt = e.target.querySelector('textarea').value.trim();
+      if (!txt) return;
+      await supabase.from('comments').update({ content: txt, updated_at: new Date().toISOString() }).eq('id', id);
+      loadCommentsForThread(state.selectedThreadId);
+    }
   });
 
   return { openEvent, reRender, selectThread };

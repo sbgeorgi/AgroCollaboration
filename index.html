@@ -23,7 +23,8 @@
 
   <!-- External Tailwind Config -->
   <script src="theme.js"></script>
-
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
   <!-- Custom CSS -->
   <style type="text/tailwindcss">
     @layer utilities {
@@ -72,61 +73,69 @@
     <div id="view-schedule"
       class="absolute inset-0 flex flex-col overflow-hidden transition-all duration-500 cubic-bezier transform translate-x-0 opacity-100">
       <div class="flex-1 overflow-y-auto custom-scrollbar">
-        <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-6 py-6">
+        <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-5 py-5">
 
           <!-- ================= HERO SECTION ================= -->
-          <section id="hero-section"
-            class="relative overflow-hidden rounded-[1.25rem] bg-white border border-gray-200 shadow-sm group p-4 md:p-5">
-            <div class="absolute inset-0 opacity-[0.02]"
-              style="background-image: radial-gradient(#0369a1 1px, transparent 1px); background-size: 20px 20px;">
+          <section id="hero-section" class="relative overflow-hidden rounded-[1.25rem] bg-white border border-gray-200 shadow-sm group p-4 md:p-5">
+            
+            <!-- Texture -->
+            <div class="absolute inset-0 z-0 pointer-events-none opacity-[0.03]" 
+                 style="background-image: linear-gradient(#0369a1 1px, transparent 1px), linear-gradient(to right, #0369a1 1px, transparent 1px); background-size: 40px 40px;">
             </div>
 
-            <div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <!-- Content Flex Container -->
+            <div class="relative z-10 flex flex-col md:flex-row items-end justify-between gap-4">
 
-              <!-- Left: Title & Desc -->
-              <div class="flex-1 min-w-0 pb-1">
-                <h2 class="font-display font-bold text-2xl md:text-3xl text-slate-900 tracking-tight mb-1"
-                  data-i18n="intro.title">
-                  Agrovoltaicos <span class="text-brand-600">sin Fronteras</span>
+              <!-- Left Side: Description THEN Banner -->
+              <div class="flex-1 flex flex-col justify-center gap-3 min-w-0 w-full">
+                
+                <!-- Description - Full Width -->
+                <h2 class="font-display font-medium text-xl md:text-2xl text-slate-800 leading-snug tracking-tight w-full pr-4">
+                  A participatory seminar series presenting the latest advances in <span class="text-brand-600 font-bold decoration-2 underline-offset-4 decoration-brand-200 underline">agrivoltaics research</span> and development across the Americas.
                 </h2>
-                <p class="text-slate-500 text-sm leading-relaxed max-w-3xl">
-                  A participatory seminar series presenting the latest advances in agrivoltaics research and development
-                  across the Americas.
-                </p>
-              </div>
 
-              <!-- Right: Host Card & Banner -->
-              <div class="flex flex-col md:items-end gap-3 flex-none">
-                <!-- Host Info -->
-                <div
-                  class="bg-slate-50/50 rounded-lg border border-gray-100 p-2.5 flex items-center gap-3 w-fit backdrop-blur-sm">
-                  <div class="flex -space-x-2">
-                    <img src="static/b2ua.jpg" class="w-7 h-7 rounded-full border border-white object-cover" alt="UA">
-                    <img src="static/unam.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white"
-                      alt="UNAM">
-                    <img src="static/aal.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white"
-                      alt="AAL">
-                    <img src="static/rame.png" class="w-7 h-7 rounded-full border border-white object-cover bg-white"
-                      alt="RAME">
-                  </div>
-                  <div class="flex flex-col">
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Hosted By</span>
-                    <span class="text-[10px] font-bold text-slate-700">UA, UNAM, AAL & RAME</span>
-                  </div>
-                </div>
-
-                <!-- Live Banner -->
-                <div id="siteBanner"
-                  class="hidden pointer-events-none animate-fade-in inline-flex items-center gap-2 bg-amber-50 pl-2 pr-3 py-1.5 rounded-full text-[11px] font-bold text-amber-700 border border-amber-200 shadow-sm max-w-[300px] md:max-w-[400px]">
+                <!-- Compact Banner (Moved Below) -->
+                <div id="siteBanner" class="hidden animate-fade-in w-fit items-center gap-2 bg-amber-50 pl-2 pr-3 py-1 rounded-full text-[10px] font-bold text-amber-700 border border-amber-200 shadow-sm cursor-pointer hover:bg-amber-100 transition-colors">
                   <span class="relative flex h-2 w-2 flex-none">
-                    <span
-                      class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                   </span>
-                  <span id="bannerText" class="truncate leading-tight"></span>
+                  <span id="bannerText" class="truncate leading-tight uppercase tracking-wide"></span>
                 </div>
+
               </div>
 
+              <!-- Right Side: Hosts & Image -->
+              <div class="flex flex-row items-center gap-5 shrink-0 border-t md:border-t-0 md:border-l border-gray-100 pt-3 md:pt-0 md:pl-5 mt-2 md:mt-0">
+                
+                <!-- Spelled Out Hosted By -->
+                <div class="flex flex-col items-end text-right gap-1">
+                    <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Hosted By</span>
+                    <div class="grid grid-cols-1 gap-y-0.5 text-[10px] font-semibold text-slate-600">
+                        <a href="https://www.arizona.edu" target="_blank" class="hover:text-brand-600 transition-colors flex items-center justify-end gap-1.5 group/link">
+                            University of Arizona <img src="static/b2ua.jpg" class="w-3.5 h-3.5 rounded-full" alt="UA">
+                        </a>
+                        <a href="https://www.unam.mx" target="_blank" class="hover:text-brand-600 transition-colors flex items-center justify-end gap-1.5 group/link">
+                            UNAM <img src="static/unam.png" class="w-3.5 h-3.5 rounded-full" alt="UNAM">
+                        </a>
+                        <!-- Updated AAL Link -->
+                        <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana/" target="_blank" class="hover:text-brand-600 transition-colors flex items-center justify-end gap-1.5 group/link">
+                            Alianza Agrovoltaica <img src="static/aal.png" class="w-3.5 h-3.5 rounded-full" alt="AAL">
+                        </a>
+                        <!-- Updated RAMe Link & Text -->
+                        <a href="https://redagvmx.com" target="_blank" class="hover:text-brand-600 transition-colors flex items-center justify-end gap-1.5 group/link">
+                            RAMe <img src="static/rame.png" class="w-3.5 h-3.5 rounded-full" alt="RAMe">
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Image (Constraint Height) -->
+                <div class="relative shrink-0">
+                    <div class="absolute inset-0 bg-brand-600 rounded-lg opacity-0 group-hover:opacity-5 transition-opacity"></div>
+                    <img src="static/placeholder.png" class="h-24 w-auto rounded-lg object-cover border border-gray-200 shadow-sm" alt="Featured">
+                </div>
+
+              </div>
             </div>
           </section>
 
@@ -280,6 +289,9 @@
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
     import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl } from './ui.js';
+    
+    // NEW IMPORT: Rich Text Utilities
+    import { stripHtml } from './rich-text.js';
 
     // Inject Layout
     renderLayout('schedule');
@@ -350,10 +362,11 @@
       if (next) {
         const title = state.language === 'es' ? (next.title_es || next.title_en) : next.title_en;
         banner.classList.remove('pointer-events-none');
-        banner.classList.add('cursor-pointer', 'hover:bg-amber-100');
+        banner.classList.add('cursor-pointer');
+        
         banner.dataset.openEvent = next.id;
 
-        textEl.innerHTML = `<span class="opacity-70 font-medium">Next:</span> ${escapeHtml(title)}`;
+        textEl.innerHTML = `<span class="opacity-70 font-medium">NEXT:</span> ${escapeHtml(title)}`;
         show(banner);
         banner.style.display = 'inline-flex';
       } else {
@@ -401,7 +414,11 @@
 
       const html = await Promise.all(filtered.map(async ev => {
         const title = state.language === 'es' ? (ev.title_es || ev.title_en) : ev.title_en;
-        const desc = state.language === 'es' ? (ev.description_es || ev.description_en) : ev.description_en;
+        
+        // MODIFICATION: Clean the description for the card preview
+        const rawDesc = state.language === 'es' ? (ev.description_es || ev.description_en) : ev.description_en;
+        const cleanDesc = escapeHtml(stripHtml(rawDesc || '')); // Strip tags, then escape text
+
         const start = new Date(ev.start_time);
         const isPast = start < now;
 
@@ -422,24 +439,29 @@
             ? `<img src="${img}" class="w-full h-full object-cover" alt="${escapeHtml(s.name)}">`
             : `<div class="w-full h-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500">${(s.name || '?')[0]}</div>`;
 
+          // --- Country Flag Logic (Condition: Only for featured) ---
+          const countryCode = s.profile?.country ? s.profile.country.toLowerCase() : null;
+          
+          // UPDATED: Increased w-3.5 to w-6, ml-1 to ml-2, and tweaked rounding
+          const flagHtml = countryCode 
+            ? `<img src="https://flagcdn.com/w40/${countryCode}.png" class="ml-2 w-6 h-auto rounded-sm shadow-sm object-cover" alt="${countryCode}" title="${countryCode.toUpperCase()}">`
+            : '';
+
           return `
-                <div class="flex items-center gap-2 bg-white border border-gray-200 pr-3 pl-0.5 py-0.5 rounded-full shadow-sm hover:border-brand-300 transition-colors shrink-0 max-w-full">
+                <div class="flex items-center gap-2 bg-white border border-gray-200 pr-2.5 pl-0.5 py-0.5 rounded-full shadow-sm hover:border-brand-300 transition-colors shrink-0 max-w-full">
                     <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-gray-100">${avatar}</div>
                     <span class="text-xs font-bold text-slate-700 whitespace-nowrap">${escapeHtml(s.name)}</span>
+                    ${flagHtml}
                 </div>`;
         }));
 
-        // Right: Stacked Avatars (Restored Fancy Tooltip)
-        // Right: Stacked Avatars (Fixed: Rounded image, visible tooltip)
         const extraStackHtml = extraSpeakers.length > 0 ? await Promise.all(extraSpeakers.map(async (s, index) => {
           const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
-
-          // CHANGE: Added 'rounded-full' directly to the image to mask corners without hiding the tooltip
           const avatarContent = img
             ? `<img src="${img}" class="w-full h-full object-cover rounded-full" alt="${escapeHtml(s.name)}">`
             : `<span class="text-[9px] font-bold select-none">${(s.name || '?')[0]}</span>`;
 
-          // REMOVED: 'overflow-hidden' from the parent div so the tooltip can pop out
+          // Note: No flags for extra overflow users per request
           return `<div class="relative group/tooltip w-9 h-9 rounded-full ring-[2.5px] ring-white bg-gray-100 flex items-center justify-center text-slate-500 shadow-sm transition-all -ml-3 first:ml-0 z-0 hover:z-20 hover:scale-110">
                     ${avatarContent}
                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] font-semibold rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
@@ -449,7 +471,6 @@
                  </div>`;
         })) : [];
 
-        // Counter Logic: Text to the LEFT of the thumbnail stack
         const counterHtml = extraSpeakers.length > 0
           ? `<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mr-1 ml-2 whitespace-nowrap">+ ${extraSpeakers.length} MORE</span>`
           : '';
@@ -511,7 +532,8 @@
                     <!-- Middle -->
                     <div class="mb-2">
                         <h3 class="font-display font-bold text-[1.05rem] text-slate-900 leading-snug mb-1.5 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h3>
-                        <p class="text-[13px] text-slate-500 line-clamp-2 leading-relaxed">${escapeHtml(desc || '')}</p>
+                        <!-- UPDATED: Use cleanDesc -->
+                        <p class="text-[13px] text-slate-500 line-clamp-2 leading-relaxed">${cleanDesc}</p>
                         ${tags}
                     </div>
 

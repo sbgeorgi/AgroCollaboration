@@ -252,3 +252,4 @@ export function initSharedUI({ onLangSwitch, onSignOut }) {
     yearEl.textContent = new Date().getFullYear();
   }
 }
+

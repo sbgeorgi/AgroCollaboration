@@ -1,6 +1,7 @@
 import { supabase, authState } from './auth.js';
 import { getAvatarUrl as getSharedAvatarUrl, $, $$ } from './ui.js';
 import { openProfileModal } from './clickprofile.js';
+import { formatRichText } from './rich-text.js'; // Import Rich Text formatting helper
 
 let map;
 let markersLayer;
@@ -15,6 +16,7 @@ const state = {
     deletedMedia: [],
     selectedCollaborators: [],
     sort: { key: 'project_name', order: 'asc' },
+    quillEditors: {} // Store editor instances
 };
 
 const t = {
@@ -23,30 +25,13 @@ const t = {
         auth: { signin: "Sign in", signout: "Sign out" },
         map: { add: "Add New Point", edit_panel_title: "Edit Point", add_panel_title: "Add New Point", deleteConfirm: "Are you sure you want to delete this point? This action cannot be undone." },
         form: { 
-            media: "Media (videos/images)", 
-            institution: "Institution (Required)", 
-            project_name: "Project Name (Required)", 
-            latitude: "Latitude (Required)", 
-            longitude: "Longitude (Required)", 
-            start_year: "Start Year (Required)", 
-            area: "Area (ha) (Required)", 
-            associated_crops: "Target Species / Crops (Required)", 
-            av_system_type: "AV System Tech (Required)", 
-            system_category: "System Type (Required)", 
-            affiliation: "Affiliation", 
-            link: "Website Link", 
-            description: "Description", 
-            leadership: "Leadership", 
-            facilities: "Facilities", 
-            equipment: "Equipment", 
-            capabilities: "Capabilities", 
-            experiments: "Experiments", 
-            cancel: "Cancel", 
-            save: "Save Point", 
-            saving: "Saving...", 
-            generating_capacity_kw: "Generating Capacity (kW)", 
-            keywords: "Keywords", 
-            collaborators: "Collaborators" 
+            media: "Media (videos/images)", institution: "Institution (Required)", project_name: "Project Name (Required)", 
+            latitude: "Latitude (Required)", longitude: "Longitude (Required)", start_year: "Start Year (Required)", 
+            area: "Area (ha) (Required)", associated_crops: "Target Species / Crops (Required)", av_system_type: "AV System Tech (Required)", 
+            system_category: "System Type (Required)", affiliation: "Affiliation", link: "Website Link", 
+            description: "Description", leadership: "Leadership", facilities: "Facilities", equipment: "Equipment", 
+            capabilities: "Capabilities", experiments: "Experiments", cancel: "Cancel", save: "Save Point", 
+            saving: "Saving...", generating_capacity_kw: "Generating Capacity (kW)", keywords: "Keywords", collaborators: "Collaborators" 
         },
         view: { keywords: "Keywords", generating_capacity_kw: "Capacity", collaborators: "Collaborators" },
         popup: { project: "Project", species: "Target Species", system: "System Tech", area: "Area", capacity: "Capacity" },
@@ -59,30 +44,13 @@ const t = {
         auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
         map: { add: "Añadir Nuevo Punto", edit_panel_title: "Editar Punto", add_panel_title: "Añadir Nuevo Punto", deleteConfirm: "¿Estás seguro de que quieres eliminar este punto? Esta acción no se puede deshacer." },
         form: { 
-            media: "Multimedia (vídeos/imágenes)", 
-            institution: "Institución (Obligatorio)", 
-            project_name: "Nombre del proyecto (Obligatorio)", 
-            latitude: "Latitud (Obligatorio)", 
-            longitude: "Longitud (Obligatorio)", 
-            start_year: "Año de inicio (Obligatorio)", 
-            area: "Superficie (ha) (Obligatorio)", 
-            associated_crops: "Especies Objetivo / Cultivos (Obligatorio)", 
-            av_system_type: "Tecnología de sistema AV (Obligatorio)", 
-            system_category: "Tipo de Sistema (Obligatorio)", 
-            affiliation: "Afiliación", 
-            link: "Enlace al sitio web", 
-            description: "Descripción", 
-            leadership: "Liderazgo", 
-            facilities: "Instalaciones", 
-            equipment: "Equipo", 
-            capabilities: "Capacidades", 
-            experiments: "Experimentos", 
-            cancel: "Cancelar", 
-            save: "Guardar Punto", 
-            saving: "Guardando...", 
-            generating_capacity_kw: "Capacidad de Generación (kW)", 
-            keywords: "Palabras Clave", 
-            collaborators: "Colaboradores" 
+            media: "Multimedia (vídeos/imágenes)", institution: "Institución (Obligatorio)", project_name: "Nombre del proyecto (Obligatorio)", 
+            latitude: "Latitud (Obligatorio)", longitude: "Longitud (Obligatorio)", start_year: "Año de inicio (Obligatorio)", 
+            area: "Superficie (ha) (Obligatorio)", associated_crops: "Especies Objetivo / Cultivos (Obligatorio)", av_system_type: "Tecnología de sistema AV (Obligatorio)", 
+            system_category: "Tipo de Sistema (Obligatorio)", affiliation: "Afiliación", link: "Enlace al sitio web", 
+            description: "Descripción", leadership: "Liderazgo", facilities: "Instalaciones", equipment: "Equipo", 
+            capabilities: "Capacidades", experiments: "Experimentos", cancel: "Cancelar", save: "Guardar Punto", 
+            saving: "Guardando...", generating_capacity_kw: "Capacidad de Generación (kW)", keywords: "Palabras Clave", collaborators: "Colaboradores" 
         },
         view: { keywords: "Palabras Clave", generating_capacity_kw: "Capacidad", collaborators: "Colaboradores" },
         popup: { project: "Proyecto", species: "Especies Objetivo", system: "Tecnología de Sistema", area: "Superficie", capacity: "Capacidad" },
@@ -114,6 +82,29 @@ function setFlash(msg, isError = false, timeout = 3000) {
 function escapeHtml(s = "") {
     if (s === null || s === undefined) return "";
     return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+}
+
+// Helper to initialize Quill editor
+function initQuill(selector) {
+    if (!window.Quill) return null;
+    return new Quill(selector, {
+      theme: 'snow',
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline'],
+          [{ 'color': [] }, { 'background': [] }],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          ['link', 'clean']
+        ]
+      }
+    });
+}
+
+// Helper to get content from Quill
+function getQuillContent(quill) {
+    if (!quill) return null;
+    if (quill.getText().trim().length === 0 && quill.root.innerHTML === '<p><br></p>') return null;
+    return quill.root.innerHTML;
 }
 
 function checkAccess() {
@@ -403,16 +394,18 @@ async function createViewPanelContent(point) {
           public_avatar_url: await getSharedAvatarUrl(c.avatar_url),
       }))
     );
+    
+    // UPDATED: Use formatRichText for these fields
     const createDetailSection = (labelKey, value, isHtml = false) => {
         if (!value || (Array.isArray(value) && value.length === 0)) return '';
         const rawLabel = tr(labelKey);
         const label = cleanViewLabel(rawLabel);
+        
+        // If isHtml is true, wrap in rich text formatter
         const content = isHtml
-          ? value
-          : escapeHtml(Array.isArray(value) ? value.join(', ') : value).replace(
-              /\n/g,
-              '<br>'
-          );
+          ? formatRichText(value)
+          : escapeHtml(Array.isArray(value) ? value.join(', ') : value).replace(/\n/g, '<br>');
+
         return `<div class="py-4 border-b border-slate-100">
           <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">${label}</h4>
           <div class="text-slate-700 prose prose-sm max-w-none">${content}</div>
@@ -520,15 +513,15 @@ async function createViewPanelContent(point) {
             </div>
 
             <div>
-                ${createDetailSection('form.description', point.description)}
+                ${createDetailSection('form.description', point.description, true)}
                 ${createDetailSection('form.start_year', point.start_year)}
                 ${createDetailSection('view.keywords', point.keywords)}
                 ${createDetailSection('form.affiliation', point.affiliation)}
                 ${createDetailSection('form.leadership', point.leadership, true)}
-                ${createDetailSection('form.facilities', point.facilities)}
-                ${createDetailSection('form.equipment', point.equipment)}
-                ${createDetailSection('form.capabilities', point.capabilities)}
-                ${createDetailSection('form.experiments', point.experiments)}
+                ${createDetailSection('form.facilities', point.facilities, true)}
+                ${createDetailSection('form.equipment', point.equipment, true)}
+                ${createDetailSection('form.capabilities', point.capabilities, true)}
+                ${createDetailSection('form.experiments', point.experiments, true)}
             </div>
         </div>`;
 }
@@ -540,6 +533,10 @@ function openEditPanel(point = null) {
     state.deletedMedia = [];
     state.selectedCollaborators = [];
     $('#point-form').reset();
+    
+    // Clear Quill Editors
+    Object.values(state.quillEditors).forEach(q => q.setContents([]));
+
     if (point) {
         $('#panel-title').textContent = tr('map.edit_panel_title');
         $('#pointId').value = point.id;
@@ -548,10 +545,23 @@ function openEditPanel(point = null) {
         } catch {
             state.existingMedia = [];
         }
+        
+        // Populate Standard Fields
         Object.keys(point).forEach((key) => {
             const el = $(`#${key}`);
-            if (el) el.value = Array.isArray(point[key]) ? point[key].join(', ') : point[key] || '';
+            if (el && el.tagName !== 'DIV') { // Skip divs (editors)
+                 el.value = Array.isArray(point[key]) ? point[key].join(', ') : point[key] || '';
+            }
         });
+
+        // Populate Quill Editors
+        if(state.quillEditors.description) state.quillEditors.description.root.innerHTML = point.description || '';
+        if(state.quillEditors.leadership) state.quillEditors.leadership.root.innerHTML = point.leadership || '';
+        if(state.quillEditors.facilities) state.quillEditors.facilities.root.innerHTML = point.facilities || '';
+        if(state.quillEditors.equipment) state.quillEditors.equipment.root.innerHTML = point.equipment || '';
+        if(state.quillEditors.capabilities) state.quillEditors.capabilities.root.innerHTML = point.capabilities || '';
+        if(state.quillEditors.experiments) state.quillEditors.experiments.root.innerHTML = point.experiments || '';
+
         state.selectedCollaborators = [...point.collaborators];
     } else {
         $('#panel-title').textContent = tr('map.add_panel_title');
@@ -571,6 +581,8 @@ function closeEditPanel() {
     state.deletedMedia = [];
     state.selectedCollaborators = [];
     $('#point-form').reset();
+    // Clear Quill Editors
+    Object.values(state.quillEditors).forEach(q => q.setContents([]));
     $('#mediaPreviewGrid').innerHTML = '';
 }
 
@@ -697,12 +709,14 @@ async function handleFormSubmit(e) {
             image_url: legacyImageUrl,
             affiliation: $('#affiliation').value || null,
             link: $('#link').value || null,
-            description: $('#description').value || null,
-            leadership: $('#leadership').value || null,
-            facilities: $('#facilities').value || null,
-            equipment: $('#equipment').value || null,
-            capabilities: $('#capabilities').value || null,
-            experiments: $('#experiments').value || null,
+            // UPDATED: Get Content from Quill
+            description: getQuillContent(state.quillEditors.description),
+            leadership: getQuillContent(state.quillEditors.leadership),
+            facilities: getQuillContent(state.quillEditors.facilities),
+            equipment: getQuillContent(state.quillEditors.equipment),
+            capabilities: getQuillContent(state.quillEditors.capabilities),
+            experiments: getQuillContent(state.quillEditors.experiments),
+            
             created_by: authState.profile.id,
             generating_capacity_kw:
               parseFloat($('#generating_capacity_kw').value) || null,
@@ -899,6 +913,14 @@ function wireMapUI() {
             }
         }
     });
+    
+    // INITIALIZE QUILL EDITORS
+    state.quillEditors.description = initQuill('#description');
+    state.quillEditors.leadership = initQuill('#leadership');
+    state.quillEditors.facilities = initQuill('#facilities');
+    state.quillEditors.equipment = initQuill('#equipment');
+    state.quillEditors.capabilities = initQuill('#capabilities');
+    state.quillEditors.experiments = initQuill('#experiments');
 }
 
 export function initMap() {

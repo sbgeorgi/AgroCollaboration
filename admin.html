@@ -27,6 +27,10 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales-all.global.min.js"></script>
 
+  <!-- Quill.js (Rich Text Editor) v2.0 -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
+
   <!-- External Tailwind Config -->
   <script src="theme.js"></script>
 
@@ -82,6 +86,42 @@
     dialog::backdrop { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); }
     dialog[open] { animation: modal-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes modal-pop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+    /* Quill Editor Customization to match Input Fields */
+    .editor-wrapper {
+      @apply w-full bg-[var(--bg-input)] border border-transparent rounded-xl transition-all shadow-inner overflow-hidden;
+    }
+    .editor-wrapper:hover {
+      @apply bg-white shadow-sm;
+    }
+    .editor-wrapper:focus-within {
+      @apply ring-2 ring-[var(--color-brand-light)] border-[var(--color-brand)] bg-white;
+    }
+    
+    .ql-toolbar.ql-snow {
+      border: none !important;
+      border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+      background: rgba(255,255,255,0.5);
+      padding: 6px 8px !important;
+    }
+    .ql-container.ql-snow {
+      border: none !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 0.875rem !important; /* text-sm */
+    }
+    .ql-editor {
+      min-height: 100px;
+      padding: 12px 16px !important;
+      color: #1e293b;
+    }
+    .ql-editor.ql-blank::before {
+      color: #94a3b8 !important; /* placeholder color */
+      font-style: normal !important;
+    }
+    /* Toolbar button adjustments */
+    .ql-snow .ql-stroke { stroke: #64748b !important; }
+    .ql-snow .ql-fill { fill: #64748b !important; }
+    .ql-snow .ql-picker { color: #64748b !important; }
   </style>
 
   <!-- Lucide Icons -->
@@ -165,10 +205,22 @@
                       <div><label class="label-text" data-i18n="event.title_es">Title (ES)</label><input id="titleEs"
                           class="input-field" /></div>
                     </div>
-                    <div><label class="label-text" data-i18n="event.desc_en">Description (EN)</label><textarea
-                        id="descEn" class="input-field h-24 resize-y"></textarea></div>
-                    <div><label class="label-text" data-i18n="event.desc_es">Description (ES)</label><textarea
-                        id="descEs" class="input-field h-24 resize-y"></textarea></div>
+                    
+                    <!-- Description EN Editor -->
+                    <div>
+                      <label class="label-text" data-i18n="event.desc_en">Description (EN)</label>
+                      <div class="editor-wrapper">
+                        <div id="editorDescEn"></div>
+                      </div>
+                    </div>
+                    
+                    <!-- Description ES Editor -->
+                    <div>
+                      <label class="label-text" data-i18n="event.desc_es">Description (ES)</label>
+                      <div class="editor-wrapper">
+                        <div id="editorDescEs"></div>
+                      </div>
+                    </div>
 
                     <div class="grid grid-cols-2 gap-4">
                       <div><label class="label-text" data-i18n="event.start">Start</label><input id="startTime"
@@ -277,10 +329,21 @@
                 type="datetime-local" class="input-field" /></div>
           </div>
 
-          <div><label class="label-text" data-i18n="event.desc_en">Description (EN)</label><textarea id="editDescEn"
-              class="input-field h-20 resize-y"></textarea></div>
-          <div><label class="label-text" data-i18n="event.desc_es">Description (ES)</label><textarea id="editDescEs"
-              class="input-field h-20 resize-y"></textarea></div>
+          <!-- Edit Description EN -->
+          <div>
+            <label class="label-text" data-i18n="event.desc_en">Description (EN)</label>
+            <div class="editor-wrapper">
+              <div id="editEditorDescEn"></div>
+            </div>
+          </div>
+
+          <!-- Edit Description ES -->
+          <div>
+            <label class="label-text" data-i18n="event.desc_es">Description (ES)</label>
+            <div class="editor-wrapper">
+              <div id="editEditorDescEs"></div>
+            </div>
+          </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -342,7 +405,8 @@
       events: [],
       profiles: [],
       tagFilter: [],
-      calendar: null
+      calendar: null,
+      quillEditors: {} // Store quill instances
     };
 
     // Merged Translation Object (Admin Specific)
@@ -406,6 +470,23 @@
     const findConflicts = (startIso, endIso, excludeId = null) => { if (!startIso) return []; return state.events.filter(ev => { if (ev.status === 'canceled' || (excludeId != null && String(ev.id) === String(excludeId))) return false; return overlaps(startIso, endIso, ev.start_time, ev.end_time); }); };
     const normalizeTags = (s) => String(s || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
 
+    // Quill Initialization Helper
+    const initQuill = (selector) => {
+      const toolbarOptions = [
+        ['bold', 'italic', 'underline'],        // toggled buttons
+        [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['link', 'clean']                                         // remove formatting button
+      ];
+
+      return new Quill(selector, {
+        theme: 'snow',
+        modules: {
+          toolbar: toolbarOptions
+        }
+      });
+    };
+
     function applyPageI18n() {
       applyI18n(t, state.language);
       if (state.calendar) state.calendar.setOption('locale', state.language === 'es' ? 'es' : 'en');
@@ -431,6 +512,12 @@
         $('#admin').classList.remove('hidden');
         $('#accessDenied').classList.add('hidden');
 
+        // Initialize Editors
+        state.quillEditors.createEn = initQuill('#editorDescEn');
+        state.quillEditors.createEs = initQuill('#editorDescEs');
+        state.quillEditors.editEn = initQuill('#editEditorDescEn');
+        state.quillEditors.editEs = initQuill('#editEditorDescEs');
+
         // Load data
         await loadProfiles();
         await loadBanner();
@@ -451,7 +538,6 @@
 
     const createProfileOptions = (selectedId) => `<option value="">-- Link Profile --</option>${state.profiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.full_name || '')}</option>`).join('')}`;
 
-    // Improved Speaker Row HTML (Vertically Stacked to fix squeezing)
     const addSpeakerField = (containerId, speaker = {}) => {
       const container = $(`#${containerId}`);
       const row = document.createElement('div');
@@ -540,8 +626,11 @@
       $("#editEventId").value = String(ev.id);
       $("#editTitleEn").value = ev.title_en || "";
       $("#editTitleEs").value = ev.title_es || "";
-      $("#editDescEn").value = ev.description_en || "";
-      $("#editDescEs").value = ev.description_es || "";
+      
+      // Populate Editors
+      state.quillEditors.editEn.root.innerHTML = ev.description_en || "";
+      state.quillEditors.editEs.root.innerHTML = ev.description_es || "";
+
       $("#editStartTime").value = toLocalInputValue(ev.start_time);
       $("#editEndTime").value = toLocalInputValue(ev.end_time);
       $("#editEventLang").value = ev.language || "bi";
@@ -631,6 +720,12 @@
       })).filter(s => s.name);
     };
 
+    // Helper to extract content from Quill (handle empty state)
+    const getQuillContent = (quill) => {
+      if (quill.getText().trim().length === 0 && quill.root.innerHTML === '<p><br></p>') return null;
+      return quill.root.innerHTML;
+    };
+
     // --- FORM SUBMISSION LOGIC ---
     const createEvent = async (payload) => {
       if (!payload.title_en || !payload.start_time) { setFlash("Title (EN) and Start Time are required.", 3000); return; }
@@ -644,6 +739,11 @@
       }
       setFlash("Event created!");
       $("#createEventForm").reset();
+      
+      // Reset editors
+      state.quillEditors.createEn.setContents([]);
+      state.quillEditors.createEs.setContents([]);
+
       $('#startTime').type = 'text'; $('#endTime').type = 'text';
       $("#slotConflicts").innerHTML = '';
       renderSpeakerFields('speakersContainer');
@@ -730,8 +830,8 @@
       await createEvent({
         title_en: $("#titleEn")?.value.trim(),
         title_es: $("#titleEs")?.value.trim() || null,
-        description_en: $("#descEn")?.value.trim() || null,
-        description_es: $("#descEs")?.value.trim() || null,
+        description_en: getQuillContent(state.quillEditors.createEn),
+        description_es: getQuillContent(state.quillEditors.createEs),
         start_time: toIsoOrNull($("#startTime")?.value),
         end_time: toIsoOrNull($("#endTime")?.value),
         language: $("#eventLang")?.value || "bi",
@@ -756,8 +856,8 @@
       await updateEvent(id, {
         title_en: $("#editTitleEn").value?.trim(),
         title_es: $("#editTitleEs").value?.trim() || null,
-        description_en: $("#editDescEn").value?.trim() || null,
-        description_es: $("#editDescEs").value?.trim() || null,
+        description_en: getQuillContent(state.quillEditors.editEn),
+        description_es: getQuillContent(state.quillEditors.editEs),
         language: $("#editEventLang").value,
         host_org: $("#editHostOrg").value?.trim() || null,
         zoom_url: $("#editZoomUrl").value?.trim() || null,
