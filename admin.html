@@ -390,6 +390,10 @@
     </div>
   </dialog>
 
+  <!-- ================= DATALISTS FOR AUTOCOMPLETE ================= -->
+  <datalist id="dl-profiles"></datalist>
+  <datalist id="dl-affiliations"></datalist>
+
   <!-- ================= LOGIC ================= -->
   <script type="module">
     import { renderLayout } from './layout.js';
@@ -423,7 +427,7 @@
           lang: "Language", recording_url: "Recording URL", create: "Create Event",
           edit_title: "Edit Event", delete: "Delete"
         },
-        speakers: { title: "Speakers", add: "+ Add Speaker", name: "Name*", affiliation: "Affiliation", link_profile: "Link Profile", primary: "Primary", remove: "Remove" },
+        speakers: { title: "Speakers", add: "+ Add Speaker", name: "Name*", affiliation: "Affiliation", link_profile: "Link Profile (Search)", primary: "Primary", remove: "Remove" },
         tags: { label: "Tags", placeholder: "earth science, agriculture...", filter: "Filter by tags..." },
         save: "Save Changes",
         access_denied: { title: "Access Denied", body: "You must be an organizer to view this page." },
@@ -448,7 +452,7 @@
           lang: "Idioma", recording_url: "URL de grabación", create: "Crear evento",
           edit_title: "Editar Evento", delete: "Eliminar"
         },
-        speakers: { title: "Ponentes", add: "+ Añadir Ponente", name: "Nombre*", affiliation: "Afiliación", link_profile: "Vincular Perfil", primary: "Principal", remove: "Quitar" },
+        speakers: { title: "Ponentes", add: "+ Añadir Ponente", name: "Nombre*", affiliation: "Afiliación", link_profile: "Vincular Perfil (Buscar)", primary: "Principal", remove: "Quitar" },
         tags: { label: "Etiquetas", placeholder: "ciencias, agricultura...", filter: "Filtrar etiquetas..." },
         save: "Guardar Cambios",
         access_denied: { title: "Acceso Denegado", body: "Debe ser un organizador para ver esta página." },
@@ -533,20 +537,63 @@
 
     const loadProfiles = async () => {
       const { data, error } = await supabase.from('profiles').select('id, full_name, affiliation').order('full_name');
-      if (error) { setFlash(tr(t, state.language, 'errors.load_profiles'), 3000); state.profiles = []; } else { state.profiles = data || []; }
-    };
+      if (error) { 
+        setFlash(tr(t, state.language, 'errors.load_profiles'), 3000); 
+        state.profiles = []; 
+      } else { 
+        state.profiles = data || []; 
+        
+        // Populate Datalists for Dropdown + Typing
+        const dlProfiles = document.getElementById('dl-profiles');
+        const dlAffiliations = document.getElementById('dl-affiliations');
+        
+        // 1. All Profiles
+        dlProfiles.innerHTML = state.profiles
+            .map(p => `<option value="${escapeHtml(p.full_name)}">`)
+            .join('');
 
-    const createProfileOptions = (selectedId) => `<option value="">-- Link Profile --</option>${state.profiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.full_name || '')}</option>`).join('')}`;
+        // 2. Unique Affiliations
+        const uniqueAffiliations = [...new Set(state.profiles.map(p => p.affiliation).filter(Boolean))].sort();
+        dlAffiliations.innerHTML = uniqueAffiliations
+            .map(aff => `<option value="${escapeHtml(aff)}">`)
+            .join('');
+      }
+    };
 
     const addSpeakerField = (containerId, speaker = {}) => {
       const container = $(`#${containerId}`);
       const row = document.createElement('div');
       row.className = 'speaker-row flex flex-col gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm mb-3 transition-all hover:shadow-md';
+      
+      // Determine profile name for the search box if a profile_id exists
+      let profileNameVal = "";
+      if (speaker.profile_id) {
+          const matched = state.profiles.find(p => p.id === speaker.profile_id);
+          if (matched) profileNameVal = matched.full_name;
+      }
+
       row.innerHTML = `
         <div class="w-full space-y-2">
-            <input type="text" class="speaker-name input-field w-full" placeholder="${tr(t, state.language, 'speakers.name')}" value="${escapeHtml(speaker.name || '')}" required>
-            <input type="text" class="speaker-affiliation input-field w-full" placeholder="${tr(t, state.language, 'speakers.affiliation')}" value="${escapeHtml(speaker.affiliation || '')}">
-            <select class="speaker-profile input-field w-full cursor-pointer">${createProfileOptions(speaker.profile_id)}</select>
+            <!-- Name Input -->
+            <input type="text" class="speaker-name input-field w-full" 
+                   placeholder="${tr(t, state.language, 'speakers.name')}" 
+                   value="${escapeHtml(speaker.name || '')}" required>
+            
+            <!-- Affiliation Input with Datalist (Typing + Dropdown) -->
+            <input type="text" class="speaker-affiliation input-field w-full" 
+                   placeholder="${tr(t, state.language, 'speakers.affiliation')}" 
+                   list="dl-affiliations"
+                   value="${escapeHtml(speaker.affiliation || '')}">
+            
+            <!-- Profile Link Input with Datalist (Typing + Dropdown) + Hidden ID -->
+            <div class="relative">
+                <input type="text" class="speaker-profile-search input-field w-full" 
+                       placeholder="${tr(t, state.language, 'speakers.link_profile')}" 
+                       list="dl-profiles" 
+                       autocomplete="off"
+                       value="${escapeHtml(profileNameVal)}">
+                <input type="hidden" class="speaker-profile-id" value="${speaker.profile_id || ''}">
+            </div>
         </div>
         <div class="flex items-center justify-between pt-2 border-t border-gray-100">
             <label class="flex items-center gap-2 text-xs text-slate-600 font-medium cursor-pointer select-none hover:text-brand-600 transition-colors">
@@ -568,6 +615,45 @@
       if (speakers.length === 0) addSpeakerField(containerId);
       else speakers.forEach(speaker => addSpeakerField(containerId, speaker));
     };
+
+    // Logic to autopopulate Affiliation and Name when a profile is selected
+    const setupSpeakerAutofill = (containerId) => {
+        const container = $(`#${containerId}`);
+        container.addEventListener('input', (e) => {
+            // Check if input event came from the profile search box
+            if (e.target.matches('.speaker-profile-search')) {
+                const searchVal = e.target.value;
+                const row = e.target.closest('.speaker-row');
+                const idInput = row.querySelector('.speaker-profile-id');
+                const nameInput = row.querySelector('.speaker-name');
+                const affiliationInput = row.querySelector('.speaker-affiliation');
+
+                // Find profile by exact name match from datalist
+                const profile = state.profiles.find(p => p.full_name === searchVal);
+
+                if (profile) {
+                    // Match found: Link ID
+                    idInput.value = profile.id;
+                    
+                    // Autopopulate Name if empty or if user is searching to link
+                    // (Use the profile name to ensure consistency)
+                    nameInput.value = profile.full_name;
+
+                    // Autopopulate Affiliation
+                    if (profile.affiliation) {
+                        affiliationInput.value = profile.affiliation;
+                    }
+                } else {
+                    // No match (user typing custom name or hasn't finished typing)
+                    idInput.value = '';
+                }
+            }
+        });
+    };
+
+    // Initialize Autofill Listeners
+    setupSpeakerAutofill('speakersContainer');
+    setupSpeakerAutofill('editSpeakersContainer');
 
     const passesTagFilter = (ev) => {
       if (!state.tagFilter.length) return true;
@@ -715,7 +801,8 @@
       return Array.from($(`#${containerId}`).querySelectorAll('.speaker-row')).map(row => ({
         name: row.querySelector('.speaker-name').value.trim(),
         affiliation: row.querySelector('.speaker-affiliation').value.trim() || null,
-        profile_id: row.querySelector('.speaker-profile').value || null,
+        // Get value from hidden input now
+        profile_id: row.querySelector('.speaker-profile-id').value || null,
         primary_speaker: row.querySelector('.speaker-primary').checked,
       })).filter(s => s.name);
     };

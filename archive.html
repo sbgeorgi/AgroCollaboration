@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
@@ -23,6 +24,10 @@
 
   <!-- External Tailwind Config -->
   <script src="theme.js"></script>
+
+  <!-- Quill Rich Text Editor (REQUIRED FOR EDIT MODAL) -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
 
   <!-- Custom CSS -->
   <style type="text/tailwindcss">
@@ -60,12 +65,14 @@
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+
 </head>
 
 <body
   class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
   <!-- ================= MAIN APP CONTAINER ================= -->
+
   <main class="flex-1 relative overflow-hidden bg-gray-50">
 
     <!-- ================= VIEW: ARCHIVE ================= -->
@@ -139,7 +146,8 @@
         class="relative flex-1 md:m-4 lg:mx-auto lg:max-w-[1400px] w-full bg-white md:rounded-xl shadow-2xl flex flex-col overflow-hidden border border-white/40 h-full">
 
         <!-- Sticky Header -->
-        <div id="compactEventHeaderContainer" class="flex-none p-4 border-b border-gray-100 bg-white z-20 sticky top-0">
+        <div id="compactEventHeaderContainer"
+          class="flex-none p-4 border-b border-gray-100 bg-white z-20 sticky top-0">
         </div>
 
         <!-- Navigation -->
@@ -170,14 +178,18 @@
                 <div class="p-3 border-b border-gray-200 bg-white flex justify-between items-center">
                   <h3 class="font-bold text-xs text-slate-500 uppercase">Topics</h3>
                 </div>
-                <div class="p-2 bg-gray-50 border-b border-gray-200">
-                  <form id="newThreadForm" class="flex gap-1">
-                    <input id="threadTitle"
-                      class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-brand-500 outline-none"
-                      placeholder="New Topic..." autocomplete="off">
-                    <button
-                      class="bg-brand-600 hover:bg-brand-700 text-white px-2 rounded text-lg font-bold shadow-sm leading-none pb-0.5">+</button>
-                  </form>
+                <!-- New Topic Form -->
+                <div class="p-3 bg-gray-50 border-b border-gray-200">
+                    <button id="btnToggleThreadForm" class="w-full py-2 px-3 bg-white hover:bg-brand-50 hover:text-brand-700 text-slate-600 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors border border-gray-200 shadow-sm">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> New Topic
+                    </button>
+                    <form id="newThreadForm" class="hidden flex-col gap-2 mt-1 animate-fade-in">
+                        <input id="threadTitle" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 outline-none shadow-sm" placeholder="Topic Title..." autocomplete="off">
+                        <div class="flex gap-2 justify-end">
+                            <button type="button" id="cancelThreadBtn" class="px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded">Cancel</button>
+                            <button type="submit" class="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded text-xs font-bold shadow-sm">Create</button>
+                        </div>
+                    </form>
                 </div>
                 <div id="threadsList" class="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar"></div>
               </div>
@@ -223,11 +235,15 @@
   </main>
 
   <!-- ================= LOGIC ================= -->
+
   <script type="module">
     import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
     import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl } from './ui.js';
+    
+    // IMPORT stripHtml to fix the card previews
+    import { stripHtml } from './rich-text.js';
 
     // Inject Layout with 'archive' active state
     renderLayout('archive');
@@ -277,18 +293,28 @@
       state.language = state.language === 'en' ? 'es' : 'en';
       localStorage.setItem("lang", state.language);
       applyI18n(t, state.language);
-      buildFilters();
-      renderArchiveList();
+      initYearDropdown(); 
+      updateArchiveView(); 
       if (state.selectedEvent && eventLogic) eventLogic.reRender();
     }
 
     async function loadEvents() {
       hide($('#content-area'));
       show($('#archiveLoader'));
+      
+      // NEW: Subscribe to live changes to keep archive in sync
+      supabase.channel('public:events').on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, async () => {
+         const { data } = await supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", { ascending: false });
+         state.events = data || [];
+         updateArchiveView();
+      }).subscribe();
+      
       const { data } = await supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", { ascending: false });
       state.events = data || [];
-      buildFilters();
-      renderArchiveList();
+      
+      initYearDropdown();
+      updateArchiveView();
+      
       hide($('#archiveLoader'));
       show($('#content-area'));
 
@@ -306,35 +332,22 @@
       }
     }
 
-    function buildFilters() {
+    function initYearDropdown() {
       const yearSel = $('#yearFilter');
       const years = [...new Set(state.events.map(e => new Date(e.start_time).getFullYear()))];
       yearSel.innerHTML = `<option value="all">${localTr('archive.all_years')}</option>` + years.map(y => `<option value="${y}">${y}</option>`).join("");
-      const tagsContainer = $('#tagsFilter');
-      const allTags = new Set(state.events.flatMap(e => e.topic_tags || []));
-      if (allTags.size > 0) {
-        show($('#tagsFilterBar'));
-        tagsContainer.innerHTML = [...allTags].sort().map(tag => `<button data-tag="${escapeHtml(tag)}" class="px-3 py-1 bg-white text-slate-600 rounded-full text-xs font-semibold border border-gray-200 hover:bg-brand-50 hover:border-brand-200 hover:text-brand-800 transition-colors shadow-sm">${escapeHtml(tag)}</button>`).join('');
-      } else {
-        hide($('#tagsFilterBar'));
-      }
       yearSel.value = state.filters.year;
     }
 
-    // --- RENDER FUNCTION (EXACT REPLICA OF INDEX.HTML CARD STYLE) ---
-    async function renderArchiveList() {
-      const list = $("#archiveList"), empty = $("#emptyArchive");
+    function updateArchiveView() {
       const { search, year, tags, hasRecording } = state.filters;
       const now = new Date();
 
-      const filtered = state.events.filter(e => {
+      // Step 1: Base Context (Search + Year + Recording)
+      const contextEvents = state.events.filter(e => {
         if (new Date(e.start_time) >= now) return false;
         if (hasRecording && !e.recording_url) return false;
         if (year !== 'all' && new Date(e.start_time).getFullYear() != year) return false;
-        if (tags.size > 0) {
-          const eventTags = new Set(e.topic_tags || []);
-          for (const t of tags) { if (!eventTags.has(t)) return false; }
-        }
         if (search) {
           const term = search.toLowerCase();
           const speakerMatch = (e.event_speakers || []).some(s => s.profile?.full_name?.toLowerCase().includes(term) || s.profile?.affiliation?.toLowerCase().includes(term));
@@ -344,26 +357,84 @@
         return true;
       });
 
-      if (filtered.length > 0) { hide(empty); show(list); }
+      // Step 2: Render Tags based on Context Events
+      renderTagCloud(contextEvents);
+
+      // Step 3: Filter by selected Tags for the Grid
+      const gridEvents = contextEvents.filter(e => {
+        if (tags.size > 0) {
+          const eventTags = new Set(e.topic_tags || []);
+          for (const t of tags) { if (!eventTags.has(t)) return false; }
+        }
+        return true;
+      });
+
+      renderArchiveGrid(gridEvents);
+    }
+
+    function renderTagCloud(events) {
+      const tagsContainer = $('#tagsFilter');
+      const tagsBar = $('#tagsFilterBar');
+      
+      const tagCounts = {};
+      events.forEach(e => {
+        (e.topic_tags || []).forEach(tag => {
+          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+        });
+      });
+
+      const sortedTags = Object.entries(tagCounts).sort((a, b) => {
+        const diff = b[1] - a[1];
+        if (diff !== 0) return diff;
+        return a[0].localeCompare(b[0]);
+      });
+
+      if (sortedTags.length > 0) {
+        show(tagsBar);
+        tagsContainer.innerHTML = sortedTags.map(([tag, count]) => {
+          const isSelected = state.filters.tags.has(tag);
+          const btnClass = isSelected 
+             ? "bg-brand-100 border-brand-300 text-brand-900" 
+             : "bg-white text-slate-600 border-gray-200 hover:bg-brand-50 hover:border-brand-200 hover:text-brand-800";
+          
+          const countClass = isSelected
+             ? "bg-brand-200 text-brand-800"
+             : "bg-slate-100 text-slate-400";
+
+          return `<button data-tag="${escapeHtml(tag)}" class="px-3 py-1 rounded-full text-xs font-semibold border transition-colors shadow-sm flex items-center gap-1.5 ${btnClass}">
+                    ${escapeHtml(tag)}
+                    <span class="text-[10px] px-1.5 rounded-full font-medium ${countClass}">${count}</span>
+                  </button>`;
+        }).join('');
+      } else {
+        hide(tagsBar);
+      }
+    }
+
+    async function renderArchiveGrid(filteredEvents) {
+      const list = $("#archiveList"), empty = $("#emptyArchive");
+      
+      if (filteredEvents.length > 0) { hide(empty); show(list); }
       else { show(empty); hide(list); return; }
 
-      const html = await Promise.all(filtered.map(async ev => {
+      const html = await Promise.all(filteredEvents.map(async ev => {
         const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
-        const desc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
+        
+        // --- FIX: USE stripHtml HERE ---
+        const rawDesc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
+        const cleanDesc = escapeHtml(stripHtml(rawDesc || ''));
+
         const start = new Date(ev.start_time);
 
-        // Layout Variables
         const month = start.toLocaleDateString(state.language, { month: 'short' }).toUpperCase();
         const day = start.getDate();
         const time = fmtDateTime(ev.start_time, { hour: 'numeric', minute: '2-digit' });
         const weekday = start.toLocaleDateString(state.language, { weekday: 'long' });
 
-        // Speaker Logic
         const speakers = ev.event_speakers || [];
         const featuredSpeakers = speakers.slice(0, 2);
         const extraSpeakers = speakers.slice(2);
 
-        // Left: Named Pills
         const featuredHtml = await Promise.all(featuredSpeakers.map(async s => {
           const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
           const avatar = img
@@ -377,10 +448,8 @@
                 </div>`;
         }));
 
-        // Right: Stacked Avatars (Rounded Img + Tooltip)
         const extraStackHtml = extraSpeakers.length > 0 ? await Promise.all(extraSpeakers.map(async (s) => {
           const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
-          // Round image directly
           const avatarContent = img
             ? `<img src="${img}" class="w-full h-full object-cover rounded-full" alt="${escapeHtml(s.name)}">`
             : `<span class="text-[9px] font-bold select-none">${(s.name || '?')[0]}</span>`;
@@ -394,7 +463,6 @@
                  </div>`;
         })) : [];
 
-        // Counter (Left of stack)
         const counterHtml = extraSpeakers.length > 0
           ? `<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mr-1 ml-2 whitespace-nowrap">+ ${extraSpeakers.length} MORE</span>`
           : '';
@@ -418,7 +486,6 @@
           speakersSection = `<div class="mt-auto pt-3 border-t border-gray-100 text-[11px] text-slate-400 italic">Speakers TBA</div>`;
         }
 
-        // Watch Button & Tags
         const recordingBtn = ev.recording_url
           ? `<a href="${escapeHtml(ev.recording_url)}" target="_blank" onclick="event.stopPropagation()" class="flex items-center gap-1 px-2.5 py-0.5 rounded-[4px] bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-wider border border-red-200 hover:bg-red-100 transition-colors z-20 relative shadow-sm"><i data-lucide="youtube" class="w-3 h-3"></i> ${localTr('archive.watch_recording')}</a>`
           : '';
@@ -434,6 +501,7 @@
 
         const langCode = ev.language === 'es' ? 'ES' : (ev.language === 'bi' ? 'EN/ES' : 'EN');
 
+        // Use cleanDesc instead of raw html
         return `<article class="group relative flex flex-col h-full bg-white rounded-2xl border border-gray-200 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.1)] hover:border-brand-200 transition-all duration-300 cursor-pointer overflow-hidden" data-open-event="${ev.id}">
                 <div class="p-4 flex flex-col h-full relative z-10">
                     
@@ -463,7 +531,7 @@
                     <!-- Middle -->
                     <div class="mb-2">
                         <h3 class="font-display font-bold text-[1.05rem] text-slate-900 leading-snug mb-1.5 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h3>
-                        <p class="text-[13px] text-slate-500 line-clamp-2 leading-relaxed">${escapeHtml(desc || '')}</p>
+                        <p class="text-[13px] text-slate-500 line-clamp-2 leading-relaxed">${cleanDesc}</p>
                         ${tagsSection}
                     </div>
                     
@@ -478,7 +546,9 @@
 
     // --- MAIN EXECUTION ---
     (async function main() {
-      const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide };
+      // NOTE: We pass 'refreshEventsList' which is mapped to 'updateArchiveView' effectively via re-fetch logic in event.js if needed, 
+      // but event.js expects a function to reload the list. In archive this is updateArchiveView, but with data re-fetch.
+      const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide, refreshEventsList: updateArchiveView };
       eventLogic = initEventLogic(deps);
 
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
@@ -486,9 +556,9 @@
       $$('.tab-link').forEach(tab => tab.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab, e.currentTarget)));
 
       let searchTimer;
-      $('#search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.filters.search = $('#search').value; renderArchiveList(); }, 300); });
-      $('#yearFilter').addEventListener('change', (e) => { state.filters.year = e.target.value; renderArchiveList(); });
-      $('#hasRecording').addEventListener('change', (e) => { state.filters.hasRecording = e.target.checked; renderArchiveList(); });
+      $('#search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.filters.search = $('#search').value; updateArchiveView(); }, 300); });
+      $('#yearFilter').addEventListener('change', (e) => { state.filters.year = e.target.value; updateArchiveView(); });
+      $('#hasRecording').addEventListener('change', (e) => { state.filters.hasRecording = e.target.checked; updateArchiveView(); });
 
       $('#tagsFilter').addEventListener('click', (e) => {
         const btn = e.target.closest('[data-tag]');
@@ -496,12 +566,10 @@
         const tag = btn.dataset.tag;
         if (state.filters.tags.has(tag)) {
           state.filters.tags.delete(tag);
-          btn.classList.remove('bg-brand-100', 'border-brand-300', 'text-brand-900');
         } else {
           state.filters.tags.add(tag);
-          btn.classList.add('bg-brand-100', 'border-brand-300', 'text-brand-900');
         }
-        renderArchiveList();
+        updateArchiveView(); 
       });
 
       document.body.addEventListener('click', e => {
@@ -529,6 +597,7 @@
       await loadEvents();
     })();
   </script>
+
 </body>
 
 </html>

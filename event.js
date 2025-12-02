@@ -18,7 +18,8 @@ export function initEventLogic(deps) {
     getAvatarUrl,
     applyI18n,
     show,
-    hide
+    hide,
+    refreshEventsList // Destructured specifically to update background card
   } = deps;
 
   // --- STATE & CHANNELS ---
@@ -341,15 +342,17 @@ export function initEventLogic(deps) {
     setFlash("Event updated successfully!");
     document.getElementById('event-js-editor-modal').close();
 
-    // Reload Event Data
+    // Reload Event Data locally
     const { data: newEv } = await supabase.from('events').select('*, event_speakers(*, profile:profiles(*))').eq('id', id).single();
     if (newEv) {
       state.selectedEvent = newEv;
-      // Update list if exists
       const idx = state.events.findIndex(e => e.id === id);
       if (idx !== -1) state.events[idx] = newEv;
       reRender();
     }
+    
+    // Trigger background update (Live Update fix)
+    if(refreshEventsList) refreshEventsList();
   }
 
   // --- FILES LOGIC ---
@@ -550,7 +553,15 @@ export function initEventLogic(deps) {
       created_by: authState.session.user.id
     }).select().single();
     if (error) setFlash('Failed to create thread');
-    else { input.value = ''; await loadAndRenderThreads(); selectThread(data.id); }
+    else { 
+        input.value = ''; 
+        // Reset toggle UI
+        hide($('#newThreadForm')); 
+        show($('#btnToggleThreadForm'));
+        
+        await loadAndRenderThreads(); 
+        selectThread(data.id); 
+    }
   }
 
   async function handleEditThread(threadId) {
@@ -865,7 +876,6 @@ export function initEventLogic(deps) {
         // Flag Logic
         const countryCode = s.profile?.country ? s.profile.country.toLowerCase() : null;
         
-        // UPDATED: h-8 (large), rounded-md, ml-auto (pushes right), shrink-0 (prevents squash)
         const flagHtml = countryCode 
             ? `<img src="https://flagcdn.com/w80/${countryCode}.png" class="ml-auto h-8 w-auto rounded-md shadow-sm border border-gray-100 object-cover shrink-0" alt="${countryCode}" title="${countryCode.toUpperCase()}">`
             : '';
@@ -893,7 +903,6 @@ export function initEventLogic(deps) {
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         <div class="lg:col-span-8">
             <h3 class="flex items-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">About this session</h3>
-            <!-- UPDATED: Replaced prose classes with formatRichText helper -->
             ${formatRichText(desc || '')}
         </div>
         <div class="lg:col-span-4 space-y-6">
@@ -967,6 +976,18 @@ export function initEventLogic(deps) {
   $('#newThreadForm')?.addEventListener('submit', handleNewThread);
   $('#replyToThreadForm')?.addEventListener('submit', handleNewComment);
   $('#fileInput')?.addEventListener('change', handleFileUpload);
+  
+  // New Thread Toggle UI
+  $('#btnToggleThreadForm')?.addEventListener('click', () => { 
+      show($('#newThreadForm')); 
+      hide($('#btnToggleThreadForm')); 
+      $('#threadTitle').focus(); 
+  });
+  $('#cancelThreadBtn')?.addEventListener('click', () => { 
+      hide($('#newThreadForm')); 
+      show($('#btnToggleThreadForm')); 
+      $('#threadTitle').value = ''; 
+  });
 
   $('#filesList')?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-delete-file]');

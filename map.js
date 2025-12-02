@@ -1,10 +1,20 @@
 import { supabase, authState } from './auth.js';
 import { getAvatarUrl as getSharedAvatarUrl, $, $$ } from './ui.js';
 import { openProfileModal } from './clickprofile.js';
-import { formatRichText } from './rich-text.js'; // Import Rich Text formatting helper
+import { formatRichText } from './rich-text.js';
 
 let map;
 let markersLayer;
+
+// Marker Colors based on System Category
+const categoryColors = {
+    'Crops': '#16a34a',       // Green
+    'Livestock': '#d97706',   // Amber/Brown
+    'Ecovoltaics': '#0891b2', // Cyan/Teal
+    'Aquaculture': '#2563eb', // Blue
+    'Mixed': '#9333ea',       // Purple
+    'Other': '#64748b'        // Slate/Gray
+};
 
 const state = {
     language: localStorage.getItem("lang") || "en",
@@ -15,19 +25,20 @@ const state = {
     existingMedia: [],
     deletedMedia: [],
     selectedCollaborators: [],
-    sort: { key: 'project_name', order: 'asc' },
-    quillEditors: {} // Store editor instances
+    // Sort by Capacity by default
+    sort: { key: 'generating_capacity_kw', order: 'desc' },
+    quillEditors: {}
 };
 
 const t = {
     en: {
         nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network Map", admin: "Admin" },
         auth: { signin: "Sign in", signout: "Sign out" },
-        map: { add: "Add New Point", edit_panel_title: "Edit Point", add_panel_title: "Add New Point", deleteConfirm: "Are you sure you want to delete this point? This action cannot be undone." },
+        map: { add: "Add New Point", edit_panel_title: "Edit Point", add_panel_title: "Add New Point", deleteConfirm: "Are you sure you want to delete this point? This action cannot be undone.", add_prompt: "Do you want to add a new point at this location?" },
         form: { 
             media: "Media (videos/images)", institution: "Institution (Required)", project_name: "Project Name (Required)", 
             latitude: "Latitude (Required)", longitude: "Longitude (Required)", start_year: "Start Year (Required)", 
-            area: "Area (ha) (Required)", associated_crops: "Target Species / Crops (Required)", av_system_type: "AV System Tech (Required)", 
+            area: "Area (m²)", associated_crops: "Target Species / Crops (Required)", av_system_type: "AV System Tech (Required)", 
             system_category: "System Type (Required)", affiliation: "Affiliation", link: "Website Link", 
             description: "Description", leadership: "Leadership", facilities: "Facilities", equipment: "Equipment", 
             capabilities: "Capabilities", experiments: "Experiments", cancel: "Cancel", save: "Save Point", 
@@ -36,17 +47,17 @@ const t = {
         view: { keywords: "Keywords", generating_capacity_kw: "Capacity", collaborators: "Collaborators" },
         popup: { project: "Project", species: "Target Species", system: "System Tech", area: "Area", capacity: "Capacity" },
         notifications: { load_error: "Could not load map points.", save_success: "Point saved successfully!", save_error: "Error saving point.", delete_success: "Point deleted.", delete_error: "Error deleting point.", upload_error: "Media upload failed.", no_collaborators: "At least one collaborator must be selected." },
-        table: { project_name: "Project Name", institution: "Institution", system_type: "System Type", capacity_kw: "Capacity (kW)", area_ha: "Area (ha)" },
+        table: { project_name: "Project Name", institution: "Institution", system_type: "System Type", capacity_kw: "Capacity (kW)", start_year: "Year" },
         footer: { note: "Bilingual, community-driven seminar on agrivoltaics in Latin America." },
     },
     es: {
         nav: { schedule: "Calendario", archive: "Archivo", about: "Acerca de", network: "Mapa de la Red", admin: "Admin" },
         auth: { signin: "Iniciar sesión", signout: "Cerrar sesión" },
-        map: { add: "Añadir Nuevo Punto", edit_panel_title: "Editar Punto", add_panel_title: "Añadir Nuevo Punto", deleteConfirm: "¿Estás seguro de que quieres eliminar este punto? Esta acción no se puede deshacer." },
+        map: { add: "Añadir Nuevo Punto", edit_panel_title: "Editar Punto", add_panel_title: "Añadir Nuevo Punto", deleteConfirm: "¿Estás seguro de que quieres eliminar este punto? Esta acción no se puede deshacer.", add_prompt: "¿Quieres añadir un nuevo punto en esta ubicación?" },
         form: { 
             media: "Multimedia (vídeos/imágenes)", institution: "Institución (Obligatorio)", project_name: "Nombre del proyecto (Obligatorio)", 
             latitude: "Latitud (Obligatorio)", longitude: "Longitud (Obligatorio)", start_year: "Año de inicio (Obligatorio)", 
-            area: "Superficie (ha) (Obligatorio)", associated_crops: "Especies Objetivo / Cultivos (Obligatorio)", av_system_type: "Tecnología de sistema AV (Obligatorio)", 
+            area: "Superficie (m²)", associated_crops: "Especies Objetivo / Cultivos (Obligatorio)", av_system_type: "Tecnología de sistema AV (Obligatorio)", 
             system_category: "Tipo de Sistema (Obligatorio)", affiliation: "Afiliación", link: "Enlace al sitio web", 
             description: "Descripción", leadership: "Liderazgo", facilities: "Instalaciones", equipment: "Equipo", 
             capabilities: "Capacidades", experiments: "Experimentos", cancel: "Cancelar", save: "Guardar Punto", 
@@ -55,7 +66,7 @@ const t = {
         view: { keywords: "Palabras Clave", generating_capacity_kw: "Capacidad", collaborators: "Colaboradores" },
         popup: { project: "Proyecto", species: "Especies Objetivo", system: "Tecnología de Sistema", area: "Superficie", capacity: "Capacidad" },
         notifications: { load_error: "No se pudieron cargar los puntos del mapa.", save_success: "¡Punto guardado exitosamente!", save_error: "Error al guardar el punto.", delete_success: "Punto eliminado.", delete_error: "Error al eliminar el punto.", upload_error: "Falló la subida de multimedia.", no_collaborators: "Se debe seleccionar al menos un colaborador." },
-        table: { project_name: "Nombre del Proyecto", institution: "Institución", system_type: "Tipo de Sistema", capacity_kw: "Capacidad (kW)", area_ha: "Superficie (ha)" },
+        table: { project_name: "Nombre del Proyecto", institution: "Institución", system_type: "Tipo de Sistema", capacity_kw: "Capacidad (kW)", start_year: "Año" },
         footer: { note: "Seminario bilingüe y comunitario sobre agrofotovoltaica en América Latina." },
     }
 };
@@ -84,7 +95,6 @@ function escapeHtml(s = "") {
     return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 }
 
-// Helper to initialize Quill editor
 function initQuill(selector) {
     if (!window.Quill) return null;
     return new Quill(selector, {
@@ -100,7 +110,6 @@ function initQuill(selector) {
     });
 }
 
-// Helper to get content from Quill
 function getQuillContent(quill) {
     if (!quill) return null;
     if (quill.getText().trim().length === 0 && quill.root.innerHTML === '<p><br></p>') return null;
@@ -115,6 +124,23 @@ function checkAccess() {
         else addPointBtn.classList.add('hidden');
     }
     renderMarkers();
+}
+
+// Function to generate colored SVG icon
+function createMarkerIcon(category) {
+    const color = categoryColors[category] || categoryColors['Other'];
+    const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="36" height="36" fill="${color}" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-lg">
+        <path d="M12 2c-4.97 0-9 4.03-9 9 0 7 9 13 9 13s9-6 9-13c0-4.97-4.03-9-9-9z"></path>
+        <circle cx="12" cy="11" r="3" fill="white"></circle>
+    </svg>`;
+    
+    return L.divIcon({
+        className: 'custom-marker',
+        html: svg,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36]
+    });
 }
 
 function createCarousel(media) {
@@ -332,7 +358,11 @@ function renderMarkers() {
     if (!markersLayer) return;
     markersLayer.clearLayers();
     state.mapPoints.forEach((point) => {
-        const marker = L.marker([point.latitude, point.longitude]).addTo(markersLayer);
+        const category = point.system_category || 'Other';
+        const marker = L.marker([point.latitude, point.longitude], {
+            icon: createMarkerIcon(category)
+        }).addTo(markersLayer);
+        
         marker.on('click', (e) => {
             L.DomEvent.stopPropagation(e);
             openViewPanel(point);
@@ -395,13 +425,11 @@ async function createViewPanelContent(point) {
       }))
     );
     
-    // UPDATED: Use formatRichText for these fields
     const createDetailSection = (labelKey, value, isHtml = false) => {
         if (!value || (Array.isArray(value) && value.length === 0)) return '';
         const rawLabel = tr(labelKey);
         const label = cleanViewLabel(rawLabel);
         
-        // If isHtml is true, wrap in rich text formatter
         const content = isHtml
           ? formatRichText(value)
           : escapeHtml(Array.isArray(value) ? value.join(', ') : value).replace(/\n/g, '<br>');
@@ -428,7 +456,7 @@ async function createViewPanelContent(point) {
                 )}</p>
                 ${
                   point.system_category
-                    ? `<span class="inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 uppercase">${escapeHtml(
+                    ? `<span class="inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded-md text-white uppercase" style="background-color: ${categoryColors[point.system_category] || categoryColors['Other']}">${escapeHtml(
                         point.system_category
                       )}</span>`
                     : ''
@@ -447,7 +475,7 @@ async function createViewPanelContent(point) {
                   <i data-lucide="scaling" class="w-4 h-4 text-brand-700 shrink-0"></i>
                   <div>
                     <div class="font-semibold text-slate-600">${tr('popup.area')}</div>
-                    <div class="text-slate-800">${escapeHtml(point.area)}</div>
+                    <div class="text-slate-800">${point.area ? escapeHtml(point.area) : 'N/A'}</div>
                   </div>
                 </div>
                 <div class="flex items-start gap-2">
@@ -549,7 +577,7 @@ function openEditPanel(point = null) {
         // Populate Standard Fields
         Object.keys(point).forEach((key) => {
             const el = $(`#${key}`);
-            if (el && el.tagName !== 'DIV') { // Skip divs (editors)
+            if (el && el.tagName !== 'DIV') { 
                  el.value = Array.isArray(point[key]) ? point[key].join(', ') : point[key] || '';
             }
         });
@@ -581,7 +609,6 @@ function closeEditPanel() {
     state.deletedMedia = [];
     state.selectedCollaborators = [];
     $('#point-form').reset();
-    // Clear Quill Editors
     Object.values(state.quillEditors).forEach(q => q.setContents([]));
     $('#mediaPreviewGrid').innerHTML = '';
 }
@@ -701,7 +728,7 @@ async function handleFormSubmit(e) {
             latitude: parseFloat($('#latitude').value),
             longitude: parseFloat($('#longitude').value),
             start_year: parseInt($('#start_year').value, 10),
-            area: $('#area').value,
+            area: $('#area').value || null,
             associated_crops: $('#associated_crops').value,
             av_system_type: $('#av_system_type').value,
             system_category: $('#system_category').value,
@@ -709,14 +736,12 @@ async function handleFormSubmit(e) {
             image_url: legacyImageUrl,
             affiliation: $('#affiliation').value || null,
             link: $('#link').value || null,
-            // UPDATED: Get Content from Quill
             description: getQuillContent(state.quillEditors.description),
             leadership: getQuillContent(state.quillEditors.leadership),
             facilities: getQuillContent(state.quillEditors.facilities),
             equipment: getQuillContent(state.quillEditors.equipment),
             capabilities: getQuillContent(state.quillEditors.capabilities),
             experiments: getQuillContent(state.quillEditors.experiments),
-            
             created_by: authState.profile.id,
             generating_capacity_kw:
               parseFloat($('#generating_capacity_kw').value) || null,
@@ -798,38 +823,22 @@ async function handleDeletePoint(pointId) {
     }
 }
 
-function extractAreaNumber(area) {
-    if (area === null || area === undefined) return null;
-    if (typeof area === 'number') return area;
-    const match = String(area).match(/[\d.,]+/);
-    if (!match) return null;
-    const normalized = match[0].replace(/,/g, '');
-    const num = parseFloat(normalized);
-    return Number.isNaN(num) ? null : num;
-}
-
 function renderTable() {
     const tbody = $('#projects-table tbody');
     if (!tbody) return;
     const key = state.sort.key;
     const sortedPoints = [...state.mapPoints].sort((a, b) => {
-        let valA;
-        let valB;
-
-        if (key === 'area') {
-            valA = extractAreaNumber(a.area);
-            valB = extractAreaNumber(b.area);
-        } else {
-            valA = a[key];
-            valB = b[key];
-        }
+        let valA = a[key];
+        let valB = b[key];
 
         if (typeof valA === 'string') valA = valA.toLowerCase();
         if (typeof valB === 'string') valB = valB.toLowerCase();
-        if (valA === null || valA === undefined)
-            valA = state.sort.order === 'asc' ? Infinity : -Infinity;
-        if (valB === null || valB === undefined)
-            valB = state.sort.order === 'asc' ? Infinity : -Infinity;
+        
+        // Handle nulls always last for desc sort, first for asc (or logic of choice)
+        // Here: pushing nulls to bottom usually preferred
+        if (valA === null || valA === undefined) return 1;
+        if (valB === null || valB === undefined) return -1;
+        
         if (valA < valB) return state.sort.order === 'asc' ? -1 : 1;
         if (valA > valB) return state.sort.order === 'asc' ? 1 : -1;
         return 0;
@@ -837,13 +846,12 @@ function renderTable() {
 
     tbody.innerHTML = sortedPoints
       .map((p) => {
-          const areaVal = extractAreaNumber(p.area);
           return `<tr data-point-id="${p.id}">
             <td class="p-3">${escapeHtml(p.project_name)}</td>
             <td class="p-3">${escapeHtml(p.name)}</td>
-            <td class="p-3">${escapeHtml(p.av_system_type || '')}</td>
-            <td class="p-3">${p.generating_capacity_kw ?? 'N/A'}</td>
-            <td class="p-3">${areaVal !== null ? areaVal : ''}</td>
+            <td class="p-3">${escapeHtml(p.system_category || '')}</td>
+            <td class="p-3 font-mono">${p.generating_capacity_kw ?? '-'}</td>
+            <td class="p-3">${p.start_year || '-'}</td>
         </tr>`;
       })
       .join('');
@@ -857,7 +865,7 @@ function handleTableSort(e) {
         state.sort.order = state.sort.order === 'asc' ? 'desc' : 'asc';
     } else {
         state.sort.key = key;
-        state.sort.order = 'asc';
+        state.sort.order = 'desc'; // Default to desc for new columns often better for capacity
     }
     $$('#projects-table th').forEach((th) => {
         th.classList.remove('sort-asc', 'sort-desc');
@@ -948,6 +956,7 @@ export function initMap() {
     defaultLayer.addTo(map);
     let isSatellite = false;
 
+    // Custom Toggle Control with Stacked Layer Icon
     const LayerToggle = L.Control.extend({
         options: { position: 'topleft' },
         onAdd: function() {
@@ -963,23 +972,19 @@ export function initMap() {
             container.style.boxShadow = '0 1px 5px rgba(0,0,0,0.65)';
             container.title = "Switch Map View";
 
-            // Default icon (Globe/Satellite indicating what you switch to)
-            const globeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
-            // Layers icon (Map indicating return to default)
-            const layersIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`;
+            // Stacked Layer Icon (Lucide style)
+            const icon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`;
 
-            container.innerHTML = globeIcon;
+            container.innerHTML = icon;
 
             container.onclick = (e) => {
                 L.DomEvent.stopPropagation(e);
                 if (isSatellite) {
                     map.removeLayer(satelliteLayer);
                     defaultLayer.addTo(map);
-                    container.innerHTML = globeIcon;
                 } else {
                     map.removeLayer(defaultLayer);
                     satelliteLayer.addTo(map);
-                    container.innerHTML = layersIcon;
                 }
                 isSatellite = !isSatellite;
                 if (markersLayer) markersLayer.bringToFront();
@@ -991,21 +996,72 @@ export function initMap() {
 
     map.addControl(new LayerToggle());
 
+    // Legend Control (Bottom Left)
+    const Legend = L.Control.extend({
+        options: { position: 'bottomleft' },
+        onAdd: function() {
+            const div = L.DomUtil.create('div', 'info legend');
+            div.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+            div.style.padding = '10px';
+            div.style.borderRadius = '8px';
+            div.style.boxShadow = '0 1px 5px rgba(0,0,0,0.4)';
+            div.style.fontSize = '12px';
+            div.style.fontFamily = 'Inter, sans-serif';
+            div.style.marginBottom = '20px'; // Space from bottom
+            div.style.marginLeft = '10px';
+
+            let html = '<div style="font-weight:700; margin-bottom:5px; color:#334155">System Types</div>';
+            Object.entries(categoryColors).forEach(([label, color]) => {
+                html += `<div style="display:flex; align-items:center; margin-bottom:4px;">
+                    <span style="width:12px; height:12px; background-color:${color}; border-radius:50%; display:inline-block; margin-right:8px;"></span>
+                    <span style="color:#475569">${label}</span>
+                </div>`;
+            });
+            div.innerHTML = html;
+            return div;
+        }
+    });
+
+    map.addControl(new Legend());
+
     markersLayer = L.layerGroup().addTo(map);
+    
+    // Add Click listener for Admins to add points
+    map.on('click', (e) => {
+        const isAdmin = ['admin', 'organizer'].includes(authState.profile?.role);
+        // Ensure not clicking on a control or existing panel
+        if(isAdmin) {
+             // Close existing panels first
+             $('#view-panel').classList.add('-translate-x-full');
+             
+             // Confirm intention
+             if(confirm(tr('map.add_prompt'))) {
+                 openEditPanel(null);
+                 // Pre-populate coordinates with high precision
+                 $('#latitude').value = e.latlng.lat.toFixed(6);
+                 $('#longitude').value = e.latlng.lng.toFixed(6);
+             }
+        } else {
+             closeViewPanel();
+        }
+    });
+
     wireMapUI();
-    map.on('click', closeViewPanel);
     loadAllUsers().then(() => loadMapPoints());
     checkAccess();
+    
     supabase.auth.onAuthStateChange((_event, session) => {
         authState.session = session;
-        supabase
-          .from('profiles')
-          .select('id, full_name, role, avatar_url, preferred_language')
-          .eq('id', session?.user.id)
-          .single()
-          .then(({ data }) => {
-              authState.profile = data;
-              checkAccess();
-          });
+        if(session) {
+            supabase
+              .from('profiles')
+              .select('id, full_name, role, avatar_url, preferred_language')
+              .eq('id', session.user.id)
+              .single()
+              .then(({ data }) => {
+                  authState.profile = data;
+                  checkAccess();
+              });
+        }
     });
 }

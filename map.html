@@ -198,7 +198,7 @@
     .media-preview-item img, .media-preview-item video { width: 100%; height: 100%; object-fit: cover; }
     .media-preview-remove { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: rgba(220, 38, 38, 0.9); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
 
-    /* User Search & Table (Existing styles preserved) */
+    /* User Search & Table */
     .user-search-wrapper { position: relative; }
     #userSearchResults { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 12px; margin-top: 4px; z-index: 100; max-height: 200px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); display: none; }
     .user-search-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; transition: background-color 0.2s; font-size: 14px; }
@@ -310,7 +310,7 @@
               <div class="col-span-2"><hr class="border-gray-200 my-2"></div>
 
               <div><label for="generating_capacity_kw" data-i18n="form.generating_capacity_kw">Capacity (kW)</label><input id="generating_capacity_kw" type="number" step="any" /></div>
-              <div><label for="area" data-i18n="form.area">Area (ha or m2) (Required)</label><input id="area" required /></div>
+              <div><label for="area" data-i18n="form.area">Area (m²)</label><input id="area" /></div>
 
               <div><label for="keywords" data-i18n="form.keywords">Keywords</label><input id="keywords" placeholder="Research, Commercial..." /></div>
               <div><label for="link" data-i18n="form.link">Website Link</label><input id="link" type="url" /></div>
@@ -362,8 +362,9 @@
                 <th class="p-4 border-b border-gray-100" data-sort="project_name"><div class="flex items-center gap-1"><span data-i18n="table.project_name">Project Name</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div></th>
                 <th class="p-4 border-b border-gray-100" data-sort="name"><div class="flex items-center gap-1"><span data-i18n="table.institution">Institution</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div></th>
                 <th class="p-4 border-b border-gray-100" data-sort="system_category"><div class="flex items-center gap-1"><span data-i18n="table.category">System Type</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div></th>
-                <th class="p-4 border-b border-gray-100" data-sort="generating_capacity_kw"><div class="flex items-center gap-1"><span data-i18n="table.capacity">Capacity (kW)</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div></th>
-                <th class="p-4 border-b border-gray-100" data-sort="area"><div class="flex items-center gap-1"><span>Area (ha)</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div></th>
+                <th class="p-4 border-b border-gray-100 sort-desc" data-sort="generating_capacity_kw"><div class="flex items-center gap-1"><span data-i18n="table.capacity">Capacity (kW)</span><i class="sort-icon" data-lucide="chevron-down"></i></div></th>
+                <!-- Changed Area to Year -->
+                <th class="p-4 border-b border-gray-100" data-sort="start_year"><div class="flex items-center gap-1"><span data-i18n="table.start_year">Year</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div></th>
               </tr>
             </thead>
             <tbody class="text-sm text-slate-700 divide-y divide-gray-50"></tbody>
@@ -390,7 +391,7 @@
         form: {
           media: "Media", collaborators: "Collaborators", institution: "Institution (Required)",
           project_name: "Project Name (Required)", latitude: "Latitude (Required)", longitude: "Longitude (Required)",
-          start_year: "Start Year (Required)", area: "Area (ha or m2) (Required)", associated_crops: "Target Species / Crops (Required)",
+          start_year: "Start Year (Required)", area: "Area (m²)", associated_crops: "Target Species / Crops (Required)",
           av_system_type: "AV System Tech (Required)", system_category: "System Type (Required)", generating_capacity_kw: "Capacity (kW)",
           keywords: "Keywords", affiliation: "Affiliation", link: "Website Link", description: "Description",
           leadership: "Leadership", facilities: "Facilities", equipment: "Equipment", capabilities: "Capabilities",
@@ -406,7 +407,7 @@
         form: {
           media: "Multimedia", collaborators: "Colaboradores", institution: "Institución (Obligatorio)",
           project_name: "Nombre del Proyecto (Obligatorio)", latitude: "Latitud (Obligatorio)", longitude: "Longitud (Obligatorio)",
-          start_year: "Año de Inicio (Obligatorio)", area: "Superficie (ha o m2) (Obligatorio)", associated_crops: "Especies Objetivo / Cultivos (Obligatorio)",
+          start_year: "Año de Inicio (Obligatorio)", area: "Superficie (m²)", associated_crops: "Especies Objetivo / Cultivos (Obligatorio)",
           av_system_type: "Tecnología de Sistema AV (Obligatorio)", system_category: "Tipo de Sistema (Obligatorio)", generating_capacity_kw: "Capacidad (kW)",
           keywords: "Palabras Clave", affiliation: "Afiliación", link: "Sitio Web", description: "Descripción",
           leadership: "Liderazgo", facilities: "Instalaciones", equipment: "Equipamiento", capabilities: "Capacidades",

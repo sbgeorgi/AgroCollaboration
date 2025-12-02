@@ -106,7 +106,7 @@
 
                 <!-- Host Pills -->
                 <div class="flex items-center gap-2">
-                     <a href="https://www.arizona.edu" target="_blank" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
+                     <a href="https://salsav.org" target="_blank" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
                         <img src="static/b2ua.jpg" class="w-5 h-5 rounded object-cover border border-gray-100" alt="UA">
                         <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">UA</span>
                      </a>
@@ -116,12 +116,12 @@
                         <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">UNAM</span>
                      </a>
 
-                     <a href="#" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
+                     <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana/" target="_blank" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
                         <img src="static/aal.png" class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="AAL">
                         <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">AAL</span>
                      </a>
 
-                     <a href="#" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
+                     <a href="https://redagvmx.com" target="_blank" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
                         <img src="static/rame.png" class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="RAME">
                         <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">RAME</span>
                      </a>
@@ -235,15 +235,21 @@
                 <div class="p-3 border-b border-gray-200 bg-white flex justify-between items-center">
                   <h3 class="font-bold text-xs text-slate-500 uppercase">Topics</h3>
                 </div>
-                <div class="p-2 bg-gray-50 border-b border-gray-200">
-                  <form id="newThreadForm" class="flex gap-1">
-                    <input id="threadTitle"
-                      class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-brand-500 outline-none"
-                      placeholder="New Topic..." autocomplete="off">
-                    <button
-                      class="bg-brand-600 hover:bg-brand-700 text-white px-2 rounded text-lg font-bold shadow-sm leading-none pb-0.5">+</button>
-                  </form>
+                
+                <!-- NEW: Better "New Topic" UI -->
+                <div class="p-3 bg-gray-50 border-b border-gray-200">
+                    <button id="btnToggleThreadForm" class="w-full py-2 px-3 bg-white hover:bg-brand-50 hover:text-brand-700 text-slate-600 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors border border-gray-200 shadow-sm">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> New Topic
+                    </button>
+                    <form id="newThreadForm" class="hidden flex-col gap-2 mt-1 animate-fade-in">
+                        <input id="threadTitle" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 outline-none shadow-sm" placeholder="Topic Title..." autocomplete="off">
+                        <div class="flex gap-2 justify-end">
+                            <button type="button" id="cancelThreadBtn" class="px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded">Cancel</button>
+                            <button type="submit" class="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded text-xs font-bold shadow-sm">Create</button>
+                        </div>
+                    </form>
                 </div>
+
                 <div id="threadsList" class="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar"></div>
               </div>
 
@@ -379,7 +385,8 @@
     }
 
     async function loadEvents() {
-      hide($('#content-area')); show($('#eventsLoader'));
+      // NOTE: We don't hide content area on re-loads to avoid flicker, only on initial load if empty
+      if(state.events.length === 0) { hide($('#content-area')); show($('#eventsLoader')); }
 
       const [eventsRes, bannerRes] = await Promise.all([
         supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", { ascending: true }),
@@ -390,7 +397,7 @@
       state.activeBanner = bannerRes.data || null;
 
       renderEventsList(); renderScheduleCalendar(); renderBanner();
-      hide($('#eventsLoader')); show($('#content-area'));
+      if(state.events.length > 0 || eventsRes.data) { hide($('#eventsLoader')); show($('#content-area')); }
 
       const params = new URLSearchParams(window.location.search);
       const eid = params.get("event") || params.get("e");
@@ -400,7 +407,7 @@
       }
     }
 
-    // --- REFINED: Tags Moved Down, No Name Truncation, Fancy Tooltips, Counter Left ---
+    // --- REFINED: Strict "Primary Only" Pills + Stack ---
     async function renderEventsList() {
       const list = $('#schedule-list');
       const term = ($('#search').value || '').toLowerCase();
@@ -419,9 +426,8 @@
       const html = await Promise.all(filtered.map(async ev => {
         const title = state.language === 'es' ? (ev.title_es || ev.title_en) : ev.title_en;
         
-        // MODIFICATION: Clean the description for the card preview
         const rawDesc = state.language === 'es' ? (ev.description_es || ev.description_en) : ev.description_en;
-        const cleanDesc = escapeHtml(stripHtml(rawDesc || '')); // Strip tags, then escape text
+        const cleanDesc = escapeHtml(stripHtml(rawDesc || ''));
 
         const start = new Date(ev.start_time);
         const isPast = start < now;
@@ -431,22 +437,19 @@
         const time = fmtDateTime(ev.start_time, { hour: 'numeric', minute: '2-digit' });
         const weekday = start.toLocaleDateString(state.language, { weekday: 'long' });
 
-        // Speaker Logic: Name First 2 + Stack Rest
+        // UPDATED SPEAKER LOGIC: Filter by primary_speaker boolean
         const speakers = ev.event_speakers || [];
-        const featuredSpeakers = speakers.slice(0, 2);
-        const extraSpeakers = speakers.slice(2);
+        const featuredSpeakers = speakers.filter(s => s.primary_speaker);
+        const extraSpeakers = speakers.filter(s => !s.primary_speaker);
 
-        // Left: Named Pills (No truncation, whitespace-nowrap)
+        // Render Pills (Only for marked primary speakers)
         const featuredHtml = await Promise.all(featuredSpeakers.map(async s => {
           const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
           const avatar = img
             ? `<img src="${img}" class="w-full h-full object-cover" alt="${escapeHtml(s.name)}">`
             : `<div class="w-full h-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500">${(s.name || '?')[0]}</div>`;
 
-          // --- Country Flag Logic (Condition: Only for featured) ---
           const countryCode = s.profile?.country ? s.profile.country.toLowerCase() : null;
-          
-          // UPDATED: Increased w-3.5 to w-6, ml-1 to ml-2, and tweaked rounding
           const flagHtml = countryCode 
             ? `<img src="https://flagcdn.com/w40/${countryCode}.png" class="ml-2 w-6 h-auto rounded-sm shadow-sm object-cover" alt="${countryCode}" title="${countryCode.toUpperCase()}">`
             : '';
@@ -459,13 +462,13 @@
                 </div>`;
         }));
 
+        // Render Stack (For everyone else)
         const extraStackHtml = extraSpeakers.length > 0 ? await Promise.all(extraSpeakers.map(async (s, index) => {
           const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
           const avatarContent = img
             ? `<img src="${img}" class="w-full h-full object-cover rounded-full" alt="${escapeHtml(s.name)}">`
             : `<span class="text-[9px] font-bold select-none">${(s.name || '?')[0]}</span>`;
 
-          // Note: No flags for extra overflow users per request
           return `<div class="relative group/tooltip w-9 h-9 rounded-full ring-[2.5px] ring-white bg-gray-100 flex items-center justify-center text-slate-500 shadow-sm transition-all -ml-3 first:ml-0 z-0 hover:z-20 hover:scale-110">
                     ${avatarContent}
                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] font-semibold rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
@@ -480,7 +483,7 @@
           : '';
 
         let speakersSection = '';
-        if (featuredHtml.length > 0) {
+        if (featuredHtml.length > 0 || extraStackHtml.length > 0) {
           speakersSection = `
                 <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100 gap-2">
                     <div class="flex flex-wrap gap-2 items-center flex-1 min-w-0">
@@ -536,7 +539,6 @@
                     <!-- Middle -->
                     <div class="mb-2">
                         <h3 class="font-display font-bold text-[1.05rem] text-slate-900 leading-snug mb-1.5 group-hover:text-brand-700 transition-colors line-clamp-2">${escapeHtml(title)}</h3>
-                        <!-- UPDATED: Use cleanDesc -->
                         <p class="text-[13px] text-slate-500 line-clamp-2 leading-relaxed">${cleanDesc}</p>
                         ${tags}
                     </div>
@@ -566,7 +568,8 @@
     }
 
     (async function () {
-      const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide };
+      // NOTE: Passing refreshEventsList to allow event.js to update the list background card
+      const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide, refreshEventsList: renderEventsList };
       eventLogic = initEventLogic(deps);
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
 
@@ -596,13 +599,20 @@
       });
 
       await loadEvents();
+      
+      // Banners Subscription
       supabase.channel('public:banners').on('postgres_changes', { event: '*', schema: 'public', table: 'banners' }, async () => {
         const { data } = await supabase.from("banners").select("*").eq("is_active", true).limit(1).maybeSingle();
         state.activeBanner = data;
         renderBanner();
       }).subscribe();
 
+      // Events Subscription
       supabase.channel('public:events').on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, loadEvents).subscribe();
+      
+      // NEW: Event Speakers Subscription (to trigger live update of pills)
+      supabase.channel('public:event_speakers').on('postgres_changes', { event: '*', schema: 'public', table: 'event_speakers' }, loadEvents).subscribe();
+
     })();
   </script>
 </body>
