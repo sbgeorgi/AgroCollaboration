@@ -73,75 +73,80 @@
     <div id="view-schedule"
       class="absolute inset-0 flex flex-col overflow-hidden transition-all duration-500 cubic-bezier transform translate-x-0 opacity-100">
       <div class="flex-1 overflow-y-auto custom-scrollbar">
-        <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-5 py-5">
+        <!-- REDUCED PADDING/GAP HERE FOR BETTER DENSITY -->
+        <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-3 py-4">
 
           <!-- ================= HERO SECTION ================= -->
-          <section id="hero-section" class="relative overflow-hidden rounded-[1.25rem] bg-white border border-gray-200 shadow-sm group p-4 md:p-5">
+          <section id="hero-section" class="relative overflow-hidden rounded-[1.25rem] bg-white border border-gray-200 shadow-sm p-4 isolate z-0">
             
-            <!-- Texture -->
-            <div class="absolute inset-0 z-0 pointer-events-none opacity-[0.03]" 
-                 style="background-image: linear-gradient(#0369a1 1px, transparent 1px), linear-gradient(to right, #0369a1 1px, transparent 1px); background-size: 40px 40px;">
+            <!-- 1. Background Texture -->
+            <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#0369a1 1px, transparent 1px); background-size: 20px 20px;"></div>
+
+            <!-- 2. Right-Aligned Image (Static) -->
+            <div class="absolute top-0 right-0 bottom-0 w-[55%] md:w-[50%] pointer-events-none z-0">
+               <div class="absolute inset-0 bg-gradient-to-r from-white via-white/40 to-transparent z-10"></div>
+               <img src="static/paseagriv.jpg" class="w-full h-full object-cover object-center opacity-90" alt="Agrivoltaics">
             </div>
 
-            <!-- Content Flex Container -->
-            <div class="relative z-10 flex flex-col md:flex-row items-end justify-between gap-4">
+            <!-- 3. Content Container -->
+            <div class="relative z-10 flex flex-col justify-center h-full gap-3">
 
-              <!-- Left Side: Description THEN Banner -->
-              <div class="flex-1 flex flex-col justify-center gap-3 min-w-0 w-full">
-                
-                <!-- Description - Full Width -->
-                <h2 class="font-display font-medium text-xl md:text-2xl text-slate-800 leading-snug tracking-tight w-full pr-4">
-                  A participatory seminar series presenting the latest advances in <span class="text-brand-600 font-bold decoration-2 underline-offset-4 decoration-brand-200 underline">agrivoltaics research</span> and development across the Americas.
+              <!-- Title / Description -->
+              <div class="max-w-[75%] md:max-w-[65%]">
+                <h2 class="font-display font-bold text-xl md:text-2xl text-slate-900 leading-tight tracking-tight drop-shadow-sm">
+                  A participatory seminar series presenting the latest advances in <span class="text-brand-600 border-b-2 border-brand-100/50 pb-0.5">agrivoltaics research</span> and development across the Americas.
                 </h2>
-
-                <!-- Compact Banner (Moved Below) -->
-                <div id="siteBanner" class="hidden animate-fade-in w-fit items-center gap-2 bg-amber-50 pl-2 pr-3 py-1 rounded-full text-[10px] font-bold text-amber-700 border border-amber-200 shadow-sm cursor-pointer hover:bg-amber-100 transition-colors">
-                  <span class="relative flex h-2 w-2 flex-none">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                  </span>
-                  <span id="bannerText" class="truncate leading-tight uppercase tracking-wide"></span>
-                </div>
-
               </div>
 
-              <!-- Right Side: Hosts & Image -->
-              <div class="flex flex-row items-center gap-5 shrink-0 border-t md:border-t-0 md:border-l border-gray-100 pt-3 md:pt-0 md:pl-5 mt-2 md:mt-0">
+              <!-- Footer Row: Hosts + Banner (Inline & Compact) -->
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1">
                 
-                <!-- Spelled Out Hosted By -->
-                <div class="flex flex-col items-end text-right gap-1">
-                    <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Hosted By</span>
-                    <div class="grid grid-cols-1 gap-y-0.5 text-[10px] font-semibold text-slate-600">
-                        <a href="https://www.arizona.edu" target="_blank" class="hover:text-brand-600 transition-colors flex items-center justify-end gap-1.5 group/link">
-                            University of Arizona <img src="static/b2ua.jpg" class="w-3.5 h-3.5 rounded-full" alt="UA">
-                        </a>
-                        <a href="https://www.unam.mx" target="_blank" class="hover:text-brand-600 transition-colors flex items-center justify-end gap-1.5 group/link">
-                            UNAM <img src="static/unam.png" class="w-3.5 h-3.5 rounded-full" alt="UNAM">
-                        </a>
-                        <!-- Updated AAL Link -->
-                        <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana/" target="_blank" class="hover:text-brand-600 transition-colors flex items-center justify-end gap-1.5 group/link">
-                            Alianza Agrovoltaica <img src="static/aal.png" class="w-3.5 h-3.5 rounded-full" alt="AAL">
-                        </a>
-                        <!-- Updated RAMe Link & Text -->
-                        <a href="https://redagvmx.com" target="_blank" class="hover:text-brand-600 transition-colors flex items-center justify-end gap-1.5 group/link">
-                            RAMe <img src="static/rame.png" class="w-3.5 h-3.5 rounded-full" alt="RAMe">
-                        </a>
-                    </div>
+                <!-- Label -->
+                <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest shrink-0">Hosted By</span>
+
+                <!-- Host Pills -->
+                <div class="flex items-center gap-2">
+                     <a href="https://www.arizona.edu" target="_blank" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
+                        <img src="static/b2ua.jpg" class="w-5 h-5 rounded object-cover border border-gray-100" alt="UA">
+                        <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">UA</span>
+                     </a>
+                     
+                     <a href="https://www.unam.mx" target="_blank" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
+                        <img src="static/unam.png" class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="UNAM">
+                        <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">UNAM</span>
+                     </a>
+
+                     <a href="#" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
+                        <img src="static/aal.png" class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="AAL">
+                        <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">AAL</span>
+                     </a>
+
+                     <a href="#" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
+                        <img src="static/rame.png" class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="RAME">
+                        <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">RAME</span>
+                     </a>
                 </div>
 
-                <!-- Image (Constraint Height) -->
-                <div class="relative shrink-0">
-                    <div class="absolute inset-0 bg-brand-600 rounded-lg opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                    <img src="static/placeholder.png" class="h-24 w-auto rounded-lg object-cover border border-gray-200 shadow-sm" alt="Featured">
+                <!-- Vertical Divider (Desktop) -->
+                <div class="hidden sm:block w-px h-4 bg-slate-300"></div>
+
+                <!-- Announcement Banner (Inline) -->
+                <div id="siteBanner" class="hidden animate-fade-in inline-flex items-center gap-2 bg-amber-50 pl-2 pr-3 py-0.5 rounded-full text-[10px] font-bold text-amber-700 border border-amber-200 shadow-sm w-fit transition-all hover:bg-amber-100 cursor-pointer">
+                  <span class="relative flex h-1.5 w-1.5 flex-none">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
+                  </span>
+                  <span id="bannerText" class="truncate leading-tight"></span>
                 </div>
 
               </div>
+
             </div>
           </section>
 
           <!-- ================= CONTENT AREA ================= -->
-          <section class="flex flex-col gap-4 flex-1 min-h-0 pb-10">
-            <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
+          <section class="flex flex-col gap-3 flex-1 min-h-0 pb-10">
+            <div class="flex flex-col md:flex-row gap-3 justify-between items-center">
               <h3 class="font-display font-bold text-lg text-slate-800 self-start md:self-center"
                 data-i18n="schedule.title">Upcoming Talks</h3>
 
@@ -167,8 +172,8 @@
               <div class="w-6 h-6 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
             </div>
 
-            <div id="content-area" class="hidden flex-col gap-4">
-              <div id="schedule-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in">
+            <div id="content-area" class="hidden flex-col gap-3">
+              <div id="schedule-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
               </div>
 
               <div id="schedule-calendar"
@@ -362,11 +367,10 @@
       if (next) {
         const title = state.language === 'es' ? (next.title_es || next.title_en) : next.title_en;
         banner.classList.remove('pointer-events-none');
-        banner.classList.add('cursor-pointer');
-        
+        banner.classList.add('cursor-pointer', 'hover:bg-amber-100');
         banner.dataset.openEvent = next.id;
 
-        textEl.innerHTML = `<span class="opacity-70 font-medium">NEXT:</span> ${escapeHtml(title)}`;
+        textEl.innerHTML = `<span class="opacity-70 font-medium">Next:</span> ${escapeHtml(title)}`;
         show(banner);
         banner.style.display = 'inline-flex';
       } else {
