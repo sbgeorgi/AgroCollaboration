@@ -119,6 +119,10 @@
     .ts-dropdown .active {
         @apply bg-brand-50 text-brand-700;
     }
+    /* Tom Select Multi Item Styling */
+    .ts-control .item {
+        @apply bg-brand-50 text-brand-700 rounded-lg px-2 py-1 mr-1;
+    }
   </style>
 
     <!-- Lucide Icons -->
@@ -230,7 +234,7 @@
                                 placeholder="janedoe" />
                         </div>
 
-                        <!-- Country Selection (New) -->
+                        <!-- Country Selection -->
                         <div class="space-y-1.5 md:col-span-2">
                             <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
                                 for="country"><span data-i18n="profile.country">Country</span> <span
@@ -371,6 +375,17 @@
                             <div id="fieldsOfStudyTags" class="mt-2 flex flex-wrap gap-2"></div>
                         </div>
 
+                        <!-- Collaborators Input (New) -->
+                        <div class="space-y-1.5 md:col-span-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="collaborators"
+                                data-i18n="profile.collaborators">Collaborators (Optional)</label>
+                            <select id="collaborators" multiple placeholder="Search for people..." autocomplete="off">
+                            </select>
+                            <p class="mt-1 text-xs text-slate-500" data-i18n="profile.collaborators_help">
+                                Type to search for existing members. Selected users will be linked to your profile.
+                            </p>
+                        </div>
+
                         <!-- Profile Description (Optional) - Rich Text -->
                         <div class="space-y-1.5 md:col-span-2">
                             <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="description"
@@ -407,7 +422,8 @@
             deptSuggestions: [],
             wgSuggestions: [],
             quillEditor: null,
-            countrySelect: null
+            countrySelect: null,
+            collaboratorSelect: null
         };
 
         const t = {
@@ -428,6 +444,8 @@
                     fields_section: "Research Interests (tags, comma-separated)",
                     fields_hint: "e.g. agrivoltaics, carbon fluxes, remote sensing...",
                     fields_help: "Enter short keywords separated by commas (e.g. agrivoltaics, carbon fluxes, remote sensing). These will appear as tags on your profile.",
+                    collaborators: "Collaborators (Optional)",
+                    collaborators_help: "Type to search for existing members. Selected users will be linked to your profile.",
                     description_section: "Profile Description (optional)",
                     description_hint: "Brief bio, current projects, and how you collaborate (optional).",
                     save: "Save Changes",
@@ -457,6 +475,8 @@
                     fields_section: "Intereses de investigación (etiquetas separadas por comas)",
                     fields_hint: "ej. agrovoltaica, flujos de carbono, teledetección...",
                     fields_help: "Introduce palabras clave cortas separadas por comas (ej. agrovoltaica, flujos de carbono, teledetección). Se mostrarán como etiquetas en tu perfil.",
+                    collaborators: "Colaboradores (Opcional)",
+                    collaborators_help: "Escribe para buscar miembros existentes. Los usuarios seleccionados se vincularán a tu perfil.",
                     description_section: "Descripción del perfil (opcional)",
                     description_hint: "Breve biografía, proyectos actuales y cómo colaboras (opcional).",
                     save: "Guardar Cambios",
@@ -598,6 +618,56 @@
             });
         }
 
+        // --- Helper to init Tom Select (Collaborator Picker) ---
+        function initCollaboratorPicker() {
+            if(state.collaboratorSelect) return;
+
+            state.collaboratorSelect = new TomSelect('#collaborators', {
+                valueField: 'id',
+                labelField: 'full_name',
+                searchField: 'full_name',
+                placeholder: localTr('profile.collaborators_help'),
+                maxItems: null, // Allow multiple
+                preload: false, // Don't load everyone at start
+                load: function(query, callback) {
+                    if (!query.length) return callback();
+                    
+                    supabase
+                        .from('profiles')
+                        .select('id, full_name, avatar_url')
+                        .ilike('full_name', `%${query}%`)
+                        .limit(10)
+                        .then(({ data, error }) => {
+                            if (error) {
+                                callback();
+                            } else {
+                                // Filter out current user
+                                const filtered = data.filter(p => p.id !== authState.session?.user?.id);
+                                callback(filtered);
+                            }
+                        })
+                        .catch(() => callback());
+                },
+                render: {
+                    option: function(data, escape) {
+                        return `<div class="flex items-center gap-2 py-1">
+                                    <div class="w-6 h-6 rounded-full bg-brand-100 flex items-center justify-center text-xs text-brand-700 font-bold">
+                                        ${data.full_name ? data.full_name.charAt(0).toUpperCase() : '?'}
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium text-slate-700">${escape(data.full_name || 'Unknown')}</span>
+                                    </div>
+                                </div>`;
+                    },
+                    item: function(data, escape) {
+                        return `<div class="item">
+                                    ${escape(data.full_name || 'Unknown')}
+                                </div>`;
+                    }
+                }
+            });
+        }
+
         // Helper to get content from Quill
         function getQuillContent(quill) {
             if (!quill) return null;
@@ -626,8 +696,9 @@
                     state.quillEditor = initQuill('#description');
                 }
 
-                // Initialize Country Picker
+                // Initialize Pickers
                 initCountryPicker();
+                initCollaboratorPicker();
 
                 await Promise.all([
                     loadProfileData(),
@@ -725,6 +796,22 @@
             // Set Country
             if (state.countrySelect && state.profile.country) {
                 state.countrySelect.setValue(state.profile.country);
+            }
+
+            // Set Collaborators
+            if (state.collaboratorSelect && state.profile.collaborators && state.profile.collaborators.length > 0) {
+                // Fetch the names for the IDs first so Tom Select can display them
+                const { data: collabData } = await supabase
+                    .from('profiles')
+                    .select('id, full_name')
+                    .in('id', state.profile.collaborators);
+                
+                if (collabData) {
+                    collabData.forEach(item => {
+                        state.collaboratorSelect.addOption(item);
+                    });
+                    state.collaboratorSelect.setValue(state.profile.collaborators);
+                }
             }
 
             // Populate Description in Quill
@@ -924,6 +1011,9 @@
                     avatar_url = null;
                 }
 
+                // Get Collaborators from TomSelect
+                const collaborators = state.collaboratorSelect ? state.collaboratorSelect.getValue() : [];
+
                 const updates = {
                     id: authState.session.user.id,
                     updated_at: new Date().toISOString(),
@@ -939,6 +1029,7 @@
                     professional_website: $('#professionalWebsite').value.trim() || null,
                     google_scholar: $('#googleScholar').value.trim() || null,
                     fields_of_study: $('#fieldsOfStudy').value.trim() || null,
+                    collaborators: collaborators, // Save array of UUIDs
                     description: getQuillContent(state.quillEditor),
                 };
 
