@@ -2,60 +2,63 @@
 <html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Profile Dashboard • Agrovoltaicos sin Fronteras</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Profile • Agrovoltaicos sin Fronteras</title>
+  <meta name="description" content="Manage your user profile and settings.">
 
-    <!-- Critical pre-render script to prevent UI flicker -->
-    <script src="auth-preloader.js"></script>
+  <!-- Critical pre-render script -->
+  <script src="auth-preloader.js"></script>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
-        rel="stylesheet">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@600;700;800&display=swap"
+    rel="stylesheet">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css">
-    <script src="theme.js"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Tom Select (Modern Dropdown Library) -->
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <!-- Global Styles -->
+  <link rel="stylesheet" href="styles.css">
 
-    <!-- Quill.js (Rich Text Editor) -->
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
+  <!-- Tom Select (Modern Dropdown for Country/Collaborators) -->
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
-    <!-- Custom CSS -->
-    <style type="text/tailwindcss">
-        @layer utilities {
+  <!-- Quill.js (Rich Text Editor) v2.0 -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
+
+  <!-- External Tailwind Config -->
+  <script src="theme.js"></script>
+
+  <!-- Custom Styles & Overrides (Matching Admin) -->
+ <!-- Custom Styles & Overrides -->
+  <style type="text/tailwindcss">
+    @layer utilities {
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+      .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; border: 2px solid transparent; background-clip: content-box; }
     }
 
     html, body { height: 100%; overflow: hidden; }
     
-    /* Flash Notification */
-    #flash {
-        position: fixed;
-        top: 80px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-150%);
-        background-color: #0f172a;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 9999px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        z-index: 9999;
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        display: flex; align-items: center; gap: 8px; opacity: 0;
+    /* Unified Input Styles matching Admin */
+    .input-field {
+        @apply w-full px-4 py-2.5 bg-[var(--bg-input)] border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-light)] focus:border-[var(--color-brand)] transition-all text-sm text-slate-800 placeholder:text-slate-400 shadow-inner;
     }
-    #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .input-field:hover {
+        @apply bg-white shadow-sm;
+    }
+    .label-text {
+        @apply block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5;
+    }
 
     /* Avatar Hover Overlay */
     .avatar-overlay {
@@ -67,15 +70,16 @@
 
     /* Quill Editor Customization */
     .editor-wrapper {
-      @apply w-full bg-gray-50 border border-gray-200 rounded-xl transition-all overflow-hidden;
+      @apply w-full bg-[var(--bg-input)] border border-transparent rounded-xl transition-all shadow-inner overflow-hidden;
     }
     .editor-wrapper:hover {
-      @apply bg-white shadow-sm border-gray-300;
+      @apply bg-white shadow-sm;
     }
     .editor-wrapper:focus-within {
-      @apply ring-2 ring-brand-100 border-brand-500 bg-white;
+      @apply ring-2 ring-[var(--color-brand-light)] border-[var(--color-brand)] bg-white;
     }
     
+    /* Quill Toolbar Overrides */
     .ql-toolbar.ql-snow {
       border: none !important;
       border-bottom: 1px solid rgba(0,0,0,0.05) !important;
@@ -85,7 +89,7 @@
     .ql-container.ql-snow {
       border: none !important;
       font-family: 'Inter', sans-serif !important;
-      font-size: 14px !important;
+      font-size: 0.875rem !important;
     }
     .ql-editor {
       min-height: 100px;
@@ -96,1027 +100,993 @@
       color: #94a3b8 !important;
       font-style: normal !important;
     }
-    /* Fix toolbars icons color */
     .ql-snow .ql-stroke { stroke: #64748b !important; }
     .ql-snow .ql-fill { fill: #64748b !important; }
     .ql-snow .ql-picker { color: #64748b !important; }
 
-    /* Tom Select Customization to match theme */
+    /* --- Tom Select Customization (Fixing the "Awful" Pills) --- */
+
+    /* Container (Matches .input-field) */
+     /* Container (Input Field) */
     .ts-control {
-        @apply w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 shadow-none transition-all;
-        min-height: 46px;
-        display: flex; align-items: center;
+        @apply w-full px-4 py-2.5 bg-[var(--bg-input)] border border-transparent rounded-xl transition-all text-sm text-slate-800 placeholder:text-slate-400 shadow-inner !important;
+        min-height: 42px;
+        display: flex; 
+        align-items: center;
+        gap: 4px;
     }
     .ts-control.focus {
-        @apply ring-2 ring-brand-100 border-brand-500 bg-white shadow-none;
+        @apply ring-2 ring-[var(--color-brand-light)] border-[var(--color-brand)] bg-white shadow-none !important;
     }
+
+    /* The Pill (Force Light Theme Colors) */
+    .ts-wrapper.multi .ts-control > div.item {
+        /* Colors: Light Blue Background, Dark Blue Text, Light Border */
+        background-color: #f0f9ff !important; /* Sky-50 */
+        color: #0369a1 !important;            /* Sky-700 */
+        border: 1px solid #e0f2fe !important; /* Sky-100 */
+        
+        /* Shape & Text */
+        border-radius: 9999px !important;
+        font-weight: 600 !important;
+        font-size: 0.75rem !important; /* text-xs */
+        
+        /* Spacing */
+        padding: 3px 8px 3px 12px !important; /* Extra left padding, room for X on right */
+        margin: 2px 3px 2px 0 !important;
+        
+        /* Reset shadows */
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+        text-shadow: none !important;
+    }
+
+    /* The 'X' Remove Button Structure */
+    .ts-wrapper.plugin-remove_button .item .remove {
+        border-left: 1px solid #bae6fd !important; /* Sky-200 separator */
+        margin-left: 8px !important;
+        padding-left: 8px !important;
+        padding-right: 0px !important;
+        color: #0c4a6e !important; /* Darker blue for X */
+        font-size: 1.1em !important;
+        opacity: 0.6;
+        vertical-align: middle;
+    }
+
+    /* The 'X' Hover State */
+    .ts-wrapper.plugin-remove_button .item .remove:hover {
+        background: transparent !important;
+        color: #ef4444 !important; /* Red on hover */
+        opacity: 1;
+    }
+    
+    /* Active State (Keyboard Navigation) */
+    .ts-wrapper.multi .ts-control > div.item.active {
+        background-color: #e0f2fe !important; /* Slightly darker background */
+        border-color: #bae6fd !important;
+    }
+
+    /* Dropdown Styling */
     .ts-dropdown {
-        @apply rounded-xl border-gray-200 shadow-lg mt-1 overflow-hidden z-50;
+        @apply rounded-xl border-gray-200 shadow-xl mt-1 overflow-hidden z-50 !important;
     }
     .ts-dropdown .option {
-        @apply px-4 py-2.5 text-sm text-slate-700 cursor-pointer;
+        @apply px-4 py-2.5 text-sm text-slate-700 cursor-pointer border-b border-gray-50 last:border-0;
     }
     .ts-dropdown .active {
-        @apply bg-brand-50 text-brand-700;
-    }
-    /* Tom Select Multi Item Styling */
-    .ts-control .item {
-        @apply bg-brand-50 text-brand-700 rounded-lg px-2 py-1 mr-1;
+        @apply bg-brand-50 text-brand-700 font-medium;
     }
   </style>
 
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="text-slate-800 flex flex-col h-full overflow-hidden font-sans">
+<body
+  class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
-    <!-- Main App Container (Header/Footer injected via layout.js) -->
-    <main class="flex-1 relative overflow-hidden bg-gray-50 overflow-y-auto">
+  <!-- Note: Header/Footer injected by layout.js -->
 
-        <!-- View: Loading Spinner -->
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="flex-1 relative overflow-hidden bg-gray-50">
+    <div id="flash" class="flash"></div>
+
+    <!-- Scrollable Container -->
+    <div class="absolute inset-0 overflow-y-auto custom-scrollbar">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 flex flex-col h-full min-h-full">
+
+        <!-- Loading State -->
         <div id="view-loading" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-50">
-            <div class="w-10 h-10 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
+          <div class="w-10 h-10 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
         </div>
 
-        <!-- View: Auth Required Prompt -->
-        <div id="view-auth-required" class="hidden min-h-full flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 max-w-md w-full text-center">
-                <div
-                    class="w-16 h-16 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i data-lucide="lock" class="w-8 h-8"></i>
-                </div>
-                <h2 class="font-display font-bold text-2xl text-slate-800 mb-3" data-i18n="auth.signin_prompt_title">
-                    Please Sign In</h2>
-                <p class="text-slate-500 mb-8 leading-relaxed" data-i18n="auth.signin_prompt_body">Access to your
-                    profile dashboard requires authentication.</p>
-                <a href="signin.html?return_to=profile.html"
-                    class="block w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-brand-200"
-                    data-i18n="auth.signin_prompt_button">Go to Sign In</a>
+        <!-- Auth Required State -->
+        <div id="view-auth-required" class="hidden m-auto max-w-md w-full">
+          <div class="bg-white/80 backdrop-blur-md rounded-2xl p-8 text-center border border-gray-200 shadow-xl">
+            <div
+              class="w-16 h-16 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-100">
+              <i data-lucide="lock" class="w-8 h-8"></i>
             </div>
+            <h2 class="font-display font-bold text-2xl text-slate-800 mb-2" data-i18n="auth.signin_prompt_title">
+              Please Sign In</h2>
+            <p class="text-slate-500 mb-6" data-i18n="auth.signin_prompt_body">Access to your profile dashboard requires
+              authentication.</p>
+            <a href="signin.html?return_to=profile.html"
+              class="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-bold rounded-xl text-white bg-brand-600 hover:bg-brand-700 transition-all shadow-lg shadow-brand-500/20"
+              data-i18n="auth.signin_prompt_button">Go to Sign In</a>
+          </div>
         </div>
 
-        <!-- View: Profile Form -->
-        <div id="view-profile" class="hidden max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
-            <form id="profileForm" class="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
-
-                <!-- Left Panel: Identity & Actions -->
-                <div class="flex flex-col gap-6">
-                    <div
-                        class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm p-8 flex flex-col items-center text-center relative overflow-hidden">
-
-                        <!-- Avatar -->
-                        <label
-                            class="avatar-container w-40 h-40 rounded-full bg-gray-100 border-4 border-white shadow-lg relative cursor-pointer overflow-hidden mb-6 group ring-1 ring-gray-200">
-                            <img id="avatarImg" class="hidden w-full h-full object-cover" alt="Avatar" />
-                            <span id="avatarInitials"
-                                class="w-full h-full flex items-center justify-center text-4xl font-bold text-brand-300">U</span>
-                            <div class="avatar-overlay absolute inset-0 flex items-center justify-center text-white">
-                                <i data-lucide="camera" class="w-8 h-8"></i>
-                            </div>
-                            <input type="file" id="avatarInput" hidden accept="image/*" />
-                        </label>
-
-                        <div class="mb-1">
-                            <h2 id="displayUsername" class="font-display font-bold text-xl text-slate-800">@username
-                            </h2>
-                            <p id="displayEmail" class="text-sm text-slate-400 font-medium">user@example.com</p>
-                        </div>
-
-                        <button type="button" id="removeAvatarBtn"
-                            class="hidden mt-2 text-xs font-bold text-red-500 hover:text-red-600 hover:bg-red-50 px-3 py-1 rounded-full transition-colors"
-                            data-i18n="profile.remove_image">Remove Picture</button>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm p-6 flex flex-col gap-3">
-                        <button type="submit" id="saveBtn"
-                            class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all shadow-md shadow-brand-100 flex items-center justify-center gap-2">
-                            <i data-lucide="save" class="w-4 h-4"></i>
-                            <span data-i18n="profile.save">Save Changes</span>
-                        </button>
-                        <button type="button" id="backBtn"
-                            class="w-full py-3 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-slate-600 font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
-                            <span data-i18n="back.general">Go Back</span>
-                        </button>
-                    </div>
+        <!-- Profile Form Content -->
+        <div id="view-profile" class="hidden grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6 pb-6">
+          
+          <!-- Left Panel: Identity & Actions -->
+          <div class="flex flex-col gap-6">
+            <div
+              class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm p-8 flex flex-col items-center text-center relative overflow-hidden">
+              
+              <!-- Avatar -->
+              <label
+                class="avatar-container w-40 h-40 rounded-full bg-gray-50 border-4 border-white shadow-lg relative cursor-pointer overflow-hidden mb-6 group ring-1 ring-gray-200">
+                <img id="avatarImg" class="hidden w-full h-full object-cover" alt="Avatar" />
+                <span id="avatarInitials"
+                  class="w-full h-full flex items-center justify-center text-4xl font-bold text-brand-300">U</span>
+                <div class="avatar-overlay absolute inset-0 flex items-center justify-center text-white">
+                  <i data-lucide="camera" class="w-8 h-8"></i>
                 </div>
+                <input type="file" id="avatarInput" hidden accept="image/*" />
+              </label>
 
-                <!-- Right Panel: Details Form -->
-                <div class="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm p-6 md:p-8">
-                    <div class="flex items-center justify-between border-b border-gray-100 pb-6 mb-8">
-                        <h1 class="font-display font-bold text-2xl text-slate-800" data-i18n="profile.title">Edit
-                            Profile</h1>
-                        <span
-                            class="text-xs font-semibold text-slate-400 bg-gray-50 px-2 py-1 rounded border border-gray-200"><span
-                                class="text-red-500">*</span> Required</span>
-                    </div>
+              <div class="mb-1">
+                <h2 id="displayUsername" class="font-display font-bold text-xl text-slate-800">@username</h2>
+                <p id="displayEmail" class="text-xs text-slate-400 font-medium">user@example.com</p>
+              </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+              <button type="button" id="removeAvatarBtn"
+                class="hidden mt-3 text-xs font-bold text-red-500 hover:text-red-600 hover:bg-red-50 px-3 py-1 rounded-full transition-colors border border-transparent hover:border-red-100"
+                data-i18n="profile.remove_image">Remove Picture</button>
+            </div>
 
-                        <!-- Full Name -->
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
-                                for="fullName"><span data-i18n="profile.full_name">Full Name</span> <span
-                                    class="text-red-500">*</span></label>
-                            <input type="text" id="fullName" required
-                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
-                                placeholder="e.g. Dr. Jane Doe" />
-                        </div>
+            <!-- Actions Card -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm p-6 flex flex-col gap-3">
+              <button type="submit" form="profileForm" id="saveBtn"
+                class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-brand-500/20 hover:shadow-xl hover:shadow-brand-500/30 transition-all flex items-center justify-center gap-2">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                <span data-i18n="profile.save">Save Changes</span>
+              </button>
+              <button type="button" id="backBtn"
+                class="w-full py-3 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-slate-600 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+                <span data-i18n="back.general">Go Back</span>
+              </button>
+            </div>
+          </div>
 
-                        <!-- Username -->
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
-                                for="username"><span data-i18n="profile.username">Username</span> <span
-                                    class="text-red-500">*</span></label>
-                            <input type="text" id="username" required pattern="[a-zA-Z0-9_-]+"
-                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
-                                placeholder="janedoe" />
-                        </div>
+          <!-- Right Panel: Details Form -->
+          <div class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-5 mb-6">
+              <h1 class="font-display font-bold text-xl text-slate-800" data-i18n="profile.title">Edit Profile</h1>
+              <span class="text-[10px] font-bold text-slate-400 bg-gray-50 px-2 py-1 rounded border border-gray-200 uppercase tracking-wider">Required *</span>
+            </div>
 
-                        <!-- Country Selection -->
-                        <div class="space-y-1.5 md:col-span-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
-                                for="country"><span data-i18n="profile.country">Country</span> <span
-                                    class="text-red-500">*</span></label>
-                            <select id="country" required placeholder="Select a country..." autocomplete="off">
-                                <option value="">Select a country...</option>
-                            </select>
-                        </div>
+            <form id="profileForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+              
+              <!-- Full Name -->
+              <div class="space-y-1">
+                <label class="label-text" for="fullName"><span data-i18n="profile.full_name">Full Name</span> <span class="text-red-500">*</span></label>
+                <input type="text" id="fullName" required class="input-field" placeholder="e.g. Dr. Jane Doe" />
+              </div>
 
-                        <!-- Affiliation (Autocomplete/Searchable) -->
-                        <div class="space-y-1.5 relative md:col-span-2" id="affiliation-wrapper">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
-                                for="affiliation"><span data-i18n="profile.affiliation">Affiliation</span> <span
-                                    class="text-red-500">*</span></label>
-                            <div class="relative">
-                                <input type="text" id="affiliation" required autocomplete="off"
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
-                                    placeholder="Search or type University / Organization" />
+              <!-- Username -->
+              <div class="space-y-1">
+                <label class="label-text" for="username"><span data-i18n="profile.username">Username</span> <span class="text-red-500">*</span></label>
+                <input type="text" id="username" required pattern="[a-zA-Z0-9_-]+" class="input-field" placeholder="janedoe" />
+              </div>
 
-                                <!-- Search Icon (Decorative) -->
-                                <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
-                                </div>
+              <!-- Country Selection -->
+              <div class="space-y-1 md:col-span-2">
+                <label class="label-text" for="country"><span data-i18n="profile.country">Country</span> <span class="text-red-500">*</span></label>
+                <select id="country" required placeholder="Select a country..." autocomplete="off"></select>
+              </div>
 
-                                <!-- Autocomplete Dropdown -->
-                                <ul id="affiliation-list"
-                                    class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto overflow-x-hidden">
-                                    <!-- Items injected via JS -->
-                                </ul>
-                            </div>
-                        </div>
-
-                        <!-- Department (Autocomplete Dependent) -->
-                        <div class="space-y-1.5 relative" id="department-wrapper">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="department"
-                                data-i18n="profile.department">Department</label>
-                            <div class="relative">
-                                <input type="text" id="department" autocomplete="off"
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
-                                    placeholder="e.g. Dept of Agriculture" />
-
-                                <!-- Icon -->
-                                <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
-                                </div>
-
-                                <!-- Autocomplete Dropdown -->
-                                <ul id="department-list"
-                                    class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto overflow-x-hidden">
-                                </ul>
-                            </div>
-                        </div>
-
-                        <!-- Working Group (Autocomplete Dependent) -->
-                        <div class="space-y-1.5 relative" id="workingGroup-wrapper">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="workingGroup"
-                                data-i18n="profile.working_group">Working Group</label>
-                            <div class="relative">
-                                <input type="text" id="workingGroup" autocomplete="off"
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
-                                    placeholder="e.g. Soil Analysis Group" />
-
-                                <!-- Icon -->
-                                <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
-                                </div>
-
-                                <!-- Autocomplete Dropdown -->
-                                <ul id="workingGroup-list"
-                                    class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto overflow-x-hidden">
-                                </ul>
-                            </div>
-                        </div>
-
-                        <!-- Work Email -->
-                        <div class="space-y-1.5 md:col-span-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
-                                for="workEmail"><span data-i18n="profile.work_email">Work Email</span> <span
-                                    class="text-red-500">*</span></label>
-                            <input type="email" id="workEmail" required
-                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
-                                placeholder="jane@university.edu" />
-                        </div>
-
-                        <div class="col-span-1 md:col-span-2 border-t border-gray-100 my-2"></div>
-
-                        <!-- Personal Website -->
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
-                                for="personalWebsite" data-i18n="profile.personal_website">Personal Website</label>
-                            <div class="relative">
-                                <i data-lucide="globe"
-                                    class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                                <input type="url" id="personalWebsite"
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
-                                    placeholder="https://" />
-                            </div>
-                        </div>
-
-                        <!-- Professional Website -->
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider"
-                                for="professionalWebsite" data-i18n="profile.professional_website">Lab Website</label>
-                            <div class="relative">
-                                <i data-lucide="flask-conical"
-                                    class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                                <input type="url" id="professionalWebsite"
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
-                                    placeholder="https://" />
-                            </div>
-                        </div>
-
-                        <!-- Google Scholar -->
-                        <div class="space-y-1.5 md:col-span-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="googleScholar"
-                                data-i18n="profile.google_scholar">Google Scholar</label>
-                            <div class="relative">
-                                <i data-lucide="graduation-cap"
-                                    class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                                <input type="url" id="googleScholar"
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400"
-                                    placeholder="https://scholar.google.com/..." />
-                            </div>
-                        </div>
-
-                        <!-- Research Interests (Tags) -->
-                        <div class="space-y-1.5 md:col-span-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="fieldsOfStudy"
-                                data-i18n="profile.fields_section">Research Interests (tags, comma-separated)</label>
-                            <textarea id="fieldsOfStudy"
-                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all placeholder-slate-400 min-h-[100px] resize-y"
-                                placeholder="Agrivoltaics, carbon fluxes, soil monitoring..."
-                                data-i18n-placeholder="profile.fields_hint"></textarea>
-                            <p class="mt-1 text-xs text-slate-500" data-i18n="profile.fields_help">
-                                Enter short keywords separated by commas (e.g. agrivoltaics, carbon fluxes, remote
-                                sensing). These will appear as tags on your profile.
-                            </p>
-                            <div id="fieldsOfStudyTags" class="mt-2 flex flex-wrap gap-2"></div>
-                        </div>
-
-                        <!-- Collaborators Input (New) -->
-                        <div class="space-y-1.5 md:col-span-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="collaborators"
-                                data-i18n="profile.collaborators">Collaborators (Optional)</label>
-                            <select id="collaborators" multiple placeholder="Search for people..." autocomplete="off">
-                            </select>
-                            <p class="mt-1 text-xs text-slate-500" data-i18n="profile.collaborators_help">
-                                Type to search for existing members. Selected users will be linked to your profile.
-                            </p>
-                        </div>
-
-                        <!-- Profile Description (Optional) - Rich Text -->
-                        <div class="space-y-1.5 md:col-span-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider" for="description"
-                                data-i18n="profile.description_section">Profile Description (optional)</label>
-                            <!-- Editor Container -->
-                            <div class="editor-wrapper">
-                                <div id="description"></div>
-                            </div>
-                        </div>
-
-                    </div>
+              <!-- Affiliation (Autocomplete/Searchable) -->
+              <div class="space-y-1 relative md:col-span-2" id="affiliation-wrapper">
+                <label class="label-text" for="affiliation"><span data-i18n="profile.affiliation">Affiliation</span> <span class="text-red-500">*</span></label>
+                <div class="relative">
+                  <input type="text" id="affiliation" required autocomplete="off" class="input-field pr-10" placeholder="Search or type University / Organization" />
+                  <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                  </div>
+                  <!-- Dropdown -->
+                  <ul id="affiliation-list" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto overflow-x-hidden custom-scrollbar"></ul>
                 </div>
+              </div>
+
+              <!-- Department -->
+              <div class="space-y-1 relative" id="department-wrapper">
+                <label class="label-text" for="department" data-i18n="profile.department">Department</label>
+                <div class="relative">
+                  <input type="text" id="department" autocomplete="off" class="input-field" placeholder="e.g. Dept of Agriculture" />
+                  <ul id="department-list" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar"></ul>
+                </div>
+              </div>
+
+              <!-- Working Group -->
+              <div class="space-y-1 relative" id="workingGroup-wrapper">
+                <label class="label-text" for="workingGroup" data-i18n="profile.working_group">Working Group</label>
+                <div class="relative">
+                  <input type="text" id="workingGroup" autocomplete="off" class="input-field" placeholder="e.g. Soil Analysis Group" />
+                  <ul id="workingGroup-list" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar"></ul>
+                </div>
+              </div>
+
+              <!-- Work Email -->
+              <div class="space-y-1 md:col-span-2">
+                <label class="label-text" for="workEmail"><span data-i18n="profile.work_email">Work Email</span> <span class="text-red-500">*</span></label>
+                <input type="email" id="workEmail" required class="input-field" placeholder="jane@university.edu" />
+              </div>
+
+              <!-- Divider -->
+              <div class="col-span-1 md:col-span-2 border-t border-gray-100 my-2"></div>
+
+              <!-- Websites -->
+              <div class="space-y-1">
+                <label class="label-text" for="personalWebsite" data-i18n="profile.personal_website">Personal Website</label>
+                <input type="url" id="personalWebsite" class="input-field" placeholder="https://" />
+              </div>
+
+              <div class="space-y-1">
+                <label class="label-text" for="professionalWebsite" data-i18n="profile.professional_website">Lab Website</label>
+                <input type="url" id="professionalWebsite" class="input-field" placeholder="https://" />
+              </div>
+
+              <div class="space-y-1 md:col-span-2">
+                <label class="label-text" for="googleScholar" data-i18n="profile.google_scholar">Google Scholar</label>
+                <div class="relative">
+                    <i data-lucide="graduation-cap" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10"></i>
+                    <input type="url" id="googleScholar" class="input-field pl-10" placeholder="https://scholar.google.com/..." />
+                </div>
+              </div>
+
+              <!-- Research Interests -->
+              <div class="space-y-1 md:col-span-2">
+                <label class="label-text" for="fieldsOfStudy" data-i18n="profile.fields_section">Research Interests</label>
+                <textarea id="fieldsOfStudy" class="input-field min-h-[80px] resize-y" placeholder="e.g. agrivoltaics, carbon fluxes, remote sensing..." data-i18n-placeholder="profile.fields_hint"></textarea>
+                <div id="fieldsOfStudyTags" class="pt-2 flex flex-wrap gap-2"></div>
+              </div>
+
+              <!-- Collaborators -->
+              <div class="space-y-1 md:col-span-2">
+                <label class="label-text" for="collaborators" data-i18n="profile.collaborators">Collaborators</label>
+                <select id="collaborators" multiple placeholder="Search for people..." autocomplete="off"></select>
+                <p class="text-[10px] text-slate-400 mt-1" data-i18n="profile.collaborators_help">Type to search existing members.</p>
+              </div>
+
+              <!-- Description (Quill) -->
+              <div class="space-y-1 md:col-span-2">
+                <label class="label-text" for="description" data-i18n="profile.description_section">Bio / Description</label>
+                <div class="editor-wrapper">
+                  <div id="description"></div>
+                </div>
+              </div>
+
             </form>
+          </div>
         </div>
 
-    </main>
+      </div>
+    </div>
+  </main>
 
-    <!-- Logic -->
-    <script type="module">
-        import { renderLayout } from './layout.js';
-        import { supabase, authState, initAuth, signOut } from './auth.js';
-        import { renderHeader, $, $$, show, hide, applyI18n, tr, setFlash, getAvatarUrl } from './ui.js';
-        import { formatRichText } from './rich-text.js';
+  <!-- ================= LOGIC ================= -->
+  <script type="module">
+    import { renderLayout } from './layout.js';
+    import { supabase, authState, initAuth, signOut } from './auth.js';
+    import { initSharedUI, renderHeader, $, $$, show, hide, applyI18n, tr, setFlash, getAvatarUrl } from './ui.js';
 
-        // 1. Inject Layout
-        renderLayout('');
+    // Inject Layout
+    renderLayout('');
 
-        const state = {
-            language: localStorage.getItem("lang") || "en",
-            profile: null,
-            avatarFile: null,
-            avatarRemoved: false,
-            existingAffiliations: [],
-            deptSuggestions: [],
-            wgSuggestions: [],
-            quillEditor: null,
-            countrySelect: null,
-            collaboratorSelect: null
-        };
+    const state = {
+        language: localStorage.getItem("lang") || "en",
+        profile: null,
+        avatarFile: null,
+        avatarRemoved: false,
+        existingAffiliations: [],
+        deptSuggestions: [],
+        wgSuggestions: [],
+        quillEditor: null,
+        countrySelect: null,
+        collaboratorSelect: null
+    };
 
-        const t = {
-            en: {
-                auth: { signin_prompt_title: "Please Sign In", signin_prompt_body: "Access to your profile dashboard requires authentication.", signin_prompt_button: "Go to Sign In" },
-                profile: {
-                    title: "Edit Profile",
-                    full_name: "Full Name",
-                    username: "Username",
-                    country: "Country",
-                    affiliation: "Affiliation",
-                    department: "Department",
-                    working_group: "Working Group",
-                    work_email: "Work Email",
-                    personal_website: "Personal Website",
-                    professional_website: "Lab Website",
-                    google_scholar: "Google Scholar Profile",
-                    fields_section: "Research Interests (tags, comma-separated)",
-                    fields_hint: "e.g. agrivoltaics, carbon fluxes, remote sensing...",
-                    fields_help: "Enter short keywords separated by commas (e.g. agrivoltaics, carbon fluxes, remote sensing). These will appear as tags on your profile.",
-                    collaborators: "Collaborators (Optional)",
-                    collaborators_help: "Type to search for existing members. Selected users will be linked to your profile.",
-                    description_section: "Profile Description (optional)",
-                    description_hint: "Brief bio, current projects, and how you collaborate (optional).",
-                    save: "Save Changes",
-                    saving: "Saving...",
-                    saved: "Dashboard updated successfully",
-                    remove_image: "Remove Picture",
-                    upload_error: "Failed to upload image. Please try again.",
-                    no_affiliation_results: "No matches found. Typing will create a new one.",
-                    no_results: "No existing options found."
-                },
-                back: { general: "Go Back" }
+    const t = {
+        en: {
+            auth: { signin_prompt_title: "Please Sign In", signin_prompt_body: "Access to your profile dashboard requires authentication.", signin_prompt_button: "Go to Sign In" },
+            profile: {
+                title: "Edit Profile",
+                full_name: "Full Name",
+                username: "Username",
+                country: "Country",
+                affiliation: "Affiliation",
+                department: "Department",
+                working_group: "Working Group",
+                work_email: "Work Email",
+                personal_website: "Personal Website",
+                professional_website: "Lab Website",
+                google_scholar: "Google Scholar Profile",
+                fields_section: "Research Interests (tags, comma-separated)",
+                fields_hint: "e.g. agrivoltaics, carbon fluxes, remote sensing...",
+                collaborators: "Collaborators (Optional)",
+                collaborators_help: "Type to search for existing members. Selected users will be linked to your profile.",
+                description_section: "Profile Description (optional)",
+                description_hint: "Brief bio, current projects, and how you collaborate (optional).",
+                save: "Save Changes",
+                saving: "Saving...",
+                saved: "Dashboard updated successfully",
+                remove_image: "Remove Picture",
+                upload_error: "Failed to upload image. Please try again.",
+                no_affiliation_results: "No matches found. Typing will create a new one.",
+                no_results: "No existing options found."
             },
-            es: {
-                auth: { signin_prompt_title: "Inicia Sesión", signin_prompt_body: "El acceso al panel de perfil requiere autenticación.", signin_prompt_button: "Iniciar Sesión" },
-                profile: {
-                    title: "Editar Perfil",
-                    full_name: "Nombre Completo",
-                    username: "Usuario",
-                    country: "País",
-                    affiliation: "Afiliación",
-                    department: "Departamento",
-                    working_group: "Grupo de Trabajo",
-                    work_email: "Correo Trabajo",
-                    personal_website: "Sitio Personal",
-                    professional_website: "Sitio Laboratorio",
-                    google_scholar: "Perfil Google Scholar",
-                    fields_section: "Intereses de investigación (etiquetas separadas por comas)",
-                    fields_hint: "ej. agrovoltaica, flujos de carbono, teledetección...",
-                    fields_help: "Introduce palabras clave cortas separadas por comas (ej. agrovoltaica, flujos de carbono, teledetección). Se mostrarán como etiquetas en tu perfil.",
-                    collaborators: "Colaboradores (Opcional)",
-                    collaborators_help: "Escribe para buscar miembros existentes. Los usuarios seleccionados se vincularán a tu perfil.",
-                    description_section: "Descripción del perfil (opcional)",
-                    description_hint: "Breve biografía, proyectos actuales y cómo colaboras (opcional).",
-                    save: "Guardar Cambios",
-                    saving: "Guardando...",
-                    saved: "Panel actualizado con éxito",
-                    remove_image: "Eliminar Foto",
-                    upload_error: "Error al subir la imagen. Por favor intenta de nuevo.",
-                    no_affiliation_results: "No se encontraron coincidencias. Escribir creará uno nuevo.",
-                    no_results: "No se encontraron opciones existentes."
-                },
-                back: { general: "Regresar" }
-            }
-        };
+            back: { general: "Go Back" }
+        },
+        es: {
+            auth: { signin_prompt_title: "Inicia Sesión", signin_prompt_body: "El acceso al panel de perfil requiere autenticación.", signin_prompt_button: "Iniciar Sesión" },
+            profile: {
+                title: "Editar Perfil",
+                full_name: "Nombre Completo",
+                username: "Usuario",
+                country: "País",
+                affiliation: "Afiliación",
+                department: "Departamento",
+                working_group: "Grupo de Trabajo",
+                work_email: "Correo Trabajo",
+                personal_website: "Sitio Personal",
+                professional_website: "Sitio Laboratorio",
+                google_scholar: "Perfil Google Scholar",
+                fields_section: "Intereses de investigación (etiquetas separadas por comas)",
+                fields_hint: "ej. agrovoltaica, flujos de carbono, teledetección...",
+                collaborators: "Colaboradores (Opcional)",
+                collaborators_help: "Escribe para buscar miembros existentes.",
+                description_section: "Descripción del perfil (opcional)",
+                description_hint: "Breve biografía, proyectos actuales y cómo colaboras.",
+                save: "Guardar Cambios",
+                saving: "Guardando...",
+                saved: "Panel actualizado con éxito",
+                remove_image: "Eliminar Foto",
+                upload_error: "Error al subir la imagen. Por favor intenta de nuevo.",
+                no_affiliation_results: "No se encontraron coincidencias. Escribir creará uno nuevo.",
+                no_results: "No se encontraron opciones existentes."
+            },
+            back: { general: "Regresar" }
+        }
+    };
 
-        // --- Country Data (ISO Alpha-2 + Emoji + Name) ---
-        const countries = [
-            { code: "AF", name: "Afghanistan", flag: "🇦🇫" }, { code: "AL", name: "Albania", flag: "🇦🇱" }, { code: "DZ", name: "Algeria", flag: "🇩🇿" },
-            { code: "AS", name: "American Samoa", flag: "🇦🇸" }, { code: "AD", name: "Andorra", flag: "🇦🇩" }, { code: "AO", name: "Angola", flag: "🇦🇴" },
-            { code: "AI", name: "Anguilla", flag: "🇦🇮" }, { code: "AG", name: "Antigua and Barbuda", flag: "🇦🇬" }, { code: "AR", name: "Argentina", flag: "🇦🇷" },
-            { code: "AM", name: "Armenia", flag: "🇦🇲" }, { code: "AW", name: "Aruba", flag: "🇦🇼" }, { code: "AU", name: "Australia", flag: "🇦🇺" },
-            { code: "AT", name: "Austria", flag: "🇦🇹" }, { code: "AZ", name: "Azerbaijan", flag: "🇦🇿" }, { code: "BS", name: "Bahamas", flag: "🇧🇸" },
-            { code: "BH", name: "Bahrain", flag: "🇧🇭" }, { code: "BD", name: "Bangladesh", flag: "🇧🇩" }, { code: "BB", name: "Barbados", flag: "🇧🇧" },
-            { code: "BY", name: "Belarus", flag: "🇧🇾" }, { code: "BE", name: "Belgium", flag: "🇧🇪" }, { code: "BZ", name: "Belize", flag: "🇧🇿" },
-            { code: "BJ", name: "Benin", flag: "🇧🇯" }, { code: "BM", name: "Bermuda", flag: "🇧🇲" }, { code: "BT", name: "Bhutan", flag: "🇧🇹" },
-            { code: "BO", name: "Bolivia", flag: "🇧🇴" }, { code: "BA", name: "Bosnia and Herzegovina", flag: "🇧🇦" }, { code: "BW", name: "Botswana", flag: "🇧🇼" },
-            { code: "BR", name: "Brazil", flag: "🇧🇷" }, { code: "BN", name: "Brunei", flag: "🇧🇳" }, { code: "BG", name: "Bulgaria", flag: "🇧🇬" },
-            { code: "BF", name: "Burkina Faso", flag: "🇧🇫" }, { code: "BI", name: "Burundi", flag: "🇧🇮" }, { code: "KH", name: "Cambodia", flag: "🇰🇭" },
-            { code: "CM", name: "Cameroon", flag: "🇨🇲" }, { code: "CA", name: "Canada", flag: "🇨🇦" }, { code: "CV", name: "Cape Verde", flag: "🇨🇻" },
-            { code: "KY", name: "Cayman Islands", flag: "🇰🇾" }, { code: "CF", name: "Central African Republic", flag: "🇨🇫" }, { code: "TD", name: "Chad", flag: "🇹🇩" },
-            { code: "CL", name: "Chile", flag: "🇨🇱" }, { code: "CN", name: "China", flag: "🇨🇳" }, { code: "CO", name: "Colombia", flag: "🇨🇴" },
-            { code: "KM", name: "Comoros", flag: "🇰🇲" }, { code: "CG", name: "Congo", flag: "🇨🇬" }, { code: "CD", name: "Congo (DRC)", flag: "🇨🇩" },
-            { code: "CR", name: "Costa Rica", flag: "🇨🇷" }, { code: "HR", name: "Croatia", flag: "🇭🇷" }, { code: "CU", name: "Cuba", flag: "🇨🇺" },
-            { code: "CY", name: "Cyprus", flag: "🇨🇾" }, { code: "CZ", name: "Czech Republic", flag: "🇨🇿" }, { code: "DK", name: "Denmark", flag: "🇩🇰" },
-            { code: "DJ", name: "Djibouti", flag: "🇩🇯" }, { code: "DM", name: "Dominica", flag: "🇩🇲" }, { code: "DO", name: "Dominican Republic", flag: "🇩🇴" },
-            { code: "EC", name: "Ecuador", flag: "🇪🇨" }, { code: "EG", name: "Egypt", flag: "🇪🇬" }, { code: "SV", name: "El Salvador", flag: "🇸🇻" },
-            { code: "GQ", name: "Equatorial Guinea", flag: "🇬🇶" }, { code: "ER", name: "Eritrea", flag: "🇪🇷" }, { code: "EE", name: "Estonia", flag: "🇪🇪" },
-            { code: "ET", name: "Ethiopia", flag: "🇪🇹" }, { code: "FJ", name: "Fiji", flag: "🇫🇯" }, { code: "FI", name: "Finland", flag: "🇫🇮" },
-            { code: "FR", name: "France", flag: "🇫🇷" }, { code: "GF", name: "French Guiana", flag: "🇬🇫" }, { code: "PF", name: "French Polynesia", flag: "🇵🇫" },
-            { code: "GA", name: "Gabon", flag: "🇬🇦" }, { code: "GM", name: "Gambia", flag: "🇬🇲" }, { code: "GE", name: "Georgia", flag: "🇬🇪" },
-            { code: "DE", name: "Germany", flag: "🇩🇪" }, { code: "GH", name: "Ghana", flag: "🇬🇭" }, { code: "GR", name: "Greece", flag: "🇬🇷" },
-            { code: "GD", name: "Grenada", flag: "🇬🇩" }, { code: "GP", name: "Guadeloupe", flag: "🇬🇵" }, { code: "GU", name: "Guam", flag: "🇬🇺" },
-            { code: "GT", name: "Guatemala", flag: "🇬🇹" }, { code: "GN", name: "Guinea", flag: "🇬🇳" }, { code: "GW", name: "Guinea-Bissau", flag: "🇬🇼" },
-            { code: "GY", name: "Guyana", flag: "🇬🇾" }, { code: "HT", name: "Haiti", flag: "🇭🇹" }, { code: "HN", name: "Honduras", flag: "🇭🇳" },
-            { code: "HK", name: "Hong Kong", flag: "🇭🇰" }, { code: "HU", name: "Hungary", flag: "🇭🇺" }, { code: "IS", name: "Iceland", flag: "🇮🇸" },
-            { code: "IN", name: "India", flag: "🇮🇳" }, { code: "ID", name: "Indonesia", flag: "🇮🇩" }, { code: "IR", name: "Iran", flag: "🇮🇷" },
-            { code: "IQ", name: "Iraq", flag: "🇮🇶" }, { code: "IE", name: "Ireland", flag: "🇮🇪" }, { code: "IL", name: "Israel", flag: "🇮🇱" },
-            { code: "IT", name: "Italy", flag: "🇮🇹" }, { code: "JM", name: "Jamaica", flag: "🇯🇲" }, { code: "JP", name: "Japan", flag: "🇯🇵" },
-            { code: "JO", name: "Jordan", flag: "🇯🇴" }, { code: "KZ", name: "Kazakhstan", flag: "🇰🇿" }, { code: "KE", name: "Kenya", flag: "🇰🇪" },
-            { code: "KI", name: "Kiribati", flag: "🇰🇮" }, { code: "KP", name: "North Korea", flag: "🇰🇵" }, { code: "KR", name: "South Korea", flag: "🇰🇷" },
-            { code: "KW", name: "Kuwait", flag: "🇰🇼" }, { code: "KG", name: "Kyrgyzstan", flag: "🇰🇬" }, { code: "LA", name: "Laos", flag: "🇱🇦" },
-            { code: "LV", name: "Latvia", flag: "🇱🇻" }, { code: "LB", name: "Lebanon", flag: "🇱🇧" }, { code: "LS", name: "Lesotho", flag: "🇱🇸" },
-            { code: "LR", name: "Liberia", flag: "🇱🇷" }, { code: "LY", name: "Libya", flag: "🇱🇾" }, { code: "LI", name: "Liechtenstein", flag: "🇱🇮" },
-            { code: "LT", name: "Lithuania", flag: "🇱🇹" }, { code: "LU", name: "Luxembourg", flag: "🇱🇺" }, { code: "MO", name: "Macau", flag: "🇲🇴" },
-            { code: "MK", name: "Macedonia", flag: "🇲🇰" }, { code: "MG", name: "Madagascar", flag: "🇲🇬" }, { code: "MW", name: "Malawi", flag: "🇲🇼" },
-            { code: "MY", name: "Malaysia", flag: "🇲🇾" }, { code: "MV", name: "Maldives", flag: "🇲🇻" }, { code: "ML", name: "Mali", flag: "🇲🇱" },
-            { code: "MT", name: "Malta", flag: "🇲🇹" }, { code: "MH", name: "Marshall Islands", flag: "🇲🇭" }, { code: "MQ", name: "Martinique", flag: "🇲🇶" },
-            { code: "MR", name: "Mauritania", flag: "🇲🇷" }, { code: "MU", name: "Mauritius", flag: "🇲🇺" }, { code: "YT", name: "Mayotte", flag: "🇾🇹" },
-            { code: "MX", name: "Mexico", flag: "🇲🇽" }, { code: "FM", name: "Micronesia", flag: "🇫🇲" }, { code: "MD", name: "Moldova", flag: "🇲🇩" },
-            { code: "MC", name: "Monaco", flag: "🇲🇨" }, { code: "MN", name: "Mongolia", flag: "🇲🇳" }, { code: "ME", name: "Montenegro", flag: "🇲🇪" },
-            { code: "MS", name: "Montserrat", flag: "🇲🇸" }, { code: "MA", name: "Morocco", flag: "🇲🇦" }, { code: "MZ", name: "Mozambique", flag: "🇲🇿" },
-            { code: "MM", name: "Myanmar", flag: "🇲🇲" }, { code: "NA", name: "Namibia", flag: "🇳🇦" }, { code: "NR", name: "Nauru", flag: "🇳🇷" },
-            { code: "NP", name: "Nepal", flag: "🇳🇵" }, { code: "NL", name: "Netherlands", flag: "🇳🇱" }, { code: "NC", name: "New Caledonia", flag: "🇳🇨" },
-            { code: "NZ", name: "New Zealand", flag: "🇳🇿" }, { code: "NI", name: "Nicaragua", flag: "🇳🇮" }, { code: "NE", name: "Niger", flag: "🇳🇪" },
-            { code: "NG", name: "Nigeria", flag: "🇳🇬" }, { code: "NU", name: "Niue", flag: "🇳🇺" }, { code: "NF", name: "Norfolk Island", flag: "🇳🇫" },
-            { code: "MP", name: "Northern Mariana Islands", flag: "🇲🇵" }, { code: "NO", name: "Norway", flag: "🇳🇴" }, { code: "OM", name: "Oman", flag: "🇴🇲" },
-            { code: "PK", name: "Pakistan", flag: "🇵🇰" }, { code: "PW", name: "Palau", flag: "🇵🇼" }, { code: "PS", name: "Palestine", flag: "🇵🇸" },
-            { code: "PA", name: "Panama", flag: "🇵🇦" }, { code: "PG", name: "Papua New Guinea", flag: "🇵🇬" }, { code: "PY", name: "Paraguay", flag: "🇵🇾" },
-            { code: "PE", name: "Peru", flag: "🇵🇪" }, { code: "PH", name: "Philippines", flag: "🇵🇭" }, { code: "PN", name: "Pitcairn", flag: "🇵🇳" },
-            { code: "PL", name: "Poland", flag: "🇵🇱" }, { code: "PT", name: "Portugal", flag: "🇵🇹" }, { code: "PR", name: "Puerto Rico", flag: "🇵🇷" },
-            { code: "QA", name: "Qatar", flag: "🇶🇦" }, { code: "RE", name: "Reunion", flag: "🇷🇪" }, { code: "RO", name: "Romania", flag: "🇷🇴" },
-            { code: "RU", name: "Russia", flag: "🇷🇺" }, { code: "RW", name: "Rwanda", flag: "🇷🇼" }, { code: "BL", name: "Saint Barthelemy", flag: "🇧🇱" },
-            { code: "SH", name: "Saint Helena", flag: "🇸🇭" }, { code: "KN", name: "Saint Kitts and Nevis", flag: "🇰🇳" }, { code: "LC", name: "Saint Lucia", flag: "🇱🇨" },
-            { code: "MF", name: "Saint Martin", flag: "🇲🇫" }, { code: "PM", name: "Saint Pierre and Miquelon", flag: "🇵🇲" },
-            { code: "VC", name: "Saint Vincent and the Grenadines", flag: "🇻🇨" }, { code: "WS", name: "Samoa", flag: "🇼🇸" }, { code: "SM", name: "San Marino", flag: "🇸🇲" },
-            { code: "ST", name: "Sao Tome and Principe", flag: "🇸🇹" }, { code: "SA", name: "Saudi Arabia", flag: "🇸🇦" }, { code: "SN", name: "Senegal", flag: "🇸🇳" },
-            { code: "RS", name: "Serbia", flag: "🇷🇸" }, { code: "SC", name: "Seychelles", flag: "🇸🇨" }, { code: "SL", name: "Sierra Leone", flag: "🇸🇱" },
-            { code: "SG", name: "Singapore", flag: "🇸🇬" }, { code: "SX", name: "Sint Maarten", flag: "🇸🇽" }, { code: "SK", name: "Slovakia", flag: "🇸🇰" },
-            { code: "SI", name: "Slovenia", flag: "🇸🇮" }, { code: "SB", name: "Solomon Islands", flag: "🇸🇧" }, { code: "SO", name: "Somalia", flag: "🇸🇴" },
-            { code: "ZA", name: "South Africa", flag: "🇿🇦" }, { code: "GS", name: "South Georgia and the South Sandwich Islands", flag: "🇬🇸" },
-            { code: "SS", name: "South Sudan", flag: "🇸🇸" }, { code: "ES", name: "Spain", flag: "🇪🇸" }, { code: "LK", name: "Sri Lanka", flag: "🇱🇰" },
-            { code: "SD", name: "Sudan", flag: "🇸🇩" }, { code: "SR", name: "Suriname", flag: "🇸🇷" }, { code: "SJ", name: "Svalbard and Jan Mayen", flag: "🇸🇯" },
-            { code: "SZ", name: "Swaziland", flag: "🇸🇿" }, { code: "SE", name: "Sweden", flag: "🇸🇪" }, { code: "CH", name: "Switzerland", flag: "🇨🇭" },
-            { code: "SY", name: "Syria", flag: "🇸🇾" }, { code: "TW", name: "Taiwan", flag: "🇹🇼" }, { code: "TJ", name: "Tajikistan", flag: "🇹🇯" },
-            { code: "TZ", name: "Tanzania", flag: "🇹🇿" }, { code: "TH", name: "Thailand", flag: "🇹🇭" }, { code: "TL", name: "Timor-Leste", flag: "🇹🇱" },
-            { code: "TG", name: "Togo", flag: "🇹🇬" }, { code: "TK", name: "Tokelau", flag: "🇹🇰" }, { code: "TO", name: "Tonga", flag: "🇹🇴" },
-            { code: "TT", name: "Trinidad and Tobago", flag: "🇹🇹" }, { code: "TN", name: "Tunisia", flag: "🇹🇳" }, { code: "TR", name: "Turkey", flag: "🇹🇷" },
-            { code: "TM", name: "Turkmenistan", flag: "🇹🇲" }, { code: "TC", name: "Turks and Caicos Islands", flag: "🇹🇨" }, { code: "TV", name: "Tuvalu", flag: "🇹🇻" },
-            { code: "UG", name: "Uganda", flag: "🇺🇬" }, { code: "UA", name: "Ukraine", flag: "🇺🇦" }, { code: "AE", name: "United Arab Emirates", flag: "🇦🇪" },
-            { code: "GB", name: "United Kingdom", flag: "🇬🇧" }, { code: "US", name: "United States", flag: "🇺🇸" }, { code: "UY", name: "Uruguay", flag: "🇺🇾" },
-            { code: "UZ", name: "Uzbekistan", flag: "🇺🇿" }, { code: "VU", name: "Vanuatu", flag: "🇻🇺" }, { code: "VE", name: "Venezuela", flag: "🇻🇪" },
-            { code: "VN", name: "Vietnam", flag: "🇻🇳" }, { code: "WF", name: "Wallis and Futuna", flag: "🇼🇫" }, { code: "YE", name: "Yemen", flag: "🇾🇪" },
-            { code: "ZM", name: "Zambia", flag: "🇿🇲" }, { code: "ZW", name: "Zimbabwe", flag: "🇿🇼" }
+    // --- Country Data ---
+    const countries = [
+        { code: "AF", name: "Afghanistan", flag: "🇦🇫" }, { code: "AL", name: "Albania", flag: "🇦🇱" }, { code: "DZ", name: "Algeria", flag: "🇩🇿" },
+        { code: "AS", name: "American Samoa", flag: "🇦🇸" }, { code: "AD", name: "Andorra", flag: "🇦🇩" }, { code: "AO", name: "Angola", flag: "🇦🇴" },
+        { code: "AI", name: "Anguilla", flag: "🇦🇮" }, { code: "AG", name: "Antigua and Barbuda", flag: "🇦🇬" }, { code: "AR", name: "Argentina", flag: "🇦🇷" },
+        { code: "AM", name: "Armenia", flag: "🇦🇲" }, { code: "AW", name: "Aruba", flag: "🇦🇼" }, { code: "AU", name: "Australia", flag: "🇦🇺" },
+        { code: "AT", name: "Austria", flag: "🇦🇹" }, { code: "AZ", name: "Azerbaijan", flag: "🇦🇿" }, { code: "BS", name: "Bahamas", flag: "🇧🇸" },
+        { code: "BH", name: "Bahrain", flag: "🇧🇭" }, { code: "BD", name: "Bangladesh", flag: "🇧🇩" }, { code: "BB", name: "Barbados", flag: "🇧🇧" },
+        { code: "BY", name: "Belarus", flag: "🇧🇾" }, { code: "BE", name: "Belgium", flag: "🇧🇪" }, { code: "BZ", name: "Belize", flag: "🇧🇿" },
+        { code: "BJ", name: "Benin", flag: "🇧🇯" }, { code: "BM", name: "Bermuda", flag: "🇧🇲" }, { code: "BT", name: "Bhutan", flag: "🇧🇹" },
+        { code: "BO", name: "Bolivia", flag: "🇧🇴" }, { code: "BA", name: "Bosnia and Herzegovina", flag: "🇧🇦" }, { code: "BW", name: "Botswana", flag: "🇧🇼" },
+        { code: "BR", name: "Brazil", flag: "🇧🇷" }, { code: "BN", name: "Brunei", flag: "🇧🇳" }, { code: "BG", name: "Bulgaria", flag: "🇧🇬" },
+        { code: "BF", name: "Burkina Faso", flag: "🇧🇫" }, { code: "BI", name: "Burundi", flag: "🇧🇮" }, { code: "KH", name: "Cambodia", flag: "🇰🇭" },
+        { code: "CM", name: "Cameroon", flag: "🇨🇲" }, { code: "CA", name: "Canada", flag: "🇨🇦" }, { code: "CV", name: "Cape Verde", flag: "🇨🇻" },
+        { code: "KY", name: "Cayman Islands", flag: "🇰🇾" }, { code: "CF", name: "Central African Republic", flag: "🇨🇫" }, { code: "TD", name: "Chad", flag: "🇹🇩" },
+        { code: "CL", name: "Chile", flag: "🇨🇱" }, { code: "CN", name: "China", flag: "🇨🇳" }, { code: "CO", name: "Colombia", flag: "🇨🇴" },
+        { code: "KM", name: "Comoros", flag: "🇰🇲" }, { code: "CG", name: "Congo", flag: "🇨🇬" }, { code: "CD", name: "Congo (DRC)", flag: "🇨🇩" },
+        { code: "CR", name: "Costa Rica", flag: "🇨🇷" }, { code: "HR", name: "Croatia", flag: "🇭🇷" }, { code: "CU", name: "Cuba", flag: "🇨🇺" },
+        { code: "CY", name: "Cyprus", flag: "🇨🇾" }, { code: "CZ", name: "Czech Republic", flag: "🇨🇿" }, { code: "DK", name: "Denmark", flag: "🇩🇰" },
+        { code: "DJ", name: "Djibouti", flag: "🇩🇯" }, { code: "DM", name: "Dominica", flag: "🇩🇲" }, { code: "DO", name: "Dominican Republic", flag: "🇩🇴" },
+        { code: "EC", name: "Ecuador", flag: "🇪🇨" }, { code: "EG", name: "Egypt", flag: "🇪🇬" }, { code: "SV", name: "El Salvador", flag: "🇸🇻" },
+        { code: "GQ", name: "Equatorial Guinea", flag: "🇬🇶" }, { code: "ER", name: "Eritrea", flag: "🇪🇷" }, { code: "EE", name: "Estonia", flag: "🇪🇪" },
+        { code: "ET", name: "Ethiopia", flag: "🇪🇹" }, { code: "FJ", name: "Fiji", flag: "🇫🇯" }, { code: "FI", name: "Finland", flag: "🇫🇮" },
+        { code: "FR", name: "France", flag: "🇫🇷" }, { code: "GF", name: "French Guiana", flag: "🇬🇫" }, { code: "PF", name: "French Polynesia", flag: "🇵🇫" },
+        { code: "GA", name: "Gabon", flag: "🇬🇦" }, { code: "GM", name: "Gambia", flag: "🇬🇲" }, { code: "GE", name: "Georgia", flag: "🇬🇪" },
+        { code: "DE", name: "Germany", flag: "🇩🇪" }, { code: "GH", name: "Ghana", flag: "🇬🇭" }, { code: "GR", name: "Greece", flag: "🇬🇷" },
+        { code: "GD", name: "Grenada", flag: "🇬🇩" }, { code: "GP", name: "Guadeloupe", flag: "🇬🇵" }, { code: "GU", name: "Guam", flag: "🇬🇺" },
+        { code: "GT", name: "Guatemala", flag: "🇬🇹" }, { code: "GN", name: "Guinea", flag: "🇬🇳" }, { code: "GW", name: "Guinea-Bissau", flag: "🇬🇼" },
+        { code: "GY", name: "Guyana", flag: "🇬🇾" }, { code: "HT", name: "Haiti", flag: "🇭🇹" }, { code: "HN", name: "Honduras", flag: "🇭🇳" },
+        { code: "HK", name: "Hong Kong", flag: "🇭🇰" }, { code: "HU", name: "Hungary", flag: "🇭🇺" }, { code: "IS", name: "Iceland", flag: "🇮🇸" },
+        { code: "IN", name: "India", flag: "🇮🇳" }, { code: "ID", name: "Indonesia", flag: "🇮🇩" }, { code: "IR", name: "Iran", flag: "🇮🇷" },
+        { code: "IQ", name: "Iraq", flag: "🇮🇶" }, { code: "IE", name: "Ireland", flag: "🇮🇪" }, { code: "IL", name: "Israel", flag: "🇮🇱" },
+        { code: "IT", name: "Italy", flag: "🇮🇹" }, { code: "JM", name: "Jamaica", flag: "🇯🇲" }, { code: "JP", name: "Japan", flag: "🇯🇵" },
+        { code: "JO", name: "Jordan", flag: "🇯🇴" }, { code: "KZ", name: "Kazakhstan", flag: "🇰🇿" }, { code: "KE", name: "Kenya", flag: "🇰🇪" },
+        { code: "KI", name: "Kiribati", flag: "🇰🇮" }, { code: "KP", name: "North Korea", flag: "🇰🇵" }, { code: "KR", name: "South Korea", flag: "🇰🇷" },
+        { code: "KW", name: "Kuwait", flag: "🇰🇼" }, { code: "KG", name: "Kyrgyzstan", flag: "🇰🇬" }, { code: "LA", name: "Laos", flag: "🇱🇦" },
+        { code: "LV", name: "Latvia", flag: "🇱🇻" }, { code: "LB", name: "Lebanon", flag: "🇱🇧" }, { code: "LS", name: "Lesotho", flag: "🇱🇸" },
+        { code: "LR", name: "Liberia", flag: "🇱🇷" }, { code: "LY", name: "Libya", flag: "🇱🇾" }, { code: "LI", name: "Liechtenstein", flag: "🇱🇮" },
+        { code: "LT", name: "Lithuania", flag: "🇱🇹" }, { code: "LU", name: "Luxembourg", flag: "🇱🇺" }, { code: "MO", name: "Macau", flag: "🇲🇴" },
+        { code: "MK", name: "Macedonia", flag: "🇲🇰" }, { code: "MG", name: "Madagascar", flag: "🇲🇬" }, { code: "MW", name: "Malawi", flag: "🇲🇼" },
+        { code: "MY", name: "Malaysia", flag: "🇲🇾" }, { code: "MV", name: "Maldives", flag: "🇲🇻" }, { code: "ML", name: "Mali", flag: "🇲🇱" },
+        { code: "MT", name: "Malta", flag: "🇲🇹" }, { code: "MH", name: "Marshall Islands", flag: "🇲🇭" }, { code: "MQ", name: "Martinique", flag: "🇲🇶" },
+        { code: "MR", name: "Mauritania", flag: "🇲🇷" }, { code: "MU", name: "Mauritius", flag: "🇲🇺" }, { code: "YT", name: "Mayotte", flag: "🇾🇹" },
+        { code: "MX", name: "Mexico", flag: "🇲🇽" }, { code: "FM", name: "Micronesia", flag: "🇫🇲" }, { code: "MD", name: "Moldova", flag: "🇲🇩" },
+        { code: "MC", name: "Monaco", flag: "🇲🇨" }, { code: "MN", name: "Mongolia", flag: "🇲🇳" }, { code: "ME", name: "Montenegro", flag: "🇲🇪" },
+        { code: "MS", name: "Montserrat", flag: "🇲🇸" }, { code: "MA", name: "Morocco", flag: "🇲🇦" }, { code: "MZ", name: "Mozambique", flag: "🇲🇿" },
+        { code: "MM", name: "Myanmar", flag: "🇲🇲" }, { code: "NA", name: "Namibia", flag: "🇳🇦" }, { code: "NR", name: "Nauru", flag: "🇳🇷" },
+        { code: "NP", name: "Nepal", flag: "🇳🇵" }, { code: "NL", name: "Netherlands", flag: "🇳🇱" }, { code: "NC", name: "New Caledonia", flag: "🇳🇨" },
+        { code: "NZ", name: "New Zealand", flag: "🇳🇿" }, { code: "NI", name: "Nicaragua", flag: "🇳🇮" }, { code: "NE", name: "Niger", flag: "🇳🇪" },
+        { code: "NG", name: "Nigeria", flag: "🇳🇬" }, { code: "NU", name: "Niue", flag: "🇳🇺" }, { code: "NF", name: "Norfolk Island", flag: "🇳🇫" },
+        { code: "MP", name: "Northern Mariana Islands", flag: "🇲🇵" }, { code: "NO", name: "Norway", flag: "🇳🇴" }, { code: "OM", name: "Oman", flag: "🇴🇲" },
+        { code: "PK", name: "Pakistan", flag: "🇵🇰" }, { code: "PW", name: "Palau", flag: "🇵🇼" }, { code: "PS", name: "Palestine", flag: "🇵🇸" },
+        { code: "PA", name: "Panama", flag: "🇵🇦" }, { code: "PG", name: "Papua New Guinea", flag: "🇵🇬" }, { code: "PY", name: "Paraguay", flag: "🇵🇾" },
+        { code: "PE", name: "Peru", flag: "🇵🇪" }, { code: "PH", name: "Philippines", flag: "🇵🇭" }, { code: "PN", name: "Pitcairn", flag: "🇵🇳" },
+        { code: "PL", name: "Poland", flag: "🇵🇱" }, { code: "PT", name: "Portugal", flag: "🇵🇹" }, { code: "PR", name: "Puerto Rico", flag: "🇵🇷" },
+        { code: "QA", name: "Qatar", flag: "🇶🇦" }, { code: "RE", name: "Reunion", flag: "🇷🇪" }, { code: "RO", name: "Romania", flag: "🇷🇴" },
+        { code: "RU", name: "Russia", flag: "🇷🇺" }, { code: "RW", name: "Rwanda", flag: "🇷🇼" }, { code: "BL", name: "Saint Barthelemy", flag: "🇧🇱" },
+        { code: "SH", name: "Saint Helena", flag: "🇸🇭" }, { code: "KN", name: "Saint Kitts and Nevis", flag: "🇰🇳" }, { code: "LC", name: "Saint Lucia", flag: "🇱🇨" },
+        { code: "MF", name: "Saint Martin", flag: "🇲🇫" }, { code: "PM", name: "Saint Pierre and Miquelon", flag: "🇵🇲" },
+        { code: "VC", name: "Saint Vincent and the Grenadines", flag: "🇻🇨" }, { code: "WS", name: "Samoa", flag: "🇼🇸" }, { code: "SM", name: "San Marino", flag: "🇸🇲" },
+        { code: "ST", name: "Sao Tome and Principe", flag: "🇸🇹" }, { code: "SA", name: "Saudi Arabia", flag: "🇸🇦" }, { code: "SN", name: "Senegal", flag: "🇸🇳" },
+        { code: "RS", name: "Serbia", flag: "🇷🇸" }, { code: "SC", name: "Seychelles", flag: "🇸🇨" }, { code: "SL", name: "Sierra Leone", flag: "🇸🇱" },
+        { code: "SG", name: "Singapore", flag: "🇸🇬" }, { code: "SX", name: "Sint Maarten", flag: "🇸🇽" }, { code: "SK", name: "Slovakia", flag: "🇸🇰" },
+        { code: "SI", name: "Slovenia", flag: "🇸🇮" }, { code: "SB", name: "Solomon Islands", flag: "🇸🇧" }, { code: "SO", name: "Somalia", flag: "🇸🇴" },
+        { code: "ZA", name: "South Africa", flag: "🇿🇦" }, { code: "GS", name: "South Georgia and the South Sandwich Islands", flag: "🇬🇸" },
+        { code: "SS", name: "South Sudan", flag: "🇸🇸" }, { code: "ES", name: "Spain", flag: "🇪🇸" }, { code: "LK", name: "Sri Lanka", flag: "🇱🇰" },
+        { code: "SD", name: "Sudan", flag: "🇸🇩" }, { code: "SR", name: "Suriname", flag: "🇸🇷" }, { code: "SJ", name: "Svalbard and Jan Mayen", flag: "🇸🇯" },
+        { code: "SZ", name: "Swaziland", flag: "🇸🇿" }, { code: "SE", name: "Sweden", flag: "🇸🇪" }, { code: "CH", name: "Switzerland", flag: "🇨🇭" },
+        { code: "SY", name: "Syria", flag: "🇸🇾" }, { code: "TW", name: "Taiwan", flag: "🇹🇼" }, { code: "TJ", name: "Tajikistan", flag: "🇹🇯" },
+        { code: "TZ", name: "Tanzania", flag: "🇹🇿" }, { code: "TH", name: "Thailand", flag: "🇹🇭" }, { code: "TL", name: "Timor-Leste", flag: "🇹🇱" },
+        { code: "TG", name: "Togo", flag: "🇹🇬" }, { code: "TK", name: "Tokelau", flag: "🇹🇰" }, { code: "TO", name: "Tonga", flag: "🇹🇴" },
+        { code: "TT", name: "Trinidad and Tobago", flag: "🇹🇹" }, { code: "TN", name: "Tunisia", flag: "🇹🇳" }, { code: "TR", name: "Turkey", flag: "🇹🇷" },
+        { code: "TM", name: "Turkmenistan", flag: "🇹🇲" }, { code: "TC", name: "Turks and Caicos Islands", flag: "🇹🇨" }, { code: "TV", name: "Tuvalu", flag: "🇹🇻" },
+        { code: "UG", name: "Uganda", flag: "🇺🇬" }, { code: "UA", name: "Ukraine", flag: "🇺🇦" }, { code: "AE", name: "United Arab Emirates", flag: "🇦🇪" },
+        { code: "GB", name: "United Kingdom", flag: "🇬🇧" }, { code: "US", name: "United States", flag: "🇺🇸" }, { code: "UY", name: "Uruguay", flag: "🇺🇾" },
+        { code: "UZ", name: "Uzbekistan", flag: "🇺🇿" }, { code: "VU", name: "Vanuatu", flag: "🇻🇺" }, { code: "VE", name: "Venezuela", flag: "🇻🇪" },
+        { code: "VN", name: "Vietnam", flag: "🇻🇳" }, { code: "WF", name: "Wallis and Futuna", flag: "🇼🇫" }, { code: "YE", name: "Yemen", flag: "🇾🇪" },
+        { code: "ZM", name: "Zambia", flag: "🇿🇲" }, { code: "ZW", name: "Zimbabwe", flag: "🇿🇼" }
+    ];
+
+    function localTr(key) { return tr(t, state.language, key); }
+
+    function handleLangSwitch() {
+        state.language = state.language === "en" ? "es" : "en";
+        localStorage.setItem("lang", state.language);
+        applyI18n(t, state.language);
+        
+        // Sync language switcher from header (injected by layout)
+        const offset = state.language === 'es' ? '100%' : '0%';
+        const slider = document.querySelector('#langSwitchDesktop div:last-child');
+        if (slider) slider.style.transform = `translateX(${offset})`;
+    }
+
+    // --- Helper to init Quill ---
+    function initQuill(selector) {
+        if (!window.Quill) return null;
+        return new Quill(selector, {
+            theme: 'snow',
+            placeholder: localTr('profile.description_hint'),
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'clean']
+                ]
+            }
+        });
+    }
+
+    // --- Helper to init Tom Select (Country Picker) ---
+    function initCountryPicker() {
+        if(state.countrySelect) return;
+        
+        state.countrySelect = new TomSelect('#country', {
+            options: countries,
+            valueField: 'code',
+            labelField: 'name',
+            searchField: 'name',
+            placeholder: "Select a country...",
+            maxItems: 1,
+            render: {
+                option: function(data, escape) {
+                    return `<div><span class="text-xl mr-2">${data.flag}</span> <span class="text-slate-700">${escape(data.name)}</span></div>`;
+                },
+                item: function(data, escape) {
+                    return `<div><span class="text-xl mr-2">${data.flag}</span> ${escape(data.name)}</div>`;
+                }
+            }
+        });
+    }
+
+    // --- Helper to init Tom Select (Collaborator Picker) ---
+    function initCollaboratorPicker() {
+        if (state.collaboratorSelect) return;
+
+        state.collaboratorSelect = new TomSelect('#collaborators', {
+            plugins: ['remove_button'], // <--- Adds the 'X' functionality
+            valueField: 'id',
+            labelField: 'full_name',
+            searchField: 'full_name',
+            placeholder: localTr('profile.collaborators_help'),
+            maxItems: null,
+            preload: false,
+            load: function(query, callback) {
+                if (!query.length) return callback();
+
+                supabase
+                    .from('profiles')
+                    .select('id, full_name, avatar_url')
+                    .ilike('full_name', `%${query}%`)
+                    .limit(10)
+                    .then(({ data, error }) => {
+                        if (error) {
+                            callback();
+                        } else {
+                            // Filter out current user
+                            const filtered = data.filter(p => p.id !== authState.session?.user?.id);
+                            callback(filtered);
+                        }
+                    })
+                    .catch(() => callback());
+            },
+            render: {
+                option: function(data, escape) {
+                    return `<div class="flex items-center gap-2 py-1.5 px-2">
+                                <div class="w-6 h-6 rounded-full bg-brand-100 flex items-center justify-center text-xs text-brand-700 font-bold shrink-0">
+                                    ${data.full_name ? data.full_name.charAt(0).toUpperCase() : '?'}
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-medium text-slate-700">${escape(data.full_name || 'Unknown')}</span>
+                                </div>
+                            </div>`;
+                },
+                item: function(data, escape) {
+                    // Simple div; the plugin appends the 'X' button automatically
+                    return `<div>${escape(data.full_name || 'Unknown')}</div>`;
+                }
+            }
+        });
+    }
+
+    // Helper to get content from Quill
+    function getQuillContent(quill) {
+        if (!quill) return null;
+        if (quill.getText().trim().length === 0 && quill.root.innerHTML === '<p><br></p>') return null;
+        return quill.root.innerHTML;
+    }
+
+    // --- Routing Logic ---
+    async function handleRoute() {
+        const loadingEl = $('#view-loading');
+        const authReqEl = $('#view-auth-required');
+        const profileEl = $('#view-profile');
+
+        if (!authState.session) {
+            hide(loadingEl);
+            hide(profileEl);
+            show(authReqEl);
+        } else {
+            hide(authReqEl);
+            show(profileEl);
+            hide(loadingEl);
+
+            if (!state.quillEditor) {
+                state.quillEditor = initQuill('#description');
+            }
+
+            initCountryPicker();
+            initCollaboratorPicker();
+
+            await Promise.all([
+                loadProfileData(),
+                fetchExistingAffiliations()
+            ]);
+        }
+    }
+
+    // --- Data Fetching ---
+
+    async function fetchExistingAffiliations() {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('affiliation')
+                .not('affiliation', 'is', null)
+                .neq('affiliation', '');
+
+            if (error) throw error;
+
+            const uniqueSet = new Set(data.map(item => item.affiliation.trim()));
+            state.existingAffiliations = Array.from(uniqueSet).sort((a, b) => a.localeCompare(b));
+
+        } catch (err) {
+            console.error('Error fetching affiliations:', err);
+        }
+    }
+
+    async function fetchDependentOptions(affiliationName) {
+        if (!affiliationName) {
+            state.deptSuggestions = [];
+            state.wgSuggestions = [];
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('department, working_group')
+                .eq('affiliation', affiliationName);
+
+            if (error) throw error;
+
+            const depts = new Set(
+                data.map(i => i.department)
+                    .filter(d => d && d.trim() !== '')
+                    .map(d => d.trim())
+            );
+            state.deptSuggestions = Array.from(depts).sort((a, b) => a.localeCompare(b));
+
+            const groups = new Set(
+                data.map(i => i.working_group)
+                    .filter(w => w && w.trim() !== '')
+                    .map(w => w.trim())
+            );
+            state.wgSuggestions = Array.from(groups).sort((a, b) => a.localeCompare(b));
+
+        } catch (err) {
+            console.error('Error fetching dependent options:', err);
+        }
+    }
+
+    async function loadProfileData() {
+        if (!authState.session) return;
+
+        const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", authState.session.user.id)
+            .single();
+
+        if (error) {
+            console.error("Error fetching profile:", error);
+            state.profile = {
+                full_name: authState.session.user.user_metadata?.full_name || '',
+                email: authState.session.user.email
+            };
+        } else {
+            state.profile = data || {};
+        }
+
+        // Populate Form Fields
+        const fields = [
+            'fullName', 'username', 'affiliation', 'department', 'workingGroup',
+            'workEmail', 'personalWebsite', 'professionalWebsite',
+            'googleScholar', 'fieldsOfStudy'
         ];
 
-        function localTr(key) { return tr(t, state.language, key); }
+        fields.forEach(id => {
+            const dbKey = id.replace(/[A-Z]/g, m => '_' + m.toLowerCase());
+            const el = $(`#${id}`);
+            if (el) el.value = state.profile[dbKey] || '';
+        });
 
-        function handleLangSwitch() {
-            state.language = state.language === "en" ? "es" : "en";
-            localStorage.setItem("lang", state.language);
-            applyI18n(t, state.language);
-            renderHeader(authState, t, state.language);
+        // Set Country
+        if (state.countrySelect && state.profile.country) {
+            state.countrySelect.setValue(state.profile.country);
         }
 
-        // --- Helper to init Quill ---
-        function initQuill(selector) {
-            if (!window.Quill) return null;
-            return new Quill(selector, {
-                theme: 'snow',
-                placeholder: localTr('profile.description_hint'),
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        ['link', 'clean']
-                    ]
-                }
-            });
-        }
-
-        // --- Helper to init Tom Select (Country Picker) ---
-        function initCountryPicker() {
-            if(state.countrySelect) return;
+        // Set Collaborators
+        if (state.collaboratorSelect && state.profile.collaborators && state.profile.collaborators.length > 0) {
+            const { data: collabData } = await supabase
+                .from('profiles')
+                .select('id, full_name')
+                .in('id', state.profile.collaborators);
             
-            state.countrySelect = new TomSelect('#country', {
-                options: countries,
-                valueField: 'code',
-                labelField: 'name',
-                searchField: 'name',
-                placeholder: "Select a country...",
-                maxItems: 1,
-                render: {
-                    option: function(data, escape) {
-                        return `<div><span class="text-xl mr-2">${data.flag}</span> <span class="text-slate-700">${escape(data.name)}</span></div>`;
-                    },
-                    item: function(data, escape) {
-                        return `<div><span class="text-xl mr-2">${data.flag}</span> ${escape(data.name)}</div>`;
-                    }
-                }
-            });
+            if (collabData) {
+                collabData.forEach(item => {
+                    state.collaboratorSelect.addOption(item);
+                });
+                state.collaboratorSelect.setValue(state.profile.collaborators);
+            }
         }
 
-        // --- Helper to init Tom Select (Collaborator Picker) ---
-        function initCollaboratorPicker() {
-            if(state.collaboratorSelect) return;
-
-            state.collaboratorSelect = new TomSelect('#collaborators', {
-                valueField: 'id',
-                labelField: 'full_name',
-                searchField: 'full_name',
-                placeholder: localTr('profile.collaborators_help'),
-                maxItems: null, // Allow multiple
-                preload: false, // Don't load everyone at start
-                load: function(query, callback) {
-                    if (!query.length) return callback();
-                    
-                    supabase
-                        .from('profiles')
-                        .select('id, full_name, avatar_url')
-                        .ilike('full_name', `%${query}%`)
-                        .limit(10)
-                        .then(({ data, error }) => {
-                            if (error) {
-                                callback();
-                            } else {
-                                // Filter out current user
-                                const filtered = data.filter(p => p.id !== authState.session?.user?.id);
-                                callback(filtered);
-                            }
-                        })
-                        .catch(() => callback());
-                },
-                render: {
-                    option: function(data, escape) {
-                        return `<div class="flex items-center gap-2 py-1">
-                                    <div class="w-6 h-6 rounded-full bg-brand-100 flex items-center justify-center text-xs text-brand-700 font-bold">
-                                        ${data.full_name ? data.full_name.charAt(0).toUpperCase() : '?'}
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-medium text-slate-700">${escape(data.full_name || 'Unknown')}</span>
-                                    </div>
-                                </div>`;
-                    },
-                    item: function(data, escape) {
-                        return `<div class="item">
-                                    ${escape(data.full_name || 'Unknown')}
-                                </div>`;
-                    }
-                }
-            });
+        // Populate Description
+        if (state.quillEditor) {
+            state.quillEditor.root.innerHTML = state.profile.description || '';
         }
 
-        // Helper to get content from Quill
-        function getQuillContent(quill) {
-            if (!quill) return null;
-            // Check if empty (Quill leaves <p><br></p> even when empty)
-            if (quill.getText().trim().length === 0 && quill.root.innerHTML === '<p><br></p>') return null;
-            return quill.root.innerHTML;
+        if (!$('#workEmail').value) $('#workEmail').value = authState.session.user.email;
+        if (!$('#username').value) $('#username').value = authState.session.user.email.split('@')[0];
+
+        if (state.profile.affiliation) {
+            await fetchDependentOptions(state.profile.affiliation);
         }
 
-        // --- Routing Logic ---
-        async function handleRoute() {
-            const loadingEl = $('#view-loading');
-            const authReqEl = $('#view-auth-required');
-            const profileEl = $('#view-profile');
+        updatePreviewText();
+        renderFieldsTags();
 
-            if (!authState.session) {
-                hide(loadingEl);
-                hide(profileEl);
-                show(authReqEl);
+        if (state.profile.avatar_url) {
+            const url = await getAvatarUrl(state.profile.avatar_url);
+            setAvatar(url);
+        } else {
+            setAvatar(null);
+        }
+    }
+
+    function setAvatar(url) {
+        const img = $('#avatarImg');
+        const initials = $('#avatarInitials');
+        const removeBtn = $('#removeAvatarBtn');
+
+        if (url) {
+            img.src = url;
+            show(img);
+            hide(initials);
+            show(removeBtn);
+        } else {
+            hide(img);
+            show(initials);
+            hide(removeBtn);
+            updateInitials();
+        }
+    }
+
+    function updateInitials() {
+        const name = $('#fullName').value || 'User';
+        $('#avatarInitials').textContent = name.charAt(0).toUpperCase();
+    }
+
+    function updatePreviewText() {
+        $('#displayUsername').textContent = '@' + ($('#username').value || 'username');
+        $('#displayEmail').textContent = $('#workEmail').value || 'user@example.com';
+    }
+
+    function renderFieldsTags() {
+        const container = $('#fieldsOfStudyTags');
+        if (!container) return;
+        const textarea = $('#fieldsOfStudy');
+        if (!textarea) return;
+
+        const raw = textarea.value || '';
+        const tags = raw.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+
+        container.innerHTML = '';
+        if (tags.length === 0) return;
+
+        tags.forEach(tag => {
+            const pill = document.createElement('span');
+            pill.className = 'inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-100';
+            pill.textContent = tag;
+            container.appendChild(pill);
+        });
+    }
+
+    // --- Autocomplete Logic ---
+    function setupAffiliationAutocomplete() {
+        const input = $('#affiliation');
+        const list = $('#affiliation-list');
+        const wrapper = $('#affiliation-wrapper');
+
+        const renderList = (items) => {
+            list.innerHTML = '';
+            if (items.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'px-4 py-3 text-sm text-slate-400 italic bg-gray-50';
+                li.textContent = localTr('profile.no_affiliation_results');
+                list.appendChild(li);
             } else {
-                hide(authReqEl);
-                show(profileEl);
-                hide(loadingEl);
-
-                // Initialize editor if not already
-                if (!state.quillEditor) {
-                    state.quillEditor = initQuill('#description');
-                }
-
-                // Initialize Pickers
-                initCountryPicker();
-                initCollaboratorPicker();
-
-                await Promise.all([
-                    loadProfileData(),
-                    fetchExistingAffiliations()
-                ]);
-            }
-        }
-
-        // --- Data Fetching ---
-
-        async function fetchExistingAffiliations() {
-            try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('affiliation')
-                    .not('affiliation', 'is', null)
-                    .neq('affiliation', '');
-
-                if (error) throw error;
-
-                const uniqueSet = new Set(data.map(item => item.affiliation.trim()));
-                state.existingAffiliations = Array.from(uniqueSet).sort((a, b) => a.localeCompare(b));
-
-            } catch (err) {
-                console.error('Error fetching affiliations:', err);
-            }
-        }
-
-        async function fetchDependentOptions(affiliationName) {
-            if (!affiliationName) {
-                state.deptSuggestions = [];
-                state.wgSuggestions = [];
-                return;
-            }
-
-            try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('department, working_group')
-                    .eq('affiliation', affiliationName);
-
-                if (error) throw error;
-
-                const depts = new Set(
-                    data.map(i => i.department)
-                        .filter(d => d && d.trim() !== '')
-                        .map(d => d.trim())
-                );
-                state.deptSuggestions = Array.from(depts).sort((a, b) => a.localeCompare(b));
-
-                const groups = new Set(
-                    data.map(i => i.working_group)
-                        .filter(w => w && w.trim() !== '')
-                        .map(w => w.trim())
-                );
-                state.wgSuggestions = Array.from(groups).sort((a, b) => a.localeCompare(b));
-
-            } catch (err) {
-                console.error('Error fetching dependent options:', err);
-            }
-        }
-
-        async function loadProfileData() {
-            if (!authState.session) return;
-
-            const { data, error } = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("id", authState.session.user.id)
-                .single();
-
-            if (error) {
-                console.error("Error fetching profile:", error);
-                state.profile = {
-                    full_name: authState.session.user.user_metadata?.full_name || '',
-                    email: authState.session.user.email
-                };
-            } else {
-                state.profile = data || {};
-            }
-
-            // Populate Form Fields
-            const fields = [
-                'fullName', 'username', 'affiliation', 'department', 'workingGroup',
-                'workEmail', 'personalWebsite', 'professionalWebsite',
-                'googleScholar', 'fieldsOfStudy'
-            ];
-
-            fields.forEach(id => {
-                const dbKey = id.replace(/[A-Z]/g, m => '_' + m.toLowerCase());
-                const el = $(`#${id}`);
-                if (el) el.value = state.profile[dbKey] || '';
-            });
-
-            // Set Country
-            if (state.countrySelect && state.profile.country) {
-                state.countrySelect.setValue(state.profile.country);
-            }
-
-            // Set Collaborators
-            if (state.collaboratorSelect && state.profile.collaborators && state.profile.collaborators.length > 0) {
-                // Fetch the names for the IDs first so Tom Select can display them
-                const { data: collabData } = await supabase
-                    .from('profiles')
-                    .select('id, full_name')
-                    .in('id', state.profile.collaborators);
-                
-                if (collabData) {
-                    collabData.forEach(item => {
-                        state.collaboratorSelect.addOption(item);
-                    });
-                    state.collaboratorSelect.setValue(state.profile.collaborators);
-                }
-            }
-
-            // Populate Description in Quill
-            if (state.quillEditor) {
-                state.quillEditor.root.innerHTML = state.profile.description || '';
-            }
-
-            if (!$('#workEmail').value) $('#workEmail').value = authState.session.user.email;
-            if (!$('#username').value) $('#username').value = authState.session.user.email.split('@')[0];
-
-            if (state.profile.affiliation) {
-                await fetchDependentOptions(state.profile.affiliation);
-            }
-
-            updatePreviewText();
-            renderFieldsTags();
-
-            if (state.profile.avatar_url) {
-                const url = await getAvatarUrl(state.profile.avatar_url);
-                setAvatar(url);
-            } else {
-                setAvatar(null);
-            }
-        }
-
-        function setAvatar(url) {
-            const img = $('#avatarImg');
-            const initials = $('#avatarInitials');
-            const removeBtn = $('#removeAvatarBtn');
-
-            if (url) {
-                img.src = url;
-                show(img);
-                hide(initials);
-                show(removeBtn);
-            } else {
-                hide(img);
-                show(initials);
-                hide(removeBtn);
-                updateInitials();
-            }
-        }
-
-        function updateInitials() {
-            const name = $('#fullName').value || 'User';
-            $('#avatarInitials').textContent = name.charAt(0).toUpperCase();
-        }
-
-        function updatePreviewText() {
-            $('#displayUsername').textContent = '@' + ($('#username').value || 'username');
-            $('#displayEmail').textContent = $('#workEmail').value || 'user@example.com';
-        }
-
-        function renderFieldsTags() {
-            const container = $('#fieldsOfStudyTags');
-            if (!container) return;
-            const textarea = $('#fieldsOfStudy');
-            if (!textarea) return;
-
-            const raw = textarea.value || '';
-            const tags = raw.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-
-            container.innerHTML = '';
-            if (tags.length === 0) return;
-
-            tags.forEach(tag => {
-                const pill = document.createElement('span');
-                pill.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-100';
-                pill.textContent = tag;
-                container.appendChild(pill);
-            });
-        }
-
-        // --- Autocomplete Logic ---
-
-        function setupAffiliationAutocomplete() {
-            const input = $('#affiliation');
-            const list = $('#affiliation-list');
-            const wrapper = $('#affiliation-wrapper');
-
-            const renderList = (items) => {
-                list.innerHTML = '';
-                if (items.length === 0) {
+                items.forEach(item => {
                     const li = document.createElement('li');
-                    li.className = 'px-4 py-3 text-sm text-slate-400 italic bg-gray-50';
-                    li.textContent = localTr('profile.no_affiliation_results');
-                    list.appendChild(li);
-                } else {
-                    items.forEach(item => {
-                        const li = document.createElement('li');
-                        li.className = 'px-4 py-2.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer border-b border-gray-50 last:border-none transition-colors';
-                        li.textContent = item;
-                        li.addEventListener('click', async () => {
-                            input.value = item;
-                            hide(list);
-                            await fetchDependentOptions(item);
-                        });
-                        list.appendChild(li);
+                    li.className = 'px-4 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer border-b border-gray-50 last:border-none transition-colors';
+                    li.textContent = item;
+                    li.addEventListener('click', async () => {
+                        input.value = item;
+                        hide(list);
+                        await fetchDependentOptions(item);
                     });
-                }
-                show(list);
-            };
+                    list.appendChild(li);
+                });
+            }
+            show(list);
+        };
 
-            const handleInput = () => {
-                const val = input.value.toLowerCase();
-                const filtered = state.existingAffiliations.filter(aff => aff.toLowerCase().includes(val));
-                const toShow = val === '' ? state.existingAffiliations.slice(0, 50) : filtered;
-                renderList(toShow);
-            };
+        const handleInput = () => {
+            const val = input.value.toLowerCase();
+            const filtered = state.existingAffiliations.filter(aff => aff.toLowerCase().includes(val));
+            const toShow = val === '' ? state.existingAffiliations.slice(0, 50) : filtered;
+            renderList(toShow);
+        };
 
-            input.addEventListener('focus', handleInput);
-            input.addEventListener('input', handleInput);
+        input.addEventListener('focus', handleInput);
+        input.addEventListener('input', handleInput);
 
-            input.addEventListener('blur', async () => {
-                const val = input.value.trim();
-                if (val) await fetchDependentOptions(val);
-            });
+        input.addEventListener('blur', async () => {
+            const val = input.value.trim();
+            if (val) await fetchDependentOptions(val);
+        });
 
-            document.addEventListener('click', (e) => {
-                if (!wrapper.contains(e.target)) hide(list);
-            });
-        }
+        document.addEventListener('click', (e) => {
+            if (!wrapper.contains(e.target)) hide(list);
+        });
+    }
 
-        function setupGenericAutocomplete(inputId, listId, wrapperId, getSourceArray) {
-            const input = $(`#${inputId}`);
-            const list = $(`#${listId}`);
-            const wrapper = $(`#${wrapperId}`);
+    function setupGenericAutocomplete(inputId, listId, wrapperId, getSourceArray) {
+        const input = $(`#${inputId}`);
+        const list = $(`#${listId}`);
+        const wrapper = $(`#${wrapperId}`);
 
-            const renderList = (items) => {
-                list.innerHTML = '';
-                if (items.length === 0) {
+        const renderList = (items) => {
+            list.innerHTML = '';
+            if (items.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'px-4 py-3 text-sm text-slate-400 italic bg-gray-50';
+                li.textContent = localTr('profile.no_results');
+                list.appendChild(li);
+            } else {
+                items.forEach(item => {
                     const li = document.createElement('li');
-                    li.className = 'px-4 py-3 text-sm text-slate-400 italic bg-gray-50';
-                    li.textContent = localTr('profile.no_results');
+                    li.className = 'px-4 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer border-b border-gray-50 last:border-none transition-colors';
+                    li.textContent = item;
+                    li.addEventListener('click', () => {
+                        input.value = item;
+                        hide(list);
+                    });
                     list.appendChild(li);
-                } else {
-                    items.forEach(item => {
-                        const li = document.createElement('li');
-                        li.className = 'px-4 py-2.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer border-b border-gray-50 last:border-none transition-colors';
-                        li.textContent = item;
-                        li.addEventListener('click', () => {
-                            input.value = item;
-                            hide(list);
-                        });
-                        list.appendChild(li);
+                });
+            }
+            show(list);
+        };
+
+        const handleInput = () => {
+            const source = getSourceArray();
+            if (!source || source.length === 0) return;
+
+            const val = input.value.toLowerCase();
+            const filtered = source.filter(s => s.toLowerCase().includes(val));
+            const toShow = val === '' ? source : filtered;
+            renderList(toShow);
+        };
+
+        input.addEventListener('focus', handleInput);
+        input.addEventListener('input', handleInput);
+
+        document.addEventListener('click', (e) => {
+            if (!wrapper.contains(e.target)) hide(list);
+        });
+    }
+
+    async function saveProfile(e) {
+        e.preventDefault();
+        const btn = $('#saveBtn');
+        
+        if(!$('#country').value) {
+            alert("Please select a country.");
+            return;
+        }
+
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> <span>${localTr('profile.saving')}</span>`;
+
+        try {
+            let avatar_url = state.profile?.avatar_url;
+
+            if (state.avatarFile) {
+                const fileExt = state.avatarFile.name.split('.').pop();
+                const fileName = `${authState.session.user.id}/${Date.now()}.${fileExt}`;
+                const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, state.avatarFile);
+                if (uploadError) throw new Error(localTr('profile.upload_error'));
+
+                if (avatar_url) await supabase.storage.from('avatars').remove([avatar_url]);
+                avatar_url = fileName;
+            }
+            else if (state.avatarRemoved && avatar_url) {
+                await supabase.storage.from('avatars').remove([avatar_url]);
+                avatar_url = null;
+            }
+
+            const collaborators = state.collaboratorSelect ? state.collaboratorSelect.getValue() : [];
+
+            const updates = {
+                id: authState.session.user.id,
+                updated_at: new Date().toISOString(),
+                avatar_url,
+                full_name: $('#fullName').value.trim(),
+                username: $('#username').value.trim(),
+                country: $('#country').value.trim(),
+                affiliation: $('#affiliation').value.trim(),
+                department: $('#department').value.trim() || null,
+                working_group: $('#workingGroup').value.trim() || null,
+                work_email: $('#workEmail').value.trim(),
+                personal_website: $('#personalWebsite').value.trim() || null,
+                professional_website: $('#professionalWebsite').value.trim() || null,
+                google_scholar: $('#googleScholar').value.trim() || null,
+                fields_of_study: $('#fieldsOfStudy').value.trim() || null,
+                collaborators: collaborators,
+                description: getQuillContent(state.quillEditor),
+            };
+
+            const { error } = await supabase.from('profiles').upsert(updates);
+            if (error) throw error;
+
+            state.profile = { ...state.profile, ...updates };
+            state.avatarFile = null;
+            state.avatarRemoved = false;
+            setFlash(localTr('profile.saved'));
+
+            if (authState.profile) {
+                Object.assign(authState.profile, updates);
+                renderHeader(authState, t, state.language);
+                if (authState.profile.avatar_url) {
+                    getAvatarUrl(authState.profile.avatar_url).then(url => {
+                      const i = $('#userAvatar'); if(i) i.src = url;
                     });
                 }
-                show(list);
-            };
-
-            const handleInput = () => {
-                const source = getSourceArray();
-                if (!source || source.length === 0) return;
-
-                const val = input.value.toLowerCase();
-                const filtered = source.filter(s => s.toLowerCase().includes(val));
-                const toShow = val === '' ? source : filtered;
-                renderList(toShow);
-            };
-
-            input.addEventListener('focus', handleInput);
-            input.addEventListener('input', handleInput);
-
-            document.addEventListener('click', (e) => {
-                if (!wrapper.contains(e.target)) hide(list);
-            });
-        }
-
-        async function saveProfile(e) {
-            e.preventDefault();
-            const btn = $('#saveBtn');
-            
-            // Manual check for country requirement since TomSelect hides native input
-            if(!$('#country').value) {
-                alert("Please select a country.");
-                return;
             }
 
-            const originalContent = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> <span>${localTr('profile.saving')}</span>`;
+            const returnTo = new URLSearchParams(location.search).get('return_to');
+            if (returnTo) setTimeout(() => window.location.href = returnTo, 1000);
 
-            try {
-                let avatar_url = state.profile?.avatar_url;
-
-                if (state.avatarFile) {
-                    const fileExt = state.avatarFile.name.split('.').pop();
-                    const fileName = `${authState.session.user.id}/${Date.now()}.${fileExt}`;
-                    const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, state.avatarFile);
-                    if (uploadError) throw new Error(localTr('profile.upload_error'));
-
-                    if (avatar_url) await supabase.storage.from('avatars').remove([avatar_url]);
-                    avatar_url = fileName;
-                }
-                else if (state.avatarRemoved && avatar_url) {
-                    await supabase.storage.from('avatars').remove([avatar_url]);
-                    avatar_url = null;
-                }
-
-                // Get Collaborators from TomSelect
-                const collaborators = state.collaboratorSelect ? state.collaboratorSelect.getValue() : [];
-
-                const updates = {
-                    id: authState.session.user.id,
-                    updated_at: new Date().toISOString(),
-                    avatar_url,
-                    full_name: $('#fullName').value.trim(),
-                    username: $('#username').value.trim(),
-                    country: $('#country').value.trim(), // Save Country Code
-                    affiliation: $('#affiliation').value.trim(),
-                    department: $('#department').value.trim() || null,
-                    working_group: $('#workingGroup').value.trim() || null,
-                    work_email: $('#workEmail').value.trim(),
-                    personal_website: $('#personalWebsite').value.trim() || null,
-                    professional_website: $('#professionalWebsite').value.trim() || null,
-                    google_scholar: $('#googleScholar').value.trim() || null,
-                    fields_of_study: $('#fieldsOfStudy').value.trim() || null,
-                    collaborators: collaborators, // Save array of UUIDs
-                    description: getQuillContent(state.quillEditor),
-                };
-
-                const { error } = await supabase.from('profiles').upsert(updates);
-                if (error) throw error;
-
-                state.profile = { ...state.profile, ...updates };
-                state.avatarFile = null;
-                state.avatarRemoved = false;
-                setFlash(localTr('profile.saved'));
-
-                if (authState.profile) {
-                    Object.assign(authState.profile, updates);
-                    renderHeader(authState, t, state.language);
-                }
-
-                const returnTo = new URLSearchParams(location.search).get('return_to');
-                if (returnTo) setTimeout(() => window.location.href = returnTo, 1000);
-
-            } catch (err) {
-                console.error(err);
-                setFlash(err.message || "Error saving profile");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalContent;
-                lucide.createIcons();
-            }
-        }
-
-        function bindEvents() {
-            $('#avatarInput').addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                state.avatarFile = file;
-                state.avatarRemoved = false;
-                const reader = new FileReader();
-                reader.onload = (ev) => setAvatar(ev.target.result);
-                reader.readAsDataURL(file);
-            });
-
-            $('#removeAvatarBtn').addEventListener('click', () => {
-                state.avatarFile = null;
-                state.avatarRemoved = true;
-                setAvatar(null);
-                $('#avatarInput').value = '';
-            });
-
-            $('#fullName').addEventListener('input', updateInitials);
-            $('#username').addEventListener('input', updatePreviewText);
-            $('#workEmail').addEventListener('input', updatePreviewText);
-            $('#fieldsOfStudy').addEventListener('input', renderFieldsTags);
-            $('#profileForm').addEventListener('submit', saveProfile);
-
-            $('#backBtn').addEventListener('click', () => {
-                if (document.referrer && document.referrer.includes(window.location.host)) {
-                    history.back();
-                } else {
-                    window.location.href = 'index.html';
-                }
-            });
-
-            // Initialize All Autocompletes
-            setupAffiliationAutocomplete();
-            setupGenericAutocomplete('department', 'department-list', 'department-wrapper', () => state.deptSuggestions);
-            setupGenericAutocomplete('workingGroup', 'workingGroup-list', 'workingGroup-wrapper', () => state.wgSuggestions);
-        }
-
-        // --- Main ---
-        (async function main() {
-            applyI18n(t, state.language);
-            bindEvents();
+        } catch (err) {
+            console.error(err);
+            setFlash(err.message || "Error saving profile", 3000);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
             lucide.createIcons();
+        }
+    }
 
-            await initAuth({
-                onAuthReady: () => {
-                    renderHeader(authState, t, state.language);
-                    handleRoute();
-                },
-                onAuthChange: () => {
-                    renderHeader(authState, t, state.language);
-                    handleRoute();
-                }
-            });
+    function bindEvents() {
+        $('#avatarInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            state.avatarFile = file;
+            state.avatarRemoved = false;
+            const reader = new FileReader();
+            reader.onload = (ev) => setAvatar(ev.target.result);
+            reader.readAsDataURL(file);
+        });
 
-            window.addEventListener('lang-switch', handleLangSwitch);
-        })();
-    </script>
+        $('#removeAvatarBtn').addEventListener('click', () => {
+            state.avatarFile = null;
+            state.avatarRemoved = true;
+            setAvatar(null);
+            $('#avatarInput').value = '';
+        });
+
+        $('#fullName').addEventListener('input', updateInitials);
+        $('#username').addEventListener('input', updatePreviewText);
+        $('#workEmail').addEventListener('input', updatePreviewText);
+        $('#fieldsOfStudy').addEventListener('input', renderFieldsTags);
+        $('#profileForm').addEventListener('submit', saveProfile);
+
+        $('#backBtn').addEventListener('click', () => {
+            if (document.referrer && document.referrer.includes(window.location.host)) {
+                history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        setupAffiliationAutocomplete();
+        setupGenericAutocomplete('department', 'department-list', 'department-wrapper', () => state.deptSuggestions);
+        setupGenericAutocomplete('workingGroup', 'workingGroup-list', 'workingGroup-wrapper', () => state.wgSuggestions);
+    }
+
+    // --- Main ---
+    (async function main() {
+        initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
+        applyI18n(t, state.language);
+        bindEvents();
+        lucide.createIcons();
+
+        await initAuth({
+            onAuthReady: () => {
+                renderHeader(authState, t, state.language);
+                handleRoute();
+            },
+            onAuthChange: () => {
+                renderHeader(authState, t, state.language);
+                handleRoute();
+            }
+        });
+    })();
+  </script>
 </body>
 
 </html>

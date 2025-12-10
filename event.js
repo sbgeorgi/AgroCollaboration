@@ -1,5 +1,5 @@
 import { openProfileModal } from './clickprofile.js';
-import { formatRichText } from './rich-text.js'; // Import formatting helper
+import { formatRichText } from './rich-text.js';
 
 export function initEventLogic(deps) {
   const {
@@ -19,7 +19,7 @@ export function initEventLogic(deps) {
     applyI18n,
     show,
     hide,
-    refreshEventsList // Destructured specifically to update background card
+    refreshEventsList
   } = deps;
 
   // --- STATE & CHANNELS ---
@@ -85,49 +85,110 @@ export function initEventLogic(deps) {
     if (window.lucide) lucide.createIcons();
   }
 
-  // --- ADMIN EDITING LOGIC (INJECTED) ---
+  const toLocalInputValue = (d) => {
+    if (!d) return "";
+    d = new Date(d);
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  };
+
+  // --- ADMIN EDITING LOGIC ---
 
   async function fetchProfilesForEdit() {
     if (availableProfiles.length > 0) return;
     const { data } = await supabase.from('profiles').select('id, full_name, affiliation').order('full_name');
     availableProfiles = data || [];
-  }
-
-  function createProfileOptions(selectedId) {
-    return `<option value="">-- Link Profile --</option>${availableProfiles.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.full_name || '')}</option>`).join('')}`;
+    
+    // Populate Datalist
+    const dl = document.getElementById('js-dl-profiles');
+    const dlAff = document.getElementById('js-dl-affiliations');
+    if (dl && availableProfiles.length) {
+        dl.innerHTML = availableProfiles.map(p => `<option value="${escapeHtml(p.full_name)}">`).join('');
+        const uniqueAffiliations = [...new Set(availableProfiles.map(p => p.affiliation).filter(Boolean))].sort();
+        if (dlAff) {
+            dlAff.innerHTML = uniqueAffiliations.map(aff => `<option value="${escapeHtml(aff)}">`).join('');
+        }
+    }
   }
 
   function initQuillEditor(selector) {
     if (!window.Quill) return null;
+    
+    const toolbarOptions = [
+        ['bold', 'italic', 'underline'],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['link', 'clean']
+    ];
+
     return new Quill(selector, {
       theme: 'snow',
-      modules: {
-        toolbar: [
-          ['bold', 'italic', 'underline'],
-          [{ 'color': [] }, { 'background': [] }],
-          [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-          ['link', 'clean']
-        ]
-      }
+      modules: { toolbar: toolbarOptions }
     });
+  }
+
+  // Matches admin.html setupSpeakerAutofill
+  function setupSpeakerAutofill(containerId) {
+      const container = document.getElementById(containerId);
+      if(!container) return;
+
+      container.addEventListener('input', (e) => {
+          if (e.target.matches('.js-sp-profile-search')) {
+              const searchVal = e.target.value;
+              const row = e.target.closest('.js-speaker-row');
+              const idInput = row.querySelector('.js-sp-profile-id');
+              const nameInput = row.querySelector('.js-sp-name');
+              const affiliationInput = row.querySelector('.js-sp-aff');
+
+              const profile = availableProfiles.find(p => p.full_name === searchVal);
+
+              if (profile) {
+                  idInput.value = profile.id;
+                  nameInput.value = profile.full_name;
+                  if (profile.affiliation) {
+                      affiliationInput.value = profile.affiliation;
+                  }
+              } else {
+                  idInput.value = '';
+              }
+          }
+      });
   }
 
   function injectEditModal() {
     if (document.getElementById('event-js-editor-modal')) return;
 
-    // We add inline styles for the editor within the modal to match the admin style
+    // We replicate the admin.html styles here to ensure drop-in consistency
     const modalHtml = `
       <dialog id="event-js-editor-modal" class="rounded-2xl p-0 bg-white shadow-2xl max-w-2xl w-full m-auto backdrop:bg-slate-900/50">
         <style>
-            .js-editor-wrapper { border: 1px solid transparent; background: #f8fafc; border-radius: 0.75rem; overflow: hidden; transition: all 0.2s; }
-            .js-editor-wrapper:focus-within { background: white; ring: 2px solid var(--color-brand-light); border-color: var(--color-brand); }
-            .js-editor-wrapper .ql-toolbar { border: none; border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.5); }
-            .js-editor-wrapper .ql-container { border: none; font-family: 'Inter', sans-serif; font-size: 0.875rem; }
-            .js-editor-wrapper .ql-editor { min-height: 100px; padding: 12px 16px; }
+            /* Copied from admin.html custom styles */
+            .input-field {
+                width: 100%; padding: 0.625rem 1rem; background-color: #f8fafc; 
+                border: 1px solid transparent; border-radius: 0.75rem; 
+                transition: all 0.2s; font-size: 0.875rem; color: #1e293b; 
+                box-shadow: inset 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            }
+            .input-field:focus { outline: none; box-shadow: 0 0 0 2px var(--color-brand-light); border-color: var(--color-brand); background-color: #ffffff; }
+            .input-field:hover { background-color: #ffffff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+            
+            .label-text { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; }
+            
+            .editor-wrapper { width: 100%; background-color: #f8fafc; border: 1px solid transparent; border-radius: 0.75rem; transition: all 0.2s; box-shadow: inset 0 1px 2px 0 rgb(0 0 0 / 0.05); overflow: hidden; }
+            .editor-wrapper:hover { background-color: #ffffff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+            .editor-wrapper:focus-within { box-shadow: 0 0 0 2px var(--color-brand-light); border-color: var(--color-brand); background-color: #ffffff; }
+            
+            .ql-toolbar.ql-snow { border: none !important; border-bottom: 1px solid rgba(0,0,0,0.05) !important; background: rgba(255,255,255,0.5); padding: 6px 8px !important; }
+            .ql-container.ql-snow { border: none !important; font-family: 'Inter', sans-serif !important; font-size: 0.875rem !important; }
+            .ql-editor { min-height: 100px; padding: 12px 16px !important; color: #1e293b; }
+            .ql-snow .ql-stroke { stroke: #64748b !important; }
+            .ql-snow .ql-fill { fill: #64748b !important; }
+            .ql-snow .ql-picker { color: #64748b !important; }
         </style>
+
         <div class="flex flex-col h-full max-h-[90vh]">
             <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <h2 class="font-display font-bold text-xl text-slate-800">Edit Event Details</h2>
+                <h2 class="font-display font-bold text-xl text-slate-800">Edit Event</h2>
                 <button id="close-js-editor" class="p-2 hover:bg-gray-200 rounded-full transition-colors text-slate-500"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             
@@ -136,47 +197,48 @@ export function initEventLogic(deps) {
                     <input type="hidden" id="jsEditEventId">
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Title (EN)</label><input id="jsEditTitleEn" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" required /></div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Title (ES)</label><input id="jsEditTitleEs" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" /></div>
+                        <div><label class="label-text">Title (EN)</label><input id="jsEditTitleEn" class="input-field" required /></div>
+                        <div><label class="label-text">Title (ES)</label><input id="jsEditTitleEs" class="input-field" /></div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Start</label><input id="jsEditStartTime" type="datetime-local" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" required /></div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">End</label><input id="jsEditEndTime" type="datetime-local" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" /></div>
+                        <div><label class="label-text">Start</label><input id="jsEditStartTime" type="datetime-local" class="input-field" required /></div>
+                        <div><label class="label-text">End</label><input id="jsEditEndTime" type="datetime-local" class="input-field" /></div>
                     </div>
 
-                    <div id="anchor-description">
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Description (EN)</label>
-                        <div class="js-editor-wrapper">
+                    <!-- Description EN -->
+                    <div>
+                        <label class="label-text">Description (EN)</label>
+                        <div class="editor-wrapper">
                             <div id="jsEditDescEn"></div>
                         </div>
                     </div>
+                    
+                    <!-- Description ES -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Description (ES)</label>
-                        <div class="js-editor-wrapper">
+                        <label class="label-text">Description (ES)</label>
+                        <div class="editor-wrapper">
                             <div id="jsEditDescEs"></div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="anchor-details">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Language</label>
-                            <select id="jsEditEventLang" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm">
+                            <label class="label-text">Language</label>
+                            <select id="jsEditEventLang" class="input-field cursor-pointer">
                                 <option value="bi">Bilingual</option><option value="en">English</option><option value="es">Español</option>
                             </select>
                         </div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Host Org</label><input id="jsEditHostOrg" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" /></div>
+                        <div><label class="label-text">Host</label><input id="jsEditHostOrg" class="input-field" /></div>
                     </div>
 
-                    <div id="anchor-access">
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Zoom URL</label><input id="jsEditZoomUrl" type="url" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" />
-                    </div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Recording URL</label><input id="jsEditRecordingUrl" type="url" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" /></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tags</label><input id="jsEditTags" class="input-field w-full px-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm" placeholder="Comma separated..." /></div>
+                    <div><label class="label-text">Zoom URL</label><input id="jsEditZoomUrl" type="url" class="input-field" /></div>
+                    <div><label class="label-text">Recording URL</label><input id="jsEditRecordingUrl" type="url" class="input-field" /></div>
+                    <div><label class="label-text">Tags</label><input id="jsEditTags" class="input-field" /></div>
 
-                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-4" id="anchor-speakers">
+                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
                         <div class="flex justify-between items-center mb-3">
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-0">Speakers</label>
+                            <label class="label-text mb-0">Speakers</label>
                             <button type="button" id="jsAddSpeakerBtn" class="text-xs font-bold text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-2 py-1 rounded transition-colors">+ Add</button>
                         </div>
                         <div id="jsEditSpeakersContainer" class="space-y-3"></div>
@@ -190,6 +252,10 @@ export function initEventLogic(deps) {
             </div>
         </div>
       </dialog>
+      
+      <!-- Datalists for Autocomplete -->
+      <datalist id="js-dl-profiles"></datalist>
+      <datalist id="js-dl-affiliations"></datalist>
     `;
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 
@@ -209,6 +275,9 @@ export function initEventLogic(deps) {
         e.target.closest('.js-speaker-row').remove();
       }
     });
+    
+    // Setup Autofill Logic
+    setupSpeakerAutofill('jsEditSpeakersContainer');
 
     lucideRefresh();
   }
@@ -216,31 +285,51 @@ export function initEventLogic(deps) {
   function addJsSpeakerRow(speaker = {}) {
     const container = document.getElementById('jsEditSpeakersContainer');
     const row = document.createElement('div');
-    row.className = 'js-speaker-row flex flex-col gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm';
+    row.className = 'js-speaker-row flex flex-col gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm mb-3 transition-all hover:shadow-md';
+    
+    // Determine profile name for search box
+    let profileNameVal = "";
+    if (speaker.profile_id && availableProfiles.length) {
+        const matched = availableProfiles.find(p => p.id === speaker.profile_id);
+        if (matched) profileNameVal = matched.full_name;
+    }
+
     row.innerHTML = `
         <div class="w-full space-y-2">
-            <input type="text" class="js-sp-name w-full px-3 py-2 bg-slate-50 border border-transparent rounded-lg text-sm focus:bg-white focus:ring-1 focus:ring-brand-300 outline-none" placeholder="Name*" value="${escapeHtml(speaker.name || '')}" required>
-            <input type="text" class="js-sp-aff w-full px-3 py-2 bg-slate-50 border border-transparent rounded-lg text-sm focus:bg-white focus:ring-1 focus:ring-brand-300 outline-none" placeholder="Affiliation" value="${escapeHtml(speaker.affiliation || '')}">
-            <select class="js-sp-profile w-full px-3 py-2 bg-slate-50 border border-transparent rounded-lg text-sm focus:bg-white focus:ring-1 focus:ring-brand-300 outline-none cursor-pointer">${createProfileOptions(speaker.profile_id)}</select>
+            <!-- Name Input -->
+            <input type="text" class="js-sp-name input-field" 
+                   placeholder="Name*" 
+                   value="${escapeHtml(speaker.name || '')}" required>
+            
+            <!-- Affiliation Input -->
+            <input type="text" class="js-sp-aff input-field" 
+                   placeholder="Affiliation" 
+                   list="js-dl-affiliations"
+                   value="${escapeHtml(speaker.affiliation || '')}">
+            
+            <!-- Profile Link Input + Hidden ID -->
+            <div class="relative">
+                <input type="text" class="js-sp-profile-search input-field" 
+                       placeholder="Link Profile (Search)" 
+                       list="js-dl-profiles" 
+                       autocomplete="off"
+                       value="${escapeHtml(profileNameVal)}">
+                <input type="hidden" class="js-sp-profile-id" value="${speaker.profile_id || ''}">
+            </div>
         </div>
         <div class="flex items-center justify-between pt-2 border-t border-gray-100">
-            <label class="flex items-center gap-2 text-xs text-slate-600 font-medium cursor-pointer">
+            <label class="flex items-center gap-2 text-xs text-slate-600 font-medium cursor-pointer select-none hover:text-brand-600 transition-colors">
                 <input type="checkbox" class="js-sp-primary rounded border-gray-300 text-brand-600 focus:ring-brand-500" ${speaker.primary_speaker ? 'checked' : ''}>
                 <span>Primary</span>
             </label>
-            <button type="button" class="js-remove-speaker text-slate-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            <button type="button" class="js-remove-speaker text-slate-400 hover:text-red-500 p-1.5 rounded-full hover:bg-red-50 transition-all">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
         </div>
     `;
     container.appendChild(row);
     lucideRefresh();
   }
-
-  const toLocalInputValue = (d) => {
-    if (!d) return "";
-    d = new Date(d);
-    const p = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-  };
 
   // Helper to get Quill content handling empty paragraph
   const getQuillContent = (quill) => {
@@ -254,7 +343,7 @@ export function initEventLogic(deps) {
     const ev = state.selectedEvent;
 
     injectEditModal();
-    await fetchProfilesForEdit(); // Load profiles for speaker dropdown
+    await fetchProfilesForEdit(); // Load profiles for Datalist
 
     // Populate Fields
     document.getElementById('jsEditEventId').value = ev.id;
@@ -286,12 +375,9 @@ export function initEventLogic(deps) {
     const modal = document.getElementById('event-js-editor-modal');
     modal.showModal();
 
-    // Scroll to section (optional, since we only have one main button now)
+    // Scroll to section (optional)
     if (section && section !== 'main') {
-      setTimeout(() => {
-        const anchor = document.getElementById(`anchor-${section}`);
-        if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+        // Just focus for now
     } else {
       modal.querySelector('div').scrollTop = 0;
     }
@@ -322,7 +408,7 @@ export function initEventLogic(deps) {
       event_id: id,
       name: row.querySelector('.js-sp-name').value.trim(),
       affiliation: row.querySelector('.js-sp-aff').value.trim() || null,
-      profile_id: row.querySelector('.js-sp-profile').value || null,
+      profile_id: row.querySelector('.js-sp-profile-id').value || null,
       primary_speaker: row.querySelector('.js-sp-primary').checked
     })).filter(s => s.name);
 
@@ -1006,7 +1092,7 @@ export function initEventLogic(deps) {
     }
   });
 
-  // --- UPDATED: Profile Modal Click Listener ---
+  // --- Profile Modal Click Listener ---
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-open-profile]');
     if (!btn) return;

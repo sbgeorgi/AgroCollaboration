@@ -16,15 +16,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-  <!-- Quill.js (Rich Text Editor) -->
-  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
-
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@600;700;800&display=swap"
     rel="stylesheet">
 
   <!-- Tailwind CSS -->
@@ -33,10 +29,14 @@
   <!-- Global Styles -->
   <link rel="stylesheet" href="styles.css">
 
+  <!-- Quill.js (Rich Text Editor) v2.0 -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
+
   <!-- External Tailwind Config -->
   <script src="theme.js"></script>
 
-  <!-- Custom CSS -->
+  <!-- Custom CSS & Theme Overrides (Synced with Admin) -->
   <style type="text/tailwindcss">
     @layer utilities {
       .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -49,33 +49,19 @@
     }
 
     html, body { height: 100%; overflow: hidden; }
-    
-    /* Flash Message */
-    #flash {
-        position: fixed;
-        top: 80px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-150%);
-        background-color: #0f172a;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 9999px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        z-index: 9999;
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        opacity: 0;
+
+    /* Input Field matching styles.css/admin.html via Tailwind layer */
+    .input-field {
+        @apply w-full px-4 py-2.5 bg-[var(--bg-input)] border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-light)] focus:border-[var(--color-brand)] transition-all text-sm text-slate-800 placeholder:text-slate-400 shadow-inner;
     }
-    #flash.visible {
-        transform: translateX(-50%) translateY(0);
-        opacity: 1;
+    .input-field:hover {
+        @apply bg-white shadow-sm;
+    }
+    .label-text {
+        @apply block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5;
     }
 
-    /* Quill Editor Customization for Map Panel */
+    /* Quill Editor Customization to match Admin */
     .editor-wrapper {
       @apply w-full bg-[var(--bg-input)] border border-transparent rounded-xl transition-all shadow-inner overflow-hidden;
     }
@@ -95,7 +81,7 @@
     .ql-container.ql-snow {
       border: none !important;
       font-family: 'Inter', sans-serif !important;
-      font-size: 14px !important;
+      font-size: 0.875rem !important;
     }
     .ql-editor {
       min-height: 100px;
@@ -106,7 +92,7 @@
       color: #94a3b8 !important;
       font-style: normal !important;
     }
-    /* Fix toolbars icons color */
+    /* Toolbar button adjustments */
     .ql-snow .ql-stroke { stroke: #64748b !important; }
     .ql-snow .ql-fill { fill: #64748b !important; }
     .ql-snow .ql-picker { color: #64748b !important; }
@@ -127,55 +113,6 @@
       transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
     }
 
-    .grid-form {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px 20px;
-    }
-
-    .grid-form .col-span-2 {
-      grid-column: 1 / -1;
-    }
-
-    .grid-form label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-secondary);
-      margin-bottom: 6px;
-      display: block;
-    }
-
-    /* Standard Inputs */
-    .grid-form input,
-    .grid-form select {
-      background: var(--bg-input);
-      border: 1px solid transparent;
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 14px;
-      transition: all 0.2s;
-      color: var(--text-primary);
-      width: 100%;
-      font-family: inherit;
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
-    }
-
-    .grid-form input:hover,
-    .grid-form select:hover {
-      background: white;
-      box-shadow: 0 0 0 1px var(--border);
-    }
-
-    .grid-form input:focus,
-    .grid-form select:focus {
-      background: white;
-      border-color: var(--color-brand);
-      box-shadow: 0 0 0 3px var(--color-brand-light);
-      outline: none;
-    }
-
     /* Carousel & Other Components */
     .carousel-container { position: relative; width: 100%; height: 220px; background: #f1f5f9; border-radius: 12px; overflow: hidden; }
     .carousel-track { display: flex; height: 100%; transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
@@ -191,8 +128,8 @@
     .carousel-dot.active { width: 16px; border-radius: 4px; background: white; }
 
     /* Upload Area */
-    .media-upload-area { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px dashed var(--border); border-radius: 12px; padding: 24px; text-align: center; transition: all 0.3s; position: relative; cursor: pointer; }
-    .media-upload-area:hover { border-color: var(--color-brand); background: var(--color-brand-light); }
+    .media-upload-area { background: var(--bg-input); border: 2px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; transition: all 0.3s; position: relative; cursor: pointer; }
+    .media-upload-area:hover { border-color: var(--color-brand); background: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
     .media-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px; margin-top: 16px; }
     .media-preview-item { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #e2e8f0; border: 1px solid var(--border); }
     .media-preview-item img, .media-preview-item video { width: 100%; height: 100%; object-fit: cover; }
@@ -225,7 +162,7 @@
 <body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
   <!-- ================= FLASH MESSAGES ================= -->
-  <div id="flash" role="status" aria-live="polite"></div>
+  <div id="flash" class="flash"></div>
 
   <!-- ================= MAIN CONTENT ================= -->
   <main class="flex-1 relative overflow-hidden bg-gray-50 flex flex-col items-center">
@@ -259,12 +196,12 @@
           </div>
 
           <form id="point-form" class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-gray-50/50">
-            <div class="grid-form">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input type="hidden" id="pointId">
 
               <!-- Media Upload -->
-              <div class="col-span-2">
-                <label for="mediaUpload" data-i18n="form.media">Media</label>
+              <div class="md:col-span-2">
+                <label class="label-text" for="mediaUpload" data-i18n="form.media">Media</label>
                 <div id="mediaDropZone" class="media-upload-area group">
                   <i data-lucide="upload-cloud" class="w-10 h-10 text-brand-300 mx-auto mb-2 group-hover:text-brand-500 transition-colors"></i>
                   <div class="text-sm font-medium text-slate-600">Drop videos or images here</div>
@@ -275,24 +212,39 @@
               </div>
 
               <!-- Collaborators -->
-              <div class="col-span-2">
-                <label for="userSearch" data-i18n="form.collaborators">Collaborators</label>
+              <div class="md:col-span-2">
+                <label class="label-text" for="userSearch" data-i18n="form.collaborators">Collaborators</label>
                 <div id="selectedUsers"></div>
                 <div class="user-search-wrapper">
-                  <input type="text" id="userSearch" placeholder="Search for users..." autocomplete="off">
+                  <input type="text" id="userSearch" class="input-field" placeholder="Search for users..." autocomplete="off">
                   <div id="userSearchResults" class="custom-scrollbar"></div>
                 </div>
               </div>
 
               <!-- Basic Info -->
-              <div><label for="name" data-i18n="form.institution">Institution (Required)</label><input id="name" required /></div>
-              <div><label for="project_name" data-i18n="form.project_name">Project Name (Required)</label><input id="project_name" required /></div>
-              <div><label for="latitude" data-i18n="form.latitude">Latitude (Required)</label><input id="latitude" type="number" step="any" required /></div>
-              <div><label for="longitude" data-i18n="form.longitude">Longitude (Required)</label><input id="longitude" type="number" step="any" required /></div>
+              <div>
+                <label class="label-text" for="name" data-i18n="form.institution">Institution (Required)</label>
+                <input id="name" class="input-field" required />
+              </div>
+              
+              <div>
+                <label class="label-text" for="project_name" data-i18n="form.project_name">Project Name (Required)</label>
+                <input id="project_name" class="input-field" required />
+              </div>
+              
+              <div>
+                <label class="label-text" for="latitude" data-i18n="form.latitude">Latitude (Required)</label>
+                <input id="latitude" type="number" step="any" class="input-field" required />
+              </div>
+              
+              <div>
+                <label class="label-text" for="longitude" data-i18n="form.longitude">Longitude (Required)</label>
+                <input id="longitude" type="number" step="any" class="input-field" required />
+              </div>
 
               <div>
-                <label for="system_category" data-i18n="form.system_category">System Type (Required)</label>
-                <select id="system_category" required>
+                <label class="label-text" for="system_category" data-i18n="form.system_category">System Type (Required)</label>
+                <select id="system_category" class="input-field cursor-pointer" required>
                   <option value="Crops">Crops</option>
                   <option value="Livestock">Livestock</option>
                   <option value="Ecovoltaics">Ecovoltaics</option>
@@ -302,52 +254,96 @@
                 </select>
               </div>
 
-              <div><label for="start_year" data-i18n="form.start_year">Start Year (Required)</label><input id="start_year" type="number" required /></div>
+              <div>
+                <label class="label-text" for="start_year" data-i18n="form.start_year">Start Year (Required)</label>
+                <input id="start_year" type="number" class="input-field" required />
+              </div>
 
-              <div class="col-span-2"><label for="associated_crops" data-i18n="form.associated_crops">Target Species / Crops (Required)</label><input id="associated_crops" required placeholder="e.g. Tomatoes, Sheep, Native Pollinators..." /></div>
-              <div class="col-span-2"><label for="av_system_type" data-i18n="form.av_system_type">AV System Tech (Required)</label><input id="av_system_type" placeholder="e.g., Elevated, Tracking, Vertical..." required /></div>
+              <div class="md:col-span-2">
+                <label class="label-text" for="associated_crops" data-i18n="form.associated_crops">Target Species / Crops (Required)</label>
+                <input id="associated_crops" class="input-field" required placeholder="e.g. Tomatoes, Sheep, Native Pollinators..." />
+              </div>
+              
+              <div class="md:col-span-2">
+                <label class="label-text" for="av_system_type" data-i18n="form.av_system_type">AV System Tech (Required)</label>
+                <input id="av_system_type" class="input-field" placeholder="e.g., Elevated, Tracking, Vertical..." required />
+              </div>
 
-              <div class="col-span-2"><hr class="border-gray-200 my-2"></div>
+              <div class="md:col-span-2"><hr class="border-gray-200 my-2"></div>
 
-              <div><label for="generating_capacity_kw" data-i18n="form.generating_capacity_kw">Capacity (kW)</label><input id="generating_capacity_kw" type="number" step="any" /></div>
-              <div><label for="area" data-i18n="form.area">Area (m²)</label><input id="area" /></div>
+              <div>
+                <label class="label-text" for="generating_capacity_kw" data-i18n="form.generating_capacity_kw">Capacity (kW)</label>
+                <input id="generating_capacity_kw" type="number" step="any" class="input-field" />
+              </div>
+              
+              <div>
+                <label class="label-text" for="area" data-i18n="form.area">Area (m²)</label>
+                <input id="area" class="input-field" />
+              </div>
 
-              <div><label for="keywords" data-i18n="form.keywords">Keywords</label><input id="keywords" placeholder="Research, Commercial..." /></div>
-              <div><label for="link" data-i18n="form.link">Website Link</label><input id="link" type="url" /></div>
+              <div>
+                <label class="label-text" for="keywords" data-i18n="form.keywords">Keywords</label>
+                <input id="keywords" class="input-field" placeholder="Research, Commercial..." />
+              </div>
+              
+              <div>
+                <label class="label-text" for="link" data-i18n="form.link">Website Link</label>
+                <input id="link" type="url" class="input-field" />
+              </div>
 
-              <div class="col-span-2"><label for="affiliation" data-i18n="form.affiliation">Affiliation</label><input id="affiliation" /></div>
+              <div class="md:col-span-2">
+                <label class="label-text" for="affiliation" data-i18n="form.affiliation">Affiliation</label>
+                <input id="affiliation" class="input-field" />
+              </div>
 
               <!-- RICH TEXT EDITORS -->
-              <div class="col-span-2">
-                <label data-i18n="form.description">Description</label>
-                <div class="editor-wrapper"><div id="description"></div></div>
+              <div class="md:col-span-2">
+                <label class="label-text" data-i18n="form.description">Description</label>
+                <div class="editor-wrapper">
+                  <div id="description"></div>
+                </div>
               </div>
-              <div class="col-span-2">
-                <label data-i18n="form.leadership">Leadership</label>
-                <div class="editor-wrapper"><div id="leadership"></div></div>
+              
+              <div class="md:col-span-2">
+                <label class="label-text" data-i18n="form.leadership">Leadership</label>
+                <div class="editor-wrapper">
+                  <div id="leadership"></div>
+                </div>
               </div>
-              <div class="col-span-2">
-                <label data-i18n="form.facilities">Facilities</label>
-                <div class="editor-wrapper"><div id="facilities"></div></div>
+              
+              <div class="md:col-span-2">
+                <label class="label-text" data-i18n="form.facilities">Facilities</label>
+                <div class="editor-wrapper">
+                  <div id="facilities"></div>
+                </div>
               </div>
-              <div class="col-span-2">
-                <label data-i18n="form.equipment">Equipment</label>
-                <div class="editor-wrapper"><div id="equipment"></div></div>
+              
+              <div class="md:col-span-2">
+                <label class="label-text" data-i18n="form.equipment">Equipment</label>
+                <div class="editor-wrapper">
+                  <div id="equipment"></div>
+                </div>
               </div>
-              <div class="col-span-2">
-                <label data-i18n="form.capabilities">Capabilities</label>
-                <div class="editor-wrapper"><div id="capabilities"></div></div>
+              
+              <div class="md:col-span-2">
+                <label class="label-text" data-i18n="form.capabilities">Capabilities</label>
+                <div class="editor-wrapper">
+                  <div id="capabilities"></div>
+                </div>
               </div>
-              <div class="col-span-2">
-                <label data-i18n="form.experiments">Experiments</label>
-                <div class="editor-wrapper"><div id="experiments"></div></div>
+              
+              <div class="md:col-span-2">
+                <label class="label-text" data-i18n="form.experiments">Experiments</label>
+                <div class="editor-wrapper">
+                  <div id="experiments"></div>
+                </div>
               </div>
 
             </div>
 
             <div class="mt-6 pt-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50/50 sticky bottom-0 z-20">
-              <button type="button" id="cancelBtn" class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-gray-200 rounded-lg transition-colors" data-i18n="form.cancel">Cancel</button>
-              <button type="submit" id="saveBtn" class="px-5 py-2 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition-colors" data-i18n="form.save">Save Point</button>
+              <button type="button" id="cancelBtn" class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-gray-200 rounded-xl transition-colors" data-i18n="form.cancel">Cancel</button>
+              <button type="submit" id="saveBtn" class="px-5 py-2 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-sm transition-colors" data-i18n="form.save">Save Point</button>
             </div>
           </form>
         </div>
@@ -363,7 +359,6 @@
                 <th class="p-4 border-b border-gray-100" data-sort="name"><div class="flex items-center gap-1"><span data-i18n="table.institution">Institution</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div></th>
                 <th class="p-4 border-b border-gray-100" data-sort="system_category"><div class="flex items-center gap-1"><span data-i18n="table.category">System Type</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div></th>
                 <th class="p-4 border-b border-gray-100 sort-desc" data-sort="generating_capacity_kw"><div class="flex items-center gap-1"><span data-i18n="table.capacity">Capacity (kW)</span><i class="sort-icon" data-lucide="chevron-down"></i></div></th>
-                <!-- Changed Area to Year -->
                 <th class="p-4 border-b border-gray-100" data-sort="start_year"><div class="flex items-center gap-1"><span data-i18n="table.start_year">Year</span><i class="sort-icon" data-lucide="chevrons-up-down"></i></div></th>
               </tr>
             </thead>
