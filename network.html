@@ -835,19 +835,26 @@
             await initAuth({
                 onAuthReady: async () => {
                     renderHeader(authState, t, state.lang);
-                    if (!authState.session) {
-                        $('#signinGate').style.display = 'flex';
-                        $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
-                    } else {
-                        $('#signinGate').style.display = 'none';
-                        applyI18n(t, state.lang);
-                        await loadNetworkData();
-                        $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
-                    }
+                    
+                    // FIX: Removed the if(!authState.session) check. 
+                    // Now we load data for everyone, regardless of login status.
+                    
+                    // Ensure gate is hidden (it defaults to hidden in HTML, but just in case)
+                    const gate = document.getElementById('signinGate');
+                    if (gate) gate.style.display = 'none';
+
+                    applyI18n(t, state.lang);
+                    
+                    // Load the graph data
+                    await loadNetworkData();
+                    
+                    // Hide the loader
+                    $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
                 },
                 onAuthChange: () => {
                     renderHeader(authState, t, state.lang);
-                    if (!authState.session) location.reload();
+                    // FIX: Removed "if (!authState.session) location.reload();" 
+                    // This prevents the infinite reload loop for guests.
                 }
             });
 

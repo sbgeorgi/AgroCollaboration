@@ -23,8 +23,8 @@
 
   <!-- External Tailwind Config -->
   <script src="theme.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
   <!-- Custom CSS -->
   <style type="text/tailwindcss">
     @layer utilities {
@@ -77,15 +77,19 @@
         <div class="max-w-[1800px] mx-auto px-4 sm:px-6 flex flex-col gap-3 py-4">
 
           <!-- ================= HERO SECTION ================= -->
-          <section id="hero-section" class="relative overflow-hidden rounded-[1.25rem] bg-white border border-gray-200 shadow-sm p-4 isolate z-0">
-            
+          <section id="hero-section"
+            class="relative overflow-hidden rounded-[1.25rem] bg-white border border-gray-200 shadow-sm p-4 isolate z-0">
+
             <!-- 1. Background Texture -->
-            <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#0369a1 1px, transparent 1px); background-size: 20px 20px;"></div>
+            <div class="absolute inset-0 opacity-[0.03] pointer-events-none"
+              style="background-image: radial-gradient(#0369a1 1px, transparent 1px); background-size: 20px 20px;">
+            </div>
 
             <!-- 2. Right-Aligned Image (Static) -->
             <div class="absolute top-0 right-0 bottom-0 w-[55%] md:w-[50%] pointer-events-none z-0">
-               <div class="absolute inset-0 bg-gradient-to-r from-white via-white/40 to-transparent z-10"></div>
-               <img src="static/paseagriv.jpg" class="w-full h-full object-cover object-center opacity-90" alt="Agrivoltaics">
+              <div class="absolute inset-0 bg-gradient-to-r from-white via-white/40 to-transparent z-10"></div>
+              <img src="static/paseagriv.jpg" class="w-full h-full object-cover object-center opacity-90"
+                alt="Agrivoltaics">
             </div>
 
             <!-- 3. Content Container -->
@@ -93,47 +97,59 @@
 
               <!-- Title / Description -->
               <div class="max-w-[75%] md:max-w-[65%]">
-                <h2 class="font-display font-bold text-xl md:text-2xl text-slate-900 leading-tight tracking-tight drop-shadow-sm">
-                  A participatory seminar series presenting the latest advances in <span class="text-brand-600 border-b-2 border-brand-100/50 pb-0.5">agrivoltaics research</span> and development across the Americas.
-                </h2>
+                <!-- Added id="heroDescription" -->
+                <h2 id="heroDescription"
+    class="font-display font-bold text-xl md:text-2xl text-slate-900 leading-tight tracking-tight drop-shadow-sm">
+</h2>
               </div>
 
               <!-- Footer Row: Hosts + Banner (Inline & Compact) -->
               <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1">
-                
+
                 <!-- Label -->
-                <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest shrink-0">Hosted By</span>
+                <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest shrink-0">Hosted
+                  By</span>
 
                 <!-- Host Pills -->
                 <div class="flex items-center gap-2">
-                     <a href="https://salsav.org" target="_blank" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
-                        <img src="static/b2ua.jpg" class="w-5 h-5 rounded object-cover border border-gray-100" alt="UA">
-                        <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">UA</span>
-                     </a>
-                     
-                     <a href="https://www.unam.mx" target="_blank" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
-                        <img src="static/unam.png" class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="UNAM">
-                        <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">UNAM</span>
-                     </a>
+                  <a href="https://salsav.org" target="_blank"
+                    class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
+                    <img src="static/b2ua.jpg" class="w-5 h-5 rounded object-cover border border-gray-100" alt="UA">
+                    <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">UA</span>
+                  </a>
 
-                     <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana/" target="_blank" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
-                        <img src="static/aal.png" class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="AAL">
-                        <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">AAL</span>
-                     </a>
+                  <a href="https://www.unam.mx" target="_blank"
+                    class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
+                    <img src="static/unam.png"
+                      class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="UNAM">
+                    <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">UNAM</span>
+                  </a>
 
-                     <a href="https://redagvmx.com" target="_blank" class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
-                        <img src="static/rame.png" class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="RAME">
-                        <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">RAME</span>
-                     </a>
+                  <a href="https://centroenergia.cl/2o-simposium-nacional-agrovoltaico-aal-alianza-agrovoltaica-latinoamericana/"
+                    target="_blank"
+                    class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
+                    <img src="static/aal.png"
+                      class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="AAL">
+                    <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">AAL</span>
+                  </a>
+
+                  <a href="https://redagvmx.com" target="_blank"
+                    class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
+                    <img src="static/rame.png"
+                      class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="RAME">
+                    <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">RAME</span>
+                  </a>
                 </div>
 
                 <!-- Vertical Divider (Desktop) -->
                 <div class="hidden sm:block w-px h-4 bg-slate-300"></div>
 
                 <!-- Announcement Banner (Inline) -->
-                <div id="siteBanner" class="hidden animate-fade-in inline-flex items-center gap-2 bg-amber-50 pl-2 pr-3 py-0.5 rounded-full text-[10px] font-bold text-amber-700 border border-amber-200 shadow-sm w-fit transition-all hover:bg-amber-100 cursor-pointer">
+                <div id="siteBanner"
+                  class="hidden animate-fade-in inline-flex items-center gap-2 bg-amber-50 pl-2 pr-3 py-0.5 rounded-full text-[10px] font-bold text-amber-700 border border-amber-200 shadow-sm w-fit transition-all hover:bg-amber-100 cursor-pointer">
                   <span class="relative flex h-1.5 w-1.5 flex-none">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span
+                      class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
                   </span>
                   <span id="bannerText" class="truncate leading-tight"></span>
@@ -235,19 +251,24 @@
                 <div class="p-3 border-b border-gray-200 bg-white flex justify-between items-center">
                   <h3 class="font-bold text-xs text-slate-500 uppercase">Topics</h3>
                 </div>
-                
+
                 <!-- NEW: Better "New Topic" UI -->
                 <div class="p-3 bg-gray-50 border-b border-gray-200">
-                    <button id="btnToggleThreadForm" class="w-full py-2 px-3 bg-white hover:bg-brand-50 hover:text-brand-700 text-slate-600 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors border border-gray-200 shadow-sm">
-                        <i data-lucide="plus-circle" class="w-4 h-4"></i> New Topic
-                    </button>
-                    <form id="newThreadForm" class="hidden flex-col gap-2 mt-1 animate-fade-in">
-                        <input id="threadTitle" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 outline-none shadow-sm" placeholder="Topic Title..." autocomplete="off">
-                        <div class="flex gap-2 justify-end">
-                            <button type="button" id="cancelThreadBtn" class="px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded">Cancel</button>
-                            <button type="submit" class="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded text-xs font-bold shadow-sm">Create</button>
-                        </div>
-                    </form>
+                  <button id="btnToggleThreadForm"
+                    class="w-full py-2 px-3 bg-white hover:bg-brand-50 hover:text-brand-700 text-slate-600 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors border border-gray-200 shadow-sm">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> New Topic
+                  </button>
+                  <form id="newThreadForm" class="hidden flex-col gap-2 mt-1 animate-fade-in">
+                    <input id="threadTitle"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 outline-none shadow-sm"
+                      placeholder="Topic Title..." autocomplete="off">
+                    <div class="flex gap-2 justify-end">
+                      <button type="button" id="cancelThreadBtn"
+                        class="px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded">Cancel</button>
+                      <button type="submit"
+                        class="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded text-xs font-bold shadow-sm">Create</button>
+                    </div>
+                  </form>
                 </div>
 
                 <div id="threadsList" class="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar"></div>
@@ -300,7 +321,7 @@
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
     import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl } from './ui.js';
-    
+
     // NEW IMPORT: Rich Text Utilities
     import { stripHtml } from './rich-text.js';
 
@@ -320,6 +341,9 @@
     const t = {
       en: {
         intro_title: "Agrovoltaicos sin Fronteras",
+        hero: {
+          description: 'A participatory seminar series presenting the latest advances in <span class="text-brand-600 border-b-2 border-brand-100/50 pb-0.5">agrivoltaics research</span> and development across the Americas.'
+        },
         auth: { signin: "Sign in", signout: "Sign out", required: "Sign in to view details." },
         schedule: { title: "Upcoming Talks", empty: "No events found." },
         search: { placeholder: "Search talks..." },
@@ -329,6 +353,9 @@
       },
       es: {
         intro_title: "Agrovoltaicos sin Fronteras",
+        hero: {
+          description: 'Una serie de seminarios participativos que presenta los últimos avances en <span class="text-brand-600 border-b-2 border-brand-100/50 pb-0.5">investigación agrovoltaica</span> y desarrollo en las Américas.'
+        },
         auth: { signin: "Ingresar", signout: "Salir", required: "Iniciar sesión." },
         schedule: { title: "Próximas Charlas", empty: "No hay eventos." },
         search: { placeholder: "Buscar..." },
@@ -349,13 +376,29 @@
       else { hide($('#schedule-list')); show($('#schedule-calendar')); $('#btn-view-cal').classList.add('bg-brand-50', 'text-brand-700'); $('#btn-view-list').classList.remove('bg-brand-50', 'text-brand-700'); }
     }
 
+function applyHtmlTranslations() {
+    const heroDesc = document.getElementById('heroDescription');
+    if (heroDesc) {
+        heroDesc.innerHTML = t[state.language].hero.description;
+    }
+}
+
     function handleLangSwitch() {
       state.language = state.language === 'en' ? 'es' : 'en';
       localStorage.setItem("lang", state.language);
+
       applyI18n(t, state.language);
-      renderEventsList(); renderScheduleCalendar(); renderBanner();
+
+      // ADD THIS LINE to ensure the HTML/Styling inside the translation renders correctly:
+      document.getElementById('heroDescription').innerHTML = t[state.language].hero.description;
+
+      renderEventsList();
+      renderScheduleCalendar();
+      renderBanner();
       if (eventLogic) eventLogic.reRender();
     }
+
+
 
     function renderBanner() {
       const banner = $('#siteBanner');
@@ -386,7 +429,7 @@
 
     async function loadEvents() {
       // NOTE: We don't hide content area on re-loads to avoid flicker, only on initial load if empty
-      if(state.events.length === 0) { hide($('#content-area')); show($('#eventsLoader')); }
+      if (state.events.length === 0) { hide($('#content-area')); show($('#eventsLoader')); }
 
       const [eventsRes, bannerRes] = await Promise.all([
         supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", { ascending: true }),
@@ -397,7 +440,7 @@
       state.activeBanner = bannerRes.data || null;
 
       renderEventsList(); renderScheduleCalendar(); renderBanner();
-      if(state.events.length > 0 || eventsRes.data) { hide($('#eventsLoader')); show($('#content-area')); }
+      if (state.events.length > 0 || eventsRes.data) { hide($('#eventsLoader')); show($('#content-area')); }
 
       const params = new URLSearchParams(window.location.search);
       const eid = params.get("event") || params.get("e");
@@ -425,7 +468,7 @@
 
       const html = await Promise.all(filtered.map(async ev => {
         const title = state.language === 'es' ? (ev.title_es || ev.title_en) : ev.title_en;
-        
+
         const rawDesc = state.language === 'es' ? (ev.description_es || ev.description_en) : ev.description_en;
         const cleanDesc = escapeHtml(stripHtml(rawDesc || ''));
 
@@ -450,7 +493,7 @@
             : `<div class="w-full h-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500">${(s.name || '?')[0]}</div>`;
 
           const countryCode = s.profile?.country ? s.profile.country.toLowerCase() : null;
-          const flagHtml = countryCode 
+          const flagHtml = countryCode
             ? `<img src="https://flagcdn.com/w40/${countryCode}.png" class="ml-2 w-6 h-auto rounded-sm shadow-sm object-cover" alt="${countryCode}" title="${countryCode.toUpperCase()}">`
             : '';
 
@@ -573,6 +616,18 @@
       eventLogic = initEventLogic(deps);
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
 
+      // ================= FIX START =================
+      // 1. Apply standard translations to the whole page based on current language state
+      applyI18n(t, state.language);
+      
+      // 2. FORCE the Hero Description to render as HTML. 
+      //    This fixes the issue where standard translation displays raw <span> tags as text.
+      const heroDesc = document.getElementById('heroDescription');
+      if (heroDesc) {
+          heroDesc.innerHTML = t[state.language].hero.description;
+      }
+      // ================= FIX END ===================
+
       $('#search').addEventListener('input', renderEventsList);
       $('#btn-view-list').addEventListener('click', () => switchScheduleView('list'));
       $('#btn-view-cal').addEventListener('click', () => switchScheduleView('calendar'));
@@ -599,7 +654,7 @@
       });
 
       await loadEvents();
-      
+
       // Banners Subscription
       supabase.channel('public:banners').on('postgres_changes', { event: '*', schema: 'public', table: 'banners' }, async () => {
         const { data } = await supabase.from("banners").select("*").eq("is_active", true).limit(1).maybeSingle();
@@ -609,12 +664,58 @@
 
       // Events Subscription
       supabase.channel('public:events').on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, loadEvents).subscribe();
-      
+
       // NEW: Event Speakers Subscription (to trigger live update of pills)
       supabase.channel('public:event_speakers').on('postgres_changes', { event: '*', schema: 'public', table: 'event_speakers' }, loadEvents).subscribe();
 
+      applyHtmlTranslations();
     })();
   </script>
+  <!-- ================= AUTH GATE MODAL ================= -->
+  <div id="authGateModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+      onclick="document.getElementById('authGateModal').classList.add('hidden')"></div>
+
+    <!-- Modal Panel -->
+    <div class="relative flex min-h-full items-center justify-center p-4">
+      <div
+        class="transform overflow-hidden rounded-2xl bg-white p-8 text-left shadow-2xl transition-all max-w-sm w-full border border-gray-100 relative">
+
+        <button onclick="document.getElementById('authGateModal').classList.add('hidden')"
+          class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-gray-50 hover:bg-gray-100 p-1 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+
+        <div class="flex flex-col items-center text-center">
+          <div
+            class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-6 text-brand-600 ring-8 ring-brand-50/50">
+            <i data-lucide="lock" class="w-8 h-8"></i>
+          </div>
+
+          <h3 class="text-xl font-display font-bold text-slate-900 mb-2">Member Access Required</h3>
+          <p class="text-sm text-slate-500 mb-8 leading-relaxed">
+            Join our community to view full event details, watch recordings, download files, and participate in
+            discussions.
+          </p>
+
+          <div class="flex flex-col gap-3 w-full">
+            <a href="signin.html"
+              class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all text-sm flex items-center justify-center gap-2">
+              <span>Sign In / Register</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </a>
+            <button onclick="document.getElementById('authGateModal').classList.add('hidden')"
+              class="w-full py-3 px-4 bg-white border border-gray-200 text-slate-600 font-bold rounded-xl hover:bg-gray-50 hover:text-slate-800 transition-all text-sm">
+              Maybe Later
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
+
 
 </html>

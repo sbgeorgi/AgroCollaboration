@@ -146,8 +146,7 @@
         class="relative flex-1 md:m-4 lg:mx-auto lg:max-w-[1400px] w-full bg-white md:rounded-xl shadow-2xl flex flex-col overflow-hidden border border-white/40 h-full">
 
         <!-- Sticky Header -->
-        <div id="compactEventHeaderContainer"
-          class="flex-none p-4 border-b border-gray-100 bg-white z-20 sticky top-0">
+        <div id="compactEventHeaderContainer" class="flex-none p-4 border-b border-gray-100 bg-white z-20 sticky top-0">
         </div>
 
         <!-- Navigation -->
@@ -180,16 +179,21 @@
                 </div>
                 <!-- New Topic Form -->
                 <div class="p-3 bg-gray-50 border-b border-gray-200">
-                    <button id="btnToggleThreadForm" class="w-full py-2 px-3 bg-white hover:bg-brand-50 hover:text-brand-700 text-slate-600 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors border border-gray-200 shadow-sm">
-                        <i data-lucide="plus-circle" class="w-4 h-4"></i> New Topic
-                    </button>
-                    <form id="newThreadForm" class="hidden flex-col gap-2 mt-1 animate-fade-in">
-                        <input id="threadTitle" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 outline-none shadow-sm" placeholder="Topic Title..." autocomplete="off">
-                        <div class="flex gap-2 justify-end">
-                            <button type="button" id="cancelThreadBtn" class="px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded">Cancel</button>
-                            <button type="submit" class="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded text-xs font-bold shadow-sm">Create</button>
-                        </div>
-                    </form>
+                  <button id="btnToggleThreadForm"
+                    class="w-full py-2 px-3 bg-white hover:bg-brand-50 hover:text-brand-700 text-slate-600 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors border border-gray-200 shadow-sm">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> New Topic
+                  </button>
+                  <form id="newThreadForm" class="hidden flex-col gap-2 mt-1 animate-fade-in">
+                    <input id="threadTitle"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 outline-none shadow-sm"
+                      placeholder="Topic Title..." autocomplete="off">
+                    <div class="flex gap-2 justify-end">
+                      <button type="button" id="cancelThreadBtn"
+                        class="px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded">Cancel</button>
+                      <button type="submit"
+                        class="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded text-xs font-bold shadow-sm">Create</button>
+                    </div>
+                  </form>
                 </div>
                 <div id="threadsList" class="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar"></div>
               </div>
@@ -241,7 +245,7 @@
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
     import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl } from './ui.js';
-    
+
     // IMPORT stripHtml to fix the card previews
     import { stripHtml } from './rich-text.js';
 
@@ -293,28 +297,28 @@
       state.language = state.language === 'en' ? 'es' : 'en';
       localStorage.setItem("lang", state.language);
       applyI18n(t, state.language);
-      initYearDropdown(); 
-      updateArchiveView(); 
+      initYearDropdown();
+      updateArchiveView();
       if (state.selectedEvent && eventLogic) eventLogic.reRender();
     }
 
     async function loadEvents() {
       hide($('#content-area'));
       show($('#archiveLoader'));
-      
+
       // NEW: Subscribe to live changes to keep archive in sync
       supabase.channel('public:events').on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, async () => {
-         const { data } = await supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", { ascending: false });
-         state.events = data || [];
-         updateArchiveView();
+        const { data } = await supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", { ascending: false });
+        state.events = data || [];
+        updateArchiveView();
       }).subscribe();
-      
+
       const { data } = await supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", { ascending: false });
       state.events = data || [];
-      
+
       initYearDropdown();
       updateArchiveView();
-      
+
       hide($('#archiveLoader'));
       show($('#content-area'));
 
@@ -375,7 +379,7 @@
     function renderTagCloud(events) {
       const tagsContainer = $('#tagsFilter');
       const tagsBar = $('#tagsFilterBar');
-      
+
       const tagCounts = {};
       events.forEach(e => {
         (e.topic_tags || []).forEach(tag => {
@@ -393,13 +397,13 @@
         show(tagsBar);
         tagsContainer.innerHTML = sortedTags.map(([tag, count]) => {
           const isSelected = state.filters.tags.has(tag);
-          const btnClass = isSelected 
-             ? "bg-brand-100 border-brand-300 text-brand-900" 
-             : "bg-white text-slate-600 border-gray-200 hover:bg-brand-50 hover:border-brand-200 hover:text-brand-800";
-          
+          const btnClass = isSelected
+            ? "bg-brand-100 border-brand-300 text-brand-900"
+            : "bg-white text-slate-600 border-gray-200 hover:bg-brand-50 hover:border-brand-200 hover:text-brand-800";
+
           const countClass = isSelected
-             ? "bg-brand-200 text-brand-800"
-             : "bg-slate-100 text-slate-400";
+            ? "bg-brand-200 text-brand-800"
+            : "bg-slate-100 text-slate-400";
 
           return `<button data-tag="${escapeHtml(tag)}" class="px-3 py-1 rounded-full text-xs font-semibold border transition-colors shadow-sm flex items-center gap-1.5 ${btnClass}">
                     ${escapeHtml(tag)}
@@ -413,13 +417,13 @@
 
     async function renderArchiveGrid(filteredEvents) {
       const list = $("#archiveList"), empty = $("#emptyArchive");
-      
+
       if (filteredEvents.length > 0) { hide(empty); show(list); }
       else { show(empty); hide(list); return; }
 
       const html = await Promise.all(filteredEvents.map(async ev => {
         const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
-        
+
         // --- FIX: USE stripHtml HERE ---
         const rawDesc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
         const cleanDesc = escapeHtml(stripHtml(rawDesc || ''));
@@ -569,7 +573,7 @@
         } else {
           state.filters.tags.add(tag);
         }
-        updateArchiveView(); 
+        updateArchiveView();
       });
 
       document.body.addEventListener('click', e => {
@@ -598,6 +602,51 @@
     })();
   </script>
 
+  <!-- ================= AUTH GATE MODAL ================= -->
+  <div id="authGateModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+      onclick="document.getElementById('authGateModal').classList.add('hidden')"></div>
+
+    <!-- Modal Panel -->
+    <div class="relative flex min-h-full items-center justify-center p-4">
+      <div
+        class="transform overflow-hidden rounded-2xl bg-white p-8 text-left shadow-2xl transition-all max-w-sm w-full border border-gray-100 relative">
+
+        <button onclick="document.getElementById('authGateModal').classList.add('hidden')"
+          class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-gray-50 hover:bg-gray-100 p-1 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+
+        <div class="flex flex-col items-center text-center">
+          <div
+            class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-6 text-brand-600 ring-8 ring-brand-50/50">
+            <i data-lucide="lock" class="w-8 h-8"></i>
+          </div>
+
+          <h3 class="text-xl font-display font-bold text-slate-900 mb-2">Member Access Required</h3>
+          <p class="text-sm text-slate-500 mb-8 leading-relaxed">
+            Join our community to view full event details, watch recordings, download files, and participate in
+            discussions.
+          </p>
+
+          <div class="flex flex-col gap-3 w-full">
+            <a href="signin.html"
+              class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all text-sm flex items-center justify-center gap-2">
+              <span>Sign In / Register</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </a>
+            <button onclick="document.getElementById('authGateModal').classList.add('hidden')"
+              class="w-full py-3 px-4 bg-white border border-gray-200 text-slate-600 font-bold rounded-xl hover:bg-gray-50 hover:text-slate-800 transition-all text-sm">
+              Maybe Later
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
+
 
 </html>

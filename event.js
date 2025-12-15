@@ -98,27 +98,27 @@ export function initEventLogic(deps) {
     if (availableProfiles.length > 0) return;
     const { data } = await supabase.from('profiles').select('id, full_name, affiliation').order('full_name');
     availableProfiles = data || [];
-    
+
     // Populate Datalist
     const dl = document.getElementById('js-dl-profiles');
     const dlAff = document.getElementById('js-dl-affiliations');
     if (dl && availableProfiles.length) {
-        dl.innerHTML = availableProfiles.map(p => `<option value="${escapeHtml(p.full_name)}">`).join('');
-        const uniqueAffiliations = [...new Set(availableProfiles.map(p => p.affiliation).filter(Boolean))].sort();
-        if (dlAff) {
-            dlAff.innerHTML = uniqueAffiliations.map(aff => `<option value="${escapeHtml(aff)}">`).join('');
-        }
+      dl.innerHTML = availableProfiles.map(p => `<option value="${escapeHtml(p.full_name)}">`).join('');
+      const uniqueAffiliations = [...new Set(availableProfiles.map(p => p.affiliation).filter(Boolean))].sort();
+      if (dlAff) {
+        dlAff.innerHTML = uniqueAffiliations.map(aff => `<option value="${escapeHtml(aff)}">`).join('');
+      }
     }
   }
 
   function initQuillEditor(selector) {
     if (!window.Quill) return null;
-    
+
     const toolbarOptions = [
-        ['bold', 'italic', 'underline'],
-        [{ 'color': [] }, { 'background': [] }],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        ['link', 'clean']
+      ['bold', 'italic', 'underline'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['link', 'clean']
     ];
 
     return new Quill(selector, {
@@ -129,30 +129,30 @@ export function initEventLogic(deps) {
 
   // Matches admin.html setupSpeakerAutofill
   function setupSpeakerAutofill(containerId) {
-      const container = document.getElementById(containerId);
-      if(!container) return;
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-      container.addEventListener('input', (e) => {
-          if (e.target.matches('.js-sp-profile-search')) {
-              const searchVal = e.target.value;
-              const row = e.target.closest('.js-speaker-row');
-              const idInput = row.querySelector('.js-sp-profile-id');
-              const nameInput = row.querySelector('.js-sp-name');
-              const affiliationInput = row.querySelector('.js-sp-aff');
+    container.addEventListener('input', (e) => {
+      if (e.target.matches('.js-sp-profile-search')) {
+        const searchVal = e.target.value;
+        const row = e.target.closest('.js-speaker-row');
+        const idInput = row.querySelector('.js-sp-profile-id');
+        const nameInput = row.querySelector('.js-sp-name');
+        const affiliationInput = row.querySelector('.js-sp-aff');
 
-              const profile = availableProfiles.find(p => p.full_name === searchVal);
+        const profile = availableProfiles.find(p => p.full_name === searchVal);
 
-              if (profile) {
-                  idInput.value = profile.id;
-                  nameInput.value = profile.full_name;
-                  if (profile.affiliation) {
-                      affiliationInput.value = profile.affiliation;
-                  }
-              } else {
-                  idInput.value = '';
-              }
+        if (profile) {
+          idInput.value = profile.id;
+          nameInput.value = profile.full_name;
+          if (profile.affiliation) {
+            affiliationInput.value = profile.affiliation;
           }
-      });
+        } else {
+          idInput.value = '';
+        }
+      }
+    });
   }
 
   function injectEditModal() {
@@ -275,7 +275,7 @@ export function initEventLogic(deps) {
         e.target.closest('.js-speaker-row').remove();
       }
     });
-    
+
     // Setup Autofill Logic
     setupSpeakerAutofill('jsEditSpeakersContainer');
 
@@ -286,12 +286,12 @@ export function initEventLogic(deps) {
     const container = document.getElementById('jsEditSpeakersContainer');
     const row = document.createElement('div');
     row.className = 'js-speaker-row flex flex-col gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm mb-3 transition-all hover:shadow-md';
-    
+
     // Determine profile name for search box
     let profileNameVal = "";
     if (speaker.profile_id && availableProfiles.length) {
-        const matched = availableProfiles.find(p => p.id === speaker.profile_id);
-        if (matched) profileNameVal = matched.full_name;
+      const matched = availableProfiles.find(p => p.id === speaker.profile_id);
+      if (matched) profileNameVal = matched.full_name;
     }
 
     row.innerHTML = `
@@ -377,7 +377,7 @@ export function initEventLogic(deps) {
 
     // Scroll to section (optional)
     if (section && section !== 'main') {
-        // Just focus for now
+      // Just focus for now
     } else {
       modal.querySelector('div').scrollTop = 0;
     }
@@ -436,9 +436,9 @@ export function initEventLogic(deps) {
       if (idx !== -1) state.events[idx] = newEv;
       reRender();
     }
-    
+
     // Trigger background update (Live Update fix)
-    if(refreshEventsList) refreshEventsList();
+    if (refreshEventsList) refreshEventsList();
   }
 
   // --- FILES LOGIC ---
@@ -639,14 +639,14 @@ export function initEventLogic(deps) {
       created_by: authState.session.user.id
     }).select().single();
     if (error) setFlash('Failed to create thread');
-    else { 
-        input.value = ''; 
-        // Reset toggle UI
-        hide($('#newThreadForm')); 
-        show($('#btnToggleThreadForm'));
-        
-        await loadAndRenderThreads(); 
-        selectThread(data.id); 
+    else {
+      input.value = '';
+      // Reset toggle UI
+      hide($('#newThreadForm'));
+      show($('#btnToggleThreadForm'));
+
+      await loadAndRenderThreads();
+      selectThread(data.id);
     }
   }
 
@@ -951,22 +951,22 @@ export function initEventLogic(deps) {
 
     const speakers = ev.event_speakers || [];
     const speakerList = await Promise.all(speakers.map(async s => {
-        const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
-        const ava = img ? `<img src="${img}" class="w-full h-full object-cover">` : `<span class="text-brand-600 font-bold">${(s.name||'?')[0]}</span>`;
-        
-        const profileId = s.profile?.id;
-        const clickAttributes = profileId 
-            ? `data-open-profile="${profileId}" class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer group/speaker"` 
-            : `class="flex items-center gap-3 p-2 -mx-2 opacity-80"`;
-            
-        // Flag Logic
-        const countryCode = s.profile?.country ? s.profile.country.toLowerCase() : null;
-        
-        const flagHtml = countryCode 
-            ? `<img src="https://flagcdn.com/w80/${countryCode}.png" class="ml-auto h-8 w-auto rounded-md shadow-sm border border-gray-100 object-cover shrink-0" alt="${countryCode}" title="${countryCode.toUpperCase()}">`
-            : '';
+      const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
+      const ava = img ? `<img src="${img}" class="w-full h-full object-cover">` : `<span class="text-brand-600 font-bold">${(s.name || '?')[0]}</span>`;
 
-        return `<div ${clickAttributes}>
+      const profileId = s.profile?.id;
+      const clickAttributes = profileId
+        ? `data-open-profile="${profileId}" class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer group/speaker"`
+        : `class="flex items-center gap-3 p-2 -mx-2 opacity-80"`;
+
+      // Flag Logic
+      const countryCode = s.profile?.country ? s.profile.country.toLowerCase() : null;
+
+      const flagHtml = countryCode
+        ? `<img src="https://flagcdn.com/w80/${countryCode}.png" class="ml-auto h-8 w-auto rounded-md shadow-sm border border-gray-100 object-cover shrink-0" alt="${countryCode}" title="${countryCode.toUpperCase()}">`
+        : '';
+
+      return `<div ${clickAttributes}>
              <!-- Avatar -->
              <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm ring-2 ring-transparent ${profileId ? 'group-hover/speaker:ring-brand-100' : ''} transition-all">${ava}</div>
              
@@ -1018,12 +1018,30 @@ export function initEventLogic(deps) {
 
   // --- INITIALIZATION & ROUTING ---
   async function openEvent(eventId) {
-    if (!authState.session) { setFlash(tr('auth.required')); return; }
+    // 1. Check Auth
+    if (!authState.session) {
+      // Try to find the new modal
+      const gate = document.getElementById('authGateModal');
+
+      if (gate) {
+        // Show the visual modal
+        gate.classList.remove('hidden');
+        if (window.lucide) window.lucide.createIcons(); // Refresh icons inside modal
+      } else {
+        // Fallback to flash if modal HTML is missing
+        setFlash(tr('auth.required'));
+      }
+      return;
+    }
+
+    // 2. Load Event Data
     const event = state.events.find(e => String(e.id) === String(eventId));
     if (!event) return;
 
     state.selectedEvent = event;
     state.selectedThreadId = null;
+
+    // ... rest of your existing logic ...
     showView('event');
     window.history.pushState({ event: eventId }, '', `?event=${eventId}`);
 
@@ -1062,17 +1080,17 @@ export function initEventLogic(deps) {
   $('#newThreadForm')?.addEventListener('submit', handleNewThread);
   $('#replyToThreadForm')?.addEventListener('submit', handleNewComment);
   $('#fileInput')?.addEventListener('change', handleFileUpload);
-  
+
   // New Thread Toggle UI
-  $('#btnToggleThreadForm')?.addEventListener('click', () => { 
-      show($('#newThreadForm')); 
-      hide($('#btnToggleThreadForm')); 
-      $('#threadTitle').focus(); 
+  $('#btnToggleThreadForm')?.addEventListener('click', () => {
+    show($('#newThreadForm'));
+    hide($('#btnToggleThreadForm'));
+    $('#threadTitle').focus();
   });
-  $('#cancelThreadBtn')?.addEventListener('click', () => { 
-      hide($('#newThreadForm')); 
-      show($('#btnToggleThreadForm')); 
-      $('#threadTitle').value = ''; 
+  $('#cancelThreadBtn')?.addEventListener('click', () => {
+    hide($('#newThreadForm'));
+    show($('#btnToggleThreadForm'));
+    $('#threadTitle').value = '';
   });
 
   $('#filesList')?.addEventListener('click', async (e) => {
