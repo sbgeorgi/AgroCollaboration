@@ -61,10 +61,14 @@
         /* Graph Canvas Styles */
         #network-container {
             cursor: grab;
-            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-            background-size: 24px 24px;
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(#e2e8f0 1px, transparent 1px),
+                radial-gradient(#f1f5f9 1px, transparent 1px);
+            background-size: 40px 40px, 10px 10px;
+            background-position: 0 0, 20px 20px;
             touch-action: none;
-            overflow: hidden; /* Important for the lens effect */
+            overflow: hidden;
         }
 
         #network-container:active {
@@ -79,6 +83,8 @@
             height: 100%;
             pointer-events: none;
             will-change: transform;
+            /* Ensure 3D transform isn't used to flatten z-index */
+            transform-style: flat;
         }
 
         #networkNodes {
@@ -103,27 +109,31 @@
             transform: translate(-50%, -50%);
             cursor: pointer;
             pointer-events: auto;
-            /* Transition removed for smoother JS-driven fisheye effect */
-            /* transition: transform 0.1s linear; */ 
+            will-change: transform, z-index;
+        }
+
+        /* Member Nodes Z-Index */
+        .member-node {
             z-index: 10;
-            will-change: transform;
         }
 
-        /* High z-index when magnified */
-        .network-node.magnified {
-            z-index: 100;
-        }
-
-        .org-node {
+        /* Group Nodes Z-Index */
+        .group-node {
             z-index: 5;
+            transition: transform 0.1s linear; 
         }
 
-        /* Standard Edge (Person to Org) */
+        /* High z-index when magnified - !important to force override */
+        .network-node.magnified {
+            z-index: 1000 !important;
+        }
+
+        /* Standard Edge (Person to Group) */
         .network-edge {
             fill: none;
             stroke: #cbd5e1; /* Slate 300 */
-            stroke-width: 1px;
-            stroke-opacity: 0.4;
+            stroke-width: 1.5px;
+            stroke-opacity: 0.3;
         }
 
         /* Collaborator Edge (Person to Person) */
@@ -131,20 +141,26 @@
             fill: none;
             stroke: #f59e0b; /* Amber 500 */
             stroke-width: 2px;
-            stroke-opacity: 0.6;
+            stroke-opacity: 0.5;
             stroke-dasharray: 4;
         }
 
+        /* Table Sorting Arrows */
+        th[data-sort] {
+            user-select: none;
+        }
         th.sort-asc::after {
             content: ' ▲';
             font-size: 10px;
             margin-left: 4px;
+            color: #4f46e5;
         }
 
         th.sort-desc::after {
             content: ' ▼';
             font-size: 10px;
             margin-left: 4px;
+            color: #4f46e5;
         }
 
         #flash {
@@ -228,33 +244,51 @@
                     </div>
 
                     <!-- Filters -->
-                    <div class="grid grid-cols-1 gap-2">
-                        <!-- Event Filter -->
-                        <div class="relative">
-                            <select id="eventFilter"
-                                class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
-                                <option value="all">All Events</option>
-                            </select>
-                            <i data-lucide="chevron-down"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                    <div class="grid grid-cols-1 gap-3">
+                        
+                        <!-- Group By Filter (NEW) -->
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">Group Nodes By</label>
+                            <div class="relative">
+                                <select id="groupByFilter"
+                                    class="w-full appearance-none bg-slate-50 border border-gray-200 text-slate-700 text-xs font-bold rounded-lg pl-3 pr-8 py-2.5 focus:ring-2 focus:ring-brand-100 outline-none">
+                                    <option value="affiliation">Organization</option>
+                                    <option value="country">Country</option>
+                                </select>
+                                <i data-lucide="chevron-down"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                            </div>
                         </div>
 
-                        <!-- Country Filter -->
-                        <div class="relative">
-                            <select id="countryFilter"
-                                class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
-                                <option value="all">All Countries</option>
-                            </select>
-                            <i data-lucide="chevron-down"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                        <!-- Secondary Filters -->
+                        <div class="grid grid-cols-2 gap-2">
+                             <!-- Event Filter -->
+                            <div class="relative">
+                                <select id="eventFilter"
+                                    class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
+                                    <option value="all">All Events</option>
+                                </select>
+                                <i data-lucide="chevron-down"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                            </div>
+
+                            <!-- Country Filter -->
+                            <div class="relative">
+                                <select id="countryFilter"
+                                    class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
+                                    <option value="all">All Countries</option>
+                                </select>
+                                <i data-lucide="chevron-down"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Role Chips -->
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-wrap gap-2 pt-1">
                         <button
                             class="px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white"
-                            data-role="all">All</button>
+                            data-role="all">All Roles</button>
                         <button
                             class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"
                             data-role="speakers">Speakers</button>
@@ -332,7 +366,7 @@
                         <div class="flex flex-col gap-1.5 bg-white/80 backdrop-blur p-2 rounded-lg border border-gray-100 shadow-sm text-[10px] font-medium text-slate-600">
                             <div class="flex items-center gap-2">
                                 <div class="w-6 h-0.5 bg-slate-300 opacity-50"></div>
-                                <span>Organization</span>
+                                <span>Affiliation / Group</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <div class="w-6 h-0.5 bg-amber-500 opacity-60"></div>
@@ -349,15 +383,15 @@
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-gray-50 sticky top-0 z-20 shadow-sm">
                                 <tr>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                                         data-sort="name">Name</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                                         data-sort="affiliation">Affiliation / Institution</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-1/3 hidden lg:table-cell"
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-1/3 hidden lg:table-cell"
                                         data-sort="interests">Interests</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hidden sm:table-cell"
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden sm:table-cell"
                                         data-sort="country">Country</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                                         data-sort="role">Role</th>
                                 </tr>
                             </thead>
@@ -388,14 +422,16 @@
             allCanonicalToDisplay: new Map(), connections: [], nodes: new Map(),
             positions: new Map(), panOffset: { x: 0, y: 0 }, zoom: 1,
             sort: { key: "name", dir: "asc" }, roleFilter: "all", eventFilterId: "all", countryFilterId: "all",
+            groupBy: "affiliation", // 'affiliation' or 'country'
             searchQuery: "", selectedTags: new Set(),
             lang: localStorage.getItem("lang") || "en",
             isDragging: false,
             // Country Data mapping
             countries: {
                 "US": "United States", "MX": "Mexico", "CA": "Canada", "CO": "Colombia", "BR": "Brazil", 
-                "CL": "Chile", "AR": "Argentina", "PE": "Peru", "ES": "Spain", "FR": "France", "DE": "Germany" 
-                // Add more if needed, typically comes from code
+                "CL": "Chile", "AR": "Argentina", "PE": "Peru", "ES": "Spain", "FR": "France", "DE": "Germany",
+                "BE": "Belgium", "NL": "Netherlands", "IT": "Italy", "UK": "United Kingdom", "GB": "United Kingdom",
+                "IN": "India", "CN": "China", "AU": "Australia"
             }
         };
 
@@ -417,7 +453,7 @@
         const debounce = (fn, ms = 200) => { let t = null; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
         async function loadNetworkData() {
-            // Fetch profiles with the new 'collaborators' and 'country' columns
+            // Fetch profiles
             const [profiles, speakers, events] = await Promise.all([
                 supabase.from('profiles').select('*').order('full_name'),
                 supabase.from('event_speakers').select('event_id, profile_id'),
@@ -448,7 +484,7 @@
                 state.speakersByProfileId.get(s.profile_id).add(s.event_id);
             });
 
-            // Indices & Tags
+            // Indices & Tags (Also used for default counting stats)
             state.members.forEach(m => {
                 const org = m.affiliation?.trim();
                 if (org) { if (!state.orgIndex.has(org)) state.orgIndex.set(org, new Set()); state.orgIndex.get(org).add(m.id); }
@@ -471,19 +507,10 @@
             });
 
             // Connections
-            // 1. Organization Edges
             const conns = []; const processed = new Set();
-            state.orgIndex.forEach(idsSet => {
-                const ids = Array.from(idsSet);
-                // We don't draw mesh for orgs anymore, we draw star topology (Org Node -> Members)
-                // Handled in renderGraph
-            });
-
-            // 2. Collaborator Edges (Direct Links)
             state.members.forEach(m => {
                 if(m.collaborators && Array.isArray(m.collaborators)) {
                     m.collaborators.forEach(targetId => {
-                        // Prevent duplicates (A-B and B-A)
                         const key = [m.id, targetId].sort().join('-');
                         if(!processed.has(key) && state.profileById.has(targetId)) {
                             conns.push({ source: m.id, target: targetId, type: 'collab' });
@@ -495,7 +522,7 @@
             state.connections = conns;
 
             $('#statMembers').innerText = state.members.length;
-            $('#statConnections').innerText = conns.length + state.members.filter(m=>m.affiliation).length; // Approx total edges
+            $('#statConnections').innerText = conns.length + state.members.filter(m=>m.affiliation).length; 
             $('#statOrgs').innerText = state.orgIndex.size;
             $('#statEvents').innerText = state.eventsById.size;
 
@@ -520,30 +547,46 @@
         document.addEventListener('remTag', e => { state.selectedTags.delete(e.detail); onFiltersChanged(); });
 
         /**
-         * Layout Algorithm: Horizontal Cluster Packing
+         * Layout Algorithm: Aggressive Horizontal Spread (Wide Aspect Ratio)
          */
         function calculatePositions(members) {
-            const byOrg = new Map();
+            const byGroup = new Map();
+            const getGroupKey = (m) => {
+                if (state.groupBy === 'country') {
+                    return m.country ? (state.countries[m.country] || m.country) : "Unknown Location";
+                }
+                return m.affiliation?.trim() || "Unaffiliated";
+            };
+
             members.forEach(m => {
-                const o = m.affiliation?.trim() || "Unaffiliated";
-                if (!byOrg.has(o)) byOrg.set(o, []);
-                byOrg.get(o).push(m);
+                const key = getGroupKey(m);
+                if (!byGroup.has(key)) byGroup.set(key, []);
+                byGroup.get(key).push(m);
             });
 
             const clusters = [];
-            for (const [name, list] of byOrg.entries()) {
+            let totalArea = 0;
+
+            for (const [name, list] of byGroup.entries()) {
                 const count = list.length;
-                const ringR = Math.max(140, (count * 45) / (2 * Math.PI));
-                const size = (ringR * 2) + 120;
+                const ringR = Math.max(160, (count * 55) / (2 * Math.PI));
+                const size = (ringR * 2) + 200; 
+                const area = size * size;
+                totalArea += area;
                 clusters.push({ name, list, ringR, size });
             }
 
             clusters.sort((a, b) => b.list.length - a.list.length);
 
-            const pos = new Map();
-            const ROW_Target_WIDTH = 2500;
-            const CLUSTER_GAP = 100;
+            // FORCE WIDE ASPECT RATIO (e.g., 3.5:1 width-to-height)
+            // Area = w * h. w = 3.5h. Area = 3.5h^2. h = sqrt(area/3.5). w = 3.5 * sqrt(area/3.5)
+            const aspectRatio = 3.5;
+            const h = Math.sqrt(totalArea / aspectRatio);
+            const TARGET_ROW_WIDTH = h * aspectRatio;
+            
+            const CLUSTER_GAP = 250;
 
+            const pos = new Map();
             let currentRowX = 0;
             let currentRowY = 0;
             let rowItems = [];
@@ -557,16 +600,15 @@
                     const cx = startX + (c.size / 2);
                     const cy = currentRowY + (c.size / 2);
                     
-                    if (c.name !== "Unaffiliated") {
-                         pos.set(`org-${c.name}`, { x: cx, y: cy });
+                    if (c.name !== "Unaffiliated" && c.name !== "Unknown Location") {
+                         pos.set(`group-${c.name}`, { x: cx, y: cy });
                     }
 
                     if (c.list.length > 0) {
                         const step = (Math.PI * 2) / c.list.length;
                         c.list.forEach((m, i) => {
                             const angle = step * i;
-                            // Stagger radius slightly
-                            const r = c.ringR + (i % 2 === 0 ? 0 : 40);
+                            const r = c.ringR + (i % 2 === 0 ? 0 : 50); // Stagger radius
                             pos.set(m.id, {
                                 x: cx + Math.cos(angle) * r,
                                 y: cy + Math.sin(angle) * r
@@ -583,7 +625,8 @@
             };
 
             clusters.forEach(c => {
-                if (currentRowX + c.size > ROW_Target_WIDTH && rowItems.length > 0) {
+                // Fill until we hit the aggressive wide width
+                if (currentRowX + c.size > TARGET_ROW_WIDTH && rowItems.length > 0) {
                     flushRow();
                 }
                 rowItems.push(c);
@@ -593,58 +636,93 @@
 
             if (rowItems.length > 0) flushRow();
 
-            const totalBlockHeight = currentRowY - CLUSTER_GAP;
-            const verticalOffset = -(totalBlockHeight / 2);
-
+            // Center vertically
+            const totalHeight = currentRowY - CLUSTER_GAP;
+            const vOffset = -(totalHeight / 2);
             for (const [key, p] of pos.entries()) {
-                p.y += verticalOffset;
+                p.y += vOffset;
             }
 
-            return pos;
+            return { pos, clusters };
         }
 
         function renderGraph(members) {
             const c = $('#network-container');
             if (c.offsetWidth === 0) return;
-            state.positions = calculatePositions(members);
+            
+            const layout = calculatePositions(members);
+            state.positions = layout.pos;
 
             const svg = $('#networkConnections'); const nodes = $('#networkNodes');
             svg.innerHTML = ''; nodes.innerHTML = '';
 
-            // 1. Render Edges (Paths)
             let paths = '';
             
-            // a. Organization Edges (Person -> Org Node)
+            // a. Structural Edges
+            const getGroupKey = (m) => {
+                if (state.groupBy === 'country') return m.country ? (state.countries[m.country] || m.country) : "Unknown Location";
+                return m.affiliation?.trim() || "Unaffiliated";
+            };
+
             members.forEach(m => {
+                const gName = getGroupKey(m);
                 const mp = state.positions.get(m.id);
-                const op = state.positions.get(`org-${m.affiliation?.trim() || "Unaffiliated"}`);
-                if (mp && op && !isNaN(mp.x) && !isNaN(mp.y) && !isNaN(op.x) && !isNaN(op.y)) {
-                    paths += `<path d="M ${mp.x} ${mp.y} L ${op.x} ${op.y}" class="network-edge"/>`;
+                const gp = state.positions.get(`group-${gName}`); 
+                
+                if (mp && gp && !isNaN(mp.x) && !isNaN(mp.y) && !isNaN(gp.x) && !isNaN(gp.y)) {
+                    paths += `<path d="M ${mp.x} ${mp.y} L ${gp.x} ${gp.y}" class="network-edge"/>`;
                 }
             });
 
-            // b. Collaborator Edges (Person -> Person) - From calculated connections
+            // b. Collaborator Edges
             state.connections.forEach(conn => {
-                // Check if both nodes exist in current filtered view
                 const p1 = state.positions.get(conn.source);
                 const p2 = state.positions.get(conn.target);
                 if (p1 && p2) {
-                     paths += `<path d="M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}" class="collab-edge"/>`;
+                     const cx = (p1.x + p2.x) / 2;
+                     const cy = (p1.y + p2.y) / 2 - 25; 
+                     paths += `<path d="M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}" class="collab-edge"/>`;
                 }
             });
 
             svg.innerHTML = paths;
 
-            // 2. Render Org Nodes
-            new Set(members.map(m => m.affiliation?.trim() || "Unaffiliated")).forEach(org => {
-                if (org === "Unaffiliated") return;
-                const p = state.positions.get(`org-${org}`);
-                if (!p || isNaN(p.x) || isNaN(p.y)) return;
-                const el = document.createElement('div'); el.className = 'network-node org-node';
-                el.dataset.x = p.x; el.dataset.y = p.y; // Store for magnifying logic
+            // 2. Render Group Nodes
+            layout.clusters.forEach(cluster => {
+                const name = cluster.name;
+                if (name === "Unaffiliated" || name === "Unknown Location") return;
+                
+                const p = state.positions.get(`group-${name}`);
+                if (!p) return;
+                
+                const count = cluster.list.length;
+                const isCountry = state.groupBy === 'country';
+                const icon = isCountry ? 'globe-2' : 'building-2';
+                const colorClass = isCountry ? 'bg-indigo-900 ring-indigo-100' : 'bg-slate-900 ring-white';
+                const badgeClass = isCountry ? 'bg-indigo-500' : 'bg-brand-500';
+
+                const el = document.createElement('div'); 
+                el.className = 'network-node group-node';
+                el.dataset.x = p.x; el.dataset.y = p.y; 
+                el.dataset.type = 'group';
                 el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px)`;
-                el.innerHTML = `<div class="node-pill flex flex-col items-center justify-center bg-green-50 border border-green-200 text-green-800 px-4 py-2 gap-0 shadow-sm transition-all duration-200 min-w-[auto] rounded-full"><span class="org-label font-display font-bold text-sm text-center leading-tight">${org}</span></div>`;
-                el.onclick = (e) => { e.stopPropagation(); $('#searchInput').value = org; onFiltersChanged(); };
+                
+                el.innerHTML = `
+                    <div class="flex flex-col items-center gap-2 group/center transition-all">
+                        <div class="relative">
+                            <div class="w-16 h-16 ${colorClass} rounded-2xl flex items-center justify-center shadow-lg ring-4 relative z-10">
+                                <i data-lucide="${icon}" class="text-white w-8 h-8"></i>
+                            </div>
+                            <div class="absolute -top-2 -right-2 w-7 h-7 ${badgeClass} rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-white shadow-sm z-20">
+                                ${count}
+                            </div>
+                        </div>
+                        <div class="px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm max-w-[280px] text-center relative z-20">
+                             <span class="text-sm font-black text-slate-800 uppercase tracking-tight leading-none block">${name}</span>
+                        </div>
+                    </div>
+                `;
+                el.onclick = (e) => { e.stopPropagation(); $('#searchInput').value = name; onFiltersChanged(); };
                 nodes.appendChild(el);
             });
 
@@ -655,18 +733,20 @@
 
                 const displayName = m.full_name || 'Member';
 
-                const el = document.createElement('div'); el.className = 'network-node member-node';
-                el.dataset.x = p.x; el.dataset.y = p.y; // Store for magnifying logic
+                const el = document.createElement('div'); 
+                el.className = 'network-node member-node';
+                el.dataset.x = p.x; el.dataset.y = p.y;
+                el.dataset.type = 'member';
                 el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px)`;
                 
                 el.innerHTML = `
-            <div class="node-pill flex items-center gap-3 pl-1 pr-4 py-1 bg-white border border-gray-200 rounded-full shadow-sm transition-all duration-200 min-w-[140px] group-hover:border-brand-400 group-hover:shadow-lg group-hover:ring-2 group-hover:ring-brand-100">
-                <div class="node-avatar w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-xs font-bold overflow-hidden shrink-0 ring-2 ring-white shadow-sm">
+            <div class="node-pill flex items-center gap-3 pl-1 pr-4 py-1 bg-white border border-gray-200 rounded-full shadow-sm transition-all duration-200 min-w-[150px] group-hover:border-brand-400 group-hover:shadow-md group-hover:ring-2 group-hover:ring-brand-100">
+                <div class="node-avatar w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center text-xs font-bold overflow-hidden shrink-0 ring-2 ring-white shadow-sm">
                     ${displayName[0].toUpperCase()}
                 </div>
                 <div class="min-w-0">
-                    <span class="node-name text-xs font-bold text-slate-700 leading-tight block">${displayName}</span>
-                    ${m.affiliation ? `<span class="node-affiliation text-[9px] text-slate-400 leading-tight truncate max-w-[120px] block mt-0.5">${m.affiliation}</span>` : ''}
+                    <span class="node-name text-xs font-bold text-slate-700 leading-tight block truncate">${displayName}</span>
+                    <span class="node-affiliation text-[9px] text-slate-400 leading-tight truncate max-w-[120px] block mt-0.5">${m.affiliation || '—'}</span>
                 </div>
             </div>`;
                 if (m.avatar_url) getAvatarUrl(m.avatar_url).then(u => { if (u) el.querySelector('.node-avatar').innerHTML = `<img src="${u}" class="w-full h-full object-cover">` });
@@ -678,6 +758,7 @@
                 nodes.appendChild(el);
             });
 
+            lucide.createIcons();
             fitGraph();
         }
 
@@ -687,8 +768,8 @@
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             pts.forEach(p => { if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x; if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y; });
 
-            const w = maxX - minX + 300;
-            const h = maxY - minY + 300;
+            const w = maxX - minX + 500;
+            const h = maxY - minY + 500;
             const c = $('#network-container');
             const scale = Math.min(c.offsetWidth / w, c.offsetHeight / h, 1.2);
 
@@ -701,69 +782,86 @@
         }
 
         function updateTransform() {
-            // Apply pan/zoom to the Container of lines and nodes
             $('#networkCanvas').style.transform = `translate(${state.panOffset.x}px, ${state.panOffset.y}px) scale(${state.zoom})`;
-        }
 
-        // --- Magnifying Glass (Fisheye) Logic ---
-        function applyMagnification(mouseX, mouseY) {
-            // Only apply if not dragging
-            if (state.isDragging) return;
+            const inverseScale = 1 / Math.max(0.2, state.zoom);
+            const groupScale = clamp(inverseScale * 0.7, 1, 3.5);
 
-            const nodeList = document.querySelectorAll('.network-node');
-            const radius = 200; // Magnification radius in screen pixels
-            const maxScale = 2.5; // Max magnification factor
-
-            nodeList.forEach(node => {
-                // Get node position in world coordinates
+            document.querySelectorAll('.group-node').forEach(node => {
                 const wx = parseFloat(node.dataset.x);
                 const wy = parseFloat(node.dataset.y);
+                if (!node.classList.contains('magnified')) {
+                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${groupScale})`;
+                }
+            });
+        }
 
-                // Convert world coords to screen coords based on current transform
+        // --- ENHANCED MAGNIFYING GLASS ---
+        function applyMagnification(mouseX, mouseY) {
+            if (state.isDragging) return;
+
+            const radius = 250; 
+            const maxScale = 5.0; 
+
+            // Find nearest node to bring to front
+            let nearestNode = null;
+            let minDist = Infinity;
+
+            document.querySelectorAll('.network-node').forEach(node => {
+                const wx = parseFloat(node.dataset.x);
+                const wy = parseFloat(node.dataset.y);
+                const isGroup = node.dataset.type === 'group';
+
                 const screenX = (wx * state.zoom) + state.panOffset.x;
                 const screenY = (wy * state.zoom) + state.panOffset.y;
 
-                // Calculate distance from mouse
                 const dx = screenX - mouseX;
                 const dy = screenY - mouseY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
+                // Default reset
+                const currentBaseScale = isGroup ? (clamp((1/Math.max(0.2, state.zoom)) * 0.7, 1, 3.5)) : 1;
+                
                 if (dist < radius) {
-                    // Calculate scale factor (quadratic falloff for smoothness)
                     const factor = 1 - (dist / radius);
-                    const scale = 1 + (factor * factor * (maxScale - 1));
+                    const ease = factor * factor * factor; 
+                    const finalScale = currentBaseScale + (ease * (maxScale - 1));
                     
-                    // Apply scale on top of the translation
-                    // Note: translate(-50%, -50%) is handled by CSS centering, 
-                    // we need to maintain the positional translate
-                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${scale})`;
-                    node.classList.add('magnified');
+                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${finalScale})`;
+                    
+                    // Track nearest for z-index popping
+                    if (dist < minDist) {
+                        minDist = dist;
+                        nearestNode = node;
+                    }
                 } else {
-                    // Reset
-                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(1)`;
-                    node.classList.remove('magnified');
+                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${currentBaseScale})`;
                 }
+                
+                // Clear magnified class from everyone first
+                node.classList.remove('magnified');
             });
+
+            // Apply magnified class ONLY to the absolute nearest node within a tight threshold
+            if (nearestNode && minDist < 100) {
+                nearestNode.classList.add('magnified');
+            }
         }
 
         function getFiltered() {
             let ids = new Set(state.members.map(m => m.id));
             
-            // Role Filter
             if (state.roleFilter === 'speakers') ids = new Set([...ids].filter(id => state.isSpeaker.has(id)));
             else if (state.roleFilter === 'organizers') ids = new Set([...ids].filter(id => ['organizer', 'admin'].includes(state.profileById.get(id).role)));
 
-            // Event Filter
             if (state.eventFilterId !== 'all') {
                 ids = new Set([...ids].filter(id => state.speakersByProfileId.get(id)?.has(state.eventFilterId)));
             }
 
-            // Country Filter
             if (state.countryFilterId !== 'all') {
                 ids = new Set([...ids].filter(id => state.profileById.get(id).country === state.countryFilterId));
             }
 
-            // Search Filter
             if (state.searchQuery) {
                 const q = state.searchQuery.toLowerCase();
                 ids = new Set([...ids].filter(id => {
@@ -774,7 +872,6 @@
                 }));
             }
 
-            // Tag Filter
             if (state.selectedTags.size > 0) {
                 ids = new Set([...ids].filter(id => {
                     for (const t of state.selectedTags) if (state.tagIndex.get(t)?.has(id)) return true;
@@ -835,26 +932,15 @@
             await initAuth({
                 onAuthReady: async () => {
                     renderHeader(authState, t, state.lang);
-                    
-                    // FIX: Removed the if(!authState.session) check. 
-                    // Now we load data for everyone, regardless of login status.
-                    
-                    // Ensure gate is hidden (it defaults to hidden in HTML, but just in case)
                     const gate = document.getElementById('signinGate');
                     if (gate) gate.style.display = 'none';
 
                     applyI18n(t, state.lang);
-                    
-                    // Load the graph data
                     await loadNetworkData();
-                    
-                    // Hide the loader
                     $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
                 },
                 onAuthChange: () => {
                     renderHeader(authState, t, state.lang);
-                    // FIX: Removed "if (!authState.session) location.reload();" 
-                    // This prevents the infinite reload loop for guests.
                 }
             });
 
@@ -864,6 +950,39 @@
                 state.roleFilter = e.target.dataset.role; onFiltersChanged();
             });
 
+            // Table Sorting Logic
+            $$('th[data-sort]').forEach(th => {
+                th.onclick = () => {
+                    const key = th.dataset.sort;
+                    // Toggle Sort
+                    if (state.sort.key === key) {
+                        state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        state.sort.key = key;
+                        state.sort.dir = 'asc';
+                    }
+                    
+                    // Update UI Classes
+                    $$('th[data-sort]').forEach(h => {
+                        h.classList.remove('sort-asc', 'sort-desc');
+                        h.classList.add('text-slate-500'); // reset color
+                        h.classList.remove('text-brand-600');
+                    });
+                    
+                    th.classList.add(state.sort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+                    th.classList.remove('text-slate-500');
+                    th.classList.add('text-brand-600'); // Highlight active column
+
+                    // Re-render
+                    onFiltersChanged();
+                };
+            });
+            // Set initial sort state visual
+            const initialTh = $(`th[data-sort="${state.sort.key}"]`);
+            if(initialTh) initialTh.classList.add('sort-asc', 'text-brand-600');
+
+
+            $('#groupByFilter').onchange = e => { state.groupBy = e.target.value; onFiltersChanged(); };
             $('#eventFilter').onchange = e => { state.eventFilterId = e.target.value; onFiltersChanged(); };
             $('#countryFilter').onchange = e => { state.countryFilterId = e.target.value; onFiltersChanged(); };
             $('#searchInput').oninput = debounce(onFiltersChanged);
@@ -872,13 +991,12 @@
                 state.selectedTags.clear(); $('[data-role="all"]').click(); 
                 $('#eventFilter').value = 'all'; state.eventFilterId = 'all';
                 $('#countryFilter').value = 'all'; state.countryFilterId = 'all';
+                $('#groupByFilter').value = 'affiliation'; state.groupBy = 'affiliation';
             };
             $('#resetViewBtn').onclick = fitGraph;
 
-            // Canvas Interaction (Mouse + Touch)
             const cv = $('#network-container'); let sx = 0, sy = 0;
 
-            // Mouse Move for Magnifying Glass
             cv.onmousemove = e => {
                 const rect = cv.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
@@ -894,12 +1012,13 @@
             };
 
             cv.onmouseleave = () => {
-                // Reset magnification
                 const nodeList = document.querySelectorAll('.network-node');
                 nodeList.forEach(node => {
                      const wx = parseFloat(node.dataset.x);
                      const wy = parseFloat(node.dataset.y);
-                     node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(1)`;
+                     const isGroup = node.dataset.type === 'group';
+                     const currentBaseScale = isGroup ? (clamp((1/Math.max(0.2, state.zoom)) * 0.7, 1, 3.5)) : 1;
+                     node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${currentBaseScale})`;
                      node.classList.remove('magnified');
                 });
             };
@@ -910,14 +1029,13 @@
                     sx = e.clientX - state.panOffset.x; 
                     sy = e.clientY - state.panOffset.y; 
                     cv.style.cursor = 'grabbing'; 
-                    // Reset Magnification while dragging for performance
                     cv.onmouseleave(); 
                 } 
             };
             
             window.onmouseup = () => { state.isDragging = false; cv.style.cursor = 'grab'; };
             
-            cv.onwheel = e => { e.preventDefault(); const s = e.deltaY > 0 ? 0.9 : 1.1; state.zoom = clamp(state.zoom * s, 0.1, 5); updateTransform(); cv.onmouseleave(); }; // Reset mag on zoom
+            cv.onwheel = e => { e.preventDefault(); const s = e.deltaY > 0 ? 0.9 : 1.1; state.zoom = clamp(state.zoom * s, 0.1, 5); updateTransform(); cv.onmouseleave(); };
             
             cv.ontouchstart = e => { if (e.target.id === 'networkCanvas' || e.target === cv) { state.isDragging = true; sx = e.touches[0].clientX - state.panOffset.x; sy = e.touches[0].clientY - state.panOffset.y; } };
             cv.ontouchmove = e => { if (state.isDragging) { e.preventDefault(); state.panOffset.x = e.touches[0].clientX - sx; state.panOffset.y = e.touches[0].clientY - sy; updateTransform(); } };
