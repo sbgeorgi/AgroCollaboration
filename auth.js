@@ -1,8 +1,8 @@
 // C:\HELLOWORLD\AgroCollaboration\auth.js
 /**
  * AUTHENTICATION MODULE
- * Handles Supabase auth, session management, profile fetching, and 
- * CRITICALLY: Updates the local cache for the preloader to prevent UI flickering.
+ * Handles Supabase auth, session management, profile fetching.
+ * Includes fix for Username collisions.
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -36,7 +36,7 @@ function updateAuthCache() {
     localStorage.setItem('asf_auth_cache', JSON.stringify({
       expiry: Date.now() + (1000 * 60 * 60 * 24), // 24 hours
       data: {
-        session: { user: { id: authState.session.user.id } }, // Minimal session data needed
+        session: { user: { id: authState.session.user.id } },
         profile: authState.profile
       }
     }));
@@ -52,7 +52,7 @@ export async function fetchProfile(userId, { refresh = false } = {}) {
   const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
   
   if (data) {
-    // Handle Avatar URL signing
+    // Handle Avatar URL signing for private buckets
     if (data.avatar_url && !data.avatar_url.startsWith('http')) {
         const { data: urlData } = await supabase.storage.from("avatars").createSignedUrl(data.avatar_url, 3600);
         if (urlData?.signedUrl) {
@@ -71,13 +71,24 @@ export async function ensureProfile() {
   let profile = await fetchProfile(uid);
 
   if (!profile) {
-    // Create default profile if none exists
+    // === FIX: Username Generation ===
+    // 1. Get base name from email (e.g., "john.doe")
+    const emailBase = (authState.session.user.email || "").split("@")[0].replace(/[^a-zA-Z0-9_-]/g, "");
+    
+    // 2. Generate a random 4-digit suffix (e.g., 4821)
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+    
+    // 3. Combine to ensure uniqueness (e.g., "john.doe_4821")
+    // This prevents the Database Error: "duplicate key value violates unique constraint"
+    const uniqueUsername = `${emailBase}_${suffix}`;
+
+    // Create default profile
     const { data: newProfile, error: insertErr } = await supabase
       .from("profiles")
       .insert({ 
         id: uid, 
         work_email: authState.session.user.email, 
-        username: (authState.session.user.email || "").split("@")[0].replace(/[^a-zA-Z0-9_-]/g, "") 
+        username: uniqueUsername 
       })
       .select()
       .single();
@@ -95,7 +106,6 @@ export async function ensureProfile() {
     profile?.work_email
   );
 
-  // UPDATE CACHE HERE TO FIX FLICKER
   updateAuthCache();
 
   if (!authState.isPasswordRecovery && sessionStorage.getItem('justLoggedIn') && !authState.profileComplete) {
@@ -120,7 +130,6 @@ export async function initAuth(callbacks = {}) {
   if (session && !authState.isPasswordRecovery) {
     await ensureProfile();
   } else {
-    // Ensure cache is cleared if no session on init
     updateAuthCache();
   }
 
@@ -150,7 +159,6 @@ export async function initAuth(callbacks = {}) {
       authState.profile = null;
       authState.isPasswordRecovery = false;
       sessionStorage.removeItem('justLoggedIn');
-      // Clear cache on logout
       updateAuthCache();
     }
 
@@ -188,6 +196,6 @@ export async function signOut() {
   await supabase.auth.signOut();
   authState.session = null;
   authState.profile = null;
-  updateAuthCache(); // Explicitly clear cache
+  updateAuthCache();
   window.location.reload();
 }

@@ -97,10 +97,9 @@
 
               <!-- Title / Description -->
               <div class="max-w-[75%] md:max-w-[65%]">
-                <!-- Added id="heroDescription" -->
                 <h2 id="heroDescription"
-    class="font-display font-bold text-xl md:text-2xl text-slate-900 leading-tight tracking-tight drop-shadow-sm">
-</h2>
+                  class="font-display font-bold text-xl md:text-2xl text-slate-900 leading-tight tracking-tight drop-shadow-sm">
+                </h2>
               </div>
 
               <!-- Footer Row: Hosts + Banner (Inline & Compact) -->
@@ -321,8 +320,6 @@
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
     import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl } from './ui.js';
-
-    // NEW IMPORT: Rich Text Utilities
     import { stripHtml } from './rich-text.js';
 
     // Inject Layout
@@ -376,29 +373,16 @@
       else { hide($('#schedule-list')); show($('#schedule-calendar')); $('#btn-view-cal').classList.add('bg-brand-50', 'text-brand-700'); $('#btn-view-list').classList.remove('bg-brand-50', 'text-brand-700'); }
     }
 
-function applyHtmlTranslations() {
-    const heroDesc = document.getElementById('heroDescription');
-    if (heroDesc) {
-        heroDesc.innerHTML = t[state.language].hero.description;
-    }
-}
-
     function handleLangSwitch() {
       state.language = state.language === 'en' ? 'es' : 'en';
       localStorage.setItem("lang", state.language);
-
       applyI18n(t, state.language);
-
-      // ADD THIS LINE to ensure the HTML/Styling inside the translation renders correctly:
       document.getElementById('heroDescription').innerHTML = t[state.language].hero.description;
-
       renderEventsList();
       renderScheduleCalendar();
       renderBanner();
       if (eventLogic) eventLogic.reRender();
     }
-
-
 
     function renderBanner() {
       const banner = $('#siteBanner');
@@ -427,30 +411,35 @@ function applyHtmlTranslations() {
       }
     }
 
+    // --- OPTIMIZED QUERY ---
+    const OPTIMIZED_EVENT_SELECT = `
+      id, title_en, title_es, description_en, description_es,
+      start_time, topic_tags, language, zoom_url,
+      event_speakers (
+        name, primary_speaker,
+        profile:profiles ( id, avatar_url, country )
+      )
+    `;
+
     async function loadEvents() {
-      // NOTE: We don't hide content area on re-loads to avoid flicker, only on initial load if empty
       if (state.events.length === 0) { hide($('#content-area')); show($('#eventsLoader')); }
 
+      // Parallel Data Fetch
       const [eventsRes, bannerRes] = await Promise.all([
-        supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", { ascending: true }),
+        supabase.from("events").select(OPTIMIZED_EVENT_SELECT).order("start_time", { ascending: true }),
         supabase.from("banners").select("*").eq("is_active", true).limit(1).maybeSingle()
       ]);
 
       state.events = eventsRes.data || [];
       state.activeBanner = bannerRes.data || null;
 
-      renderEventsList(); renderScheduleCalendar(); renderBanner();
-      if (state.events.length > 0 || eventsRes.data) { hide($('#eventsLoader')); show($('#content-area')); }
+      renderEventsList(); 
+      renderScheduleCalendar(); 
+      renderBanner();
 
-      const params = new URLSearchParams(window.location.search);
-      const eid = params.get("event") || params.get("e");
-      if (eid && eventLogic) {
-        if (authState.session) eventLogic.openEvent(eid);
-        else { authState.pendingDeepLinkEventId = eid; setFlash(localTr('auth.required')); }
-      }
+      if (state.events.length > 0 || eventsRes.data) { hide($('#eventsLoader')); show($('#content-area')); }
     }
 
-    // --- REFINED: Strict "Primary Only" Pills + Stack ---
     async function renderEventsList() {
       const list = $('#schedule-list');
       const term = ($('#search').value || '').toLowerCase();
@@ -468,7 +457,6 @@ function applyHtmlTranslations() {
 
       const html = await Promise.all(filtered.map(async ev => {
         const title = state.language === 'es' ? (ev.title_es || ev.title_en) : ev.title_en;
-
         const rawDesc = state.language === 'es' ? (ev.description_es || ev.description_en) : ev.description_en;
         const cleanDesc = escapeHtml(stripHtml(rawDesc || ''));
 
@@ -480,12 +468,10 @@ function applyHtmlTranslations() {
         const time = fmtDateTime(ev.start_time, { hour: 'numeric', minute: '2-digit' });
         const weekday = start.toLocaleDateString(state.language, { weekday: 'long' });
 
-        // UPDATED SPEAKER LOGIC: Filter by primary_speaker boolean
         const speakers = ev.event_speakers || [];
         const featuredSpeakers = speakers.filter(s => s.primary_speaker);
         const extraSpeakers = speakers.filter(s => !s.primary_speaker);
 
-        // Render Pills (Only for marked primary speakers)
         const featuredHtml = await Promise.all(featuredSpeakers.map(async s => {
           const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
           const avatar = img
@@ -505,7 +491,6 @@ function applyHtmlTranslations() {
                 </div>`;
         }));
 
-        // Render Stack (For everyone else)
         const extraStackHtml = extraSpeakers.length > 0 ? await Promise.all(extraSpeakers.map(async (s, index) => {
           const img = s.profile?.avatar_url ? await getAvatarUrl(s.profile.avatar_url) : null;
           const avatarContent = img
@@ -557,12 +542,10 @@ function applyHtmlTranslations() {
                     <!-- Top: Date Block & Meta -->
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex items-center gap-3">
-                            <!-- Block -->
                             <div class="flex flex-col items-center justify-center bg-slate-50 text-slate-700 rounded-xl px-2.5 py-1.5 border border-slate-100 group-hover:bg-brand-50 group-hover:text-brand-700 group-hover:border-brand-100 transition-colors min-w-[52px]">
                                 <span class="text-[9px] font-bold uppercase leading-none opacity-60 mb-0.5">${month}</span>
                                 <span class="text-xl font-display font-bold leading-none tracking-tight">${day}</span>
                             </div>
-                            <!-- Time -->
                             <div class="flex flex-col pt-0.5">
                                 <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800">
                                     <i data-lucide="clock" class="w-3 h-3 text-brand-500"></i>
@@ -610,23 +593,16 @@ function applyHtmlTranslations() {
       }
     }
 
-    (async function () {
-      // NOTE: Passing refreshEventsList to allow event.js to update the list background card
+    // --- MAIN EXECUTION ---
+    (async function main() {
       const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide, refreshEventsList: renderEventsList };
       eventLogic = initEventLogic(deps);
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
 
-      // ================= FIX START =================
-      // 1. Apply standard translations to the whole page based on current language state
       applyI18n(t, state.language);
-      
-      // 2. FORCE the Hero Description to render as HTML. 
-      //    This fixes the issue where standard translation displays raw <span> tags as text.
+      // Force Hero HTML render
       const heroDesc = document.getElementById('heroDescription');
-      if (heroDesc) {
-          heroDesc.innerHTML = t[state.language].hero.description;
-      }
-      // ================= FIX END ===================
+      if (heroDesc) heroDesc.innerHTML = t[state.language].hero.description;
 
       $('#search').addEventListener('input', renderEventsList);
       $('#btn-view-list').addEventListener('click', () => switchScheduleView('list'));
@@ -641,7 +617,10 @@ function applyHtmlTranslations() {
         if (e.target.id === 'btnProfile' || e.target.closest('#btnProfile') || e.target.id === 'userName') window.location.href = 'profile.html';
       });
 
-      await initAuth({
+      // === OPTIMIZATION: PARALLEL LOADING ===
+      
+      // 1. Start Auth (Session Check)
+      const authPromise = initAuth({
         onAuthReady: () => renderHeader(authState, t, state.language),
         onAuthChange: async () => {
           renderHeader(authState, t, state.language);
@@ -653,24 +632,31 @@ function applyHtmlTranslations() {
         }
       });
 
-      await loadEvents();
+      // 2. Start Data Load (Immediately)
+      const dataPromise = loadEvents();
 
-      // Banners Subscription
+      // 3. Wait for both to handle Deep Links securely
+      await Promise.all([authPromise, dataPromise]);
+
+      const params = new URLSearchParams(window.location.search);
+      const eid = params.get("event") || params.get("e");
+      if (eid && eventLogic) {
+        if (authState.session) eventLogic.openEvent(eid);
+        else { authState.pendingDeepLinkEventId = eid; setFlash(localTr('auth.required')); }
+      }
+
+      // Subscriptions
       supabase.channel('public:banners').on('postgres_changes', { event: '*', schema: 'public', table: 'banners' }, async () => {
         const { data } = await supabase.from("banners").select("*").eq("is_active", true).limit(1).maybeSingle();
         state.activeBanner = data;
         renderBanner();
       }).subscribe();
 
-      // Events Subscription
       supabase.channel('public:events').on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, loadEvents).subscribe();
-
-      // NEW: Event Speakers Subscription (to trigger live update of pills)
       supabase.channel('public:event_speakers').on('postgres_changes', { event: '*', schema: 'public', table: 'event_speakers' }, loadEvents).subscribe();
-
-      applyHtmlTranslations();
     })();
   </script>
+
   <!-- ================= AUTH GATE MODAL ================= -->
   <div id="authGateModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
     <!-- Backdrop -->
@@ -716,6 +702,4 @@ function applyHtmlTranslations() {
   </div>
 
 </body>
-
-
 </html>

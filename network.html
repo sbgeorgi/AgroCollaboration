@@ -291,11 +291,13 @@
         const debounce = (fn, ms = 200) => { let t = null; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
         async function loadNetworkData() {
+            // OPTIMIZED QUERY: Fetch only specific columns needed for graph/table
             const [profiles, speakers, events] = await Promise.all([
-                supabase.from('profiles').select('*').order('full_name'),
+                supabase.from('profiles').select('id, full_name, avatar_url, affiliation, fields_of_study, country, role, collaborators').order('full_name'),
                 supabase.from('event_speakers').select('event_id, profile_id'),
                 supabase.from('events').select('id, title_en, title_es, start_time, topic_tags').order('start_time', { ascending: false })
             ]);
+
             state.members = profiles.data || [];
             state.members.forEach(m => state.profileById.set(m.id, m));
             (events.data || []).forEach(e => state.eventsById.set(e.id, e));
@@ -423,7 +425,7 @@
             clusters.sort((a, b) => b.list.length - a.list.length);
 
             // Tighter Packing Ratio (Square/Wide)
-            const aspectRatio = 2.0; 
+            const aspectRatio = 3.5; 
             const TARGET_ROW_WIDTH = Math.sqrt(totalStageArea * aspectRatio) + 500;
             const CLUSTER_GAP = 220;
 
@@ -473,7 +475,7 @@
             dockMembers.sort((a,b) => (a.full_name||"").localeCompare(b.full_name||""));
             
             // Position Dock to the left of the leftmost stage element
-            const DOCK_X = (minStageX || -2500) - 2400; 
+            const DOCK_X = (minStageX || -900) - 800; 
             const DOCK_ITEM_H = 40; // Overlap factor
             const totalDockH = dockMembers.length * DOCK_ITEM_H;
             
@@ -767,17 +769,6 @@
                 }
             });
 
-            await initAuth({
-                onAuthReady: async () => {
-                    renderHeader(authState, t, state.lang);
-                    $('#signinGate').style.display = 'none';
-                    applyI18n(t, state.lang);
-                    await loadNetworkData();
-                    $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
-                },
-                onAuthChange: () => renderHeader(authState, t, state.lang)
-            });
-
             $$('[data-role]').forEach(b => b.onclick = e => {
                 $$('[data-role]').forEach(x => { x.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"; });
                 e.target.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white";
@@ -850,6 +841,35 @@
             cv.ontouchend = () => { state.isDragging = false; };
 
             lucide.createIcons();
+
+            // === OPTIMIZATION: PARALLEL EXECUTION ===
+            
+            // 1. Start Auth (Updates Header)
+            const authPromise = initAuth({
+                onAuthReady: () => {
+                    renderHeader(authState, t, state.lang);
+                    applyI18n(t, state.lang);
+                },
+                onAuthChange: () => renderHeader(authState, t, state.lang)
+            });
+
+            // 2. Start Data Load (Simultaneously)
+            // Note: If RLS blocks this because user isn't logged in yet, it will return empty data,
+            // which is handled by the gate showing up below.
+            const dataPromise = loadNetworkData();
+
+            // 3. Wait for both
+            await Promise.all([authPromise, dataPromise]);
+
+            // 4. Finalize UI State
+            $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
+
+            // 5. Determine if we show the gate or the content
+            if (!authState.session) {
+                $('#signinGate').style.display = 'flex';
+            } else {
+                $('#signinGate').style.display = 'none';
+            }
         })();
     </script>
 </body>

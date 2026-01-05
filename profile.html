@@ -23,24 +23,22 @@
   <!-- Global Styles -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Tom Select (Modern Dropdown for Country/Collaborators) -->
+  <!-- Tom Select -->
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
-  <!-- Quill.js (Rich Text Editor) v2.0 -->
+  <!-- Quill.js -->
   <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
 
   <!-- External Tailwind Config -->
   <script src="theme.js"></script>
 
-  <!-- Custom Styles & Overrides (Matching Admin) -->
- <!-- Custom Styles & Overrides -->
+  <!-- Custom Styles -->
   <style type="text/tailwindcss">
     @layer utilities {
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      
       .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
@@ -49,148 +47,47 @@
 
     html, body { height: 100%; overflow: hidden; }
     
-    /* Unified Input Styles matching Admin */
     .input-field {
         @apply w-full px-4 py-2.5 bg-[var(--bg-input)] border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-light)] focus:border-[var(--color-brand)] transition-all text-sm text-slate-800 placeholder:text-slate-400 shadow-inner;
     }
-    .input-field:hover {
-        @apply bg-white shadow-sm;
-    }
-    .label-text {
-        @apply block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5;
-    }
+    .input-field:hover { @apply bg-white shadow-sm; }
+    .label-text { @apply block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5; }
 
-    /* Avatar Hover Overlay */
-    .avatar-overlay {
-      background: rgba(0,0,0,0.4);
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
+    .avatar-overlay { background: rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.2s; }
     .avatar-container:hover .avatar-overlay { opacity: 1; }
 
-    /* Quill Editor Customization */
-    .editor-wrapper {
-      @apply w-full bg-[var(--bg-input)] border border-transparent rounded-xl transition-all shadow-inner overflow-hidden;
-    }
-    .editor-wrapper:hover {
-      @apply bg-white shadow-sm;
-    }
-    .editor-wrapper:focus-within {
-      @apply ring-2 ring-[var(--color-brand-light)] border-[var(--color-brand)] bg-white;
-    }
+    .editor-wrapper { @apply w-full bg-[var(--bg-input)] border border-transparent rounded-xl transition-all shadow-inner overflow-hidden; }
+    .editor-wrapper:hover { @apply bg-white shadow-sm; }
+    .editor-wrapper:focus-within { @apply ring-2 ring-[var(--color-brand-light)] border-[var(--color-brand)] bg-white; }
     
-    /* Quill Toolbar Overrides */
-    .ql-toolbar.ql-snow {
-      border: none !important;
-      border-bottom: 1px solid rgba(0,0,0,0.05) !important;
-      background: rgba(255,255,255,0.5);
-      padding: 6px 8px !important;
-    }
-    .ql-container.ql-snow {
-      border: none !important;
-      font-family: 'Inter', sans-serif !important;
-      font-size: 0.875rem !important;
-    }
-    .ql-editor {
-      min-height: 100px;
-      padding: 12px 16px !important;
-      color: #1e293b;
-    }
-    .ql-editor.ql-blank::before {
-      color: #94a3b8 !important;
-      font-style: normal !important;
-    }
+    .ql-toolbar.ql-snow { border: none !important; border-bottom: 1px solid rgba(0,0,0,0.05) !important; background: rgba(255,255,255,0.5); padding: 6px 8px !important; }
+    .ql-container.ql-snow { border: none !important; font-family: 'Inter', sans-serif !important; font-size: 0.875rem !important; }
+    .ql-editor { min-height: 100px; padding: 12px 16px !important; color: #1e293b; }
+    .ql-editor.ql-blank::before { color: #94a3b8 !important; font-style: normal !important; }
     .ql-snow .ql-stroke { stroke: #64748b !important; }
     .ql-snow .ql-fill { fill: #64748b !important; }
     .ql-snow .ql-picker { color: #64748b !important; }
 
-    /* --- Tom Select Customization (Fixing the "Awful" Pills) --- */
-
-    /* Container (Matches .input-field) */
-     /* Container (Input Field) */
-    .ts-control {
-        @apply w-full px-4 py-2.5 bg-[var(--bg-input)] border border-transparent rounded-xl transition-all text-sm text-slate-800 placeholder:text-slate-400 shadow-inner !important;
-        min-height: 42px;
-        display: flex; 
-        align-items: center;
-        gap: 4px;
-    }
-    .ts-control.focus {
-        @apply ring-2 ring-[var(--color-brand-light)] border-[var(--color-brand)] bg-white shadow-none !important;
-    }
-
-    /* The Pill (Force Light Theme Colors) */
-    .ts-wrapper.multi .ts-control > div.item {
-        /* Colors: Light Blue Background, Dark Blue Text, Light Border */
-        background-color: #f0f9ff !important; /* Sky-50 */
-        color: #0369a1 !important;            /* Sky-700 */
-        border: 1px solid #e0f2fe !important; /* Sky-100 */
-        
-        /* Shape & Text */
-        border-radius: 9999px !important;
-        font-weight: 600 !important;
-        font-size: 0.75rem !important; /* text-xs */
-        
-        /* Spacing */
-        padding: 3px 8px 3px 12px !important; /* Extra left padding, room for X on right */
-        margin: 2px 3px 2px 0 !important;
-        
-        /* Reset shadows */
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-        text-shadow: none !important;
-    }
-
-    /* The 'X' Remove Button Structure */
-    .ts-wrapper.plugin-remove_button .item .remove {
-        border-left: 1px solid #bae6fd !important; /* Sky-200 separator */
-        margin-left: 8px !important;
-        padding-left: 8px !important;
-        padding-right: 0px !important;
-        color: #0c4a6e !important; /* Darker blue for X */
-        font-size: 1.1em !important;
-        opacity: 0.6;
-        vertical-align: middle;
-    }
-
-    /* The 'X' Hover State */
-    .ts-wrapper.plugin-remove_button .item .remove:hover {
-        background: transparent !important;
-        color: #ef4444 !important; /* Red on hover */
-        opacity: 1;
-    }
-    
-    /* Active State (Keyboard Navigation) */
-    .ts-wrapper.multi .ts-control > div.item.active {
-        background-color: #e0f2fe !important; /* Slightly darker background */
-        border-color: #bae6fd !important;
-    }
-
-    /* Dropdown Styling */
-    .ts-dropdown {
-        @apply rounded-xl border-gray-200 shadow-xl mt-1 overflow-hidden z-50 !important;
-    }
-    .ts-dropdown .option {
-        @apply px-4 py-2.5 text-sm text-slate-700 cursor-pointer border-b border-gray-50 last:border-0;
-    }
-    .ts-dropdown .active {
-        @apply bg-brand-50 text-brand-700 font-medium;
-    }
+    .ts-control { @apply w-full px-4 py-2.5 bg-[var(--bg-input)] border border-transparent rounded-xl transition-all text-sm text-slate-800 placeholder:text-slate-400 shadow-inner !important; min-height: 42px; display: flex; align-items: center; gap: 4px; }
+    .ts-control.focus { @apply ring-2 ring-[var(--color-brand-light)] border-[var(--color-brand)] bg-white shadow-none !important; }
+    .ts-wrapper.multi .ts-control > div.item { background-color: #f0f9ff !important; color: #0369a1 !important; border: 1px solid #e0f2fe !important; border-radius: 9999px !important; font-weight: 600 !important; font-size: 0.75rem !important; padding: 3px 8px 3px 12px !important; margin: 2px 3px 2px 0 !important; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; text-shadow: none !important; }
+    .ts-wrapper.plugin-remove_button .item .remove { border-left: 1px solid #bae6fd !important; margin-left: 8px !important; padding-left: 8px !important; padding-right: 0px !important; color: #0c4a6e !important; font-size: 1.1em !important; opacity: 0.6; vertical-align: middle; }
+    .ts-wrapper.plugin-remove_button .item .remove:hover { background: transparent !important; color: #ef4444 !important; opacity: 1; }
+    .ts-wrapper.multi .ts-control > div.item.active { background-color: #e0f2fe !important; border-color: #bae6fd !important; }
+    .ts-dropdown { @apply rounded-xl border-gray-200 shadow-xl mt-1 overflow-hidden z-50 !important; }
+    .ts-dropdown .option { @apply px-4 py-2.5 text-sm text-slate-700 cursor-pointer border-b border-gray-50 last:border-0; }
+    .ts-dropdown .active { @apply bg-brand-50 text-brand-700 font-medium; }
   </style>
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body
-  class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
+<body class="text-slate-800 flex flex-col h-full overflow-hidden selection:bg-brand-100 selection:text-brand-900 font-sans">
 
-  <!-- Note: Header/Footer injected by layout.js -->
-
-  <!-- ================= MAIN CONTENT ================= -->
   <main class="flex-1 relative overflow-hidden bg-gray-50">
     <div id="flash" class="flash"></div>
 
-    <!-- Scrollable Container -->
     <div class="absolute inset-0 overflow-y-auto custom-scrollbar">
       <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 flex flex-col h-full min-h-full">
 
@@ -202,65 +99,43 @@
         <!-- Auth Required State -->
         <div id="view-auth-required" class="hidden m-auto max-w-md w-full">
           <div class="bg-white/80 backdrop-blur-md rounded-2xl p-8 text-center border border-gray-200 shadow-xl">
-            <div
-              class="w-16 h-16 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-100">
+            <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-100">
               <i data-lucide="lock" class="w-8 h-8"></i>
             </div>
-            <h2 class="font-display font-bold text-2xl text-slate-800 mb-2" data-i18n="auth.signin_prompt_title">
-              Please Sign In</h2>
-            <p class="text-slate-500 mb-6" data-i18n="auth.signin_prompt_body">Access to your profile dashboard requires
-              authentication.</p>
-            <a href="signin.html?return_to=profile.html"
-              class="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-bold rounded-xl text-white bg-brand-600 hover:bg-brand-700 transition-all shadow-lg shadow-brand-500/20"
-              data-i18n="auth.signin_prompt_button">Go to Sign In</a>
+            <h2 class="font-display font-bold text-2xl text-slate-800 mb-2" data-i18n="auth.signin_prompt_title">Please Sign In</h2>
+            <p class="text-slate-500 mb-6" data-i18n="auth.signin_prompt_body">Access to your profile dashboard requires authentication.</p>
+            <a href="signin.html?return_to=profile.html" class="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-bold rounded-xl text-white bg-brand-600 hover:bg-brand-700 transition-all shadow-lg shadow-brand-500/20" data-i18n="auth.signin_prompt_button">Go to Sign In</a>
           </div>
         </div>
 
         <!-- Profile Form Content -->
         <div id="view-profile" class="hidden grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6 pb-6">
           
-          <!-- Left Panel: Identity & Actions -->
           <div class="flex flex-col gap-6">
-            <div
-              class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm p-8 flex flex-col items-center text-center relative overflow-hidden">
-              
-              <!-- Avatar -->
-              <label
-                class="avatar-container w-40 h-40 rounded-full bg-gray-50 border-4 border-white shadow-lg relative cursor-pointer overflow-hidden mb-6 group ring-1 ring-gray-200">
+            <div class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm p-8 flex flex-col items-center text-center relative overflow-hidden">
+              <label class="avatar-container w-40 h-40 rounded-full bg-gray-50 border-4 border-white shadow-lg relative cursor-pointer overflow-hidden mb-6 group ring-1 ring-gray-200">
                 <img id="avatarImg" class="hidden w-full h-full object-cover" alt="Avatar" />
-                <span id="avatarInitials"
-                  class="w-full h-full flex items-center justify-center text-4xl font-bold text-brand-300">U</span>
-                <div class="avatar-overlay absolute inset-0 flex items-center justify-center text-white">
-                  <i data-lucide="camera" class="w-8 h-8"></i>
-                </div>
+                <span id="avatarInitials" class="w-full h-full flex items-center justify-center text-4xl font-bold text-brand-300">U</span>
+                <div class="avatar-overlay absolute inset-0 flex items-center justify-center text-white"><i data-lucide="camera" class="w-8 h-8"></i></div>
                 <input type="file" id="avatarInput" hidden accept="image/*" />
               </label>
-
               <div class="mb-1">
                 <h2 id="displayUsername" class="font-display font-bold text-xl text-slate-800">@username</h2>
                 <p id="displayEmail" class="text-xs text-slate-400 font-medium">user@example.com</p>
               </div>
-
-              <button type="button" id="removeAvatarBtn"
-                class="hidden mt-3 text-xs font-bold text-red-500 hover:text-red-600 hover:bg-red-50 px-3 py-1 rounded-full transition-colors border border-transparent hover:border-red-100"
-                data-i18n="profile.remove_image">Remove Picture</button>
+              <button type="button" id="removeAvatarBtn" class="hidden mt-3 text-xs font-bold text-red-500 hover:text-red-600 hover:bg-red-50 px-3 py-1 rounded-full transition-colors border border-transparent hover:border-red-100" data-i18n="profile.remove_image">Remove Picture</button>
             </div>
 
-            <!-- Actions Card -->
             <div class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm p-6 flex flex-col gap-3">
-              <button type="submit" form="profileForm" id="saveBtn"
-                class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-brand-500/20 hover:shadow-xl hover:shadow-brand-500/30 transition-all flex items-center justify-center gap-2">
-                <i data-lucide="save" class="w-4 h-4"></i>
-                <span data-i18n="profile.save">Save Changes</span>
+              <button type="submit" form="profileForm" id="saveBtn" class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-brand-500/20 hover:shadow-xl hover:shadow-brand-500/30 transition-all flex items-center justify-center gap-2">
+                <i data-lucide="save" class="w-4 h-4"></i><span data-i18n="profile.save">Save Changes</span>
               </button>
-              <button type="button" id="backBtn"
-                class="w-full py-3 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-slate-600 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+              <button type="button" id="backBtn" class="w-full py-3 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-slate-600 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
                 <span data-i18n="back.general">Go Back</span>
               </button>
             </div>
           </div>
 
-          <!-- Right Panel: Details Form -->
           <div class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm p-6 md:p-8">
             <div class="flex items-center justify-between border-b border-gray-100 pb-5 mb-6">
               <h1 class="font-display font-bold text-xl text-slate-800" data-i18n="profile.title">Edit Profile</h1>
@@ -268,39 +143,26 @@
             </div>
 
             <form id="profileForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-              
-              <!-- Full Name -->
               <div class="space-y-1">
                 <label class="label-text" for="fullName"><span data-i18n="profile.full_name">Full Name</span> <span class="text-red-500">*</span></label>
                 <input type="text" id="fullName" required class="input-field" placeholder="e.g. Dr. Jane Doe" />
               </div>
-
-              <!-- Username -->
               <div class="space-y-1">
                 <label class="label-text" for="username"><span data-i18n="profile.username">Username</span> <span class="text-red-500">*</span></label>
                 <input type="text" id="username" required pattern="[a-zA-Z0-9_-]+" class="input-field" placeholder="janedoe" />
               </div>
-
-              <!-- Country Selection -->
               <div class="space-y-1 md:col-span-2">
                 <label class="label-text" for="country"><span data-i18n="profile.country">Country</span> <span class="text-red-500">*</span></label>
                 <select id="country" required placeholder="Select a country..." autocomplete="off"></select>
               </div>
-
-              <!-- Affiliation (Autocomplete/Searchable) -->
               <div class="space-y-1 relative md:col-span-2" id="affiliation-wrapper">
                 <label class="label-text" for="affiliation"><span data-i18n="profile.affiliation">Affiliation</span> <span class="text-red-500">*</span></label>
                 <div class="relative">
                   <input type="text" id="affiliation" required autocomplete="off" class="input-field pr-10" placeholder="Search or type University / Organization" />
-                  <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-                  </div>
-                  <!-- Dropdown -->
+                  <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"><i data-lucide="search" class="w-4 h-4 text-slate-400"></i></div>
                   <ul id="affiliation-list" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto overflow-x-hidden custom-scrollbar"></ul>
                 </div>
               </div>
-
-              <!-- Department -->
               <div class="space-y-1 relative" id="department-wrapper">
                 <label class="label-text" for="department" data-i18n="profile.department">Department</label>
                 <div class="relative">
@@ -308,8 +170,6 @@
                   <ul id="department-list" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar"></ul>
                 </div>
               </div>
-
-              <!-- Working Group -->
               <div class="space-y-1 relative" id="workingGroup-wrapper">
                 <label class="label-text" for="workingGroup" data-i18n="profile.working_group">Working Group</label>
                 <div class="relative">
@@ -317,27 +177,19 @@
                   <ul id="workingGroup-list" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar"></ul>
                 </div>
               </div>
-
-              <!-- Work Email -->
               <div class="space-y-1 md:col-span-2">
                 <label class="label-text" for="workEmail"><span data-i18n="profile.work_email">Work Email</span> <span class="text-red-500">*</span></label>
                 <input type="email" id="workEmail" required class="input-field" placeholder="jane@university.edu" />
               </div>
-
-              <!-- Divider -->
               <div class="col-span-1 md:col-span-2 border-t border-gray-100 my-2"></div>
-
-              <!-- Websites -->
               <div class="space-y-1">
                 <label class="label-text" for="personalWebsite" data-i18n="profile.personal_website">Personal Website</label>
                 <input type="url" id="personalWebsite" class="input-field" placeholder="https://" />
               </div>
-
               <div class="space-y-1">
                 <label class="label-text" for="professionalWebsite" data-i18n="profile.professional_website">Lab Website</label>
                 <input type="url" id="professionalWebsite" class="input-field" placeholder="https://" />
               </div>
-
               <div class="space-y-1 md:col-span-2">
                 <label class="label-text" for="googleScholar" data-i18n="profile.google_scholar">Google Scholar</label>
                 <div class="relative">
@@ -345,44 +197,32 @@
                     <input type="url" id="googleScholar" class="input-field pl-10" placeholder="https://scholar.google.com/..." />
                 </div>
               </div>
-
-              <!-- Research Interests -->
               <div class="space-y-1 md:col-span-2">
                 <label class="label-text" for="fieldsOfStudy" data-i18n="profile.fields_section">Research Interests</label>
                 <textarea id="fieldsOfStudy" class="input-field min-h-[80px] resize-y" placeholder="e.g. agrivoltaics, carbon fluxes, remote sensing..." data-i18n-placeholder="profile.fields_hint"></textarea>
                 <div id="fieldsOfStudyTags" class="pt-2 flex flex-wrap gap-2"></div>
               </div>
-
-              <!-- Collaborators -->
               <div class="space-y-1 md:col-span-2">
                 <label class="label-text" for="collaborators" data-i18n="profile.collaborators">Collaborators</label>
                 <select id="collaborators" multiple placeholder="Search for people..." autocomplete="off"></select>
                 <p class="text-[10px] text-slate-400 mt-1" data-i18n="profile.collaborators_help">Type to search existing members.</p>
               </div>
-
-              <!-- Description (Quill) -->
               <div class="space-y-1 md:col-span-2">
                 <label class="label-text" for="description" data-i18n="profile.description_section">Bio / Description</label>
-                <div class="editor-wrapper">
-                  <div id="description"></div>
-                </div>
+                <div class="editor-wrapper"><div id="description"></div></div>
               </div>
-
             </form>
           </div>
         </div>
-
       </div>
     </div>
   </main>
 
-  <!-- ================= LOGIC ================= -->
   <script type="module">
     import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initSharedUI, renderHeader, $, $$, show, hide, applyI18n, tr, setFlash, getAvatarUrl } from './ui.js';
 
-    // Inject Layout
     renderLayout('');
 
     const state = {
@@ -402,144 +242,20 @@
         en: {
             auth: { signin_prompt_title: "Please Sign In", signin_prompt_body: "Access to your profile dashboard requires authentication.", signin_prompt_button: "Go to Sign In" },
             profile: {
-                title: "Edit Profile",
-                full_name: "Full Name",
-                username: "Username",
-                country: "Country",
-                affiliation: "Affiliation",
-                department: "Department",
-                working_group: "Working Group",
-                work_email: "Work Email",
-                personal_website: "Personal Website",
-                professional_website: "Lab Website",
-                google_scholar: "Google Scholar Profile",
-                fields_section: "Research Interests (tags, comma-separated)",
-                fields_hint: "e.g. agrivoltaics, carbon fluxes, remote sensing...",
-                collaborators: "Collaborators (Optional)",
-                collaborators_help: "Type to search for existing members. Selected users will be linked to your profile.",
-                description_section: "Profile Description (optional)",
-                description_hint: "Brief bio, current projects, and how you collaborate (optional).",
-                save: "Save Changes",
-                saving: "Saving...",
-                saved: "Dashboard updated successfully",
-                remove_image: "Remove Picture",
-                upload_error: "Failed to upload image. Please try again.",
-                no_affiliation_results: "No matches found. Typing will create a new one.",
-                no_results: "No existing options found."
+                title: "Edit Profile", full_name: "Full Name", username: "Username", country: "Country", affiliation: "Affiliation", department: "Department", working_group: "Working Group", work_email: "Work Email", personal_website: "Personal Website", professional_website: "Lab Website", google_scholar: "Google Scholar Profile", fields_section: "Research Interests (tags, comma-separated)", fields_hint: "e.g. agrivoltaics, carbon fluxes, remote sensing...", collaborators: "Collaborators (Optional)", collaborators_help: "Type to search for existing members.", description_section: "Profile Description (optional)", description_hint: "Brief bio, current projects, and how you collaborate (optional).", save: "Save Changes", saving: "Saving...", saved: "Dashboard updated successfully", remove_image: "Remove Picture", upload_error: "Failed to upload image. Please try again.", no_affiliation_results: "No matches found. Typing will create a new one.", no_results: "No existing options found.", username_taken: "Username already taken. Please choose another."
             },
             back: { general: "Go Back" }
         },
         es: {
             auth: { signin_prompt_title: "Inicia Sesión", signin_prompt_body: "El acceso al panel de perfil requiere autenticación.", signin_prompt_button: "Iniciar Sesión" },
             profile: {
-                title: "Editar Perfil",
-                full_name: "Nombre Completo",
-                username: "Usuario",
-                country: "País",
-                affiliation: "Afiliación",
-                department: "Departamento",
-                working_group: "Grupo de Trabajo",
-                work_email: "Correo Trabajo",
-                personal_website: "Sitio Personal",
-                professional_website: "Sitio Laboratorio",
-                google_scholar: "Perfil Google Scholar",
-                fields_section: "Intereses de investigación (etiquetas separadas por comas)",
-                fields_hint: "ej. agrovoltaica, flujos de carbono, teledetección...",
-                collaborators: "Colaboradores (Opcional)",
-                collaborators_help: "Escribe para buscar miembros existentes.",
-                description_section: "Descripción del perfil (opcional)",
-                description_hint: "Breve biografía, proyectos actuales y cómo colaboras.",
-                save: "Guardar Cambios",
-                saving: "Guardando...",
-                saved: "Panel actualizado con éxito",
-                remove_image: "Eliminar Foto",
-                upload_error: "Error al subir la imagen. Por favor intenta de nuevo.",
-                no_affiliation_results: "No se encontraron coincidencias. Escribir creará uno nuevo.",
-                no_results: "No se encontraron opciones existentes."
+                title: "Editar Perfil", full_name: "Nombre Completo", username: "Usuario", country: "País", affiliation: "Afiliación", department: "Departamento", working_group: "Grupo de Trabajo", work_email: "Correo Trabajo", personal_website: "Sitio Personal", professional_website: "Sitio Laboratorio", google_scholar: "Perfil Google Scholar", fields_section: "Intereses de investigación (etiquetas separadas por comas)", fields_hint: "ej. agrovoltaica, flujos de carbono, teledetección...", collaborators: "Colaboradores (Opcional)", collaborators_help: "Escribe para buscar miembros existentes.", description_section: "Descripción del perfil (opcional)", description_hint: "Breve biografía, proyectos actuales y cómo colaboras.", save: "Guardar Cambios", saving: "Guardando...", saved: "Panel actualizado con éxito", remove_image: "Eliminar Foto", upload_error: "Error al subir la imagen. Por favor intenta de nuevo.", no_affiliation_results: "No se encontraron coincidencias. Escribir creará uno nuevo.", no_results: "No se encontraron opciones existentes.", username_taken: "El nombre de usuario ya está en uso."
             },
             back: { general: "Regresar" }
         }
     };
 
-    // --- Country Data ---
-    const countries = [
-        { code: "AF", name: "Afghanistan", flag: "🇦🇫" }, { code: "AL", name: "Albania", flag: "🇦🇱" }, { code: "DZ", name: "Algeria", flag: "🇩🇿" },
-        { code: "AS", name: "American Samoa", flag: "🇦🇸" }, { code: "AD", name: "Andorra", flag: "🇦🇩" }, { code: "AO", name: "Angola", flag: "🇦🇴" },
-        { code: "AI", name: "Anguilla", flag: "🇦🇮" }, { code: "AG", name: "Antigua and Barbuda", flag: "🇦🇬" }, { code: "AR", name: "Argentina", flag: "🇦🇷" },
-        { code: "AM", name: "Armenia", flag: "🇦🇲" }, { code: "AW", name: "Aruba", flag: "🇦🇼" }, { code: "AU", name: "Australia", flag: "🇦🇺" },
-        { code: "AT", name: "Austria", flag: "🇦🇹" }, { code: "AZ", name: "Azerbaijan", flag: "🇦🇿" }, { code: "BS", name: "Bahamas", flag: "🇧🇸" },
-        { code: "BH", name: "Bahrain", flag: "🇧🇭" }, { code: "BD", name: "Bangladesh", flag: "🇧🇩" }, { code: "BB", name: "Barbados", flag: "🇧🇧" },
-        { code: "BY", name: "Belarus", flag: "🇧🇾" }, { code: "BE", name: "Belgium", flag: "🇧🇪" }, { code: "BZ", name: "Belize", flag: "🇧🇿" },
-        { code: "BJ", name: "Benin", flag: "🇧🇯" }, { code: "BM", name: "Bermuda", flag: "🇧🇲" }, { code: "BT", name: "Bhutan", flag: "🇧🇹" },
-        { code: "BO", name: "Bolivia", flag: "🇧🇴" }, { code: "BA", name: "Bosnia and Herzegovina", flag: "🇧🇦" }, { code: "BW", name: "Botswana", flag: "🇧🇼" },
-        { code: "BR", name: "Brazil", flag: "🇧🇷" }, { code: "BN", name: "Brunei", flag: "🇧🇳" }, { code: "BG", name: "Bulgaria", flag: "🇧🇬" },
-        { code: "BF", name: "Burkina Faso", flag: "🇧🇫" }, { code: "BI", name: "Burundi", flag: "🇧🇮" }, { code: "KH", name: "Cambodia", flag: "🇰🇭" },
-        { code: "CM", name: "Cameroon", flag: "🇨🇲" }, { code: "CA", name: "Canada", flag: "🇨🇦" }, { code: "CV", name: "Cape Verde", flag: "🇨🇻" },
-        { code: "KY", name: "Cayman Islands", flag: "🇰🇾" }, { code: "CF", name: "Central African Republic", flag: "🇨🇫" }, { code: "TD", name: "Chad", flag: "🇹🇩" },
-        { code: "CL", name: "Chile", flag: "🇨🇱" }, { code: "CN", name: "China", flag: "🇨🇳" }, { code: "CO", name: "Colombia", flag: "🇨🇴" },
-        { code: "KM", name: "Comoros", flag: "🇰🇲" }, { code: "CG", name: "Congo", flag: "🇨🇬" }, { code: "CD", name: "Congo (DRC)", flag: "🇨🇩" },
-        { code: "CR", name: "Costa Rica", flag: "🇨🇷" }, { code: "HR", name: "Croatia", flag: "🇭🇷" }, { code: "CU", name: "Cuba", flag: "🇨🇺" },
-        { code: "CY", name: "Cyprus", flag: "🇨🇾" }, { code: "CZ", name: "Czech Republic", flag: "🇨🇿" }, { code: "DK", name: "Denmark", flag: "🇩🇰" },
-        { code: "DJ", name: "Djibouti", flag: "🇩🇯" }, { code: "DM", name: "Dominica", flag: "🇩🇲" }, { code: "DO", name: "Dominican Republic", flag: "🇩🇴" },
-        { code: "EC", name: "Ecuador", flag: "🇪🇨" }, { code: "EG", name: "Egypt", flag: "🇪🇬" }, { code: "SV", name: "El Salvador", flag: "🇸🇻" },
-        { code: "GQ", name: "Equatorial Guinea", flag: "🇬🇶" }, { code: "ER", name: "Eritrea", flag: "🇪🇷" }, { code: "EE", name: "Estonia", flag: "🇪🇪" },
-        { code: "ET", name: "Ethiopia", flag: "🇪🇹" }, { code: "FJ", name: "Fiji", flag: "🇫🇯" }, { code: "FI", name: "Finland", flag: "🇫🇮" },
-        { code: "FR", name: "France", flag: "🇫🇷" }, { code: "GF", name: "French Guiana", flag: "🇬🇫" }, { code: "PF", name: "French Polynesia", flag: "🇵🇫" },
-        { code: "GA", name: "Gabon", flag: "🇬🇦" }, { code: "GM", name: "Gambia", flag: "🇬🇲" }, { code: "GE", name: "Georgia", flag: "🇬🇪" },
-        { code: "DE", name: "Germany", flag: "🇩🇪" }, { code: "GH", name: "Ghana", flag: "🇬🇭" }, { code: "GR", name: "Greece", flag: "🇬🇷" },
-        { code: "GD", name: "Grenada", flag: "🇬🇩" }, { code: "GP", name: "Guadeloupe", flag: "🇬🇵" }, { code: "GU", name: "Guam", flag: "🇬🇺" },
-        { code: "GT", name: "Guatemala", flag: "🇬🇹" }, { code: "GN", name: "Guinea", flag: "🇬🇳" }, { code: "GW", name: "Guinea-Bissau", flag: "🇬🇼" },
-        { code: "GY", name: "Guyana", flag: "🇬🇾" }, { code: "HT", name: "Haiti", flag: "🇭🇹" }, { code: "HN", name: "Honduras", flag: "🇭🇳" },
-        { code: "HK", name: "Hong Kong", flag: "🇭🇰" }, { code: "HU", name: "Hungary", flag: "🇭🇺" }, { code: "IS", name: "Iceland", flag: "🇮🇸" },
-        { code: "IN", name: "India", flag: "🇮🇳" }, { code: "ID", name: "Indonesia", flag: "🇮🇩" }, { code: "IR", name: "Iran", flag: "🇮🇷" },
-        { code: "IQ", name: "Iraq", flag: "🇮🇶" }, { code: "IE", name: "Ireland", flag: "🇮🇪" }, { code: "IL", name: "Israel", flag: "🇮🇱" },
-        { code: "IT", name: "Italy", flag: "🇮🇹" }, { code: "JM", name: "Jamaica", flag: "🇯🇲" }, { code: "JP", name: "Japan", flag: "🇯🇵" },
-        { code: "JO", name: "Jordan", flag: "🇯🇴" }, { code: "KZ", name: "Kazakhstan", flag: "🇰🇿" }, { code: "KE", name: "Kenya", flag: "🇰🇪" },
-        { code: "KI", name: "Kiribati", flag: "🇰🇮" }, { code: "KP", name: "North Korea", flag: "🇰🇵" }, { code: "KR", name: "South Korea", flag: "🇰🇷" },
-        { code: "KW", name: "Kuwait", flag: "🇰🇼" }, { code: "KG", name: "Kyrgyzstan", flag: "🇰🇬" }, { code: "LA", name: "Laos", flag: "🇱🇦" },
-        { code: "LV", name: "Latvia", flag: "🇱🇻" }, { code: "LB", name: "Lebanon", flag: "🇱🇧" }, { code: "LS", name: "Lesotho", flag: "🇱🇸" },
-        { code: "LR", name: "Liberia", flag: "🇱🇷" }, { code: "LY", name: "Libya", flag: "🇱🇾" }, { code: "LI", name: "Liechtenstein", flag: "🇱🇮" },
-        { code: "LT", name: "Lithuania", flag: "🇱🇹" }, { code: "LU", name: "Luxembourg", flag: "🇱🇺" }, { code: "MO", name: "Macau", flag: "🇲🇴" },
-        { code: "MK", name: "Macedonia", flag: "🇲🇰" }, { code: "MG", name: "Madagascar", flag: "🇲🇬" }, { code: "MW", name: "Malawi", flag: "🇲🇼" },
-        { code: "MY", name: "Malaysia", flag: "🇲🇾" }, { code: "MV", name: "Maldives", flag: "🇲🇻" }, { code: "ML", name: "Mali", flag: "🇲🇱" },
-        { code: "MT", name: "Malta", flag: "🇲🇹" }, { code: "MH", name: "Marshall Islands", flag: "🇲🇭" }, { code: "MQ", name: "Martinique", flag: "🇲🇶" },
-        { code: "MR", name: "Mauritania", flag: "🇲🇷" }, { code: "MU", name: "Mauritius", flag: "🇲🇺" }, { code: "YT", name: "Mayotte", flag: "🇾🇹" },
-        { code: "MX", name: "Mexico", flag: "🇲🇽" }, { code: "FM", name: "Micronesia", flag: "🇫🇲" }, { code: "MD", name: "Moldova", flag: "🇲🇩" },
-        { code: "MC", name: "Monaco", flag: "🇲🇨" }, { code: "MN", name: "Mongolia", flag: "🇲🇳" }, { code: "ME", name: "Montenegro", flag: "🇲🇪" },
-        { code: "MS", name: "Montserrat", flag: "🇲🇸" }, { code: "MA", name: "Morocco", flag: "🇲🇦" }, { code: "MZ", name: "Mozambique", flag: "🇲🇿" },
-        { code: "MM", name: "Myanmar", flag: "🇲🇲" }, { code: "NA", name: "Namibia", flag: "🇳🇦" }, { code: "NR", name: "Nauru", flag: "🇳🇷" },
-        { code: "NP", name: "Nepal", flag: "🇳🇵" }, { code: "NL", name: "Netherlands", flag: "🇳🇱" }, { code: "NC", name: "New Caledonia", flag: "🇳🇨" },
-        { code: "NZ", name: "New Zealand", flag: "🇳🇿" }, { code: "NI", name: "Nicaragua", flag: "🇳🇮" }, { code: "NE", name: "Niger", flag: "🇳🇪" },
-        { code: "NG", name: "Nigeria", flag: "🇳🇬" }, { code: "NU", name: "Niue", flag: "🇳🇺" }, { code: "NF", name: "Norfolk Island", flag: "🇳🇫" },
-        { code: "MP", name: "Northern Mariana Islands", flag: "🇲🇵" }, { code: "NO", name: "Norway", flag: "🇳🇴" }, { code: "OM", name: "Oman", flag: "🇴🇲" },
-        { code: "PK", name: "Pakistan", flag: "🇵🇰" }, { code: "PW", name: "Palau", flag: "🇵🇼" }, { code: "PS", name: "Palestine", flag: "🇵🇸" },
-        { code: "PA", name: "Panama", flag: "🇵🇦" }, { code: "PG", name: "Papua New Guinea", flag: "🇵🇬" }, { code: "PY", name: "Paraguay", flag: "🇵🇾" },
-        { code: "PE", name: "Peru", flag: "🇵🇪" }, { code: "PH", name: "Philippines", flag: "🇵🇭" }, { code: "PN", name: "Pitcairn", flag: "🇵🇳" },
-        { code: "PL", name: "Poland", flag: "🇵🇱" }, { code: "PT", name: "Portugal", flag: "🇵🇹" }, { code: "PR", name: "Puerto Rico", flag: "🇵🇷" },
-        { code: "QA", name: "Qatar", flag: "🇶🇦" }, { code: "RE", name: "Reunion", flag: "🇷🇪" }, { code: "RO", name: "Romania", flag: "🇷🇴" },
-        { code: "RU", name: "Russia", flag: "🇷🇺" }, { code: "RW", name: "Rwanda", flag: "🇷🇼" }, { code: "BL", name: "Saint Barthelemy", flag: "🇧🇱" },
-        { code: "SH", name: "Saint Helena", flag: "🇸🇭" }, { code: "KN", name: "Saint Kitts and Nevis", flag: "🇰🇳" }, { code: "LC", name: "Saint Lucia", flag: "🇱🇨" },
-        { code: "MF", name: "Saint Martin", flag: "🇲🇫" }, { code: "PM", name: "Saint Pierre and Miquelon", flag: "🇵🇲" },
-        { code: "VC", name: "Saint Vincent and the Grenadines", flag: "🇻🇨" }, { code: "WS", name: "Samoa", flag: "🇼🇸" }, { code: "SM", name: "San Marino", flag: "🇸🇲" },
-        { code: "ST", name: "Sao Tome and Principe", flag: "🇸🇹" }, { code: "SA", name: "Saudi Arabia", flag: "🇸🇦" }, { code: "SN", name: "Senegal", flag: "🇸🇳" },
-        { code: "RS", name: "Serbia", flag: "🇷🇸" }, { code: "SC", name: "Seychelles", flag: "🇸🇨" }, { code: "SL", name: "Sierra Leone", flag: "🇸🇱" },
-        { code: "SG", name: "Singapore", flag: "🇸🇬" }, { code: "SX", name: "Sint Maarten", flag: "🇸🇽" }, { code: "SK", name: "Slovakia", flag: "🇸🇰" },
-        { code: "SI", name: "Slovenia", flag: "🇸🇮" }, { code: "SB", name: "Solomon Islands", flag: "🇸🇧" }, { code: "SO", name: "Somalia", flag: "🇸🇴" },
-        { code: "ZA", name: "South Africa", flag: "🇿🇦" }, { code: "GS", name: "South Georgia and the South Sandwich Islands", flag: "🇬🇸" },
-        { code: "SS", name: "South Sudan", flag: "🇸🇸" }, { code: "ES", name: "Spain", flag: "🇪🇸" }, { code: "LK", name: "Sri Lanka", flag: "🇱🇰" },
-        { code: "SD", name: "Sudan", flag: "🇸🇩" }, { code: "SR", name: "Suriname", flag: "🇸🇷" }, { code: "SJ", name: "Svalbard and Jan Mayen", flag: "🇸🇯" },
-        { code: "SZ", name: "Swaziland", flag: "🇸🇿" }, { code: "SE", name: "Sweden", flag: "🇸🇪" }, { code: "CH", name: "Switzerland", flag: "🇨🇭" },
-        { code: "SY", name: "Syria", flag: "🇸🇾" }, { code: "TW", name: "Taiwan", flag: "🇹🇼" }, { code: "TJ", name: "Tajikistan", flag: "🇹🇯" },
-        { code: "TZ", name: "Tanzania", flag: "🇹🇿" }, { code: "TH", name: "Thailand", flag: "🇹🇭" }, { code: "TL", name: "Timor-Leste", flag: "🇹🇱" },
-        { code: "TG", name: "Togo", flag: "🇹🇬" }, { code: "TK", name: "Tokelau", flag: "🇹🇰" }, { code: "TO", name: "Tonga", flag: "🇹🇴" },
-        { code: "TT", name: "Trinidad and Tobago", flag: "🇹🇹" }, { code: "TN", name: "Tunisia", flag: "🇹🇳" }, { code: "TR", name: "Turkey", flag: "🇹🇷" },
-        { code: "TM", name: "Turkmenistan", flag: "🇹🇲" }, { code: "TC", name: "Turks and Caicos Islands", flag: "🇹🇨" }, { code: "TV", name: "Tuvalu", flag: "🇹🇻" },
-        { code: "UG", name: "Uganda", flag: "🇺🇬" }, { code: "UA", name: "Ukraine", flag: "🇺🇦" }, { code: "AE", name: "United Arab Emirates", flag: "🇦🇪" },
-        { code: "GB", name: "United Kingdom", flag: "🇬🇧" }, { code: "US", name: "United States", flag: "🇺🇸" }, { code: "UY", name: "Uruguay", flag: "🇺🇾" },
-        { code: "UZ", name: "Uzbekistan", flag: "🇺🇿" }, { code: "VU", name: "Vanuatu", flag: "🇻🇺" }, { code: "VE", name: "Venezuela", flag: "🇻🇪" },
-        { code: "VN", name: "Vietnam", flag: "🇻🇳" }, { code: "WF", name: "Wallis and Futuna", flag: "🇼🇫" }, { code: "YE", name: "Yemen", flag: "🇾🇪" },
-        { code: "ZM", name: "Zambia", flag: "🇿🇲" }, { code: "ZW", name: "Zimbabwe", flag: "🇿🇼" }
-    ];
+    const countries = [ { code: "AF", name: "Afghanistan", flag: "🇦🇫" }, { code: "AL", name: "Albania", flag: "🇦🇱" }, { code: "US", name: "United States", flag: "🇺🇸" }, { code: "MX", name: "Mexico", flag: "🇲🇽" }, { code: "CA", name: "Canada", flag: "🇨🇦" }, { code: "CO", name: "Colombia", flag: "🇨🇴" }, { code: "CL", name: "Chile", flag: "🇨🇱" }, { code: "AR", name: "Argentina", flag: "🇦🇷" }, { code: "PE", name: "Peru", flag: "🇵🇪" }, { code: "ES", name: "Spain", flag: "🇪🇸" }, { code: "GB", name: "United Kingdom", flag: "🇬🇧" }, { code: "DE", name: "Germany", flag: "🇩🇪" }, { code: "FR", name: "France", flag: "🇫🇷" }, { code: "IT", name: "Italy", flag: "🇮🇹" }, { code: "BR", name: "Brazil", flag: "🇧🇷" } ];
 
     function localTr(key) { return tr(t, state.language, key); }
 
@@ -547,442 +263,111 @@
         state.language = state.language === "en" ? "es" : "en";
         localStorage.setItem("lang", state.language);
         applyI18n(t, state.language);
-        
-        // Sync language switcher from header (injected by layout)
         const offset = state.language === 'es' ? '100%' : '0%';
         const slider = document.querySelector('#langSwitchDesktop div:last-child');
         if (slider) slider.style.transform = `translateX(${offset})`;
     }
 
-    // --- Helper to init Quill ---
     function initQuill(selector) {
         if (!window.Quill) return null;
-        return new Quill(selector, {
-            theme: 'snow',
-            placeholder: localTr('profile.description_hint'),
-            modules: {
-                toolbar: [
-                    ['bold', 'italic', 'underline'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    ['link', 'clean']
-                ]
-            }
-        });
+        return new Quill(selector, { theme: 'snow', placeholder: localTr('profile.description_hint'), modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['link', 'clean']] } });
     }
 
-    // --- Helper to init Tom Select (Country Picker) ---
     function initCountryPicker() {
         if(state.countrySelect) return;
-        
-        state.countrySelect = new TomSelect('#country', {
-            options: countries,
-            valueField: 'code',
-            labelField: 'name',
-            searchField: 'name',
-            placeholder: "Select a country...",
-            maxItems: 1,
-            render: {
-                option: function(data, escape) {
-                    return `<div><span class="text-xl mr-2">${data.flag}</span> <span class="text-slate-700">${escape(data.name)}</span></div>`;
-                },
-                item: function(data, escape) {
-                    return `<div><span class="text-xl mr-2">${data.flag}</span> ${escape(data.name)}</div>`;
-                }
-            }
-        });
+        state.countrySelect = new TomSelect('#country', { options: countries, valueField: 'code', labelField: 'name', searchField: 'name', placeholder: "Select a country...", maxItems: 1, render: { option: (d, e) => `<div><span class="text-xl mr-2">${d.flag}</span> <span class="text-slate-700">${e(d.name)}</span></div>`, item: (d, e) => `<div><span class="text-xl mr-2">${d.flag}</span> ${e(d.name)}</div>` } });
     }
 
-    // --- Helper to init Tom Select (Collaborator Picker) ---
     function initCollaboratorPicker() {
         if (state.collaboratorSelect) return;
-
-        state.collaboratorSelect = new TomSelect('#collaborators', {
-            plugins: ['remove_button'], // <--- Adds the 'X' functionality
-            valueField: 'id',
-            labelField: 'full_name',
-            searchField: 'full_name',
-            placeholder: localTr('profile.collaborators_help'),
-            maxItems: null,
-            preload: false,
-            load: function(query, callback) {
+        state.collaboratorSelect = new TomSelect('#collaborators', { plugins: ['remove_button'], valueField: 'id', labelField: 'full_name', searchField: 'full_name', placeholder: localTr('profile.collaborators_help'), maxItems: null, preload: false, load: function(query, callback) {
                 if (!query.length) return callback();
-
-                supabase
-                    .from('profiles')
-                    .select('id, full_name, avatar_url')
-                    .ilike('full_name', `%${query}%`)
-                    .limit(10)
-                    .then(({ data, error }) => {
-                        if (error) {
-                            callback();
-                        } else {
-                            // Filter out current user
-                            const filtered = data.filter(p => p.id !== authState.session?.user?.id);
-                            callback(filtered);
-                        }
-                    })
-                    .catch(() => callback());
-            },
-            render: {
-                option: function(data, escape) {
-                    return `<div class="flex items-center gap-2 py-1.5 px-2">
-                                <div class="w-6 h-6 rounded-full bg-brand-100 flex items-center justify-center text-xs text-brand-700 font-bold shrink-0">
-                                    ${data.full_name ? data.full_name.charAt(0).toUpperCase() : '?'}
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-medium text-slate-700">${escape(data.full_name || 'Unknown')}</span>
-                                </div>
-                            </div>`;
-                },
-                item: function(data, escape) {
-                    // Simple div; the plugin appends the 'X' button automatically
-                    return `<div>${escape(data.full_name || 'Unknown')}</div>`;
-                }
-            }
-        });
+                supabase.from('profiles').select('id, full_name, avatar_url').ilike('full_name', `%${query}%`).limit(10).then(({ data }) => callback((data || []).filter(p => p.id !== authState.session?.user?.id))).catch(() => callback());
+            }, render: { option: (d, e) => `<div class="flex items-center gap-2 py-1.5 px-2"><div class="w-6 h-6 rounded-full bg-brand-100 flex items-center justify-center text-xs text-brand-700 font-bold shrink-0">${d.full_name?d.full_name.charAt(0).toUpperCase():'?'}</div><span class="text-sm font-medium text-slate-700">${e(d.full_name || 'Unknown')}</span></div>`, item: (d, e) => `<div>${e(d.full_name || 'Unknown')}</div>` } });
     }
 
-    // Helper to get content from Quill
-    function getQuillContent(quill) {
-        if (!quill) return null;
-        if (quill.getText().trim().length === 0 && quill.root.innerHTML === '<p><br></p>') return null;
-        return quill.root.innerHTML;
-    }
+    function getQuillContent(quill) { if (!quill) return null; if (quill.getText().trim().length === 0 && quill.root.innerHTML === '<p><br></p>') return null; return quill.root.innerHTML; }
 
-    // --- Routing Logic ---
     async function handleRoute() {
-        const loadingEl = $('#view-loading');
-        const authReqEl = $('#view-auth-required');
-        const profileEl = $('#view-profile');
-
-        if (!authState.session) {
-            hide(loadingEl);
-            hide(profileEl);
-            show(authReqEl);
-        } else {
-            hide(authReqEl);
-            show(profileEl);
-            hide(loadingEl);
-
-            if (!state.quillEditor) {
-                state.quillEditor = initQuill('#description');
-            }
-
-            initCountryPicker();
-            initCollaboratorPicker();
-
-            await Promise.all([
-                loadProfileData(),
-                fetchExistingAffiliations()
-            ]);
-        }
+        if (!authState.session) { hide($('#view-loading')); hide($('#view-profile')); show($('#view-auth-required')); } else { hide($('#view-auth-required')); show($('#view-profile')); hide($('#view-loading')); if (!state.quillEditor) state.quillEditor = initQuill('#description'); initCountryPicker(); initCollaboratorPicker(); await Promise.all([loadProfileData(), fetchExistingAffiliations()]); }
     }
-
-    // --- Data Fetching ---
 
     async function fetchExistingAffiliations() {
-        try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('affiliation')
-                .not('affiliation', 'is', null)
-                .neq('affiliation', '');
-
-            if (error) throw error;
-
-            const uniqueSet = new Set(data.map(item => item.affiliation.trim()));
-            state.existingAffiliations = Array.from(uniqueSet).sort((a, b) => a.localeCompare(b));
-
-        } catch (err) {
-            console.error('Error fetching affiliations:', err);
-        }
+        const { data } = await supabase.from('profiles').select('affiliation').not('affiliation', 'is', null).neq('affiliation', '');
+        if(data) { const uniqueSet = new Set(data.map(item => item.affiliation.trim())); state.existingAffiliations = Array.from(uniqueSet).sort((a, b) => a.localeCompare(b)); }
     }
 
     async function fetchDependentOptions(affiliationName) {
-        if (!affiliationName) {
-            state.deptSuggestions = [];
-            state.wgSuggestions = [];
-            return;
-        }
-
-        try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('department, working_group')
-                .eq('affiliation', affiliationName);
-
-            if (error) throw error;
-
-            const depts = new Set(
-                data.map(i => i.department)
-                    .filter(d => d && d.trim() !== '')
-                    .map(d => d.trim())
-            );
-            state.deptSuggestions = Array.from(depts).sort((a, b) => a.localeCompare(b));
-
-            const groups = new Set(
-                data.map(i => i.working_group)
-                    .filter(w => w && w.trim() !== '')
-                    .map(w => w.trim())
-            );
-            state.wgSuggestions = Array.from(groups).sort((a, b) => a.localeCompare(b));
-
-        } catch (err) {
-            console.error('Error fetching dependent options:', err);
+        if (!affiliationName) { state.deptSuggestions = []; state.wgSuggestions = []; return; }
+        const { data } = await supabase.from('profiles').select('department, working_group').eq('affiliation', affiliationName);
+        if(data) {
+            state.deptSuggestions = Array.from(new Set(data.map(i => i.department).filter(d => d?.trim()).map(d => d.trim()))).sort();
+            state.wgSuggestions = Array.from(new Set(data.map(i => i.working_group).filter(w => w?.trim()).map(w => w.trim()))).sort();
         }
     }
 
     async function loadProfileData() {
         if (!authState.session) return;
-
-        const { data, error } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", authState.session.user.id)
-            .single();
-
-        if (error) {
-            console.error("Error fetching profile:", error);
-            state.profile = {
-                full_name: authState.session.user.user_metadata?.full_name || '',
-                email: authState.session.user.email
-            };
-        } else {
-            state.profile = data || {};
-        }
-
-        // Populate Form Fields
-        const fields = [
-            'fullName', 'username', 'affiliation', 'department', 'workingGroup',
-            'workEmail', 'personalWebsite', 'professionalWebsite',
-            'googleScholar', 'fieldsOfStudy'
-        ];
-
-        fields.forEach(id => {
-            const dbKey = id.replace(/[A-Z]/g, m => '_' + m.toLowerCase());
-            const el = $(`#${id}`);
-            if (el) el.value = state.profile[dbKey] || '';
-        });
-
-        // Set Country
-        if (state.countrySelect && state.profile.country) {
-            state.countrySelect.setValue(state.profile.country);
-        }
-
-        // Set Collaborators
+        const { data, error } = await supabase.from("profiles").select("*").eq("id", authState.session.user.id).single();
+        state.profile = error ? { full_name: authState.session.user.user_metadata?.full_name || '', email: authState.session.user.email } : (data || {});
+        ['fullName', 'username', 'affiliation', 'department', 'workingGroup', 'workEmail', 'personalWebsite', 'professionalWebsite', 'googleScholar', 'fieldsOfStudy'].forEach(id => { const el = $(`#${id}`); if (el) el.value = state.profile[id.replace(/[A-Z]/g, m => '_' + m.toLowerCase())] || ''; });
+        if (state.countrySelect && state.profile.country) state.countrySelect.setValue(state.profile.country);
         if (state.collaboratorSelect && state.profile.collaborators && state.profile.collaborators.length > 0) {
-            const { data: collabData } = await supabase
-                .from('profiles')
-                .select('id, full_name')
-                .in('id', state.profile.collaborators);
-            
-            if (collabData) {
-                collabData.forEach(item => {
-                    state.collaboratorSelect.addOption(item);
-                });
-                state.collaboratorSelect.setValue(state.profile.collaborators);
-            }
+            const { data: collabData } = await supabase.from('profiles').select('id, full_name').in('id', state.profile.collaborators);
+            if (collabData) { collabData.forEach(item => state.collaboratorSelect.addOption(item)); state.collaboratorSelect.setValue(state.profile.collaborators); }
         }
-
-        // Populate Description
-        if (state.quillEditor) {
-            state.quillEditor.root.innerHTML = state.profile.description || '';
-        }
-
+        if (state.quillEditor) state.quillEditor.root.innerHTML = state.profile.description || '';
         if (!$('#workEmail').value) $('#workEmail').value = authState.session.user.email;
         if (!$('#username').value) $('#username').value = authState.session.user.email.split('@')[0];
-
-        if (state.profile.affiliation) {
-            await fetchDependentOptions(state.profile.affiliation);
-        }
-
-        updatePreviewText();
-        renderFieldsTags();
-
-        if (state.profile.avatar_url) {
-            const url = await getAvatarUrl(state.profile.avatar_url);
-            setAvatar(url);
-        } else {
-            setAvatar(null);
-        }
+        if (state.profile.affiliation) await fetchDependentOptions(state.profile.affiliation);
+        updatePreviewText(); renderFieldsTags();
+        setAvatar(state.profile.avatar_url ? await getAvatarUrl(state.profile.avatar_url) : null);
     }
 
     function setAvatar(url) {
-        const img = $('#avatarImg');
-        const initials = $('#avatarInitials');
-        const removeBtn = $('#removeAvatarBtn');
-
-        if (url) {
-            img.src = url;
-            show(img);
-            hide(initials);
-            show(removeBtn);
-        } else {
-            hide(img);
-            show(initials);
-            hide(removeBtn);
-            updateInitials();
-        }
+        const img = $('#avatarImg'), initials = $('#avatarInitials'), removeBtn = $('#removeAvatarBtn');
+        if (url) { img.src = url; show(img); hide(initials); show(removeBtn); } else { hide(img); show(initials); hide(removeBtn); updateInitials(); }
     }
 
-    function updateInitials() {
-        const name = $('#fullName').value || 'User';
-        $('#avatarInitials').textContent = name.charAt(0).toUpperCase();
-    }
-
-    function updatePreviewText() {
-        $('#displayUsername').textContent = '@' + ($('#username').value || 'username');
-        $('#displayEmail').textContent = $('#workEmail').value || 'user@example.com';
-    }
-
+    function updateInitials() { $('#avatarInitials').textContent = ($('#fullName').value || 'User').charAt(0).toUpperCase(); }
+    function updatePreviewText() { $('#displayUsername').textContent = '@' + ($('#username').value || 'username'); $('#displayEmail').textContent = $('#workEmail').value || 'user@example.com'; }
     function renderFieldsTags() {
-        const container = $('#fieldsOfStudyTags');
-        if (!container) return;
-        const textarea = $('#fieldsOfStudy');
-        if (!textarea) return;
-
-        const raw = textarea.value || '';
-        const tags = raw.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-
-        container.innerHTML = '';
-        if (tags.length === 0) return;
-
-        tags.forEach(tag => {
-            const pill = document.createElement('span');
-            pill.className = 'inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-100';
-            pill.textContent = tag;
-            container.appendChild(pill);
-        });
-    }
-
-    // --- Autocomplete Logic ---
-    function setupAffiliationAutocomplete() {
-        const input = $('#affiliation');
-        const list = $('#affiliation-list');
-        const wrapper = $('#affiliation-wrapper');
-
-        const renderList = (items) => {
-            list.innerHTML = '';
-            if (items.length === 0) {
-                const li = document.createElement('li');
-                li.className = 'px-4 py-3 text-sm text-slate-400 italic bg-gray-50';
-                li.textContent = localTr('profile.no_affiliation_results');
-                list.appendChild(li);
-            } else {
-                items.forEach(item => {
-                    const li = document.createElement('li');
-                    li.className = 'px-4 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer border-b border-gray-50 last:border-none transition-colors';
-                    li.textContent = item;
-                    li.addEventListener('click', async () => {
-                        input.value = item;
-                        hide(list);
-                        await fetchDependentOptions(item);
-                    });
-                    list.appendChild(li);
-                });
-            }
-            show(list);
-        };
-
-        const handleInput = () => {
-            const val = input.value.toLowerCase();
-            const filtered = state.existingAffiliations.filter(aff => aff.toLowerCase().includes(val));
-            const toShow = val === '' ? state.existingAffiliations.slice(0, 50) : filtered;
-            renderList(toShow);
-        };
-
-        input.addEventListener('focus', handleInput);
-        input.addEventListener('input', handleInput);
-
-        input.addEventListener('blur', async () => {
-            const val = input.value.trim();
-            if (val) await fetchDependentOptions(val);
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!wrapper.contains(e.target)) hide(list);
-        });
+        const c = $('#fieldsOfStudyTags'); if (!c) return; c.innerHTML = '';
+        ($('#fieldsOfStudy').value || '').split(',').map(t => t.trim()).filter(Boolean).forEach(t => c.insertAdjacentHTML('beforeend', `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-100">${t}</span>`));
     }
 
     function setupGenericAutocomplete(inputId, listId, wrapperId, getSourceArray) {
-        const input = $(`#${inputId}`);
-        const list = $(`#${listId}`);
-        const wrapper = $(`#${wrapperId}`);
-
+        const input = $(`#${inputId}`), list = $(`#${listId}`), wrapper = $(`#${wrapperId}`);
         const renderList = (items) => {
             list.innerHTML = '';
-            if (items.length === 0) {
-                const li = document.createElement('li');
-                li.className = 'px-4 py-3 text-sm text-slate-400 italic bg-gray-50';
-                li.textContent = localTr('profile.no_results');
-                list.appendChild(li);
-            } else {
-                items.forEach(item => {
-                    const li = document.createElement('li');
-                    li.className = 'px-4 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer border-b border-gray-50 last:border-none transition-colors';
-                    li.textContent = item;
-                    li.addEventListener('click', () => {
-                        input.value = item;
-                        hide(list);
-                    });
-                    list.appendChild(li);
-                });
-            }
+            if (!items.length) list.insertAdjacentHTML('beforeend', `<li class="px-4 py-3 text-sm text-slate-400 italic bg-gray-50">${localTr('profile.no_results')}</li>`);
+            else items.forEach(item => { const li = document.createElement('li'); li.className = 'px-4 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer border-b border-gray-50 last:border-none transition-colors'; li.textContent = item; li.onclick = async () => { input.value = item; hide(list); if(inputId === 'affiliation') await fetchDependentOptions(item); }; list.appendChild(li); });
             show(list);
         };
-
-        const handleInput = () => {
-            const source = getSourceArray();
-            if (!source || source.length === 0) return;
-
-            const val = input.value.toLowerCase();
-            const filtered = source.filter(s => s.toLowerCase().includes(val));
-            const toShow = val === '' ? source : filtered;
-            renderList(toShow);
-        };
-
-        input.addEventListener('focus', handleInput);
-        input.addEventListener('input', handleInput);
-
-        document.addEventListener('click', (e) => {
-            if (!wrapper.contains(e.target)) hide(list);
-        });
+        input.oninput = () => { const v = input.value.toLowerCase(), s = getSourceArray(); if (!s || !s.length) return; renderList(v === '' ? s.slice(0,50) : s.filter(i => i.toLowerCase().includes(v))); };
+        input.onfocus = input.oninput;
+        document.addEventListener('click', e => { if (!wrapper.contains(e.target)) hide(list); });
     }
 
     async function saveProfile(e) {
         e.preventDefault();
         const btn = $('#saveBtn');
-        
-        if(!$('#country').value) {
-            alert("Please select a country.");
-            return;
-        }
-
+        if(!$('#country').value) { alert("Please select a country."); return; }
         const originalContent = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = `<div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> <span>${localTr('profile.saving')}</span>`;
 
         try {
             let avatar_url = state.profile?.avatar_url;
-
             if (state.avatarFile) {
-                const fileExt = state.avatarFile.name.split('.').pop();
-                const fileName = `${authState.session.user.id}/${Date.now()}.${fileExt}`;
-                const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, state.avatarFile);
-                if (uploadError) throw new Error(localTr('profile.upload_error'));
-
-                if (avatar_url) await supabase.storage.from('avatars').remove([avatar_url]);
-                avatar_url = fileName;
-            }
-            else if (state.avatarRemoved && avatar_url) {
-                await supabase.storage.from('avatars').remove([avatar_url]);
-                avatar_url = null;
-            }
-
-            const collaborators = state.collaboratorSelect ? state.collaboratorSelect.getValue() : [];
+                const ext = state.avatarFile.name.split('.').pop();
+                const path = `${authState.session.user.id}/${Date.now()}.${ext}`;
+                const { error } = await supabase.storage.from('avatars').upload(path, state.avatarFile);
+                if (error) throw error;
+                avatar_url = path;
+            } else if (state.avatarRemoved) avatar_url = null;
 
             const updates = {
-                id: authState.session.user.id,
                 updated_at: new Date().toISOString(),
                 avatar_url,
                 full_name: $('#fullName').value.trim(),
@@ -996,97 +381,43 @@
                 professional_website: $('#professionalWebsite').value.trim() || null,
                 google_scholar: $('#googleScholar').value.trim() || null,
                 fields_of_study: $('#fieldsOfStudy').value.trim() || null,
-                collaborators: collaborators,
+                collaborators: state.collaboratorSelect ? state.collaboratorSelect.getValue() : [],
                 description: getQuillContent(state.quillEditor),
             };
 
-            const { error } = await supabase.from('profiles').upsert(updates);
-            if (error) throw error;
+            // FIX 1: Use .update() instead of .upsert()
+            // FIX 2: Check for unique username error
+            const { error } = await supabase.from('profiles').update(updates).eq('id', authState.session.user.id);
+            if (error) {
+                if (error.code === '23505') throw new Error(localTr('profile.username_taken'));
+                throw error;
+            }
 
             state.profile = { ...state.profile, ...updates };
-            state.avatarFile = null;
-            state.avatarRemoved = false;
+            state.avatarFile = null; state.avatarRemoved = false;
             setFlash(localTr('profile.saved'));
+            if (authState.profile) { Object.assign(authState.profile, updates); renderHeader(authState, t, state.language); if (avatar_url) getAvatarUrl(avatar_url).then(u => { const i = $('#userAvatar'); if(i) i.src = u; }); }
+            const ret = new URLSearchParams(location.search).get('return_to');
+            if (ret) setTimeout(() => window.location.href = ret, 1000);
 
-            if (authState.profile) {
-                Object.assign(authState.profile, updates);
-                renderHeader(authState, t, state.language);
-                if (authState.profile.avatar_url) {
-                    getAvatarUrl(authState.profile.avatar_url).then(url => {
-                      const i = $('#userAvatar'); if(i) i.src = url;
-                    });
-                }
-            }
-
-            const returnTo = new URLSearchParams(location.search).get('return_to');
-            if (returnTo) setTimeout(() => window.location.href = returnTo, 1000);
-
-        } catch (err) {
-            console.error(err);
-            setFlash(err.message || "Error saving profile", 3000);
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = originalContent;
-            lucide.createIcons();
-        }
+        } catch (err) { console.error(err); setFlash(err.message || "Error", true); } finally { btn.disabled = false; btn.innerHTML = originalContent; lucide.createIcons(); }
     }
 
-    function bindEvents() {
-        $('#avatarInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            state.avatarFile = file;
-            state.avatarRemoved = false;
-            const reader = new FileReader();
-            reader.onload = (ev) => setAvatar(ev.target.result);
-            reader.readAsDataURL(file);
-        });
-
-        $('#removeAvatarBtn').addEventListener('click', () => {
-            state.avatarFile = null;
-            state.avatarRemoved = true;
-            setAvatar(null);
-            $('#avatarInput').value = '';
-        });
-
-        $('#fullName').addEventListener('input', updateInitials);
-        $('#username').addEventListener('input', updatePreviewText);
-        $('#workEmail').addEventListener('input', updatePreviewText);
-        $('#fieldsOfStudy').addEventListener('input', renderFieldsTags);
-        $('#profileForm').addEventListener('submit', saveProfile);
-
-        $('#backBtn').addEventListener('click', () => {
-            if (document.referrer && document.referrer.includes(window.location.host)) {
-                history.back();
-            } else {
-                window.location.href = 'index.html';
-            }
-        });
-
-        setupAffiliationAutocomplete();
-        setupGenericAutocomplete('department', 'department-list', 'department-wrapper', () => state.deptSuggestions);
-        setupGenericAutocomplete('workingGroup', 'workingGroup-list', 'workingGroup-wrapper', () => state.wgSuggestions);
-    }
-
-    // --- Main ---
     (async function main() {
         initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
         applyI18n(t, state.language);
-        bindEvents();
         lucide.createIcons();
+        $('#avatarInput').onchange = e => { const f = e.target.files[0]; if(f) { state.avatarFile = f; state.avatarRemoved = false; const r = new FileReader(); r.onload = ev => setAvatar(ev.target.result); r.readAsDataURL(f); } };
+        $('#removeAvatarBtn').onclick = () => { state.avatarFile = null; state.avatarRemoved = true; setAvatar(null); $('#avatarInput').value = ''; };
+        $('#fullName').oninput = updateInitials; $('#username').oninput = updatePreviewText; $('#workEmail').oninput = updatePreviewText; $('#fieldsOfStudy').oninput = renderFieldsTags;
+        $('#profileForm').onsubmit = saveProfile;
+        $('#backBtn').onclick = () => { if (document.referrer && document.referrer.includes(window.location.host)) history.back(); else window.location.href = 'index.html'; };
+        setupGenericAutocomplete('affiliation', 'affiliation-list', 'affiliation-wrapper', () => state.existingAffiliations);
+        setupGenericAutocomplete('department', 'department-list', 'department-wrapper', () => state.deptSuggestions);
+        setupGenericAutocomplete('workingGroup', 'workingGroup-list', 'workingGroup-wrapper', () => state.wgSuggestions);
 
-        await initAuth({
-            onAuthReady: () => {
-                renderHeader(authState, t, state.language);
-                handleRoute();
-            },
-            onAuthChange: () => {
-                renderHeader(authState, t, state.language);
-                handleRoute();
-            }
-        });
+        await initAuth({ onAuthReady: () => { renderHeader(authState, t, state.language); handleRoute(); }, onAuthChange: () => { renderHeader(authState, t, state.language); handleRoute(); } });
     })();
   </script>
 </body>
-
 </html>

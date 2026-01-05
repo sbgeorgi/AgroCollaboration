@@ -431,7 +431,14 @@
         document.addEventListener('click', e => { if (e.target.id === 'userName') window.location.href = 'profile.html'; });
 
         const initialLang = localStorage.getItem("lang") || "en";
-        await initAuth({
+        
+        // === OPTIMIZATION: PARALLEL EXECUTION ===
+        
+        // 1. Start Map Init (Public Data Fetch) IMMEDIATELY
+        const mapPromise = initMap();
+        
+        // 2. Start Auth (Session Check)
+        const authPromise = initAuth({
           onAuthReady: (currentAuthState) => {
             renderHeader(currentAuthState, t, initialLang);
             updateLangToggleUI(initialLang);
@@ -449,10 +456,16 @@
           }
         });
         
-        initMap();
+        // 3. UI Updates
         applySharedI18n(t, initialLang);
         lucide.createIcons();
+
+        // 4. Wait for Auth to settle (Map continues loading in background)
+        await authPromise;
+        if(mapPromise instanceof Promise) await mapPromise;
+
         setTimeout(() => { if (window.map && typeof window.map.invalidateSize === 'function') window.map.invalidateSize(); }, 200);
+
       } catch (error) { console.error('[map.html] Initialization error:', error); }
     })();
   </script>

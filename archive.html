@@ -245,8 +245,6 @@
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
     import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl } from './ui.js';
-
-    // IMPORT stripHtml to fix the card previews
     import { stripHtml } from './rich-text.js';
 
     // Inject Layout with 'archive' active state
@@ -302,38 +300,38 @@
       if (state.selectedEvent && eventLogic) eventLogic.reRender();
     }
 
+    // --- OPTIMIZED QUERY STRING ---
+    const OPTIMIZED_EVENT_SELECT = `
+      id, start_time, title_en, title_es, description_en, description_es, 
+      recording_url, topic_tags, language,
+      event_speakers (
+        name,
+        profile:profiles ( id, full_name, avatar_url, affiliation )
+      )
+    `;
+
     async function loadEvents() {
+      // 1. Show loader immediately
       hide($('#content-area'));
       show($('#archiveLoader'));
 
-      // NEW: Subscribe to live changes to keep archive in sync
+      // 2. Subscribe to changes with the OPTIMIZED query
       supabase.channel('public:events').on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, async () => {
-        const { data } = await supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", { ascending: false });
+        const { data } = await supabase.from("events").select(OPTIMIZED_EVENT_SELECT).order("start_time", { ascending: false });
         state.events = data || [];
         updateArchiveView();
       }).subscribe();
 
-      const { data } = await supabase.from("events").select("*, event_speakers(*, profile:profiles(*))").order("start_time", { ascending: false });
+      // 3. Fetch data with OPTIMIZED query (Parallel with Auth)
+      const { data } = await supabase.from("events").select(OPTIMIZED_EVENT_SELECT).order("start_time", { ascending: false });
       state.events = data || [];
 
+      // 4. Update UI
       initYearDropdown();
       updateArchiveView();
 
       hide($('#archiveLoader'));
       show($('#content-area'));
-
-      const eid = new URLSearchParams(window.location.search).get("event");
-      if (eid && eventLogic) {
-        if (authState.session) {
-          await eventLogic.openEvent(eid);
-        } else {
-          authState.pendingDeepLinkEventId = eid;
-          setFlash(localTr('auth.required'));
-          showView("archive");
-        }
-      } else {
-        showView("archive");
-      }
     }
 
     function initYearDropdown() {
@@ -423,13 +421,10 @@
 
       const html = await Promise.all(filteredEvents.map(async ev => {
         const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
-
-        // --- FIX: USE stripHtml HERE ---
         const rawDesc = state.language === "es" && ev.description_es ? ev.description_es : ev.description_en;
         const cleanDesc = escapeHtml(stripHtml(rawDesc || ''));
 
         const start = new Date(ev.start_time);
-
         const month = start.toLocaleDateString(state.language, { month: 'short' }).toUpperCase();
         const day = start.getDate();
         const time = fmtDateTime(ev.start_time, { hour: 'numeric', minute: '2-digit' });
@@ -505,7 +500,6 @@
 
         const langCode = ev.language === 'es' ? 'ES' : (ev.language === 'bi' ? 'EN/ES' : 'EN');
 
-        // Use cleanDesc instead of raw html
         return `<article class="group relative flex flex-col h-full bg-white rounded-2xl border border-gray-200 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.1)] hover:border-brand-200 transition-all duration-300 cursor-pointer overflow-hidden" data-open-event="${ev.id}">
                 <div class="p-4 flex flex-col h-full relative z-10">
                     
@@ -550,8 +544,6 @@
 
     // --- MAIN EXECUTION ---
     (async function main() {
-      // NOTE: We pass 'refreshEventsList' which is mapped to 'updateArchiveView' effectively via re-fetch logic in event.js if needed, 
-      // but event.js expects a function to reload the list. In archive this is updateArchiveView, but with data re-fetch.
       const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide, refreshEventsList: updateArchiveView };
       eventLogic = initEventLogic(deps);
 
@@ -587,7 +579,10 @@
         if (e.target.closest('#btnProfile') || e.target.id === 'userName') window.location.href = 'profile.html';
       });
 
-      await initAuth({
+      // === OPTIMIZATION: PARALLEL LOADING ===
+      
+      // 1. Trigger Auth Check
+      const authPromise = initAuth({
         onAuthReady: () => renderHeader(authState, t, state.language),
         onAuthChange: () => {
           renderHeader(authState, t, state.language);
@@ -598,7 +593,26 @@
           }
         }
       });
-      await loadEvents();
+
+      // 2. Trigger Event Load (Simultaneously)
+      const eventLoadPromise = loadEvents();
+
+      // 3. Wait for both to complete
+      await Promise.all([authPromise, eventLoadPromise]);
+
+      // 4. Handle Deep Link (Moved here so Auth and Data are ready)
+      const eid = new URLSearchParams(window.location.search).get("event");
+      if (eid && eventLogic) {
+        if (authState.session) {
+          await eventLogic.openEvent(eid);
+        } else {
+          authState.pendingDeepLinkEventId = eid;
+          setFlash(localTr('auth.required'));
+          showView("archive");
+        }
+      } else {
+        showView("archive");
+      }
     })();
   </script>
 
@@ -647,6 +661,4 @@
   </div>
 
 </body>
-
-
 </html>

@@ -123,7 +123,8 @@ function checkAccess() {
         if (isAdmin) addPointBtn.classList.remove('hidden');
         else addPointBtn.classList.add('hidden');
     }
-    renderMarkers();
+    // Re-render markers if specific perms affect visibility (optional, currently all public)
+    // renderMarkers(); 
 }
 
 // Function to generate colored SVG icon
@@ -319,9 +320,10 @@ function removeMedia(id) {
 }
 
 async function loadMapPoints() {
+    // OPTIMIZED QUERY: Only fetch required profile fields for collaborators
     const { data, error } = await supabase
       .from('map_points')
-      .select('*, project_collaborators(profiles(*))')
+      .select('*, project_collaborators(profiles(id, full_name, avatar_url))')
       .order('created_at', { ascending: false });
     if (error) {
         setFlash(tr('notifications.load_error'), true);
@@ -340,17 +342,19 @@ async function loadMapPoints() {
 }
 
 async function loadAllUsers() {
+    // OPTIMIZED QUERY: Only fetch fields needed for search
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, full_name, avatar_url')
       .order('full_name', { ascending: true });
     if (error) {
         console.error('Error fetching users', error);
     } else {
         state.allUsers = data;
-        for (const user of state.allUsers) {
-            user.public_avatar_url = await getSharedAvatarUrl(user.avatar_url);
-        }
+        // Pre-sign URLs in parallel
+        await Promise.all(state.allUsers.map(async (user) => {
+             user.public_avatar_url = await getSharedAvatarUrl(user.avatar_url);
+        }));
     }
 }
 
@@ -1047,21 +1051,15 @@ export function initMap() {
     });
 
     wireMapUI();
-    loadAllUsers().then(() => loadMapPoints());
     checkAccess();
     
+    // Listen for auth state changes to update permissions UI
     supabase.auth.onAuthStateChange((_event, session) => {
-        authState.session = session;
-        if(session) {
-            supabase
-              .from('profiles')
-              .select('id, full_name, role, avatar_url, preferred_language')
-              .eq('id', session.user.id)
-              .single()
-              .then(({ data }) => {
-                  authState.profile = data;
-                  checkAccess();
-              });
-        }
+        // auth.js updates authState, we just need to re-check permissions
+        // wait briefly for authState.profile to populate if this is a login event
+        setTimeout(() => checkAccess(), 500);
     });
+
+    // === PARALLEL DATA FETCH ===
+    return Promise.all([loadAllUsers(), loadMapPoints()]);
 }
