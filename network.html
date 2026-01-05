@@ -62,10 +62,33 @@
             position: absolute; transform: translate(-50%, -50%);
             cursor: pointer; pointer-events: auto;
             will-change: transform, z-index;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .member-node { z-index: 10; }
+        .member-node { z-index: 20; }
         .group-node { z-index: 5; transition: transform 0.1s linear; }
+        
+        /* Bubble Mode Styles */
+        .bubble-group { 
+            border-radius: 50%; 
+            opacity: 0.85; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            transition: all 0.4s ease;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        .bubble-group:hover {
+            opacity: 1;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        }
+        .bubble-member {
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .bubble-member:hover {
+            z-index: 1000 !important; /* High Z-Index on hover to ensure tooltip isn't covered */
+        }
+        
         .network-node.magnified { z-index: 1000 !important; }
 
         /* Edges */
@@ -207,6 +230,15 @@
                         <div id="networkNodes"></div>
                     </div>
 
+                    <!-- Top Left Controls -->
+                    <div class="absolute top-4 left-4 flex gap-2 z-40">
+                         <button id="viewToggleBtn" class="flex items-center gap-2 px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
+                            <i data-lucide="layout-grid" class="w-4 h-4 text-brand-500"></i>
+                            <span id="viewModeText">Switch to Bubbles</span>
+                        </button>
+                    </div>
+
+                    <!-- Top Right Controls -->
                     <div class="absolute top-4 right-4 flex gap-2 z-40">
                         <div class="flex items-center gap-2 bg-white/90 backdrop-blur border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm text-xs text-slate-600 font-medium">
                             <i data-lucide="scan-search" class="w-4 h-4 text-brand-500"></i>
@@ -217,21 +249,8 @@
                         </button>
                     </div>
 
-                    <div class="absolute bottom-4 left-4 z-40 pointer-events-none">
-                        <div class="flex flex-col gap-1.5 bg-white/80 backdrop-blur p-2 rounded-lg border border-gray-100 shadow-sm text-[10px] font-medium text-slate-600">
-                            <div class="flex items-center gap-2">
-                                <div class="w-6 h-0.5 bg-slate-300 opacity-50"></div>
-                                <span>Affiliation / Group</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="w-6 h-0.5 bg-amber-500 opacity-60"></div>
-                                <span>Collaborator</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="w-1 h-4 bg-slate-300 opacity-50 rounded-full mx-2"></div>
-                                <span>Drag vertical track</span>
-                            </div>
-                        </div>
+                    <div id="legendContainer" class="absolute bottom-4 left-4 z-40 pointer-events-none">
+                        <!-- Content populated by script based on mode -->
                     </div>
                 </section>
 
@@ -276,6 +295,8 @@
             searchQuery: "", selectedTags: new Set(),
             lang: localStorage.getItem("lang") || "en",
             isDragging: false,
+            viewMode: 'network',
+            currentGroupBaseScale: 1,
             countries: {
                 "US": "United States", "MX": "Mexico", "CA": "Canada", "CO": "Colombia", "BR": "Brazil", 
                 "CL": "Chile", "AR": "Argentina", "PE": "Peru", "ES": "Spain", "FR": "France", "DE": "Germany",
@@ -290,8 +311,21 @@
         const highlight = (text, q) => { if (!q || !text) return text || ""; try { const rx = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "ig"); return (text + "").replace(rx, '<span class="bg-yellow-100 text-yellow-800 px-0.5 rounded">$1</span>'); } catch { return text; } };
         const debounce = (fn, ms = 200) => { let t = null; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
+        function stringToColor(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            const h = Math.abs(hash) % 360;
+            return `hsl(${h}, 55%, 75%)`;
+        }
+        
+        function stringToColorDark(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            const h = Math.abs(hash) % 360;
+            return `hsl(${h}, 45%, 35%)`;
+        }
+
         async function loadNetworkData() {
-            // OPTIMIZED QUERY: Fetch only specific columns needed for graph/table
             const [profiles, speakers, events] = await Promise.all([
                 supabase.from('profiles').select('id, full_name, avatar_url, affiliation, fields_of_study, country, role, collaborators').order('full_name'),
                 supabase.from('event_speakers').select('event_id, profile_id'),
@@ -380,17 +414,11 @@
         }
         document.addEventListener('remTag', e => { state.selectedTags.delete(e.detail); onFiltersChanged(); });
 
-        /**
-         * UPDATED LAYOUT ENGINE
-         * 1. Splits "Unaffiliated" (The Dock) from "Groups" (The Stage)
-         * 2. Packs Groups in a Grid
-         * 3. Packs Dock in a Vertical Scroll Column
-         */
         function calculatePositions(members) {
             const byGroup = new Map();
             const dockMembers = [];
-            
-            // 1. Separation
+            const dockKeys = ["Unaffiliated", "Independent", "Consultant", "Unknown Location", "Unknown", ""];
+
             members.forEach(m => {
                 let key = "";
                 if (state.groupBy === 'country') {
@@ -398,20 +426,141 @@
                 } else {
                     key = m.affiliation?.trim() || "Unaffiliated";
                 }
-
-                // Define who goes to the "Dock" (Vertical list) vs "Stage" (Clusters)
-                // "Unaffiliated", "Independent", "Consultant", "Unknown Location", "Unknown", ""];
-                const dockKeys = ["Unaffiliated", "Independent", "Consultant", "Unknown Location", "Unknown", ""];
                 
-                if (dockKeys.some(k => k.toLowerCase() === key.toLowerCase())) {
-                    dockMembers.push(m);
-                } else {
+                const isDockKey = dockKeys.some(k => k.toLowerCase() === key.toLowerCase());
+
+                if (state.viewMode === 'bubble') {
+                    if (isDockKey) {
+                        return;
+                    }
                     if (!byGroup.has(key)) byGroup.set(key, []);
                     byGroup.get(key).push(m);
+                } else {
+                    if (isDockKey) {
+                        dockMembers.push(m);
+                    } else {
+                        if (!byGroup.has(key)) byGroup.set(key, []);
+                        byGroup.get(key).push(m);
+                    }
                 }
             });
 
-            // 2. STAGE LAYOUT (Circle Packing for Groups)
+            if (state.viewMode === 'bubble') {
+                const container = $('#network-container');
+                const containerWidth = container.offsetWidth || 800;
+                const containerHeight = container.offsetHeight || 600;
+                
+                const clusters = [];
+                let totalMemberCount = 0;
+                
+                for (const [name, list] of byGroup.entries()) {
+                    const count = list.length;
+                    totalMemberCount += count;
+                    clusters.push({ name, list, count });
+                }
+                
+                clusters.sort((a, b) => b.count - a.count);
+                
+                const pos = new Map();
+                
+                const availableArea = containerWidth * containerHeight * 0.85;
+                const areaPerMember = availableArea / Math.max(totalMemberCount, 1);
+                const memberRadius = Math.max(18, Math.min(30, Math.sqrt(areaPerMember / Math.PI) * 0.4));
+                
+                const packedClusters = [];
+                
+                clusters.forEach((cluster) => {
+                    const count = cluster.count;
+                    const innerArea = count * Math.PI * (memberRadius + 8) * (memberRadius + 8) * 2.5;
+                    const clusterRadius = Math.max(60, Math.sqrt(innerArea / Math.PI));
+                    packedClusters.push({
+                        ...cluster,
+                        radius: clusterRadius,
+                        x: 0,
+                        y: 0
+                    });
+                });
+                
+                if (packedClusters.length > 0) {
+                    packedClusters[0].x = 0;
+                    packedClusters[0].y = 0;
+                    
+                    for (let i = 1; i < packedClusters.length; i++) {
+                        const current = packedClusters[i];
+                        let bestAngle = 0;
+                        let bestDistance = Infinity;
+                        let bestX = 0;
+                        let bestY = 0;
+                        
+                        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 36) {
+                            for (let dist = 0; dist < 3000; dist += 20) {
+                                const testX = Math.cos(angle) * dist;
+                                const testY = Math.sin(angle) * dist;
+                                
+                                let valid = true;
+                                for (let j = 0; j < i; j++) {
+                                    const other = packedClusters[j];
+                                    const dx = testX - other.x;
+                                    const dy = testY - other.y;
+                                    const minDist = current.radius + other.radius + 30;
+                                    if (dx * dx + dy * dy < minDist * minDist) {
+                                        valid = false;
+                                        break;
+                                    }
+                                }
+                                
+                                if (valid && dist < bestDistance) {
+                                    bestDistance = dist;
+                                    bestX = testX;
+                                    bestY = testY;
+                                    bestAngle = angle;
+                                }
+                            }
+                        }
+                        
+                        current.x = bestX;
+                        current.y = bestY;
+                    }
+                }
+                
+                packedClusters.forEach(cluster => {
+                    pos.set(`group-${cluster.name}`, { 
+                        x: cluster.x, 
+                        y: cluster.y, 
+                        r: cluster.radius 
+                    });
+                    
+                    const memberCount = cluster.list.length;
+                    if (memberCount === 1) {
+                        pos.set(cluster.list[0].id, {
+                            x: cluster.x,
+                            y: cluster.y
+                        });
+                    } else {
+                        const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+                        const maxRadius = cluster.radius - memberRadius - 15;
+                        
+                        cluster.list.forEach((m, idx) => {
+                            const normalizedIndex = idx / memberCount;
+                            const spiralRadius = maxRadius * Math.sqrt(normalizedIndex);
+                            const angle = idx * goldenAngle;
+                            
+                            pos.set(m.id, {
+                                x: cluster.x + Math.cos(angle) * spiralRadius,
+                                y: cluster.y + Math.sin(angle) * spiralRadius
+                            });
+                        });
+                    }
+                });
+                
+                return { 
+                    pos, 
+                    clusters: packedClusters, 
+                    mode: 'bubble',
+                    memberRadius 
+                };
+            }
+
             const clusters = [];
             let totalStageArea = 0;
             
@@ -424,26 +573,23 @@
             }
             clusters.sort((a, b) => b.list.length - a.list.length);
 
-            // Tighter Packing Ratio (Square/Wide)
             const aspectRatio = 3.5; 
             const TARGET_ROW_WIDTH = Math.sqrt(totalStageArea * aspectRatio) + 500;
             const CLUSTER_GAP = 220;
 
             const pos = new Map();
             let rowX = 0, rowY = 0, rowItems = [], maxH = 0;
-            let minStageX = 0; // To track where to put the dock
+            let minStageX = 0;
 
             const flushRow = () => {
                 const rowTotalWidth = rowX - CLUSTER_GAP;
                 let startX = -(rowTotalWidth / 2);
-                if (startX < minStageX) minStageX = startX; // Track leftmost point
+                if (startX < minStageX) minStageX = startX; 
 
                 rowItems.forEach(c => {
                     const cx = startX + (c.size / 2);
                     const cy = rowY + (c.size / 2);
-                    
                     pos.set(`group-${c.name}`, { x: cx, y: cy });
-
                     if (c.list.length > 0) {
                         const step = (Math.PI * 2) / c.list.length;
                         c.list.forEach((m, i) => {
@@ -466,27 +612,19 @@
             });
             if (rowItems.length > 0) flushRow();
             
-            // Center Stage Vertically
             const stageHeight = rowY;
             for (const [k, p] of pos.entries()) p.y -= stageHeight / 2;
 
-            // 3. DOCK LAYOUT (Vertical Column on Left)
-            // Sort A-Z
             dockMembers.sort((a,b) => (a.full_name||"").localeCompare(b.full_name||""));
-            
-            // Position Dock to the left of the leftmost stage element
             const DOCK_X = (minStageX || -900) - 800; 
-            const DOCK_ITEM_H = 40; // Overlap factor
+            const DOCK_ITEM_H = 40; 
             const totalDockH = dockMembers.length * DOCK_ITEM_H;
             
             dockMembers.forEach((m, i) => {
-                pos.set(m.id, { 
-                    x: DOCK_X, 
-                    y: (i * DOCK_ITEM_H) - (totalDockH / 2) 
-                });
+                pos.set(m.id, { x: DOCK_X, y: (i * DOCK_ITEM_H) - (totalDockH / 2) });
             });
 
-            return { pos, clusters, dockX: DOCK_X, dockYMin: -(totalDockH/2), dockYMax: (totalDockH/2) };
+            return { pos, clusters, dockX: DOCK_X, dockYMin: -(totalDockH/2), dockYMax: (totalDockH/2), mode: 'network' };
         }
 
         function renderGraph(members) {
@@ -496,23 +634,147 @@
             const layout = calculatePositions(members);
             state.positions = layout.pos;
 
-            const svg = $('#networkConnections'); const nodes = $('#networkNodes');
-            svg.innerHTML = ''; nodes.innerHTML = '';
+            const svg = $('#networkConnections'); 
+            const nodes = $('#networkNodes');
+            svg.innerHTML = ''; 
+            nodes.innerHTML = '';
+
+            if (state.viewMode === 'bubble') {
+                $('#legendContainer').innerHTML = `
+                   <div class="flex items-center gap-3 bg-white/90 backdrop-blur p-3 rounded-xl border border-gray-200 shadow-sm text-[11px] font-medium text-slate-600">
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 border-2 border-white shadow-sm"></div>
+                            <span>Organization</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded-full bg-white border-2 border-brand-400 shadow-sm"></div>
+                            <span>Member</span>
+                        </div>
+                    </div>`;
+
+                const memberRadius = layout.memberRadius || 20;
+
+                // 1. Render Group Backgrounds (Circles)
+                layout.clusters.forEach(cluster => {
+                    const p = state.positions.get(`group-${cluster.name}`);
+                    if (!p) return;
+                    
+                    const el = document.createElement('div');
+                    el.className = 'network-node group-node bubble-group';
+                    el.dataset.x = p.x; 
+                    el.dataset.y = p.y; 
+                    el.dataset.type = 'group';
+                    
+                    const diameter = p.r * 2;
+                    el.style.width = `${diameter}px`; 
+                    el.style.height = `${diameter}px`;
+                    el.style.backgroundColor = stringToColor(cluster.name);
+                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px)`;
+                    
+                    el.onclick = (e) => { 
+                        e.stopPropagation(); 
+                        $('#searchInput').value = cluster.name; 
+                        onFiltersChanged(); 
+                    };
+                    nodes.appendChild(el);
+                });
+
+                // 2. Render Members
+                members.forEach(m => {
+                    const p = state.positions.get(m.id);
+                    if (!p) return;
+
+                    const displayName = m.full_name || 'Member';
+                    const el = document.createElement('div');
+                    // Added group/bub for hover state logic
+                    el.className = 'network-node member-node bubble-member group/bub';
+                    el.dataset.x = p.x; 
+                    el.dataset.y = p.y;
+                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px)`;
+                    
+                    const size = memberRadius * 2;
+                    
+                    // STRUCTURE CHANGE: Tooltip moved OUTSIDE the overflow-hidden div, but inside the main relative node
+                    el.innerHTML = `
+                        <div class="rounded-full bg-white flex items-center justify-center shadow-md border-2 border-white hover:border-brand-500 hover:scale-125 transition-all duration-200 overflow-hidden cursor-pointer relative" style="width: ${size}px; height: ${size}px;">
+                             ${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : `<span class="text-xs font-bold text-brand-600">${displayName[0]}</span>`}
+                        </div>
+                        
+                        <!-- Tooltip: Absolute positioned relative to the parent node wrapper, outside the clipped image circle -->
+                        <div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 backdrop-blur text-white text-[11px] py-1.5 px-3 rounded-lg opacity-0 group-hover/bub:opacity-100 pointer-events-none transition-opacity duration-200 z-[100] shadow-xl border border-white/10">
+                            <div class="font-bold">${displayName}</div>
+                            ${m.affiliation ? `<div class="text-slate-300 text-[9px] font-medium">${m.affiliation}</div>` : ''}
+                            <!-- Little arrow pointing up -->
+                            <div class="absolute -top-1 left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-slate-900/90"></div>
+                        </div>
+                    `;
+                    
+                    if (m.avatar_url) getAvatarUrl(m.avatar_url).then(u => { if (u) { const img = el.querySelector('img'); if(img) img.src = u; }});
+
+                    el.onclick = (e) => {
+                        e.stopPropagation();
+                        openProfileModal(m, state.allCanonicalToDisplay, state.tagIndex);
+                    };
+                    nodes.appendChild(el);
+                });
+
+                // 3. Render Group Labels (Overlay)
+                layout.clusters.forEach(cluster => {
+                    const p = state.positions.get(`group-${cluster.name}`);
+                    if (!p) return;
+
+                    const label = document.createElement('div');
+                    label.className = 'network-node pointer-events-none z-30';
+                    label.dataset.x = p.x;
+                    label.dataset.y = p.y - p.r; // Position at the top edge
+                    label.dataset.type = 'group-label';
+                    
+                    // Position at top edge of circle
+                    label.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px)`;
+
+                    label.innerHTML = `
+                        <div class="flex flex-col items-center">
+                            <span class="px-3 py-1 bg-white/95 backdrop-blur shadow-md border border-gray-200 rounded-full text-[11px] font-bold text-slate-700 whitespace-nowrap ring-1 ring-black/5" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis;">
+                                ${cluster.name}
+                            </span>
+                            <span class="mt-0.5 text-[9px] font-bold text-slate-500 bg-white/75 px-1.5 rounded-full shadow-sm border border-gray-100">
+                                ${cluster.count}
+                            </span>
+                        </div>
+                    `;
+                    nodes.appendChild(label);
+                });
+                
+                if (window.lucide) window.lucide.createIcons();
+                fitGraph();
+                return;
+            }
+
+             $('#legendContainer').innerHTML = `
+                <div class="flex flex-col gap-1.5 bg-white/80 backdrop-blur p-2 rounded-lg border border-gray-100 shadow-sm text-[10px] font-medium text-slate-600">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-0.5 bg-slate-300 opacity-50"></div>
+                        <span>Affiliation / Group</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-0.5 bg-amber-500 opacity-60"></div>
+                        <span>Collaborator</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-1 h-4 bg-slate-300 opacity-50 rounded-full mx-2"></div>
+                        <span>Drag vertical track</span>
+                    </div>
+                </div>`;
 
             let paths = '';
             
-            // 0. Render Dock Track (Slider visual)
             if (layout.dockYMin !== undefined && layout.dockYMax !== undefined) {
                  const pad = 50;
                  paths += `<path d="M ${layout.dockX + 120} ${layout.dockYMin - pad} L ${layout.dockX + 120} ${layout.dockYMax + pad}" class="dock-track" />`;
             }
 
-            // 1. Edges
-            // Group Connections
             members.forEach(m => {
-                // Don't draw structural lines for dock members
                 const mp = state.positions.get(m.id);
-                // Check if this member is part of a group node
                 let groupKey = "";
                  if (state.groupBy === 'country') {
                     groupKey = m.country ? (state.countries[m.country] || m.country) : "Unknown";
@@ -526,7 +788,6 @@
                 }
             });
 
-            // Collab Connections
             state.connections.forEach(conn => {
                 const p1 = state.positions.get(conn.source);
                 const p2 = state.positions.get(conn.target);
@@ -539,7 +800,6 @@
 
             svg.innerHTML = paths;
 
-            // 2. Group Nodes
             layout.clusters.forEach(cluster => {
                 const p = state.positions.get(`group-${cluster.name}`);
                 if (!p) return;
@@ -551,7 +811,8 @@
 
                 const el = document.createElement('div'); 
                 el.className = 'network-node group-node';
-                el.dataset.x = p.x; el.dataset.y = p.y; 
+                el.dataset.x = p.x; 
+                el.dataset.y = p.y; 
                 el.dataset.type = 'group';
                 el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px)`;
                 
@@ -574,7 +835,6 @@
                 nodes.appendChild(el);
             });
 
-            // 3. Member Nodes
             members.forEach(m => {
                 const p = state.positions.get(m.id);
                 if (!p) return;
@@ -582,7 +842,8 @@
                 const displayName = m.full_name || 'Member';
                 const el = document.createElement('div'); 
                 el.className = 'network-node member-node';
-                el.dataset.x = p.x; el.dataset.y = p.y;
+                el.dataset.x = p.x; 
+                el.dataset.y = p.y;
                 el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px)`;
                 
                 el.innerHTML = `
@@ -604,7 +865,7 @@
                 nodes.appendChild(el);
             });
 
-            lucide.createIcons();
+            if (window.lucide) window.lucide.createIcons();
             fitGraph();
         }
 
@@ -612,14 +873,21 @@
             const pts = Array.from(state.positions.values()).filter(p => !isNaN(p.x) && !isNaN(p.y));
             if (!pts.length) return;
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-            pts.forEach(p => { if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x; if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y; });
+            pts.forEach(p => { 
+                const r = p.r || 0;
+                if (p.x - r < minX) minX = p.x - r; 
+                if (p.x + r > maxX) maxX = p.x + r; 
+                if (p.y - r < minY) minY = p.y - r; 
+                if (p.y + r > maxY) maxY = p.y + r; 
+            });
 
-            const w = maxX - minX + 500;
-            const h = maxY - minY + 500;
+            const padding = state.viewMode === 'bubble' ? 100 : 500;
+            const w = maxX - minX + padding;
+            const h = maxY - minY + padding;
             const c = $('#network-container');
-            const scale = Math.min(c.offsetWidth / w, c.offsetHeight / h, 1.2);
+            const scale = Math.min(c.offsetWidth / w, c.offsetHeight / h, state.viewMode === 'bubble' ? 1.5 : 1.2);
 
-            if (isFinite(scale)) {
+            if (isFinite(scale) && scale > 0) {
                 state.zoom = scale;
                 state.panOffset.x = (c.offsetWidth / 2) - ((minX + maxX) / 2) * scale;
                 state.panOffset.y = (c.offsetHeight / 2) - ((minY + maxY) / 2) * scale;
@@ -627,50 +895,106 @@
             }
         }
 
+        function getGroupBaseScale() {
+            if (state.viewMode === 'bubble') return 1;
+            const inverseScale = 1 / Math.max(0.2, state.zoom);
+            return clamp(inverseScale * 0.7, 1, 3.5);
+        }
+
         function updateTransform() {
             $('#networkCanvas').style.transform = `translate(${state.panOffset.x}px, ${state.panOffset.y}px) scale(${state.zoom})`;
 
-            const inverseScale = 1 / Math.max(0.2, state.zoom);
-            const groupScale = clamp(inverseScale * 0.7, 1, 3.5);
+            state.currentGroupBaseScale = getGroupBaseScale();
 
-            document.querySelectorAll('.group-node').forEach(node => {
-                if (!node.classList.contains('magnified')) {
-                    const wx = parseFloat(node.dataset.x);
-                    const wy = parseFloat(node.dataset.y);
-                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${groupScale})`;
-                }
-            });
+            if (state.viewMode !== 'bubble') {
+                document.querySelectorAll('.group-node').forEach(node => {
+                    if (!node.classList.contains('magnified')) {
+                        const wx = parseFloat(node.dataset.x);
+                        const wy = parseFloat(node.dataset.y);
+                        node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${state.currentGroupBaseScale})`;
+                    }
+                });
+            }
         }
 
-        // --- ENHANCED MAGNIFYING GLASS ---
         function applyMagnification(mouseX, mouseY) {
             if (state.isDragging) return;
-            const radius = 250; const maxScale = 5.0; 
-            let nearestNode = null; let minDist = Infinity;
+            
+            const radius = 250; 
+            const maxScale = state.viewMode === 'bubble' ? 2.0 : 4.0;
+            let nearestNode = null; 
+            let minDist = Infinity;
+
+            const groupBaseScale = getGroupBaseScale();
 
             document.querySelectorAll('.network-node').forEach(node => {
+                // Skip magnification for label overlays
+                if (node.dataset.type === 'group-label') return;
+
                 const wx = parseFloat(node.dataset.x);
                 const wy = parseFloat(node.dataset.y);
                 const isGroup = node.dataset.type === 'group';
+                
+                if (state.viewMode === 'bubble' && isGroup) {
+                    return;
+                }
+
                 const screenX = (wx * state.zoom) + state.panOffset.x;
                 const screenY = (wy * state.zoom) + state.panOffset.y;
                 const dx = screenX - mouseX;
                 const dy = screenY - mouseY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                const currentBaseScale = isGroup ? (clamp((1/Math.max(0.2, state.zoom)) * 0.7, 1, 3.5)) : 1;
+                
+                let baseScale = 1;
+                if (state.viewMode !== 'bubble' && isGroup) {
+                    baseScale = groupBaseScale;
+                }
                 
                 if (dist < radius) {
                     const factor = 1 - (dist / radius);
-                    const ease = factor * factor * factor; 
-                    const finalScale = currentBaseScale + (ease * (maxScale - 1));
+                    const ease = factor * factor * factor;
+                    const magnifyAmount = ease * (maxScale - 1);
+                    const finalScale = baseScale + magnifyAmount;
+                    
                     node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${finalScale})`;
-                    if (dist < minDist) { minDist = dist; nearestNode = node; }
+                    
+                    if (dist < minDist) { 
+                        minDist = dist; 
+                        nearestNode = node; 
+                    }
                 } else {
-                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${currentBaseScale})`;
+                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale})`;
                 }
                 node.classList.remove('magnified');
             });
-            if (nearestNode && minDist < 100) nearestNode.classList.add('magnified');
+            
+            if (nearestNode && minDist < 100) {
+                nearestNode.classList.add('magnified');
+            }
+        }
+
+        function resetMagnification() {
+            const groupBaseScale = getGroupBaseScale();
+            
+            document.querySelectorAll('.network-node').forEach(node => {
+                if (state.viewMode === 'bubble' && node.classList.contains('bubble-group')) {
+                    return;
+                }
+                // Skip labels
+                if (node.dataset.type === 'group-label') return;
+                
+                const wx = parseFloat(node.dataset.x);
+                const wy = parseFloat(node.dataset.y);
+                const isGroup = node.dataset.type === 'group';
+                
+                let baseScale = 1;
+                if (state.viewMode !== 'bubble' && isGroup) {
+                    baseScale = groupBaseScale;
+                }
+                
+                node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale})`;
+                node.classList.remove('magnified');
+            });
         }
 
         function getFiltered() {
@@ -775,7 +1099,6 @@
                 state.roleFilter = e.target.dataset.role; onFiltersChanged();
             });
 
-            // Table Sorting Logic
             $$('th[data-sort]').forEach(th => {
                 th.onclick = () => {
                     const key = th.dataset.sort;
@@ -805,9 +1128,31 @@
                 $('#groupByFilter').value = 'affiliation'; state.groupBy = 'affiliation';
             };
             
-            // FULL RESET VIEW HANDLER
+            $('#viewToggleBtn').onclick = () => {
+                const btn = $('#viewToggleBtn');
+                const icon = btn.querySelector('i');
+                
+                if (state.viewMode === 'network') {
+                    state.viewMode = 'bubble';
+                    $('#viewModeText').innerText = "Switch to Network";
+                    if (icon) icon.setAttribute('data-lucide', 'share-2');
+                } else {
+                    state.viewMode = 'network';
+                    $('#viewModeText').innerText = "Switch to Bubbles";
+                    if (icon) icon.setAttribute('data-lucide', 'layout-grid');
+                }
+                
+                state.zoom = 1;
+                state.panOffset = { x: 0, y: 0 };
+                
+                if (window.lucide) window.lucide.createIcons();
+                
+                const list = getFiltered();
+                renderTable(list);
+                renderGraph(list);
+            };
+
             $('#resetViewBtn').onclick = () => {
-                // Reset State
                 state.searchQuery = '';
                 state.groupBy = 'affiliation';
                 state.eventFilterId = 'all';
@@ -816,18 +1161,15 @@
                 state.selectedTags.clear();
                 state.sort = { key: "connections", dir: "desc" };
 
-                // Reset UI Elements
                 $('#searchInput').value = '';
                 $('#groupByFilter').value = 'affiliation';
                 $('#eventFilter').value = 'all';
                 $('#countryFilter').value = 'all';
 
-                // Reset Role Buttons
                 $$('[data-role]').forEach(x => { x.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"; });
                 const allRoleBtn = $('[data-role="all"]');
                 if(allRoleBtn) allRoleBtn.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white";
 
-                // Reset Table Sort Headers
                 $$('th[data-sort]').forEach(h => { h.classList.remove('sort-asc', 'sort-desc', 'text-brand-600'); h.classList.add('text-slate-500'); });
                 const defaultSortTh = $('th[data-sort="connections"]');
                 if(defaultSortTh) {
@@ -836,33 +1178,30 @@
                     defaultSortTh.classList.add('text-brand-600');
                 }
 
-                // Apply Updates (triggers renderGraph which triggers fitGraph)
                 onFiltersChanged();
             };
 
-            const cv = $('#network-container'); let sx = 0, sy = 0;
+            const cv = $('#network-container'); 
+            let sx = 0, sy = 0;
 
             cv.onmousemove = e => {
                 const rect = cv.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
-                if (!state.isDragging) { applyMagnification(mouseX, mouseY); } 
-                else { state.panOffset.x = e.clientX - sx; state.panOffset.y = e.clientY - sy; updateTransform(); }
+                if (!state.isDragging) { 
+                    applyMagnification(mouseX, mouseY); 
+                } else { 
+                    state.panOffset.x = e.clientX - sx; 
+                    state.panOffset.y = e.clientY - sy; 
+                    updateTransform(); 
+                }
             };
 
             cv.onmouseleave = () => {
-                document.querySelectorAll('.network-node').forEach(node => {
-                     const wx = parseFloat(node.dataset.x); const wy = parseFloat(node.dataset.y);
-                     const isGroup = node.dataset.type === 'group';
-                     const currentBaseScale = isGroup ? (clamp((1/Math.max(0.2, state.zoom)) * 0.7, 1, 3.5)) : 1;
-                     node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${currentBaseScale})`;
-                     node.classList.remove('magnified');
-                });
+                resetMagnification();
             };
 
             cv.onmousedown = e => { 
-                // FIX: If clicking a node, prevent pan logic to allow click to register properly.
-                // This stops the node from shrinking immediately under the mouse.
                 if (e.target.closest('.network-node')) return;
 
                 if (e.target.id === 'networkCanvas' || e.target === cv || e.target.closest('#networkNodes')) { 
@@ -870,12 +1209,22 @@
                     sx = e.clientX - state.panOffset.x; 
                     sy = e.clientY - state.panOffset.y; 
                     cv.style.cursor = 'grabbing'; 
-                    cv.onmouseleave(); 
+                    resetMagnification();
                 } 
             };
             
-            window.onmouseup = () => { state.isDragging = false; cv.style.cursor = 'grab'; };
-            cv.onwheel = e => { e.preventDefault(); const s = e.deltaY > 0 ? 0.9 : 1.1; state.zoom = clamp(state.zoom * s, 0.1, 5); updateTransform(); cv.onmouseleave(); };
+            window.onmouseup = () => { 
+                state.isDragging = false; 
+                cv.style.cursor = 'grab'; 
+            };
+            
+            cv.onwheel = e => { 
+                e.preventDefault(); 
+                const s = e.deltaY > 0 ? 0.9 : 1.1; 
+                state.zoom = clamp(state.zoom * s, 0.1, 5); 
+                updateTransform(); 
+                resetMagnification();
+            };
             
             cv.ontouchstart = e => { 
                 if (e.target.closest('.network-node')) return;
@@ -885,14 +1234,18 @@
                     sy = e.touches[0].clientY - state.panOffset.y; 
                 } 
             };
-            cv.ontouchmove = e => { if (state.isDragging) { e.preventDefault(); state.panOffset.x = e.touches[0].clientX - sx; state.panOffset.y = e.touches[0].clientY - sy; updateTransform(); } };
+            cv.ontouchmove = e => { 
+                if (state.isDragging) { 
+                    e.preventDefault(); 
+                    state.panOffset.x = e.touches[0].clientX - sx; 
+                    state.panOffset.y = e.touches[0].clientY - sy; 
+                    updateTransform(); 
+                } 
+            };
             cv.ontouchend = () => { state.isDragging = false; };
 
-            lucide.createIcons();
+            if (window.lucide) window.lucide.createIcons();
 
-            // === OPTIMIZATION: PARALLEL EXECUTION ===
-            
-            // 1. Start Auth (Updates Header)
             const authPromise = initAuth({
                 onAuthReady: () => {
                     renderHeader(authState, t, state.lang);
@@ -901,18 +1254,12 @@
                 onAuthChange: () => renderHeader(authState, t, state.lang)
             });
 
-            // 2. Start Data Load (Simultaneously)
-            // Note: If RLS blocks this because user isn't logged in yet, it will return empty data,
-            // which is handled by the gate showing up below.
             const dataPromise = loadNetworkData();
 
-            // 3. Wait for both
             await Promise.all([authPromise, dataPromise]);
 
-            // 4. Finalize UI State
             $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
 
-            // 5. Determine if we show the gate or the content
             if (!authState.session) {
                 $('#signinGate').style.display = 'flex';
             } else {
