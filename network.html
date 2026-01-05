@@ -22,41 +22,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css">
 
-    <!-- External Tailwind Config (Extracted) -->
+    <!-- External Tailwind Config -->
     <script src="theme.js"></script>
 
     <!-- Custom CSS -->
     <style>
-        /* Mobile: Allow Scroll. Desktop: Hidden (Dashboard style) */
-        body {
-            overflow-y: auto;
-        }
+        body { overflow-y: auto; }
+        @media (min-width: 768px) { body { overflow: hidden; } }
 
-        @media (min-width: 768px) {
-            body {
-                overflow: hidden;
-            }
-        }
-
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-            background-clip: content-box;
-            border: 2px solid transparent;
-        }
-
-        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; background-clip: content-box; border: 2px solid transparent; }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; }
 
         /* Graph Canvas Styles */
         #network-container {
@@ -70,120 +47,45 @@
             touch-action: none;
             overflow: hidden;
         }
-
-        #network-container:active {
-            cursor: grabbing;
-        }
+        #network-container:active { cursor: grabbing; }
 
         #networkCanvas {
             transform-origin: 0 0;
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            will-change: transform;
-            /* Ensure 3D transform isn't used to flatten z-index */
-            transform-style: flat;
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            pointer-events: none; will-change: transform; transform-style: flat;
         }
 
-        #networkNodes {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .network-connections {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: visible;
-        }
+        #networkNodes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+        .network-connections { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 
         .network-node {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            cursor: pointer;
-            pointer-events: auto;
+            position: absolute; transform: translate(-50%, -50%);
+            cursor: pointer; pointer-events: auto;
             will-change: transform, z-index;
         }
 
-        /* Member Nodes Z-Index */
-        .member-node {
-            z-index: 10;
-        }
+        .member-node { z-index: 10; }
+        .group-node { z-index: 5; transition: transform 0.1s linear; }
+        .network-node.magnified { z-index: 1000 !important; }
 
-        /* Group Nodes Z-Index */
-        .group-node {
-            z-index: 5;
-            transition: transform 0.1s linear; 
-        }
+        /* Edges */
+        .network-edge { fill: none; stroke: #cbd5e1; stroke-width: 1.5px; stroke-opacity: 0.3; }
+        .collab-edge { fill: none; stroke: #f59e0b; stroke-width: 2px; stroke-opacity: 0.5; stroke-dasharray: 4; }
+        .dock-track { stroke: #cbd5e1; stroke-width: 4px; stroke-linecap: round; opacity: 0.3; }
 
-        /* High z-index when magnified - !important to force override */
-        .network-node.magnified {
-            z-index: 1000 !important;
-        }
-
-        /* Standard Edge (Person to Group) */
-        .network-edge {
-            fill: none;
-            stroke: #cbd5e1; /* Slate 300 */
-            stroke-width: 1.5px;
-            stroke-opacity: 0.3;
-        }
-
-        /* Collaborator Edge (Person to Person) */
-        .collab-edge {
-            fill: none;
-            stroke: #f59e0b; /* Amber 500 */
-            stroke-width: 2px;
-            stroke-opacity: 0.5;
-            stroke-dasharray: 4;
-        }
-
-        /* Table Sorting Arrows */
-        th[data-sort] {
-            user-select: none;
-        }
-        th.sort-asc::after {
-            content: ' ▲';
-            font-size: 10px;
-            margin-left: 4px;
-            color: #4f46e5;
-        }
-
-        th.sort-desc::after {
-            content: ' ▼';
-            font-size: 10px;
-            margin-left: 4px;
-            color: #4f46e5;
-        }
+        /* Table Sorting */
+        th[data-sort] { user-select: none; }
+        th.sort-asc::after { content: ' ▲'; font-size: 10px; margin-left: 4px; color: #4f46e5; }
+        th.sort-desc::after { content: ' ▼'; font-size: 10px; margin-left: 4px; color: #4f46e5; }
 
         #flash {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-150%);
-            background-color: #0f172a;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 9999px;
-            font-weight: 500;
-            font-size: 0.9rem;
-            z-index: 9999;
-            opacity: 0;
+            position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-150%);
+            background-color: #0f172a; color: white; padding: 10px 20px; border-radius: 9999px;
+            font-weight: 500; font-size: 0.9rem; z-index: 9999; opacity: 0;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
-
-        #flash.visible {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
+        #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 
     <!-- Lucide Icons -->
@@ -192,146 +94,103 @@
 
 <body class="text-slate-800 flex flex-col h-full selection:bg-brand-100 selection:text-brand-900 font-sans bg-gray-50">
 
-    <!-- Note: Header is injected by layout.js -->
-
     <div id="flash" role="status" aria-live="polite"></div>
 
-    <!-- ================= MAIN CONTENT ================= -->
+    <!-- MAIN CONTENT -->
     <main class="flex-1 relative bg-gray-50 overflow-visible md:overflow-hidden">
 
-        <!-- Loader & Auth Gate -->
-        <div id="loadingScreen"
-            class="absolute inset-0 bg-gray-50 z-[60] flex flex-col items-center justify-center transition-opacity duration-500 fixed md:absolute">
+        <!-- Loaders -->
+        <div id="loadingScreen" class="absolute inset-0 bg-gray-50 z-[60] flex flex-col items-center justify-center transition-opacity duration-500 fixed md:absolute">
             <div class="w-8 h-8 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin mb-4"></div>
-            <span class="text-sm font-medium text-slate-500 animate-pulse">Building network graph...</span>
+            <span class="text-sm font-medium text-slate-500 animate-pulse">Optimizing Layout...</span>
         </div>
 
-        <div id="signinGate"
-            class="absolute inset-0 bg-gray-50/90 backdrop-blur-sm z-[55] flex items-center justify-center fixed md:absolute"
-            style="display:none;">
+        <div id="signinGate" class="absolute inset-0 bg-gray-50/90 backdrop-blur-sm z-[55] flex items-center justify-center fixed md:absolute" style="display:none;">
             <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 max-w-md text-center mx-4">
                 <div class="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i data-lucide="lock" class="w-6 h-6 text-brand-600"></i>
                 </div>
                 <h2 class="font-display font-bold text-2xl text-slate-900 mb-2">Member Network</h2>
-                <p class="text-slate-500 mb-6 text-sm">Sign in to visualize connections between researchers,
-                    organizations, and topics.</p>
-                <a href="signin.html"
-                    class="inline-flex items-center justify-center px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors w-full">Sign
-                    In</a>
+                <p class="text-slate-500 mb-6 text-sm">Sign in to visualize connections.</p>
+                <a href="signin.html" class="inline-flex items-center justify-center px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors w-full">Sign In</a>
             </div>
         </div>
 
         <!-- CONTAINER -->
         <div class="max-w-[1800px] mx-auto w-full h-auto md:h-full flex flex-col md:flex-row gap-4 p-4 md:p-6 relative">
 
-            <!-- LEFT SIDEBAR: CONTROLS & STATS -->
-            <aside
-                class="flex-none w-full md:w-80 bg-white border border-gray-200 rounded-2xl flex flex-col shadow-sm overflow-hidden h-auto md:h-full shrink-0">
-
-                <!-- Header & Search -->
+            <!-- LEFT SIDEBAR -->
+            <aside class="flex-none w-full md:w-80 bg-white border border-gray-200 rounded-2xl flex flex-col shadow-sm overflow-hidden h-auto md:h-full shrink-0">
                 <div class="p-5 border-b border-gray-100 space-y-4">
                     <h2 class="font-display font-bold text-lg text-brand-700 flex items-center gap-2">
                         <i data-lucide="share-2" class="w-5 h-5"></i> Explore Network
                     </h2>
 
                     <div class="relative z-30">
-                        <i data-lucide="search"
-                            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                        <input type="text" id="searchInput"
-                            class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-500 transition-all outline-none"
-                            placeholder="Search people, orgs...">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="searchInput" class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-100 outline-none" placeholder="Search people, orgs...">
                     </div>
 
-                    <!-- Filters -->
                     <div class="grid grid-cols-1 gap-3">
-                        
-                        <!-- Group By Filter (NEW) -->
                         <div>
                             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">Group Nodes By</label>
                             <div class="relative">
-                                <select id="groupByFilter"
-                                    class="w-full appearance-none bg-slate-50 border border-gray-200 text-slate-700 text-xs font-bold rounded-lg pl-3 pr-8 py-2.5 focus:ring-2 focus:ring-brand-100 outline-none">
+                                <select id="groupByFilter" class="w-full appearance-none bg-slate-50 border border-gray-200 text-slate-700 text-xs font-bold rounded-lg pl-3 pr-8 py-2.5 focus:ring-2 focus:ring-brand-100 outline-none">
                                     <option value="affiliation">Organization</option>
                                     <option value="country">Country</option>
                                 </select>
-                                <i data-lucide="chevron-down"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
                             </div>
                         </div>
 
-                        <!-- Secondary Filters -->
                         <div class="grid grid-cols-2 gap-2">
-                             <!-- Event Filter -->
                             <div class="relative">
-                                <select id="eventFilter"
-                                    class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
+                                <select id="eventFilter" class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
                                     <option value="all">All Events</option>
                                 </select>
-                                <i data-lucide="chevron-down"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
                             </div>
-
-                            <!-- Country Filter -->
                             <div class="relative">
-                                <select id="countryFilter"
-                                    class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
+                                <select id="countryFilter" class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
                                     <option value="all">All Countries</option>
                                 </select>
-                                <i data-lucide="chevron-down"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Role Chips -->
                     <div class="flex flex-wrap gap-2 pt-1">
-                        <button
-                            class="px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white"
-                            data-role="all">All Roles</button>
-                        <button
-                            class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"
-                            data-role="speakers">Speakers</button>
-                        <button
-                            class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"
-                            data-role="organizers">Hosts</button>
+                        <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white" data-role="all">All Roles</button>
+                        <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50" data-role="speakers">Speakers</button>
+                        <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50" data-role="organizers">Hosts</button>
                     </div>
                 </div>
 
-                <!-- Tag Filters (Scrollable) -->
                 <div class="flex-1 overflow-y-auto custom-scrollbar p-5 min-h-[200px] md:min-h-0">
                     <div class="flex items-center justify-between mb-2">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Interests &
-                            Tags</label>
-                        <button id="clearFiltersBtn"
-                            class="text-[10px] font-bold text-brand-600 hover:underline">Clear</button>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Interests & Tags</label>
+                        <button id="clearFiltersBtn" class="text-[10px] font-bold text-brand-600 hover:underline">Clear</button>
                     </div>
                     <div id="selectedTagsContainer" class="flex flex-wrap gap-1.5 mb-3 empty:hidden"></div>
                     <div id="tagFilters" class="space-y-0.5"></div>
                 </div>
 
-                <!-- STATS (Footer of Sidebar) -->
                 <div class="p-4 bg-slate-50 border-t border-gray-200 mt-auto">
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                            <span id="statMembers"
-                                class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
+                            <span id="statMembers" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Members</span>
                         </div>
                         <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                            <span id="statConnections"
-                                class="block text-xl font-display font-bold text-brand-600 leading-none mb-0.5">0</span>
-                            <span
-                                class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Connections</span>
+                            <span id="statConnections" class="block text-xl font-display font-bold text-brand-600 leading-none mb-0.5">0</span>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Connections</span>
                         </div>
                         <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                            <span id="statOrgs"
-                                class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
+                            <span id="statOrgs" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Orgs</span>
                         </div>
                         <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                            <span id="statEvents"
-                                class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
+                            <span id="statEvents" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Events</span>
                         </div>
                     </div>
@@ -341,27 +200,23 @@
             <!-- RIGHT COLUMN -->
             <div class="flex-1 flex flex-col gap-4 min-w-0 h-auto md:h-full">
 
-                <!-- CARD 2: GRAPH (Top) -->
-                <section id="network-container"
-                    class="md:flex-[2] bg-white border border-gray-200 rounded-2xl shadow-sm relative overflow-hidden h-[500px] md:h-auto shrink-0 group">
+                <!-- VISUALIZATION -->
+                <section id="network-container" class="md:flex-[2] bg-white border border-gray-200 rounded-2xl shadow-sm relative overflow-hidden h-[500px] md:h-auto shrink-0 group">
                     <div id="networkCanvas">
                         <svg class="network-connections" id="networkConnections"></svg>
                         <div id="networkNodes"></div>
                     </div>
 
-                    <!-- Overlay Controls -->
                     <div class="absolute top-4 right-4 flex gap-2 z-40">
                         <div class="flex items-center gap-2 bg-white/90 backdrop-blur border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm text-xs text-slate-600 font-medium">
                             <i data-lucide="scan-search" class="w-4 h-4 text-brand-500"></i>
                             <span>Hover to Magnify</span>
                         </div>
-                        <button id="resetViewBtn"
-                            class="px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
+                        <button id="resetViewBtn" class="px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
                             Reset View
                         </button>
                     </div>
 
-                    <!-- Legend -->
                     <div class="absolute bottom-4 left-4 z-40 pointer-events-none">
                         <div class="flex flex-col gap-1.5 bg-white/80 backdrop-blur p-2 rounded-lg border border-gray-100 shadow-sm text-[10px] font-medium text-slate-600">
                             <div class="flex items-center gap-2">
@@ -372,42 +227,36 @@
                                 <div class="w-6 h-0.5 bg-amber-500 opacity-60"></div>
                                 <span>Collaborator</span>
                             </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-1 h-4 bg-slate-300 opacity-50 rounded-full mx-2"></div>
+                                <span>Drag vertical track</span>
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- CARD 3: TABLE (Bottom) -->
-                <section
-                    class="md:flex-1 bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden h-[500px] md:h-auto shrink-0">
+                <!-- TABLE -->
+                <section class="md:flex-1 bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden h-[500px] md:h-auto shrink-0">
                     <div class="overflow-auto custom-scrollbar flex-1">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-gray-50 sticky top-0 z-20 shadow-sm">
                                 <tr>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                                        data-sort="name">Name</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                                        data-sort="affiliation">Affiliation / Institution</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-1/3 hidden lg:table-cell"
-                                        data-sort="interests">Interests</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden sm:table-cell"
-                                        data-sort="country">Country</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                                        data-sort="role">Role</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="name">Name</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="affiliation">Affiliation / Institution</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-1/3 hidden lg:table-cell" data-sort="interests">Interests</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden sm:table-cell" data-sort="country">Country</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors text-right" data-sort="connections">Connections</th>
                                 </tr>
                             </thead>
-                            <tbody id="members-table-body" class="divide-y divide-gray-100 text-sm text-slate-700">
-                            </tbody>
+                            <tbody id="members-table-body" class="divide-y divide-gray-100 text-sm text-slate-700"></tbody>
                         </table>
                     </div>
                 </section>
             </div>
-
         </div>
     </main>
 
-    <!-- Note: Modal is now injected by clickprofile.js -->
-
-    <!-- ================= LOGIC ================= -->
+    <!-- LOGIC -->
     <script type="module">
         import { renderLayout } from './layout.js';
         import { supabase, authState, initAuth, signOut } from './auth.js';
@@ -421,39 +270,27 @@
             eventsById: new Map(), orgIndex: new Map(), tagIndex: new Map(), tagCounts: new Map(),
             allCanonicalToDisplay: new Map(), connections: [], nodes: new Map(),
             positions: new Map(), panOffset: { x: 0, y: 0 }, zoom: 1,
-            sort: { key: "name", dir: "asc" }, roleFilter: "all", eventFilterId: "all", countryFilterId: "all",
-            groupBy: "affiliation", // 'affiliation' or 'country'
+            sort: { key: "connections", dir: "desc" }, 
+            roleFilter: "all", eventFilterId: "all", countryFilterId: "all",
+            groupBy: "affiliation", 
             searchQuery: "", selectedTags: new Set(),
             lang: localStorage.getItem("lang") || "en",
             isDragging: false,
-            // Country Data mapping
             countries: {
                 "US": "United States", "MX": "Mexico", "CA": "Canada", "CO": "Colombia", "BR": "Brazil", 
                 "CL": "Chile", "AR": "Argentina", "PE": "Peru", "ES": "Spain", "FR": "France", "DE": "Germany",
-                "BE": "Belgium", "NL": "Netherlands", "IT": "Italy", "UK": "United Kingdom", "GB": "United Kingdom",
+                "BE": "Belgium", "NL": "Netherlands", "IT": "Italy", "UK": "UK", "GB": "UK",
                 "IN": "India", "CN": "China", "AU": "Australia"
             }
         };
 
-        const t = {
-            en: {
-                auth: { signin: "Sign in", signout: "Sign out" },
-                nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
-                footer: { note: "Bilingual, community-driven seminar on agrivoltaics in the Americas." }
-            },
-            es: {
-                auth: { signin: "Ingresar", signout: "Salir" },
-                nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
-                footer: { note: "Seminario bilingüe impulsado por la comunidad sobre agrovoltaica en las Américas." }
-            }
-        };
+        const t = { en: { auth: { signin: "Sign in", signout: "Sign out" } }, es: { auth: { signin: "Ingresar", signout: "Salir" } } };
 
         const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
         const highlight = (text, q) => { if (!q || !text) return text || ""; try { const rx = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "ig"); return (text + "").replace(rx, '<span class="bg-yellow-100 text-yellow-800 px-0.5 rounded">$1</span>'); } catch { return text; } };
         const debounce = (fn, ms = 200) => { let t = null; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
         async function loadNetworkData() {
-            // Fetch profiles
             const [profiles, speakers, events] = await Promise.all([
                 supabase.from('profiles').select('*').order('full_name'),
                 supabase.from('event_speakers').select('event_id, profile_id'),
@@ -463,12 +300,10 @@
             state.members.forEach(m => state.profileById.set(m.id, m));
             (events.data || []).forEach(e => state.eventsById.set(e.id, e));
 
-            // Populate Event Filter
             const eventSelect = $('#eventFilter');
             eventSelect.innerHTML = '<option value="all">All Events</option>';
             state.eventsById.forEach(e => eventSelect.add(new Option(new Date(e.start_time).toLocaleDateString() + ' - ' + e.title_en, e.id)));
 
-            // Populate Country Filter
             const countrySelect = $('#countryFilter');
             countrySelect.innerHTML = '<option value="all">All Countries</option>';
             const uniqueCountries = new Set(state.members.map(m => m.country).filter(Boolean));
@@ -484,7 +319,6 @@
                 state.speakersByProfileId.get(s.profile_id).add(s.event_id);
             });
 
-            // Indices & Tags (Also used for default counting stats)
             state.members.forEach(m => {
                 const org = m.affiliation?.trim();
                 if (org) { if (!state.orgIndex.has(org)) state.orgIndex.set(org, new Set()); state.orgIndex.get(org).add(m.id); }
@@ -506,7 +340,6 @@
                 });
             });
 
-            // Connections
             const conns = []; const processed = new Set();
             state.members.forEach(m => {
                 if(m.collaborators && Array.isArray(m.collaborators)) {
@@ -540,110 +373,118 @@
                 row.onclick = () => { if (isSel) state.selectedTags.delete(tag); else state.selectedTags.add(tag); onFiltersChanged(); };
                 c.appendChild(row);
             });
-
             const selC = $('#selectedTagsContainer'); selC.innerHTML = '';
             state.selectedTags.forEach(t => selC.insertAdjacentHTML('beforeend', `<span class="px-2 py-0.5 bg-brand-50 text-brand-700 border border-brand-100 rounded text-[10px] font-bold flex items-center gap-1">${state.allCanonicalToDisplay.get(t)} <button onclick="document.dispatchEvent(new CustomEvent('remTag',{detail:'${t}'}))">×</button></span>`));
         }
         document.addEventListener('remTag', e => { state.selectedTags.delete(e.detail); onFiltersChanged(); });
 
         /**
-         * Layout Algorithm: Aggressive Horizontal Spread (Wide Aspect Ratio)
+         * UPDATED LAYOUT ENGINE
+         * 1. Splits "Unaffiliated" (The Dock) from "Groups" (The Stage)
+         * 2. Packs Groups in a Grid
+         * 3. Packs Dock in a Vertical Scroll Column
          */
         function calculatePositions(members) {
             const byGroup = new Map();
-            const getGroupKey = (m) => {
-                if (state.groupBy === 'country') {
-                    return m.country ? (state.countries[m.country] || m.country) : "Unknown Location";
-                }
-                return m.affiliation?.trim() || "Unaffiliated";
-            };
-
+            const dockMembers = [];
+            
+            // 1. Separation
             members.forEach(m => {
-                const key = getGroupKey(m);
-                if (!byGroup.has(key)) byGroup.set(key, []);
-                byGroup.get(key).push(m);
+                let key = "";
+                if (state.groupBy === 'country') {
+                    key = m.country ? (state.countries[m.country] || m.country) : "Unknown";
+                } else {
+                    key = m.affiliation?.trim() || "Unaffiliated";
+                }
+
+                // Define who goes to the "Dock" (Vertical list) vs "Stage" (Clusters)
+                // "Unaffiliated", "Independent", "Consultant", "Unknown" usually go to dock
+                const dockKeys = ["Unaffiliated", "Independent", "Consultant", "Unknown Location", "Unknown", ""];
+                
+                if (dockKeys.some(k => k.toLowerCase() === key.toLowerCase())) {
+                    dockMembers.push(m);
+                } else {
+                    if (!byGroup.has(key)) byGroup.set(key, []);
+                    byGroup.get(key).push(m);
+                }
             });
 
+            // 2. STAGE LAYOUT (Circle Packing for Groups)
             const clusters = [];
-            let totalArea = 0;
-
+            let totalStageArea = 0;
+            
             for (const [name, list] of byGroup.entries()) {
                 const count = list.length;
                 const ringR = Math.max(160, (count * 55) / (2 * Math.PI));
                 const size = (ringR * 2) + 200; 
-                const area = size * size;
-                totalArea += area;
+                totalStageArea += size * size;
                 clusters.push({ name, list, ringR, size });
             }
-
             clusters.sort((a, b) => b.list.length - a.list.length);
 
-            // FORCE WIDE ASPECT RATIO (e.g., 3.5:1 width-to-height)
-            // Area = w * h. w = 3.5h. Area = 3.5h^2. h = sqrt(area/3.5). w = 3.5 * sqrt(area/3.5)
-            const aspectRatio = 3.5;
-            const h = Math.sqrt(totalArea / aspectRatio);
-            const TARGET_ROW_WIDTH = h * aspectRatio;
-            
-            const CLUSTER_GAP = 250;
+            // Tighter Packing Ratio (Square/Wide)
+            const aspectRatio = 2.0; 
+            const TARGET_ROW_WIDTH = Math.sqrt(totalStageArea * aspectRatio) + 500;
+            const CLUSTER_GAP = 220;
 
             const pos = new Map();
-            let currentRowX = 0;
-            let currentRowY = 0;
-            let rowItems = [];
-            let maxRowHeight = 0;
+            let rowX = 0, rowY = 0, rowItems = [], maxH = 0;
+            let minStageX = 0; // To track where to put the dock
 
             const flushRow = () => {
-                const rowTotalWidth = currentRowX - CLUSTER_GAP;
+                const rowTotalWidth = rowX - CLUSTER_GAP;
                 let startX = -(rowTotalWidth / 2);
+                if (startX < minStageX) minStageX = startX; // Track leftmost point
 
                 rowItems.forEach(c => {
                     const cx = startX + (c.size / 2);
-                    const cy = currentRowY + (c.size / 2);
+                    const cy = rowY + (c.size / 2);
                     
-                    if (c.name !== "Unaffiliated" && c.name !== "Unknown Location") {
-                         pos.set(`group-${c.name}`, { x: cx, y: cy });
-                    }
+                    pos.set(`group-${c.name}`, { x: cx, y: cy });
 
                     if (c.list.length > 0) {
                         const step = (Math.PI * 2) / c.list.length;
                         c.list.forEach((m, i) => {
                             const angle = step * i;
-                            const r = c.ringR + (i % 2 === 0 ? 0 : 50); // Stagger radius
-                            pos.set(m.id, {
-                                x: cx + Math.cos(angle) * r,
-                                y: cy + Math.sin(angle) * r
-                            });
+                            const r = c.ringR + (i % 2 === 0 ? 0 : 50); 
+                            pos.set(m.id, { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r });
                         });
                     }
                     startX += c.size + CLUSTER_GAP;
                 });
-
-                currentRowY += maxRowHeight + CLUSTER_GAP;
-                currentRowX = 0;
-                rowItems = [];
-                maxRowHeight = 0;
+                rowY += maxH + CLUSTER_GAP;
+                rowX = 0; rowItems = []; maxH = 0;
             };
 
             clusters.forEach(c => {
-                // Fill until we hit the aggressive wide width
-                if (currentRowX + c.size > TARGET_ROW_WIDTH && rowItems.length > 0) {
-                    flushRow();
-                }
+                if (rowX + c.size > TARGET_ROW_WIDTH && rowItems.length > 0) flushRow();
                 rowItems.push(c);
-                currentRowX += c.size + CLUSTER_GAP;
-                if (c.size > maxRowHeight) maxRowHeight = c.size;
+                rowX += c.size + CLUSTER_GAP;
+                if (c.size > maxH) maxH = c.size;
+            });
+            if (rowItems.length > 0) flushRow();
+            
+            // Center Stage Vertically
+            const stageHeight = rowY;
+            for (const [k, p] of pos.entries()) p.y -= stageHeight / 2;
+
+            // 3. DOCK LAYOUT (Vertical Column on Left)
+            // Sort A-Z
+            dockMembers.sort((a,b) => (a.full_name||"").localeCompare(b.full_name||""));
+            
+            // Position Dock to the left of the leftmost stage element
+            const DOCK_X = (minStageX || -2500) - 2400; 
+            const DOCK_ITEM_H = 40; // Overlap factor
+            const totalDockH = dockMembers.length * DOCK_ITEM_H;
+            
+            dockMembers.forEach((m, i) => {
+                pos.set(m.id, { 
+                    x: DOCK_X, 
+                    y: (i * DOCK_ITEM_H) - (totalDockH / 2) 
+                });
             });
 
-            if (rowItems.length > 0) flushRow();
-
-            // Center vertically
-            const totalHeight = currentRowY - CLUSTER_GAP;
-            const vOffset = -(totalHeight / 2);
-            for (const [key, p] of pos.entries()) {
-                p.y += vOffset;
-            }
-
-            return { pos, clusters };
+            return { pos, clusters, dockX: DOCK_X, dockYMin: -(totalDockH/2), dockYMax: (totalDockH/2) };
         }
 
         function renderGraph(members) {
@@ -658,23 +499,32 @@
 
             let paths = '';
             
-            // a. Structural Edges
-            const getGroupKey = (m) => {
-                if (state.groupBy === 'country') return m.country ? (state.countries[m.country] || m.country) : "Unknown Location";
-                return m.affiliation?.trim() || "Unaffiliated";
-            };
+            // 0. Render Dock Track (Slider visual)
+            if (layout.dockYMin !== undefined && layout.dockYMax !== undefined) {
+                 const pad = 50;
+                 paths += `<path d="M ${layout.dockX + 120} ${layout.dockYMin - pad} L ${layout.dockX + 120} ${layout.dockYMax + pad}" class="dock-track" />`;
+            }
 
+            // 1. Edges
+            // Group Connections
             members.forEach(m => {
-                const gName = getGroupKey(m);
+                // Don't draw structural lines for dock members
                 const mp = state.positions.get(m.id);
-                const gp = state.positions.get(`group-${gName}`); 
-                
-                if (mp && gp && !isNaN(mp.x) && !isNaN(mp.y) && !isNaN(gp.x) && !isNaN(gp.y)) {
+                // Check if this member is part of a group node
+                let groupKey = "";
+                 if (state.groupBy === 'country') {
+                    groupKey = m.country ? (state.countries[m.country] || m.country) : "Unknown";
+                } else {
+                    groupKey = m.affiliation?.trim() || "Unaffiliated";
+                }
+                const gp = state.positions.get(`group-${groupKey}`);
+
+                if (mp && gp) {
                     paths += `<path d="M ${mp.x} ${mp.y} L ${gp.x} ${gp.y}" class="network-edge"/>`;
                 }
             });
 
-            // b. Collaborator Edges
+            // Collab Connections
             state.connections.forEach(conn => {
                 const p1 = state.positions.get(conn.source);
                 const p2 = state.positions.get(conn.target);
@@ -687,19 +537,15 @@
 
             svg.innerHTML = paths;
 
-            // 2. Render Group Nodes
+            // 2. Group Nodes
             layout.clusters.forEach(cluster => {
-                const name = cluster.name;
-                if (name === "Unaffiliated" || name === "Unknown Location") return;
-                
-                const p = state.positions.get(`group-${name}`);
+                const p = state.positions.get(`group-${cluster.name}`);
                 if (!p) return;
                 
                 const count = cluster.list.length;
                 const isCountry = state.groupBy === 'country';
                 const icon = isCountry ? 'globe-2' : 'building-2';
                 const colorClass = isCountry ? 'bg-indigo-900 ring-indigo-100' : 'bg-slate-900 ring-white';
-                const badgeClass = isCountry ? 'bg-indigo-500' : 'bg-brand-500';
 
                 const el = document.createElement('div'); 
                 el.className = 'network-node group-node';
@@ -713,30 +559,28 @@
                             <div class="w-16 h-16 ${colorClass} rounded-2xl flex items-center justify-center shadow-lg ring-4 relative z-10">
                                 <i data-lucide="${icon}" class="text-white w-8 h-8"></i>
                             </div>
-                            <div class="absolute -top-2 -right-2 w-7 h-7 ${badgeClass} rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-white shadow-sm z-20">
+                            <div class="absolute -top-2 -right-2 w-7 h-7 bg-brand-500 rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-white shadow-sm z-20">
                                 ${count}
                             </div>
                         </div>
                         <div class="px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm max-w-[280px] text-center relative z-20">
-                             <span class="text-sm font-black text-slate-800 uppercase tracking-tight leading-none block">${name}</span>
+                             <span class="text-sm font-black text-slate-800 uppercase tracking-tight leading-none block">${cluster.name}</span>
                         </div>
                     </div>
                 `;
-                el.onclick = (e) => { e.stopPropagation(); $('#searchInput').value = name; onFiltersChanged(); };
+                el.onclick = (e) => { e.stopPropagation(); $('#searchInput').value = cluster.name; onFiltersChanged(); };
                 nodes.appendChild(el);
             });
 
-            // 3. Render Member Nodes
+            // 3. Member Nodes
             members.forEach(m => {
                 const p = state.positions.get(m.id);
-                if (!p || isNaN(p.x) || isNaN(p.y)) return;
+                if (!p) return;
 
                 const displayName = m.full_name || 'Member';
-
                 const el = document.createElement('div'); 
                 el.className = 'network-node member-node';
                 el.dataset.x = p.x; el.dataset.y = p.y;
-                el.dataset.type = 'member';
                 el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px)`;
                 
                 el.innerHTML = `
@@ -788,9 +632,9 @@
             const groupScale = clamp(inverseScale * 0.7, 1, 3.5);
 
             document.querySelectorAll('.group-node').forEach(node => {
-                const wx = parseFloat(node.dataset.x);
-                const wy = parseFloat(node.dataset.y);
                 if (!node.classList.contains('magnified')) {
+                    const wx = parseFloat(node.dataset.x);
+                    const wy = parseFloat(node.dataset.y);
                     node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${groupScale})`;
                 }
             });
@@ -799,53 +643,32 @@
         // --- ENHANCED MAGNIFYING GLASS ---
         function applyMagnification(mouseX, mouseY) {
             if (state.isDragging) return;
-
-            const radius = 250; 
-            const maxScale = 5.0; 
-
-            // Find nearest node to bring to front
-            let nearestNode = null;
-            let minDist = Infinity;
+            const radius = 250; const maxScale = 5.0; 
+            let nearestNode = null; let minDist = Infinity;
 
             document.querySelectorAll('.network-node').forEach(node => {
                 const wx = parseFloat(node.dataset.x);
                 const wy = parseFloat(node.dataset.y);
                 const isGroup = node.dataset.type === 'group';
-
                 const screenX = (wx * state.zoom) + state.panOffset.x;
                 const screenY = (wy * state.zoom) + state.panOffset.y;
-
                 const dx = screenX - mouseX;
                 const dy = screenY - mouseY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-
-                // Default reset
                 const currentBaseScale = isGroup ? (clamp((1/Math.max(0.2, state.zoom)) * 0.7, 1, 3.5)) : 1;
                 
                 if (dist < radius) {
                     const factor = 1 - (dist / radius);
                     const ease = factor * factor * factor; 
                     const finalScale = currentBaseScale + (ease * (maxScale - 1));
-                    
                     node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${finalScale})`;
-                    
-                    // Track nearest for z-index popping
-                    if (dist < minDist) {
-                        minDist = dist;
-                        nearestNode = node;
-                    }
+                    if (dist < minDist) { minDist = dist; nearestNode = node; }
                 } else {
                     node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${currentBaseScale})`;
                 }
-                
-                // Clear magnified class from everyone first
                 node.classList.remove('magnified');
             });
-
-            // Apply magnified class ONLY to the absolute nearest node within a tight threshold
-            if (nearestNode && minDist < 100) {
-                nearestNode.classList.add('magnified');
-            }
+            if (nearestNode && minDist < 100) nearestNode.classList.add('magnified');
         }
 
         function getFiltered() {
@@ -854,21 +677,14 @@
             if (state.roleFilter === 'speakers') ids = new Set([...ids].filter(id => state.isSpeaker.has(id)));
             else if (state.roleFilter === 'organizers') ids = new Set([...ids].filter(id => ['organizer', 'admin'].includes(state.profileById.get(id).role)));
 
-            if (state.eventFilterId !== 'all') {
-                ids = new Set([...ids].filter(id => state.speakersByProfileId.get(id)?.has(state.eventFilterId)));
-            }
-
-            if (state.countryFilterId !== 'all') {
-                ids = new Set([...ids].filter(id => state.profileById.get(id).country === state.countryFilterId));
-            }
+            if (state.eventFilterId !== 'all') ids = new Set([...ids].filter(id => state.speakersByProfileId.get(id)?.has(state.eventFilterId)));
+            if (state.countryFilterId !== 'all') ids = new Set([...ids].filter(id => state.profileById.get(id).country === state.countryFilterId));
 
             if (state.searchQuery) {
                 const q = state.searchQuery.toLowerCase();
                 ids = new Set([...ids].filter(id => {
                     const m = state.profileById.get(id);
-                    const name = m.full_name || "";
-                    const aff = m.affiliation || "";
-                    return name.toLowerCase().includes(q) || aff.toLowerCase().includes(q);
+                    return (m.full_name||"").toLowerCase().includes(q) || (m.affiliation||"").toLowerCase().includes(q);
                 }));
             }
 
@@ -881,29 +697,52 @@
 
             const res = [...ids].map(id => state.profileById.get(id));
             const k = state.sort.key; const d = state.sort.dir === 'asc' ? 1 : -1;
-            res.sort((a, b) => (a[k === 'name' ? 'full_name' : k] || "").localeCompare(b[k === 'name' ? 'full_name' : k] || "") * d);
+            
+            res.sort((a, b) => {
+                if (k === 'connections') {
+                     const ca = state.connections.filter(c => c.source === a.id || c.target === a.id).length;
+                     const cb = state.connections.filter(c => c.source === b.id || c.target === b.id).length;
+                     return (ca - cb) * d;
+                }
+                return (a[k === 'name' ? 'full_name' : k] || "").localeCompare(b[k === 'name' ? 'full_name' : k] || "") * d;
+            });
             return res;
         }
 
         function renderTable(list) {
             $('#members-table-body').innerHTML = list.map(m => {
-                const isSp = state.isSpeaker.has(m.id);
-                const isOrg = ['organizer', 'admin'].includes(m.role);
                 const displayName = m.full_name || 'Member';
                 const countryName = m.country ? (state.countries[m.country] || m.country) : '—';
+                const connCount = state.connections.filter(c => c.source === m.id || c.target === m.id).length;
 
                 return `<tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="document.dispatchEvent(new CustomEvent('openProfile',{detail:'${m.id}'}))">
-              <td class="py-2.5 px-6 border-b border-gray-50 font-medium text-slate-900">${highlight(displayName, state.searchQuery)}</td>
+              <td class="py-2.5 px-6 border-b border-gray-50 font-medium text-slate-900">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden text-xs text-slate-500 font-bold shrink-0 ring-1 ring-gray-100">
+                        ${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : displayName[0].toUpperCase()}
+                    </div>
+                    <span>${highlight(displayName, state.searchQuery)}</span>
+                </div>
+              </td>
               <td class="py-2.5 px-6 border-b border-gray-50 text-slate-500">${highlight(m.affiliation || '—', state.searchQuery)}</td>
               <td class="py-2.5 px-6 border-b border-gray-50 text-slate-400 truncate max-w-xs hidden lg:table-cell">${m.fields_of_study || '—'}</td>
               <td class="py-2.5 px-6 border-b border-gray-50 text-slate-500 hidden sm:table-cell">${countryName}</td>
-              <td class="py-2.5 px-6 border-b border-gray-50 text-xs space-x-1">
-                 ${isOrg ? '<span class="px-2 py-0.5 rounded bg-brand-50 text-brand-700 font-bold border border-brand-100">Host</span>' : ''}
-                 ${isSp ? '<span class="px-2 py-0.5 rounded bg-orange-50 text-orange-700 font-bold border border-orange-100">Speaker</span>' : ''}
-                 ${!isOrg && !isSp ? '<span class="px-2 py-0.5 rounded bg-gray-100 text-slate-500 font-bold border border-gray-200">Member</span>' : ''}
+              <td class="py-2.5 px-6 border-b border-gray-50 text-right">
+                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-600">
+                    ${connCount}
+                 </span>
               </td>
             </tr>`;
             }).join('');
+            
+             list.forEach(m => {
+                if (m.avatar_url && !m.avatar_url.startsWith('http')) {
+                    getAvatarUrl(m.avatar_url).then(u => {
+                        const img = document.querySelector(`tr[onclick*="${m.id}"] img`);
+                        if(img && u) img.src = u;
+                    });
+                }
+            });
         }
 
         document.addEventListener('openProfile', e => {
@@ -920,7 +759,6 @@
 
         (async function () {
             initSharedUI({ onLangSwitch: () => location.reload(), onSignOut: signOut });
-
             initProfileModal();
 
             document.addEventListener('click', e => {
@@ -932,16 +770,12 @@
             await initAuth({
                 onAuthReady: async () => {
                     renderHeader(authState, t, state.lang);
-                    const gate = document.getElementById('signinGate');
-                    if (gate) gate.style.display = 'none';
-
+                    $('#signinGate').style.display = 'none';
                     applyI18n(t, state.lang);
                     await loadNetworkData();
                     $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
                 },
-                onAuthChange: () => {
-                    renderHeader(authState, t, state.lang);
-                }
+                onAuthChange: () => renderHeader(authState, t, state.lang)
             });
 
             $$('[data-role]').forEach(b => b.onclick = e => {
@@ -954,33 +788,19 @@
             $$('th[data-sort]').forEach(th => {
                 th.onclick = () => {
                     const key = th.dataset.sort;
-                    // Toggle Sort
-                    if (state.sort.key === key) {
-                        state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        state.sort.key = key;
-                        state.sort.dir = 'asc';
-                    }
-                    
-                    // Update UI Classes
-                    $$('th[data-sort]').forEach(h => {
-                        h.classList.remove('sort-asc', 'sort-desc');
-                        h.classList.add('text-slate-500'); // reset color
-                        h.classList.remove('text-brand-600');
-                    });
-                    
+                    if (state.sort.key === key) state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
+                    else { state.sort.key = key; state.sort.dir = 'asc'; }
+                    $$('th[data-sort]').forEach(h => { h.classList.remove('sort-asc', 'sort-desc', 'text-brand-600'); h.classList.add('text-slate-500'); });
                     th.classList.add(state.sort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
-                    th.classList.remove('text-slate-500');
-                    th.classList.add('text-brand-600'); // Highlight active column
-
-                    // Re-render
+                    th.classList.remove('text-slate-500'); th.classList.add('text-brand-600');
                     onFiltersChanged();
                 };
             });
-            // Set initial sort state visual
             const initialTh = $(`th[data-sort="${state.sort.key}"]`);
-            if(initialTh) initialTh.classList.add('sort-asc', 'text-brand-600');
-
+            if(initialTh) {
+                initialTh.classList.add(state.sort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+                initialTh.classList.remove('text-slate-500'); initialTh.classList.add('text-brand-600');
+            }
 
             $('#groupByFilter').onchange = e => { state.groupBy = e.target.value; onFiltersChanged(); };
             $('#eventFilter').onchange = e => { state.eventFilterId = e.target.value; onFiltersChanged(); };
@@ -1001,21 +821,13 @@
                 const rect = cv.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
-
-                if (!state.isDragging) {
-                    applyMagnification(mouseX, mouseY);
-                } else {
-                    state.panOffset.x = e.clientX - sx; 
-                    state.panOffset.y = e.clientY - sy; 
-                    updateTransform();
-                }
+                if (!state.isDragging) { applyMagnification(mouseX, mouseY); } 
+                else { state.panOffset.x = e.clientX - sx; state.panOffset.y = e.clientY - sy; updateTransform(); }
             };
 
             cv.onmouseleave = () => {
-                const nodeList = document.querySelectorAll('.network-node');
-                nodeList.forEach(node => {
-                     const wx = parseFloat(node.dataset.x);
-                     const wy = parseFloat(node.dataset.y);
+                document.querySelectorAll('.network-node').forEach(node => {
+                     const wx = parseFloat(node.dataset.x); const wy = parseFloat(node.dataset.y);
                      const isGroup = node.dataset.type === 'group';
                      const currentBaseScale = isGroup ? (clamp((1/Math.max(0.2, state.zoom)) * 0.7, 1, 3.5)) : 1;
                      node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${currentBaseScale})`;
@@ -1025,16 +837,12 @@
 
             cv.onmousedown = e => { 
                 if (e.target.id === 'networkCanvas' || e.target === cv || e.target.closest('#networkNodes')) { 
-                    state.isDragging = true; 
-                    sx = e.clientX - state.panOffset.x; 
-                    sy = e.clientY - state.panOffset.y; 
-                    cv.style.cursor = 'grabbing'; 
-                    cv.onmouseleave(); 
+                    state.isDragging = true; sx = e.clientX - state.panOffset.x; sy = e.clientY - state.panOffset.y; 
+                    cv.style.cursor = 'grabbing'; cv.onmouseleave(); 
                 } 
             };
             
             window.onmouseup = () => { state.isDragging = false; cv.style.cursor = 'grab'; };
-            
             cv.onwheel = e => { e.preventDefault(); const s = e.deltaY > 0 ? 0.9 : 1.1; state.zoom = clamp(state.zoom * s, 0.1, 5); updateTransform(); cv.onmouseleave(); };
             
             cv.ontouchstart = e => { if (e.target.id === 'networkCanvas' || e.target === cv) { state.isDragging = true; sx = e.touches[0].clientX - state.panOffset.x; sy = e.touches[0].clientY - state.panOffset.y; } };
@@ -1045,5 +853,4 @@
         })();
     </script>
 </body>
-
 </html>
