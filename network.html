@@ -804,7 +804,41 @@
                 $('#countryFilter').value = 'all'; state.countryFilterId = 'all';
                 $('#groupByFilter').value = 'affiliation'; state.groupBy = 'affiliation';
             };
-            $('#resetViewBtn').onclick = fitGraph;
+            
+            // FULL RESET VIEW HANDLER
+            $('#resetViewBtn').onclick = () => {
+                // Reset State
+                state.searchQuery = '';
+                state.groupBy = 'affiliation';
+                state.eventFilterId = 'all';
+                state.countryFilterId = 'all';
+                state.roleFilter = 'all';
+                state.selectedTags.clear();
+                state.sort = { key: "connections", dir: "desc" };
+
+                // Reset UI Elements
+                $('#searchInput').value = '';
+                $('#groupByFilter').value = 'affiliation';
+                $('#eventFilter').value = 'all';
+                $('#countryFilter').value = 'all';
+
+                // Reset Role Buttons
+                $$('[data-role]').forEach(x => { x.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"; });
+                const allRoleBtn = $('[data-role="all"]');
+                if(allRoleBtn) allRoleBtn.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white";
+
+                // Reset Table Sort Headers
+                $$('th[data-sort]').forEach(h => { h.classList.remove('sort-asc', 'sort-desc', 'text-brand-600'); h.classList.add('text-slate-500'); });
+                const defaultSortTh = $('th[data-sort="connections"]');
+                if(defaultSortTh) {
+                    defaultSortTh.classList.add('sort-desc');
+                    defaultSortTh.classList.remove('text-slate-500');
+                    defaultSortTh.classList.add('text-brand-600');
+                }
+
+                // Apply Updates (triggers renderGraph which triggers fitGraph)
+                onFiltersChanged();
+            };
 
             const cv = $('#network-container'); let sx = 0, sy = 0;
 
