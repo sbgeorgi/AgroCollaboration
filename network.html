@@ -232,11 +232,13 @@
 
                     <!-- Top Left Controls -->
                     <div class="absolute top-4 left-4 flex gap-2 z-40">
-                         <button id="viewToggleBtn" class="flex items-center gap-2 px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
-                            <i data-lucide="layout-grid" class="w-4 h-4 text-brand-500"></i>
-                            <span id="viewModeText">Switch to Bubbles</span>
-                        </button>
-                    </div>
+     <button id="viewToggleBtn" class="flex items-center gap-2 px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
+        <!-- Changed icon to share-2 (Network icon) -->
+        <i data-lucide="share-2" class="w-4 h-4 text-brand-500"></i>
+        <!-- Changed text to "Switch to Network" -->
+        <span id="viewModeText">Switch to Network</span>
+    </button>
+</div>
 
                     <!-- Top Right Controls -->
                     <div class="absolute top-4 right-4 flex gap-2 z-40">
@@ -285,25 +287,25 @@
         renderLayout('network');
 
         const state = {
-            members: [], profileById: new Map(), isSpeaker: new Set(), speakersByProfileId: new Map(),
-            eventsById: new Map(), orgIndex: new Map(), tagIndex: new Map(), tagCounts: new Map(),
-            allCanonicalToDisplay: new Map(), connections: [], nodes: new Map(),
-            positions: new Map(), panOffset: { x: 0, y: 0 }, zoom: 1,
-            sort: { key: "connections", dir: "desc" }, 
-            roleFilter: "all", eventFilterId: "all", countryFilterId: "all",
-            groupBy: "affiliation", 
-            searchQuery: "", selectedTags: new Set(),
-            lang: localStorage.getItem("lang") || "en",
-            isDragging: false,
-            viewMode: 'network',
-            currentGroupBaseScale: 1,
-            countries: {
-                "US": "United States", "MX": "Mexico", "CA": "Canada", "CO": "Colombia", "BR": "Brazil", 
-                "CL": "Chile", "AR": "Argentina", "PE": "Peru", "ES": "Spain", "FR": "France", "DE": "Germany",
-                "BE": "Belgium", "NL": "Netherlands", "IT": "Italy", "UK": "UK", "GB": "UK",
-                "IN": "India", "CN": "China", "AU": "Australia"
-            }
-        };
+    members: [], profileById: new Map(), isSpeaker: new Set(), speakersByProfileId: new Map(),
+    eventsById: new Map(), orgIndex: new Map(), tagIndex: new Map(), tagCounts: new Map(),
+    allCanonicalToDisplay: new Map(), connections: [], nodes: new Map(),
+    positions: new Map(), panOffset: { x: 0, y: 0 }, zoom: 1,
+    sort: { key: "connections", dir: "desc" }, 
+    roleFilter: "all", eventFilterId: "all", countryFilterId: "all",
+    groupBy: "affiliation", 
+    searchQuery: "", selectedTags: new Set(),
+    lang: localStorage.getItem("lang") || "en",
+    isDragging: false,
+    viewMode: 'bubble', // <--- CHANGED THIS LINE (was 'network')
+    currentGroupBaseScale: 1,
+    countries: {
+        "US": "United States", "MX": "Mexico", "CA": "Canada", "CO": "Colombia", "BR": "Brazil", 
+        "CL": "Chile", "AR": "Argentina", "PE": "Peru", "ES": "Spain", "FR": "France", "DE": "Germany",
+        "BE": "Belgium", "NL": "Netherlands", "IT": "Italy", "UK": "UK", "GB": "UK",
+        "IN": "India", "CN": "China", "AU": "Australia"
+    }
+};
 
         const t = { en: { auth: { signin: "Sign in", signout: "Sign out" } }, es: { auth: { signin: "Ingresar", signout: "Salir" } } };
 
