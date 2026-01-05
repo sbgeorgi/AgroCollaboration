@@ -400,7 +400,7 @@
                 }
 
                 // Define who goes to the "Dock" (Vertical list) vs "Stage" (Clusters)
-                // "Unaffiliated", "Independent", "Consultant", "Unknown" usually go to dock
+                // "Unaffiliated", "Independent", "Consultant", "Unknown Location", "Unknown", ""];
                 const dockKeys = ["Unaffiliated", "Independent", "Consultant", "Unknown Location", "Unknown", ""];
                 
                 if (dockKeys.some(k => k.toLowerCase() === key.toLowerCase())) {
@@ -827,16 +827,30 @@
             };
 
             cv.onmousedown = e => { 
+                // FIX: If clicking a node, prevent pan logic to allow click to register properly.
+                // This stops the node from shrinking immediately under the mouse.
+                if (e.target.closest('.network-node')) return;
+
                 if (e.target.id === 'networkCanvas' || e.target === cv || e.target.closest('#networkNodes')) { 
-                    state.isDragging = true; sx = e.clientX - state.panOffset.x; sy = e.clientY - state.panOffset.y; 
-                    cv.style.cursor = 'grabbing'; cv.onmouseleave(); 
+                    state.isDragging = true; 
+                    sx = e.clientX - state.panOffset.x; 
+                    sy = e.clientY - state.panOffset.y; 
+                    cv.style.cursor = 'grabbing'; 
+                    cv.onmouseleave(); 
                 } 
             };
             
             window.onmouseup = () => { state.isDragging = false; cv.style.cursor = 'grab'; };
             cv.onwheel = e => { e.preventDefault(); const s = e.deltaY > 0 ? 0.9 : 1.1; state.zoom = clamp(state.zoom * s, 0.1, 5); updateTransform(); cv.onmouseleave(); };
             
-            cv.ontouchstart = e => { if (e.target.id === 'networkCanvas' || e.target === cv) { state.isDragging = true; sx = e.touches[0].clientX - state.panOffset.x; sy = e.touches[0].clientY - state.panOffset.y; } };
+            cv.ontouchstart = e => { 
+                if (e.target.closest('.network-node')) return;
+                if (e.target.id === 'networkCanvas' || e.target === cv) { 
+                    state.isDragging = true; 
+                    sx = e.touches[0].clientX - state.panOffset.x; 
+                    sy = e.touches[0].clientY - state.panOffset.y; 
+                } 
+            };
             cv.ontouchmove = e => { if (state.isDragging) { e.preventDefault(); state.panOffset.x = e.touches[0].clientX - sx; state.panOffset.y = e.touches[0].clientY - sy; updateTransform(); } };
             cv.ontouchend = () => { state.isDragging = false; };
 
