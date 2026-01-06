@@ -1,235 +1,214 @@
-import { $, show, hide, getAvatarUrl } from './ui.js';
-import { formatRichText } from './rich-text.js'; // Import formatting helper
+// C:\HELLOWORLD\AgroCollaboration\clickprofile.js
+import { getAvatarUrl } from './ui.js';
 
-/**
- * Injects the modal HTML structure into the DOM if it doesn't exist.
- * This allows this script to be dropped into any page.
- */
-export function initProfileModal() {
-    if ($('#profileModal')) return; // Already initialized
+// --- Configuration & Data ---
+const COUNTRIES = {
+    "US": "United States", "MX": "Mexico", "CA": "Canada", "CO": "Colombia", "BR": "Brazil", 
+    "CL": "Chile", "AR": "Argentina", "PE": "Peru", "ES": "Spain", "FR": "France", "DE": "Germany",
+    "BE": "Belgium", "NL": "Netherlands", "IT": "Italy", "UK": "UK", "GB": "UK",
+    "IN": "India", "CN": "China", "AU": "Australia"
+};
 
-    const modalHTML = `
-    <!-- Shared Profile Modal -->
-    <div id="modalOverlay" class="fixed inset-0 z-[100] bg-slate-900/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"></div>
-    <div id="profileModal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[90%] max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-200 opacity-0 pointer-events-none transition-all duration-300 scale-95 flex flex-col max-h-[85vh]">
-        
-        <!-- Header -->
-        <div class="p-6 border-b border-gray-100 flex items-center gap-5 relative bg-slate-50/50 rounded-t-2xl">
-            <button id="modalCloseBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 hover:bg-white p-1 rounded-full transition-all z-10">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            
-            <!-- Avatar -->
-            <div id="modalAvatar" class="w-20 h-20 rounded-full bg-white ring-4 ring-white shadow-md flex items-center justify-center text-3xl font-bold text-brand-600 overflow-hidden shrink-0">
-                <span id="modalAvatarInitial">?</span>
-                <img id="modalAvatarImage" class="w-full h-full object-cover hidden">
+// --- Styles ---
+const MODAL_CSS = `
+    .profile-modal-backdrop {
+        position: fixed; inset: 0; 
+        background-color: transparent; /* No color, no blur, completely clear */
+        opacity: 0; transition: opacity 0.3s ease;
+        z-index: 9998;
+    }
+    .profile-modal-backdrop.visible { opacity: 1; }
+    
+    .profile-modal-panel {
+        opacity: 0; transform: scale(0.95); 
+        transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 9999;
+    }
+    .profile-modal-panel.visible { opacity: 1; transform: scale(1); }
+    
+    .ql-editor-content p { margin-bottom: 0.5em; }
+    .ql-editor-content a { color: #4f46e5; text-decoration: underline; }
+    .ql-editor-content ul { list-style-type: disc; padding-left: 1.25em; margin-bottom: 0.5em; }
+    .ql-editor-content ol { list-style-type: decimal; padding-left: 1.25em; margin-bottom: 0.5em; }
+`;
+
+// --- HTML Skeleton ---
+const MODAL_HTML = `
+<div id="globalProfileModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div id="globalProfileBackdrop" class="profile-modal-backdrop"></div>
+
+    <div class="fixed inset-0 z-[100] overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <!-- Modal Panel -->
+            <div id="globalProfilePanel" class="profile-modal-panel relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl sm:my-8 sm:w-full sm:max-w-2xl ring-1 ring-slate-900/5">
+                
+                <!-- Close Button -->
+                <button id="globalProfileCloseBtn" class="absolute top-4 right-4 z-10 p-2 bg-white/50 hover:bg-white rounded-full text-slate-400 hover:text-slate-600 transition-colors backdrop-blur-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+
+                <!-- Content Area -->
+                <div id="globalProfileContent"></div>
             </div>
+        </div>
+    </div>
+</div>
+`;
 
-            <!-- Header Content Wrapper: Flex Row to separate Text and Flag -->
-            <div class="min-w-0 flex-1 flex items-center justify-between gap-4 mr-6"> 
-                <!-- Text Column -->
-                <div class="min-w-0">
-                    <h2 id="modalName" class="text-xl font-display font-bold text-slate-900 leading-tight mb-1">Loading...</h2>
-                    <div id="modalAffiliation" class="text-sm font-bold text-brand-600 leading-tight">...</div>
+let isInitialized = false;
+
+function initPopup() {
+    if (isInitialized || document.getElementById('globalProfileModal')) return;
+
+    // 1. Inject CSS
+    const style = document.createElement('style');
+    style.innerHTML = MODAL_CSS;
+    document.head.appendChild(style);
+
+    // 2. Inject HTML
+    document.body.insertAdjacentHTML('beforeend', MODAL_HTML);
+
+    // 3. Bind Listeners
+    document.getElementById('globalProfileCloseBtn').onclick = closeProfileModal;
+    document.getElementById('globalProfileBackdrop').onclick = closeProfileModal;
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeProfileModal(); });
+
+    isInitialized = true;
+}
+
+export function closeProfileModal() {
+    const modal = document.getElementById('globalProfileModal');
+    const panel = document.getElementById('globalProfilePanel');
+    const backdrop = document.getElementById('globalProfileBackdrop');
+
+    if (!modal) return;
+
+    panel.classList.remove('visible');
+    backdrop.classList.remove('visible');
+
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+export function openProfileModal(member) {
+    initPopup(); // Ensure DOM exists
+
+    const modal = document.getElementById('globalProfileModal');
+    const panel = document.getElementById('globalProfilePanel');
+    const backdrop = document.getElementById('globalProfileBackdrop');
+    const content = document.getElementById('globalProfileContent');
+
+    if (!member) return;
+
+    // --- Generate Content ---
+    const avatarHtml = member.avatar_url 
+        ? `<img id="globalModalAvatarImg" src="" class="w-full h-full object-cover">` 
+        : `<span class="text-2xl font-bold text-brand-600">${member.full_name ? member.full_name[0].toUpperCase() : '?'}</span>`;
+
+    // Social Links
+    let socialLinks = '';
+    // SVG Icons inline to ensure they work without lucide refresh dependency issues
+    const iconMail = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`;
+    const iconGlobe = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>`;
+    const iconFlask = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v7.31"/><path d="M14 2v7.31"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/></svg>`;
+    const iconGrad = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>`;
+    const iconPin = `<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`;
+
+    if (member.work_email) socialLinks += `<a href="mailto:${member.work_email}" title="Email" class="p-2 bg-gray-50 hover:bg-brand-50 text-slate-500 hover:text-brand-600 rounded-lg transition-colors">${iconMail}</a>`;
+    if (member.personal_website) socialLinks += `<a href="${member.personal_website}" target="_blank" title="Personal Website" class="p-2 bg-gray-50 hover:bg-brand-50 text-slate-500 hover:text-brand-600 rounded-lg transition-colors">${iconGlobe}</a>`;
+    if (member.professional_website) socialLinks += `<a href="${member.professional_website}" target="_blank" title="Lab/Professional Website" class="p-2 bg-gray-50 hover:bg-brand-50 text-slate-500 hover:text-brand-600 rounded-lg transition-colors">${iconFlask}</a>`;
+    if (member.google_scholar) socialLinks += `<a href="${member.google_scholar}" target="_blank" title="Google Scholar" class="p-2 bg-gray-50 hover:bg-brand-50 text-slate-500 hover:text-brand-600 rounded-lg transition-colors">${iconGrad}</a>`;
+
+    // Tags
+    const tags = (member.fields_of_study || "").split(',').map(t => t.trim()).filter(Boolean);
+    const tagsHtml = tags.length 
+        ? tags.map(t => `<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-brand-50 text-brand-700 border border-brand-100">${t}</span>`).join('') 
+        : '<span class="text-slate-400 text-sm italic">No research interests listed.</span>';
+
+    // HTML Construction
+    content.innerHTML = `
+        <div class="relative">
+            <!-- Header Background -->
+            <div class="h-32 bg-gradient-to-r from-brand-600 to-indigo-600"></div>
+            
+            <div class="px-6 pb-6">
+                <div class="flex flex-col sm:flex-row items-start gap-4 -mt-12 mb-4">
+                    <!-- Avatar -->
+                    <div class="w-24 h-24 rounded-full bg-white p-1 shadow-lg shrink-0">
+                        <div class="w-full h-full rounded-full bg-slate-100 flex items-center justify-center overflow-hidden ring-1 ring-gray-100">
+                            ${avatarHtml}
+                        </div>
+                    </div>
                     
-                    <!-- Role Meta -->
-                    <div id="modalRoleMeta" class="mt-1 space-y-0.5">
-                        <div id="modalDepartment" class="text-xs text-slate-500 font-medium hidden"></div>
-                        <div id="modalWorkingGroup" class="text-xs text-slate-500 font-medium hidden"></div>
+                    <!-- Main Info -->
+                    <div class="flex-1 pt-0 sm:pt-14 text-center sm:text-left">
+                        <h2 class="text-2xl font-display font-bold text-slate-900">${member.full_name || 'Member'}</h2>
+                        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-1 text-sm text-slate-500 font-medium">
+                            ${member.username ? `<span class="text-brand-600">@${member.username}</span>` : ''}
+                            ${member.role === 'admin' || member.role === 'organizer' 
+                                ? `<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider">Host</span>` 
+                                : ''}
+                        </div>
+                    </div>
+
+                    <!-- Social Links (Desktop) -->
+                    <div class="hidden sm:flex gap-2 pt-14">
+                        ${socialLinks}
                     </div>
                 </div>
 
-                <!-- Flag Column (Far Right) -->
-                <img id="modalFlag" class="hidden w-12 h-auto rounded shadow-sm border border-gray-100 object-cover shrink-0 self-center opacity-90">
+                <!-- Details Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Affiliation</span>
+                        <div class="font-medium text-slate-800 text-sm">${member.affiliation || '—'}</div>
+                        ${member.country ? `<div class="mt-1 text-xs text-slate-500 flex items-center gap-1">${iconPin} ${COUNTRIES[member.country] || member.country}</div>` : ''}
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Department / Group</span>
+                        <div class="font-medium text-slate-800 text-sm mb-0.5">${member.department || '—'}</div>
+                        <div class="text-xs text-slate-500">${member.working_group || ''}</div>
+                    </div>
+                </div>
+
+                <!-- Mobile Social Links -->
+                <div class="flex sm:hidden gap-2 mb-6 justify-center">
+                    ${socialLinks}
+                </div>
+
+                <!-- Bio / Description -->
+                ${member.description ? `
+                <div class="mb-6">
+                    <h3 class="text-sm font-bold text-slate-800 mb-2">About</h3>
+                    <div class="text-sm text-slate-600 leading-relaxed ql-editor-content">${member.description}</div>
+                </div>` : ''}
+
+                <!-- Tags -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800 mb-2">Research Interests</h3>
+                    <div class="flex flex-wrap gap-2">
+                        ${tagsHtml}
+                    </div>
+                </div>
             </div>
         </div>
+    `;
 
-        <!-- Body -->
-        <div class="p-6 overflow-y-auto custom-scrollbar space-y-6">
-            
-            <!-- Contact -->
-            <div id="modalEmailSection" class="hidden">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Contact</h3>
-                <a id="modalEmail" href="#" class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 w-full">
-                    <i data-lucide="mail" class="w-4 h-4 text-slate-400"></i>
-                    <span class="email-text truncate"></span>
-                </a>
-            </div>
-
-            <!-- Links -->
-            <div id="modalLinksSection" class="hidden">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Links</h3>
-                <div id="modalLinks" class="flex flex-col gap-2"></div>
-            </div>
-
-            <!-- Description -->
-            <div id="modalDescriptionSection" class="hidden">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Profile</h3>
-                <div id="modalDescription"></div>
-            </div>
-
-            <!-- Interests -->
-            <div id="modalFieldsSection" class="hidden">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Interests</h3>
-                <div id="modalFields" class="flex flex-wrap gap-2"></div>
-            </div>
-        </div>
-    </div>`;
-
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-    // Bind Close Events
-    const close = () => {
-        $('#modalOverlay').classList.add('opacity-0', 'pointer-events-none');
-        $('#profileModal').classList.add('opacity-0', 'pointer-events-none', 'scale-95');
-    };
-
-    $('#modalCloseBtn').addEventListener('click', close);
-    $('#modalOverlay').addEventListener('click', close);
-    
-    if (window.lucide) window.lucide.createIcons();
-}
-
-/**
- * Populates and opens the profile modal.
- */
-export function openProfileModal(m, tagCanonicalMap = null, tagIndex = null) {
-    if (!m) return;
-    
-    initProfileModal();
-
-    const modal = $('#profileModal');
-    const over = $('#modalOverlay');
-    const displayName = m.full_name || 'Member';
-
-    // 1. Basic Info
-    $('#modalName').innerText = displayName;
-    $('#modalAffiliation').innerText = m.affiliation || '';
-
-    // 2. Flag Injection (Modified to use specific IMG element)
-    const flagEl = $('#modalFlag');
-    if (m.country) {
-        const countryCode = m.country.toLowerCase();
-        flagEl.src = `https://flagcdn.com/w80/${countryCode}.png`;
-        flagEl.alt = countryCode.toUpperCase();
-        flagEl.title = countryCode.toUpperCase();
-        show(flagEl);
-    } else {
-        hide(flagEl);
-        flagEl.src = '';
-    }
-    
-    // 3. Department & Working Group
-    const deptEl = $('#modalDepartment');
-    const groupEl = $('#modalWorkingGroup');
-    
-    if (m.department) {
-        deptEl.innerText = m.department;
-        show(deptEl);
-    } else {
-        hide(deptEl);
-    }
-
-    if (m.working_group) {
-        groupEl.innerText = `Group: ${m.working_group}`;
-        show(groupEl);
-    } else {
-        hide(groupEl);
-    }
-
-    // 4. Avatar
-    $('#modalAvatarInitial').innerText = displayName[0].toUpperCase();
-    hide($('#modalAvatarImage'));
-    show($('#modalAvatarInitial'));
-    
-    if (m.avatar_url) {
-        getAvatarUrl(m.avatar_url).then(u => {
-            if (u) {
-                $('#modalAvatarImage').src = u;
-                show($('#modalAvatarImage'));
-                hide($('#modalAvatarInitial'));
-            }
+    // Fetch Avatar
+    if (member.avatar_url) {
+        getAvatarUrl(member.avatar_url).then(url => {
+            const img = document.getElementById('globalModalAvatarImg');
+            if (img && url) img.src = url;
         });
     }
 
-    // 5. Contact
-    if (m.work_email) {
-        $('#modalEmail').href = `mailto:${m.work_email}`;
-        $('.email-text').innerText = m.work_email;
-        show($('#modalEmailSection'));
-    } else {
-        hide($('#modalEmailSection'));
-    }
-
-    // 6. Links
-    const ld = $('#modalLinks');
-    ld.innerHTML = '';
-    let hl = false;
-    [
-        ['personal_website', 'Website', 'globe'],
-        ['professional_website', 'Lab Website', 'building'],
-        ['google_scholar', 'Google Scholar', 'graduation-cap']
-    ].forEach(([k, l, i]) => {
-        if (m[k]) {
-            hl = true;
-            ld.insertAdjacentHTML(
-                'beforeend',
-                `<a href="${m[k]}" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-brand-50 hover:border-brand-300 transition-all group">
-                    <span class="flex items-center gap-2 text-sm font-medium text-slate-700">
-                        <i data-lucide="${i}" class="w-4 h-4 text-slate-400 group-hover:text-brand-500"></i> ${l}
-                    </span>
-                    <i data-lucide="external-link" class="w-3 h-3 text-slate-300"></i>
-                </a>`
-            );
-        }
-    });
-    if (hl) {
-        show($('#modalLinksSection'));
-        if (window.lucide) window.lucide.createIcons();
-    } else {
-        hide($('#modalLinksSection'));
-    }
-
-    // 7. Description
-    const descSection = $('#modalDescriptionSection');
-    const descEl = $('#modalDescription');
-    if (m.description && m.description.trim().length > 0) {
-        descEl.innerHTML = formatRichText(m.description);
-        show(descSection);
-    } else {
-        descEl.innerHTML = '';
-        hide(descSection);
-    }
-
-    // 8. Interests
-    const fd = $('#modalFields');
-    fd.innerHTML = '';
-    const tags = new Set();
-
-    if (tagCanonicalMap && tagIndex) {
-        for (const [t, s] of tagIndex) {
-            if (s.has(m.id)) tags.add(tagCanonicalMap.get(t));
-        }
-    } else if (m.fields_of_study) {
-        m.fields_of_study.split(',').forEach(t => tags.add(t.trim()));
-    }
-
-    if (tags.size) {
-        tags.forEach(t =>
-            fd.insertAdjacentHTML('beforeend',
-                `<span class="px-2 py-1 rounded bg-gray-100 text-slate-600 text-xs font-bold border border-gray-200">${t}</span>`
-            )
-        );
-        show($('#modalFieldsSection'));
-    } else {
-        hide($('#modalFieldsSection'));
-    }
-
-    // Show Modal
-    show(over);
-    show(modal);
-    requestAnimationFrame(() => {
-        over.classList.remove('opacity-0', 'pointer-events-none');
-        modal.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
-    });
+    // --- Show Modal ---
+    modal.classList.remove('hidden');
+    // Force Reflow
+    void modal.offsetWidth;
+    
+    panel.classList.add('visible');
+    backdrop.classList.add('visible');
 }
