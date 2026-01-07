@@ -491,32 +491,89 @@ export function initEventLogic(deps) {
   }
 
   async function handleFileUpload(e) {
-    const file = e.target.files?.[0];
-    if (!file || !state.selectedEvent || !authState.session) return;
-    if (file.size > 10 * 1024 * 1024) {
-      setFlash('File is too large (max 10MB).', 4000);
+  const file = e.target.files?.[0];
+  if (!file || !state.selectedEvent || !authState.session) return;
+  
+  if (file.size > 10 * 1024 * 1024) {
+    setFlash('File is too large (max 10MB).', 4000);
+    return;
+  }
+
+  const filePath = `${state.selectedEvent.id}/${self.crypto.randomUUID()}-${file.name}`;
+  setFlash('Uploading...', -1);
+
+  try {
+    // Step 1: Upload to Storage
+    console.log('📤 Attempting upload to:', filePath);
+    
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('attachments')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    // Debug: Log the full response
+    console.log('📤 Upload response:', { uploadData, uploadError });
+
+    if (uploadError) {
+      console.error('❌ Storage upload error:', uploadError);
+      setFlash(`Upload failed: ${uploadError.message}`, 5000);
+      e.target.value = '';
       return;
     }
 
-    const filePath = `${state.selectedEvent.id}/${self.crypto.randomUUID()}-${file.name}`;
-    setFlash('Uploading...', -1);
+    // Step 2: VERIFY the file actually exists in storage
+    const { data: verifyData, error: verifyError } = await supabase.storage
+      .from('attachments')
+      .list(state.selectedEvent.id, {
+        search: file.name
+      });
 
-    const { error: uploadError } = await supabase.storage.from('attachments').upload(filePath, file);
-    if (uploadError) { setFlash('Upload failed', 4000); return; }
+    console.log('🔍 Verification check:', { verifyData, verifyError });
 
+    // Check if file appears in listing
+    const uploadedPath = uploadData?.path || filePath;
+    const fileName = uploadedPath.split('/').pop();
+    const fileExists = verifyData?.some(f => f.name === fileName);
+
+    if (!fileExists) {
+      console.error('❌ File not found in storage after upload!');
+      setFlash('Upload verification failed - file not stored', 5000);
+      e.target.value = '';
+      return;
+    }
+
+    console.log('✅ File verified in storage:', uploadedPath);
+
+    // Step 3: Only NOW insert into database
     const { error: insertError } = await supabase.from('attachments').insert({
       event_id: state.selectedEvent.id,
       created_by: authState.session.user.id,
       bucket_id: 'attachments',
-      object_path: filePath,
+      object_path: uploadedPath,
       file_name: file.name,
       file_size: file.size,
       file_type: file.type
     });
 
-    if (insertError) setFlash('Upload failed', 4000); else setFlash('Upload complete!', 3000);
-    e.target.value = '';
+    if (insertError) {
+      console.error('❌ Database insert error:', insertError);
+      // Cleanup: remove orphan file from storage
+      await supabase.storage.from('attachments').remove([uploadedPath]);
+      setFlash('Database error - upload rolled back', 4000);
+    } else {
+      console.log('✅ Upload complete and verified!');
+      setFlash('Upload complete!', 3000);
+    }
+
+  } catch (err) {
+    console.error('❌ Unexpected error:', err);
+    setFlash('Unexpected upload error', 4000);
   }
+
+  e.target.value = '';
+}
 
   async function deleteFile(fileId, filePath, btn) {
     if (!confirm('Delete this file?')) return;
