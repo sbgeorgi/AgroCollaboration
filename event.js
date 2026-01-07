@@ -499,6 +499,7 @@ export function initEventLogic(deps) {
     return;
   }
 
+  // Generate unique path
   const filePath = `${state.selectedEvent.id}/${self.crypto.randomUUID()}-${file.name}`;
   setFlash('Uploading...', -1);
 
@@ -513,9 +514,7 @@ export function initEventLogic(deps) {
         upsert: false
       });
 
-    // Debug: Log the full response
-    console.log('📤 Upload response:', { uploadData, uploadError });
-
+    // Handle Storage Errors
     if (uploadError) {
       console.error('❌ Storage upload error:', uploadError);
       setFlash(`Upload failed: ${uploadError.message}`, 5000);
@@ -523,35 +522,18 @@ export function initEventLogic(deps) {
       return;
     }
 
-    // Step 2: VERIFY the file actually exists in storage
-    const { data: verifyData, error: verifyError } = await supabase.storage
-      .from('attachments')
-      .list(state.selectedEvent.id, {
-        search: file.name
-      });
+    // SUCCESS: The file is uploaded. 
+    // We use the path returned by Supabase, or fall back to our generated one.
+    const finalPath = uploadData?.path || filePath;
+    console.log('✅ Upload successful, writing to DB:', finalPath);
 
-    console.log('🔍 Verification check:', { verifyData, verifyError });
-
-    // Check if file appears in listing
-    const uploadedPath = uploadData?.path || filePath;
-    const fileName = uploadedPath.split('/').pop();
-    const fileExists = verifyData?.some(f => f.name === fileName);
-
-    if (!fileExists) {
-      console.error('❌ File not found in storage after upload!');
-      setFlash('Upload verification failed - file not stored', 5000);
-      e.target.value = '';
-      return;
-    }
-
-    console.log('✅ File verified in storage:', uploadedPath);
-
-    // Step 3: Only NOW insert into database
+    // Step 2: Insert into Database
+    // (Verification step removed to prevent race condition)
     const { error: insertError } = await supabase.from('attachments').insert({
       event_id: state.selectedEvent.id,
       created_by: authState.session.user.id,
       bucket_id: 'attachments',
-      object_path: uploadedPath,
+      object_path: finalPath,
       file_name: file.name,
       file_size: file.size,
       file_type: file.type
@@ -559,12 +541,14 @@ export function initEventLogic(deps) {
 
     if (insertError) {
       console.error('❌ Database insert error:', insertError);
-      // Cleanup: remove orphan file from storage
-      await supabase.storage.from('attachments').remove([uploadedPath]);
+      // Optional: Cleanup orphan file if DB insert fails
+      await supabase.storage.from('attachments').remove([finalPath]);
       setFlash('Database error - upload rolled back', 4000);
     } else {
-      console.log('✅ Upload complete and verified!');
+      console.log('✅ Upload complete!');
       setFlash('Upload complete!', 3000);
+      // Trigger list refresh
+      await loadAndRenderFiles(); // Ensure you call your file loader here
     }
 
   } catch (err) {
