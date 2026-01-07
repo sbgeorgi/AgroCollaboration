@@ -1,6 +1,11 @@
 import { openProfileModal } from './clickprofile.js';
 import { formatRichText } from './rich-text.js';
 
+// ============================================
+// STORAGE BUCKET CONSTANT - SINGLE SOURCE OF TRUTH
+// ============================================
+const STORAGE_BUCKET = 'event_files';
+
 export function initEventLogic(deps) {
   const {
     supabase,
@@ -441,7 +446,10 @@ export function initEventLogic(deps) {
     if (refreshEventsList) refreshEventsList();
   }
 
-  // --- FILES LOGIC ---
+  // ============================================
+  // FILES LOGIC - USES STORAGE_BUCKET CONSTANT
+  // ============================================
+  
   async function loadAndRenderFiles() {
     if (!state.selectedEvent) return;
     const { data, error } = await supabase
@@ -466,7 +474,8 @@ export function initEventLogic(deps) {
     show(listEl); hide(emptyEl);
 
     listEl.innerHTML = state.files.map(file => {
-      const bucketName = file.bucket_id || 'attachments';
+      // Use stored bucket_id or fall back to our constant
+      const bucketName = file.bucket_id || STORAGE_BUCKET;
       const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(file.object_path);
       const isUploader = authState.profile?.id === file.created_by;
       const isAdmin = isOrganizerOrAdmin();
@@ -491,77 +500,77 @@ export function initEventLogic(deps) {
   }
 
   async function handleFileUpload(e) {
-  const file = e.target.files?.[0];
-  if (!file || !state.selectedEvent || !authState.session) return;
-  
-  if (file.size > 10 * 1024 * 1024) {
-    setFlash('File is too large (max 10MB).', 4000);
-    return;
-  }
+    const file = e.target.files?.[0];
+    if (!file || !state.selectedEvent || !authState.session) return;
 
-  // Generate unique path
-  const filePath = `${state.selectedEvent.id}/${self.crypto.randomUUID()}-${file.name}`;
-  setFlash('Uploading...', -1);
-
-  try {
-    // Step 1: Upload to Storage
-    console.log('📤 Attempting upload to:', filePath);
-    
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('attachments')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    // Handle Storage Errors
-    if (uploadError) {
-      console.error('❌ Storage upload error:', uploadError);
-      setFlash(`Upload failed: ${uploadError.message}`, 5000);
+    if (file.size > 10 * 1024 * 1024) {
+      setFlash('File is too large (max 10MB).', 4000);
       e.target.value = '';
       return;
     }
 
-    // SUCCESS: The file is uploaded. 
-    // We use the path returned by Supabase, or fall back to our generated one.
-    const finalPath = uploadData?.path || filePath;
-    console.log('✅ Upload successful, writing to DB:', finalPath);
+    // Generate unique path: eventId/uuid-filename
+    const filePath = `${state.selectedEvent.id}/${crypto.randomUUID()}-${file.name}`;
+    setFlash('Uploading...', -1);
 
-    // Step 2: Insert into Database
-    // (Verification step removed to prevent race condition)
-    const { error: insertError } = await supabase.from('attachments').insert({
-      event_id: state.selectedEvent.id,
-      created_by: authState.session.user.id,
-      bucket_id: 'attachments',
-      object_path: finalPath,
-      file_name: file.name,
-      file_size: file.size,
-      file_type: file.type
-    });
+    try {
+      console.log(`📤 Uploading to bucket: ${STORAGE_BUCKET}, path: ${filePath}`);
 
-    if (insertError) {
-      console.error('❌ Database insert error:', insertError);
-      // Optional: Cleanup orphan file if DB insert fails
-      await supabase.storage.from('attachments').remove([finalPath]);
-      setFlash('Database error - upload rolled back', 4000);
-    } else {
-      console.log('✅ Upload complete!');
-      setFlash('Upload complete!', 3000);
-      // Trigger list refresh
-      await loadAndRenderFiles(); // Ensure you call your file loader here
+      // Step 1: Upload to Storage using the constant
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      // Handle Storage Errors
+      if (uploadError) {
+        console.error('❌ Storage upload error:', uploadError);
+        setFlash(`Upload failed: ${uploadError.message}`, 5000);
+        e.target.value = '';
+        return;
+      }
+
+      // SUCCESS: Use returned path or our generated one
+      const finalPath = uploadData?.path || filePath;
+      console.log('✅ Upload successful:', finalPath);
+
+      // Step 2: Insert into Database with correct bucket_id
+      const { error: insertError } = await supabase.from('attachments').insert({
+        event_id: state.selectedEvent.id,
+        created_by: authState.session.user.id,
+        bucket_id: STORAGE_BUCKET,
+        object_path: finalPath,
+        file_name: file.name,
+        file_size: file.size,
+        file_type: file.type
+      });
+
+      if (insertError) {
+        console.error('❌ Database insert error:', insertError);
+        // Cleanup orphan file if DB insert fails
+        await supabase.storage.from(STORAGE_BUCKET).remove([finalPath]);
+        setFlash('Database error - upload rolled back', 4000);
+      } else {
+        console.log('✅ Upload complete!');
+        setFlash('Upload complete!', 3000);
+        await loadAndRenderFiles();
+      }
+
+    } catch (err) {
+      console.error('❌ Unexpected error:', err);
+      setFlash('Unexpected upload error', 4000);
     }
 
-  } catch (err) {
-    console.error('❌ Unexpected error:', err);
-    setFlash('Unexpected upload error', 4000);
+    e.target.value = '';
   }
-
-  e.target.value = '';
-}
 
   async function deleteFile(fileId, filePath, btn) {
     if (!confirm('Delete this file?')) return;
-    const bucketName = btn.dataset.bucket || 'attachments';
+    
+    // Use data attribute or fall back to constant
+    const bucketName = btn.dataset.bucket || STORAGE_BUCKET;
 
     const originalContent = btn.innerHTML;
     btn.disabled = true;
@@ -570,6 +579,7 @@ export function initEventLogic(deps) {
 
     const { error: storageError } = await supabase.storage.from(bucketName).remove([filePath]);
     if (storageError) {
+      console.error('❌ Storage delete error:', storageError);
       setFlash('Delete failed', 4000);
       btn.disabled = false;
       btn.innerHTML = originalContent;
@@ -580,6 +590,7 @@ export function initEventLogic(deps) {
     const { error: dbError } = await supabase.from('attachments').delete().eq('id', fileId);
 
     if (dbError) {
+      console.error('❌ Database delete error:', dbError);
       setFlash('Database error', 4000);
       btn.disabled = false;
       btn.innerHTML = originalContent;
