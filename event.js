@@ -3,6 +3,7 @@ import { formatRichText } from './rich-text.js';
 
 // ============================================
 // STORAGE BUCKET CONSTANT - SINGLE SOURCE OF TRUTH
+// matches the bucket name in your Supabase dashboard screenshot
 // ============================================
 const STORAGE_BUCKET = 'event_files';
 
@@ -39,7 +40,7 @@ export function initEventLogic(deps) {
 
   // Cache
   const profileCache = new Map();
-  let availableProfiles = []; // For the edit modal speaker selection
+  let availableProfiles = []; 
 
   // --- UTILITIES ---
   function isOrganizerOrAdmin() {
@@ -132,7 +133,6 @@ export function initEventLogic(deps) {
     });
   }
 
-  // Matches admin.html setupSpeakerAutofill
   function setupSpeakerAutofill(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -163,11 +163,9 @@ export function initEventLogic(deps) {
   function injectEditModal() {
     if (document.getElementById('event-js-editor-modal')) return;
 
-    // We replicate the admin.html styles here to ensure drop-in consistency
     const modalHtml = `
       <dialog id="event-js-editor-modal" class="rounded-2xl p-0 bg-white shadow-2xl max-w-2xl w-full m-auto backdrop:bg-slate-900/50">
         <style>
-            /* Copied from admin.html custom styles */
             .input-field {
                 width: 100%; padding: 0.625rem 1rem; background-color: #f8fafc; 
                 border: 1px solid transparent; border-radius: 0.75rem; 
@@ -176,13 +174,10 @@ export function initEventLogic(deps) {
             }
             .input-field:focus { outline: none; box-shadow: 0 0 0 2px var(--color-brand-light); border-color: var(--color-brand); background-color: #ffffff; }
             .input-field:hover { background-color: #ffffff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
-            
             .label-text { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; }
-            
             .editor-wrapper { width: 100%; background-color: #f8fafc; border: 1px solid transparent; border-radius: 0.75rem; transition: all 0.2s; box-shadow: inset 0 1px 2px 0 rgb(0 0 0 / 0.05); overflow: hidden; }
             .editor-wrapper:hover { background-color: #ffffff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
             .editor-wrapper:focus-within { box-shadow: 0 0 0 2px var(--color-brand-light); border-color: var(--color-brand); background-color: #ffffff; }
-            
             .ql-toolbar.ql-snow { border: none !important; border-bottom: 1px solid rgba(0,0,0,0.05) !important; background: rgba(255,255,255,0.5); padding: 6px 8px !important; }
             .ql-container.ql-snow { border: none !important; font-family: 'Inter', sans-serif !important; font-size: 0.875rem !important; }
             .ql-editor { min-height: 100px; padding: 12px 16px !important; color: #1e293b; }
@@ -211,21 +206,8 @@ export function initEventLogic(deps) {
                         <div><label class="label-text">End</label><input id="jsEditEndTime" type="datetime-local" class="input-field" /></div>
                     </div>
 
-                    <!-- Description EN -->
-                    <div>
-                        <label class="label-text">Description (EN)</label>
-                        <div class="editor-wrapper">
-                            <div id="jsEditDescEn"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Description ES -->
-                    <div>
-                        <label class="label-text">Description (ES)</label>
-                        <div class="editor-wrapper">
-                            <div id="jsEditDescEs"></div>
-                        </div>
-                    </div>
+                    <div><label class="label-text">Description (EN)</label><div class="editor-wrapper"><div id="jsEditDescEn"></div></div></div>
+                    <div><label class="label-text">Description (ES)</label><div class="editor-wrapper"><div id="jsEditDescEs"></div></div></div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -257,33 +239,23 @@ export function initEventLogic(deps) {
             </div>
         </div>
       </dialog>
-      
-      <!-- Datalists for Autocomplete -->
-      <datalist id="js-dl-profiles"></datalist>
-      <datalist id="js-dl-affiliations"></datalist>
+      <datalist id="js-dl-profiles"></datalist><datalist id="js-dl-affiliations"></datalist>
     `;
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-    // Initialize Quill
     quillEnInstance = initQuillEditor('#jsEditDescEn');
     quillEsInstance = initQuillEditor('#jsEditDescEs');
 
-    // Bind Static Listeners
     document.getElementById('close-js-editor').onclick = () => document.getElementById('event-js-editor-modal').close();
     document.getElementById('jsCancelEdit').onclick = () => document.getElementById('event-js-editor-modal').close();
     document.getElementById('jsAddSpeakerBtn').onclick = () => addJsSpeakerRow();
     document.getElementById('jsEventEditForm').onsubmit = handleJsEditSubmit;
 
-    // Speaker Remove Listener
     document.getElementById('jsEditSpeakersContainer').addEventListener('click', (e) => {
-      if (e.target.closest('.js-remove-speaker')) {
-        e.target.closest('.js-speaker-row').remove();
-      }
+      if (e.target.closest('.js-remove-speaker')) { e.target.closest('.js-speaker-row').remove(); }
     });
 
-    // Setup Autofill Logic
     setupSpeakerAutofill('jsEditSpeakersContainer');
-
     lucideRefresh();
   }
 
@@ -292,7 +264,6 @@ export function initEventLogic(deps) {
     const row = document.createElement('div');
     row.className = 'js-speaker-row flex flex-col gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm mb-3 transition-all hover:shadow-md';
 
-    // Determine profile name for search box
     let profileNameVal = "";
     if (speaker.profile_id && availableProfiles.length) {
       const matched = availableProfiles.find(p => p.id === speaker.profile_id);
@@ -301,24 +272,10 @@ export function initEventLogic(deps) {
 
     row.innerHTML = `
         <div class="w-full space-y-2">
-            <!-- Name Input -->
-            <input type="text" class="js-sp-name input-field" 
-                   placeholder="Name*" 
-                   value="${escapeHtml(speaker.name || '')}" required>
-            
-            <!-- Affiliation Input -->
-            <input type="text" class="js-sp-aff input-field" 
-                   placeholder="Affiliation" 
-                   list="js-dl-affiliations"
-                   value="${escapeHtml(speaker.affiliation || '')}">
-            
-            <!-- Profile Link Input + Hidden ID -->
+            <input type="text" class="js-sp-name input-field" placeholder="Name*" value="${escapeHtml(speaker.name || '')}" required>
+            <input type="text" class="js-sp-aff input-field" placeholder="Affiliation" list="js-dl-affiliations" value="${escapeHtml(speaker.affiliation || '')}">
             <div class="relative">
-                <input type="text" class="js-sp-profile-search input-field" 
-                       placeholder="Link Profile (Search)" 
-                       list="js-dl-profiles" 
-                       autocomplete="off"
-                       value="${escapeHtml(profileNameVal)}">
+                <input type="text" class="js-sp-profile-search input-field" placeholder="Link Profile (Search)" list="js-dl-profiles" autocomplete="off" value="${escapeHtml(profileNameVal)}">
                 <input type="hidden" class="js-sp-profile-id" value="${speaker.profile_id || ''}">
             </div>
         </div>
@@ -327,16 +284,13 @@ export function initEventLogic(deps) {
                 <input type="checkbox" class="js-sp-primary rounded border-gray-300 text-brand-600 focus:ring-brand-500" ${speaker.primary_speaker ? 'checked' : ''}>
                 <span>Primary</span>
             </label>
-            <button type="button" class="js-remove-speaker text-slate-400 hover:text-red-500 p-1.5 rounded-full hover:bg-red-50 transition-all">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
+            <button type="button" class="js-remove-speaker text-slate-400 hover:text-red-500 p-1.5 rounded-full hover:bg-red-50 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
         </div>
     `;
     container.appendChild(row);
     lucideRefresh();
   }
 
-  // Helper to get Quill content handling empty paragraph
   const getQuillContent = (quill) => {
     if (!quill) return null;
     if (quill.getText().trim().length === 0 && quill.root.innerHTML === '<p><br></p>') return null;
@@ -348,16 +302,14 @@ export function initEventLogic(deps) {
     const ev = state.selectedEvent;
 
     injectEditModal();
-    await fetchProfilesForEdit(); // Load profiles for Datalist
+    await fetchProfilesForEdit(); 
 
-    // Populate Fields
     document.getElementById('jsEditEventId').value = ev.id;
     document.getElementById('jsEditTitleEn').value = ev.title_en || '';
     document.getElementById('jsEditTitleEs').value = ev.title_es || '';
     document.getElementById('jsEditStartTime').value = toLocalInputValue(ev.start_time);
     document.getElementById('jsEditEndTime').value = toLocalInputValue(ev.end_time);
 
-    // Populate Quill Editors
     if (quillEnInstance) quillEnInstance.root.innerHTML = ev.description_en || '';
     if (quillEsInstance) quillEsInstance.root.innerHTML = ev.description_es || '';
 
@@ -367,7 +319,6 @@ export function initEventLogic(deps) {
     document.getElementById('jsEditRecordingUrl').value = ev.recording_url || '';
     document.getElementById('jsEditTags').value = (ev.topic_tags || []).join(', ');
 
-    // Populate Speakers
     const container = document.getElementById('jsEditSpeakersContainer');
     container.innerHTML = '';
     const { data: speakers } = await supabase.from('event_speakers').select('*').eq('event_id', ev.id);
@@ -379,20 +330,13 @@ export function initEventLogic(deps) {
 
     const modal = document.getElementById('event-js-editor-modal');
     modal.showModal();
-
-    // Scroll to section (optional)
-    if (section && section !== 'main') {
-      // Just focus for now
-    } else {
-      modal.querySelector('div').scrollTop = 0;
-    }
+    modal.querySelector('div').scrollTop = 0;
   }
 
   async function handleJsEditSubmit(e) {
     e.preventDefault();
     const id = document.getElementById('jsEditEventId').value;
 
-    // Collect Data
     const payload = {
       title_en: document.getElementById('jsEditTitleEn').value.trim(),
       title_es: document.getElementById('jsEditTitleEs').value.trim() || null,
@@ -407,7 +351,6 @@ export function initEventLogic(deps) {
       topic_tags: document.getElementById('jsEditTags').value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
     };
 
-    // Collect Speakers
     const speakerRows = document.querySelectorAll('.js-speaker-row');
     const speakers = Array.from(speakerRows).map(row => ({
       event_id: id,
@@ -417,14 +360,9 @@ export function initEventLogic(deps) {
       primary_speaker: row.querySelector('.js-sp-primary').checked
     })).filter(s => s.name);
 
-    // Update Event
     const { error } = await supabase.from('events').update(payload).eq('id', id);
-    if (error) {
-      setFlash("Error updating event", 3000);
-      return;
-    }
+    if (error) { setFlash("Error updating event", 3000); return; }
 
-    // Update Speakers (Transaction-like: Delete then Insert)
     await supabase.from('event_speakers').delete().eq('event_id', id);
     if (speakers.length > 0) {
       await supabase.from('event_speakers').insert(speakers);
@@ -433,7 +371,6 @@ export function initEventLogic(deps) {
     setFlash("Event updated successfully!");
     document.getElementById('event-js-editor-modal').close();
 
-    // Reload Event Data locally
     const { data: newEv } = await supabase.from('events').select('*, event_speakers(*, profile:profiles(*))').eq('id', id).single();
     if (newEv) {
       state.selectedEvent = newEv;
@@ -441,17 +378,17 @@ export function initEventLogic(deps) {
       if (idx !== -1) state.events[idx] = newEv;
       reRender();
     }
-
-    // Trigger background update (Live Update fix)
     if (refreshEventsList) refreshEventsList();
   }
 
   // ============================================
-  // FILES LOGIC - USES STORAGE_BUCKET CONSTANT
+  // FILES LOGIC - CORRECTED TO USE 'event_files'
   // ============================================
   
   async function loadAndRenderFiles() {
     if (!state.selectedEvent) return;
+    
+    // Fetch attachment metadata from DB (table name is 'attachments', correct)
     const { data, error } = await supabase
       .from('attachments')
       .select('id, event_id, thread_id, comment_id, bucket_id, object_path, file_name, file_type, file_size, created_by, created_at, creator:profiles!attachments_created_by_fkey(id, full_name)')
@@ -474,8 +411,10 @@ export function initEventLogic(deps) {
     show(listEl); hide(emptyEl);
 
     listEl.innerHTML = state.files.map(file => {
-      // Use stored bucket_id or fall back to our constant
+      // FORCE retrieval from correct bucket unless strictly defined otherwise in DB
+      // Defaults to 'event_files' if bucket_id is missing or null
       const bucketName = file.bucket_id || STORAGE_BUCKET;
+      
       const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(file.object_path);
       const isUploader = authState.profile?.id === file.created_by;
       const isAdmin = isOrganizerOrAdmin();
@@ -509,22 +448,21 @@ export function initEventLogic(deps) {
       return;
     }
 
-    // Generate unique path: eventId/uuid-filename
+    // Generate unique path
     const filePath = `${state.selectedEvent.id}/${crypto.randomUUID()}-${file.name}`;
     setFlash('Uploading...', -1);
 
     try {
       console.log(`📤 Uploading to bucket: ${STORAGE_BUCKET}, path: ${filePath}`);
 
-      // Step 1: Upload to Storage using the constant
+      // 1. UPLOAD TO 'event_files' BUCKET
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from(STORAGE_BUCKET)
+        .from(STORAGE_BUCKET) 
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
         });
 
-      // Handle Storage Errors
       if (uploadError) {
         console.error('❌ Storage upload error:', uploadError);
         setFlash(`Upload failed: ${uploadError.message}`, 5000);
@@ -532,15 +470,13 @@ export function initEventLogic(deps) {
         return;
       }
 
-      // SUCCESS: Use returned path or our generated one
       const finalPath = uploadData?.path || filePath;
-      console.log('✅ Upload successful:', finalPath);
 
-      // Step 2: Insert into Database with correct bucket_id
+      // 2. INSERT INTO DATABASE with correct bucket_id
       const { error: insertError } = await supabase.from('attachments').insert({
         event_id: state.selectedEvent.id,
         created_by: authState.session.user.id,
-        bucket_id: STORAGE_BUCKET,
+        bucket_id: STORAGE_BUCKET, // <--- Explicitly saves 'event_files' to DB
         object_path: finalPath,
         file_name: file.name,
         file_size: file.size,
@@ -549,7 +485,7 @@ export function initEventLogic(deps) {
 
       if (insertError) {
         console.error('❌ Database insert error:', insertError);
-        // Cleanup orphan file if DB insert fails
+        // Cleanup orphaned file
         await supabase.storage.from(STORAGE_BUCKET).remove([finalPath]);
         setFlash('Database error - upload rolled back', 4000);
       } else {
@@ -569,7 +505,7 @@ export function initEventLogic(deps) {
   async function deleteFile(fileId, filePath, btn) {
     if (!confirm('Delete this file?')) return;
     
-    // Use data attribute or fall back to constant
+    // Use data attribute from renderFiles or fallback to constant
     const bucketName = btn.dataset.bucket || STORAGE_BUCKET;
 
     const originalContent = btn.innerHTML;
@@ -655,15 +591,9 @@ export function initEventLogic(deps) {
             <i data-lucide="more-horizontal" class="w-4 h-4"></i>
           </button>
           <div class="hidden absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 w-32" data-thread-dropdown="${thread.id}">
-            <button class="w-full text-left px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2" data-edit-thread="${thread.id}">
-               Edit
-            </button>
-            <button class="w-full text-left px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2" data-toggle-pin-thread="${thread.id}">
-               ${thread.pinned ? 'Unpin' : 'Pin'}
-            </button>
-            <button class="w-full text-left px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 flex items-center gap-2" data-delete-thread="${thread.id}">
-               Delete
-            </button>
+            <button class="w-full text-left px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2" data-edit-thread="${thread.id}">Edit</button>
+            <button class="w-full text-left px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2" data-toggle-pin-thread="${thread.id}">${thread.pinned ? 'Unpin' : 'Pin'}</button>
+            <button class="w-full text-left px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 flex items-center gap-2" data-delete-thread="${thread.id}">Delete</button>
           </div>
         </div>
       ` : '';
@@ -693,10 +623,8 @@ export function initEventLogic(deps) {
     if (error) setFlash('Failed to create thread');
     else {
       input.value = '';
-      // Reset toggle UI
       hide($('#newThreadForm'));
       show($('#btnToggleThreadForm'));
-
       await loadAndRenderThreads();
       selectThread(data.id);
     }
@@ -737,10 +665,7 @@ export function initEventLogic(deps) {
   async function loadCommentsForThread(threadId) {
     const { data, error } = await supabase
       .from('comments')
-      .select(`
-        id, event_id, thread_id, parent_id, content, created_by, created_at, updated_at,
-        author:profiles!comments_created_by_fkey(id, username, full_name, affiliation, avatar_url)
-      `)
+      .select(`id, event_id, thread_id, parent_id, content, created_by, created_at, updated_at, author:profiles!comments_created_by_fkey(id, username, full_name, affiliation, avatar_url)`)
       .eq('thread_id', threadId)
       .order('created_at', { ascending: true });
 
@@ -768,7 +693,6 @@ export function initEventLogic(deps) {
         state.comments = state.comments.map(c => ({ ...c, likes_count: counts[c.id] || 0, liked_by_me: likedByMe.has(c.id) }));
       }
     }
-
     renderComments();
   }
 
@@ -903,7 +827,6 @@ export function initEventLogic(deps) {
     const title = state.language === "es" && ev.title_es ? ev.title_es : ev.title_en;
     const container = $('#compactEventHeaderContainer');
 
-    // Admin Edit Button for Header (Single Entry Point)
     const editBtn = isOrganizerOrAdmin()
       ? `<button class="h-9 w-9 rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-brand-600 hover:bg-brand-50 hover:border-brand-200 transition-all flex items-center justify-center ml-2" data-edit-event-section="main" title="Edit Event Details"><i data-lucide="pencil" class="w-4 h-4"></i></button>`
       : '';
@@ -924,13 +847,9 @@ export function initEventLogic(deps) {
         </div>
         
         <div class="flex items-center gap-2 shrink-0 pt-1">
-             <button id="followBtn" class="h-9 px-4 rounded-lg border text-xs font-bold transition-all flex items-center gap-2">
-                <i data-lucide="star" class="w-3.5 h-3.5"></i> <span>Follow</span>
-             </button>
+             <button id="followBtn" class="h-9 px-4 rounded-lg border text-xs font-bold transition-all flex items-center gap-2"><i data-lucide="star" class="w-3.5 h-3.5"></i> <span>Follow</span></button>
              <select id="rsvpSelect" class="h-9 pl-3 pr-8 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-gray-50 transition-colors cursor-pointer outline-none focus:border-brand-500">
-                <option value="not_going">Not Going</option>
-                <option value="interested">Interested</option>
-                <option value="going">Going</option>
+                <option value="not_going">Not Going</option><option value="interested">Interested</option><option value="going">Going</option>
              </select>
              ${editBtn}
         </div>
@@ -943,7 +862,6 @@ export function initEventLogic(deps) {
       $('#rsvpSelect').onchange = (e) => updateRSVP(ev.id, e.target.value);
       loadRSVPFollow(ev.id);
     }, 0);
-
     lucideRefresh();
   }
 
@@ -1011,26 +929,15 @@ export function initEventLogic(deps) {
         ? `data-open-profile="${profileId}" class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer group/speaker"`
         : `class="flex items-center gap-3 p-2 -mx-2 opacity-80"`;
 
-      // Flag Logic
       const countryCode = s.profile?.country ? s.profile.country.toLowerCase() : null;
-
-      const flagHtml = countryCode
-        ? `<img src="https://flagcdn.com/w80/${countryCode}.png" class="ml-auto h-8 w-auto rounded-md shadow-sm border border-gray-100 object-cover shrink-0" alt="${countryCode}" title="${countryCode.toUpperCase()}">`
-        : '';
+      const flagHtml = countryCode ? `<img src="https://flagcdn.com/w80/${countryCode}.png" class="ml-auto h-8 w-auto rounded-md shadow-sm border border-gray-100 object-cover shrink-0" alt="${countryCode}" title="${countryCode.toUpperCase()}">` : '';
 
       return `<div ${clickAttributes}>
-             <!-- Avatar -->
              <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm ring-2 ring-transparent ${profileId ? 'group-hover/speaker:ring-brand-100' : ''} transition-all">${ava}</div>
-             
-             <!-- Text Container (flex-1 to take available space) -->
              <div class="min-w-0 flex-1">
-                <div class="text-sm font-bold text-slate-800 truncate ${profileId ? 'group-hover/speaker:text-brand-700' : ''} transition-colors">
-                    ${escapeHtml(s.name || s.profile?.full_name)}
-                </div>
+                <div class="text-sm font-bold text-slate-800 truncate ${profileId ? 'group-hover/speaker:text-brand-700' : ''} transition-colors">${escapeHtml(s.name || s.profile?.full_name)}</div>
                 ${s.affiliation ? `<div class="text-xs text-slate-500 truncate">${escapeHtml(s.affiliation)}</div>` : ''}
              </div>
-
-             <!-- Flag (Pushed to right) -->
              ${flagHtml}
         </div>`;
     }));
@@ -1070,30 +977,19 @@ export function initEventLogic(deps) {
 
   // --- INITIALIZATION & ROUTING ---
   async function openEvent(eventId) {
-    // 1. Check Auth
     if (!authState.session) {
-      // Try to find the new modal
       const gate = document.getElementById('authGateModal');
-
-      if (gate) {
-        // Show the visual modal
-        gate.classList.remove('hidden');
-        if (window.lucide) window.lucide.createIcons(); // Refresh icons inside modal
-      } else {
-        // Fallback to flash if modal HTML is missing
-        setFlash(tr('auth.required'));
-      }
+      if (gate) { gate.classList.remove('hidden'); if (window.lucide) window.lucide.createIcons(); } 
+      else { setFlash(tr('auth.required')); }
       return;
     }
 
-    // 2. Load Event Data
     const event = state.events.find(e => String(e.id) === String(eventId));
     if (!event) return;
 
     state.selectedEvent = event;
     state.selectedThreadId = null;
 
-    // ... rest of your existing logic ...
     showView('event');
     window.history.pushState({ event: eventId }, '', `?event=${eventId}`);
 
@@ -1133,16 +1029,11 @@ export function initEventLogic(deps) {
   $('#replyToThreadForm')?.addEventListener('submit', handleNewComment);
   $('#fileInput')?.addEventListener('change', handleFileUpload);
 
-  // New Thread Toggle UI
   $('#btnToggleThreadForm')?.addEventListener('click', () => {
-    show($('#newThreadForm'));
-    hide($('#btnToggleThreadForm'));
-    $('#threadTitle').focus();
+    show($('#newThreadForm')); hide($('#btnToggleThreadForm')); $('#threadTitle').focus();
   });
   $('#cancelThreadBtn')?.addEventListener('click', () => {
-    hide($('#newThreadForm'));
-    show($('#btnToggleThreadForm'));
-    $('#threadTitle').value = '';
+    hide($('#newThreadForm')); show($('#btnToggleThreadForm')); $('#threadTitle').value = '';
   });
 
   $('#filesList')?.addEventListener('click', async (e) => {
@@ -1152,47 +1043,31 @@ export function initEventLogic(deps) {
     await deleteFile(btn.dataset.deleteFile, btn.dataset.filePath, btn);
   });
 
-  // Edit Event Trigger Listener
   document.addEventListener('click', (e) => {
     const editBtn = e.target.closest('[data-edit-event-section]');
-    if (editBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      openEditModal(editBtn.dataset.editEventSection);
-    }
+    if (editBtn) { e.preventDefault(); e.stopPropagation(); openEditModal(editBtn.dataset.editEventSection); }
   });
 
-  // --- Profile Modal Click Listener ---
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-open-profile]');
     if (!btn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
 
     const profileId = btn.dataset.openProfile;
     if (profileId) {
       const profile = await ensureProfileInCache(profileId);
       if (profile) {
         const displayProfile = { ...profile };
-
         if (state.selectedEvent) {
           const isSpeaker = state.selectedEvent.event_speakers?.some(s => s.profile_id === profileId);
-
           if (isSpeaker && state.selectedEvent.topic_tags?.length) {
-            const existingTags = displayProfile.fields_of_study
-              ? displayProfile.fields_of_study.split(',').map(s => s.trim()).filter(Boolean)
-              : [];
-
+            const existingTags = displayProfile.fields_of_study ? displayProfile.fields_of_study.split(',').map(s => s.trim()).filter(Boolean) : [];
             const eventTags = state.selectedEvent.topic_tags;
-
             const combined = new Set(existingTags);
             eventTags.forEach(t => combined.add(t));
-
             displayProfile.fields_of_study = Array.from(combined).join(', ');
           }
         }
-
         openProfileModal(displayProfile);
       }
     }
