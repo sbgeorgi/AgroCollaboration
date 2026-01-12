@@ -51,6 +51,28 @@ const MODAL_CSS = `
         opacity: 1 !important;
         transform: scale(1) !important;
     }
+    /* Toast Notification for Copy */
+    #globalProfileToast {
+        position: absolute;
+        bottom: 1.5rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(1rem);
+        background-color: #10b981;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        z-index: 100000;
+    }
+    #globalProfileToast.visible {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
     .profile-ql-content p { margin-bottom: 0.5em; }
     .profile-ql-content a { color: #4f46e5; text-decoration: underline; }
     .profile-ql-content ul { list-style-type: disc; padding-left: 1.25em; margin-bottom: 0.5em; }
@@ -65,6 +87,7 @@ const MODAL_HTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
         </button>
         <div id="globalProfileContent"></div>
+        <div id="globalProfileToast">Email copied!</div>
     </div>
 </div>
 `;
@@ -95,11 +118,13 @@ export function closeProfileModal() {
     const modal = document.getElementById('globalProfileModal');
     const panel = document.getElementById('globalProfilePanel');
     const backdrop = document.getElementById('globalProfileBackdrop');
+    const toast = document.getElementById('globalProfileToast');
 
     if (!modal) return;
 
     panel?.classList.remove('visible');
     backdrop?.classList.remove('visible');
+    toast?.classList.remove('visible');
 
     setTimeout(() => modal.classList.add('hidden'), 300);
 }
@@ -111,8 +136,12 @@ export function openProfileModal(member) {
     const panel = document.getElementById('globalProfilePanel');
     const backdrop = document.getElementById('globalProfileBackdrop');
     const content = document.getElementById('globalProfileContent');
+    const toast = document.getElementById('globalProfileToast');
 
     if (!modal || !panel || !backdrop || !content || !member) return;
+
+    // Reset Toast state
+    if(toast) toast.classList.remove('visible');
 
     // Avatar
     const avatarHtml = member.avatar_url 
@@ -129,8 +158,13 @@ export function openProfileModal(member) {
     // Social links
     let socialLinksHtml = '';
     const linkStyle = 'display:inline-flex; align-items:center; justify-content:center; padding:0.5rem; background:#f8fafc; border-radius:0.5rem; color:#64748b; text-decoration:none; transition:all 0.2s;';
-
-    if (member.work_email) socialLinksHtml += `<a href="mailto:${member.work_email}" title="Email" style="${linkStyle}">${iconMail}</a>`;
+    
+    // Email is now a button
+    if (member.work_email) {
+        socialLinksHtml += `<button id="globalProfileEmailBtn" data-email="${member.work_email}" title="Copy Email" style="${linkStyle} border:none; cursor:pointer; font-size:inherit;">${iconMail}</button>`;
+    }
+    
+    // Other links remain as <a>
     if (member.personal_website) socialLinksHtml += `<a href="${member.personal_website}" target="_blank" rel="noopener noreferrer" title="Personal Website" style="${linkStyle}">${iconGlobe}</a>`;
     if (member.professional_website) socialLinksHtml += `<a href="${member.professional_website}" target="_blank" rel="noopener noreferrer" title="Professional Website" style="${linkStyle}">${iconFlask}</a>`;
     if (member.google_scholar) socialLinksHtml += `<a href="${member.google_scholar}" target="_blank" rel="noopener noreferrer" title="Google Scholar" style="${linkStyle}">${iconGrad}</a>`;
@@ -200,6 +234,23 @@ export function openProfileModal(member) {
         getAvatarUrl(member.avatar_url).then(url => {
             const img = document.getElementById('globalModalAvatarImg');
             if (img && url) img.src = url;
+        });
+    }
+
+    // Bind Copy Email Event
+    const emailBtn = document.getElementById('globalProfileEmailBtn');
+    if (emailBtn) {
+        emailBtn.addEventListener('click', () => {
+            const email = emailBtn.getAttribute('data-email');
+            if (email) {
+                navigator.clipboard.writeText(email).then(() => {
+                    const t = document.getElementById('globalProfileToast');
+                    if (t) {
+                        t.classList.add('visible');
+                        setTimeout(() => t.classList.remove('visible'), 2000);
+                    }
+                }).catch(err => console.error('Failed to copy: ', err));
+            }
         });
     }
 
