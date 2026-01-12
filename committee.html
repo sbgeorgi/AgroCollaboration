@@ -51,12 +51,11 @@
       }
     }
     
+    /* UPDATED: Removed grayscale filter so images are always color */
     .profile-img {
-      filter: grayscale(100%) contrast(1.1);
-      transition: filter 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s ease;
+      transition: transform 0.7s ease;
     }
     .group:hover .profile-img {
-      filter: grayscale(0%) contrast(1);
       transform: scale(1.05);
     }
   </style>
@@ -98,7 +97,8 @@
                </div>
                <img src="static/b2ua.jpg" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
              </div>
-             <p class="text-xs text-slate-500 leading-relaxed line-clamp-dynamic text-balance">
+             <!-- UPDATED TYPOGRAPHY: text-sm (bigger) and text-slate-600 (darker) -->
+             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                 Professor in the School of Geography & Development and Lead Researcher at Biosphere 2. Exploring the food-energy-water nexus and quantifying microclimatic benefits in drylands.
              </p>
           </div>
@@ -118,7 +118,7 @@
                </div>
                <img src="static/b2ua.jpg" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
              </div>
-             <p class="text-xs text-slate-500 leading-relaxed line-clamp-dynamic text-balance">
+             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Climate adaptation scientist focusing on decision support systems. Investigates how agrivoltaic systems increase resilience to climate variability and support sustainable development.
              </p>
           </div>
@@ -138,7 +138,7 @@
                </div>
                <img src="static/aal.png" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
              </div>
-             <p class="text-xs text-slate-500 leading-relaxed line-clamp-dynamic text-balance">
+             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Director at Centro de Energía. Pivotal role in the Latin American Agrivoltaics Alliance (AAL), fostering strategic alliances and regulatory frameworks for dual-use solar.
              </p>
           </div>
@@ -158,7 +158,7 @@
                </div>
                <img src="static/unam.png" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
              </div>
-             <p class="text-xs text-slate-500 leading-relaxed line-clamp-dynamic text-balance">
+             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Specialist in soil science. Examining how agrivoltaic infrastructures impact soil health, nutrient cycling (C-N-P), and long-term land sustainability in Mexico.
              </p>
           </div>
@@ -178,7 +178,7 @@
                </div>
                <div class="w-6 h-6 flex items-center justify-center font-black text-[8px] text-purple-700 bg-purple-50 rounded border border-purple-100">IPN</div>
              </div>
-             <p class="text-xs text-slate-500 leading-relaxed line-clamp-dynamic text-balance">
+             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Researcher at CICATA Querétaro. Focuses on "Green Tribology" and developing sustainable rural business models for agrivoltaics in central Mexico.
              </p>
           </div>
@@ -198,7 +198,7 @@
                </div>
                <img src="static/unam.png" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
              </div>
-             <p class="text-xs text-slate-500 leading-relaxed line-clamp-dynamic text-balance">
+             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Professor at ENCiT. Dedicated to sustainability education and the socio-environmental assessment of renewable energy projects in indigenous communities.
              </p>
           </div>
@@ -218,7 +218,7 @@
                </div>
                <img src="static/unam.png" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
              </div>
-             <p class="text-xs text-slate-500 leading-relaxed line-clamp-dynamic text-balance">
+             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Researcher at IER-UNAM. Expert in solar thermal systems and optical modeling, leading technical implementations for the PASE project.
              </p>
           </div>
@@ -238,7 +238,7 @@
                </div>
                <img src="static/b2ua.jpg" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
              </div>
-             <p class="text-xs text-slate-500 leading-relaxed line-clamp-dynamic text-balance">
+             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Executive Director for Mexico Global Affairs. Facilitates bilateral cooperation, logistics, and institutional support for cross-border research initiatives.
              </p>
           </div>
@@ -256,11 +256,12 @@
              <div class="flex justify-between items-start mb-2 relative z-10">
                <div>
                  <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-emerald-600 transition-colors">Georgi Chertkov</h3>
-                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">UA - Biosphere 2</p>
+                 <!-- UPDATED: Affiliation Name -->
+                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">University of Arizona - Biosphere 2</p>
                </div>
                <img src="static/b2ua.jpg" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
              </div>
-             <p class="text-xs text-slate-500 leading-relaxed line-clamp-dynamic text-balance relative z-10">
+             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty relative z-10">
                Platform Architect & Founder of OffsetMap. Specialist in data viz & AI. Designed and built the "Agrovoltaicos sin Fronteras" community platform.
              </p>
           </div>
