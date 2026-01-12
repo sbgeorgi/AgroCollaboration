@@ -8,20 +8,59 @@ export function renderLayout(activePage) {
   const navLinks = [
     { key: 'schedule', href: 'index.html', label: 'nav.schedule', text: 'Schedule' },
     { key: 'archive',  href: 'archive.html', label: 'nav.archive', text: 'Archive' },
-    { key: 'about',    href: 'about.html',   label: 'nav.about', text: 'About' },
+    { 
+      key: 'about_group', 
+      label: 'nav.about', 
+      text: 'About',
+      children: [
+        { key: 'about', href: 'about.html', label: 'nav.about_us', text: 'About Us' },
+        { key: 'committee', href: 'committee.html', label: 'nav.committee', text: 'Steering Committee' },
+        { key: 'organizations', href: 'organizations.html', label: 'nav.orgs', text: 'Organizations' }
+      ]
+    },
+    // RESTORED NETWORK LINK HERE
     { key: 'network',  href: 'network.html', label: 'nav.network', text: 'Network' },
     { key: 'map',      href: 'map.html',     label: 'nav.map', text: 'Map' },
   ];
 
-  // 2. Generate Nav HTML based on active page
+  // 2. Generate Nav HTML with Dropdown Support
   const navItemsHtml = navLinks.map(link => {
-    const isActive = link.key === activePage;
-    // Active style vs Inactive style
-    const classes = isActive 
-      ? "text-sm font-medium text-brand-700 bg-brand-50 px-3 py-1 rounded-full transition-all"
-      : "text-sm font-medium text-slate-500 hover:text-brand-700 hover:bg-brand-50 px-3 py-1 rounded-full transition-all";
-    
-    return `<a href="${link.href}" class="link ${classes}" data-i18n="${link.label}">${link.text}</a>`;
+    // Check if any child is active to highlight the parent
+    const isParentActive = link.children?.some(child => child.key === activePage);
+    const isActive = link.key === activePage || isParentActive;
+
+    // Base classes
+    const baseClasses = "text-sm font-medium px-3 py-1 rounded-full transition-all flex items-center gap-1 cursor-pointer";
+    const activeClasses = isActive 
+      ? "text-brand-700 bg-brand-50"
+      : "text-slate-500 hover:text-brand-700 hover:bg-brand-50";
+
+    if (link.children) {
+      // RENDER DROPDOWN
+      const dropdownItems = link.children.map(child => {
+        const isChildActive = child.key === activePage;
+        const childClass = isChildActive ? "bg-brand-50 text-brand-700" : "text-slate-600 hover:bg-gray-50 hover:text-slate-900";
+        return `<a href="${child.href}" class="block px-4 py-2 text-sm ${childClass}" data-i18n="${child.label}">${child.text}</a>`;
+      }).join('');
+
+      return `
+        <div class="relative group z-50">
+          <button class="${baseClasses} ${activeClasses}" aria-expanded="false">
+            <span data-i18n="${link.label}">${link.text}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:rotate-180"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <!-- Dropdown Menu -->
+          <div class="absolute left-0 mt-1 w-48 bg-white rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-gray-100 overflow-hidden opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 ease-out origin-top-left">
+            <div class="py-1">
+              ${dropdownItems}
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      // RENDER STANDARD LINK
+      return `<a href="${link.href}" class="${baseClasses} ${activeClasses}" data-i18n="${link.label}">${link.text}</a>`;
+    }
   }).join('');
 
   // 3. The Header HTML Template
@@ -39,23 +78,24 @@ export function renderLayout(activePage) {
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
 
-      <nav class="nav">
+      <nav class="nav items-center">
         ${navItemsHtml}
-        <a href="admin.html" id="btnAdmin" class="link text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-full transition-all" data-i18n="nav.admin" style="display: none;">Admin</a>
         
-        <div class="divider border-r border-gray-200 h-6 mx-2"></div>
+        <div class="divider border-r border-gray-200 h-6 mx-2 hidden md:block"></div>
         
-        <div id="langSwitchDesktop" class="lang-switch-slider border border-gray-200 bg-gray-50 hover:border-brand-300 cursor-pointer rounded-full">
+        <a href="admin.html" id="btnAdmin" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-full transition-all" data-i18n="nav.admin" style="display: none;">Admin</a>
+        
+        <div id="langSwitchDesktop" class="lang-switch-slider border border-gray-200 bg-gray-50 hover:border-brand-300 cursor-pointer rounded-full ml-1">
           <span class="text-[10px] font-bold text-slate-500">EN</span>
           <span class="text-[10px] font-bold text-slate-500">ES</span>
         </div>
         
-        <div class="auth-area flex items-center gap-3">
+        <div class="auth-area flex items-center gap-3 ml-2">
           <button id="btnProfile" class="profile-button w-9 h-9 rounded-full bg-brand-500 text-white shadow-sm ring-2 ring-white hover:ring-brand-200 transition-all" style="display: none" aria-label="Open profile">
             <span id="userInitial" class="font-bold text-xs"></span>
             <img id="userAvatar" class="rounded-full" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />
           </button>
-          <span id="userName" class="text-sm font-bold text-slate-700 hover:text-brand-600 cursor-pointer" style="display: none;"></span>
+          <span id="userName" class="text-sm font-bold text-slate-700 hover:text-brand-600 cursor-pointer hidden lg:block" style="display: none;"></span>
           <a href="signin.html" id="btnSignIn" class="text-sm font-bold text-slate-700 hover:text-brand-600 transition-colors" data-i18n="auth.signin">Sign in</a>
           <button id="btnSignOut" class="btn-ghost text-xs font-medium text-slate-400 hover:text-red-600 transition-colors" data-i18n="auth.signout" style="display: none">Sign out</button>
         </div>
@@ -63,9 +103,26 @@ export function renderLayout(activePage) {
     </div>
   </header>
   
-  <!-- Mobile Overlay - Removed 'hidden' class to allow CSS visibility transition -->
-  <div id="mobileNavOverlay" class="mobile-nav-overlay fixed inset-0 z-[60] bg-slate-900/20 backdrop-blur-sm opacity-0 transition-opacity duration-300">
-    <div class="mobile-nav-content absolute right-0 top-0 bottom-0 w-72 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col p-4"></div>
+  <!-- Mobile Overlay -->
+  <div id="mobileNavOverlay" class="mobile-nav-overlay fixed inset-0 z-[60] bg-slate-900/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="mobile-nav-content absolute right-0 top-0 bottom-0 w-72 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col p-4 overflow-y-auto">
+        <div class="flex justify-end mb-4">
+             <button id="mobileMenuClose" class="p-2 text-slate-400 hover:text-slate-600"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+        <div id="mobileLinksContainer" class="flex flex-col gap-2">
+           ${navLinks.map(link => {
+              if(link.children) {
+                 return `
+                    <div class="flex flex-col gap-1">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mt-2 mb-1" data-i18n="${link.label}">${link.text}</span>
+                        ${link.children.map(child => `<a href="${child.href}" class="px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-50 text-slate-600" data-i18n="${child.label}">${child.text}</a>`).join('')}
+                    </div>
+                 `;
+              }
+              return `<a href="${link.href}" class="px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-50 text-slate-600" data-i18n="${link.label}">${link.text}</a>`;
+           }).join('')}
+        </div>
+    </div>
   </div>
   `;
 
