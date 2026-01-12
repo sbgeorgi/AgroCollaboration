@@ -41,8 +41,7 @@
       }
     }
 
-    /* Markdown/Prose Styles - Readable but full width capable */
-    .prose { max-width: none; } /* Override default prose width limit */
+    .prose { max-width: none; }
     .prose p { margin-bottom: 0.85em; line-height: 1.7; color: #475569; }
     .prose h2 { color: #0f172a; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.25rem; letter-spacing: -0.015em; }
     .prose a { color: #0369a1; text-decoration: none; font-weight: 600; border-bottom: 1px solid #bae6fd; transition: border-color 0.2s; }
@@ -55,11 +54,11 @@
   <!-- Note: Global Header/Nav injected by layout.js -->
 
   <!-- ================= MAIN CONTENT CONTAINER ================= -->
-  <!-- Matches organizations.html: Flex Column, Relative, Overflow Hidden -->
+  <!-- Flex Column + Overflow Hidden ensures body never scrolls, only inner div does -->
   <main class="flex-1 relative overflow-hidden flex flex-col bg-dot-pattern">
 
-    <!-- PAGE HEADER: Fixed height, styling matches organizations.html -->
-    <div class="flex-none px-8 py-4 flex flex-col md:flex-row gap-2 justify-between items-center z-20 bg-white border-b border-gray-200 shadow-sm h-16">
+    <!-- PAGE HEADER: Flex-none ensures it keeps its height. h-auto allows text wrapping if needed. -->
+    <div class="flex-none px-8 py-4 flex flex-col md:flex-row gap-2 justify-between items-center z-20 bg-white border-b border-gray-200 shadow-sm min-h-[4rem] h-auto shrink-0">
       
       <!-- Left Side -->
       <div class="flex items-center h-full">
@@ -79,16 +78,16 @@
     </div>
 
     <!-- SCROLLABLE CONTENT AREA -->
-    <!-- Matches organizations.html: flex-1, min-h-0, overflow-y-auto -->
-    <div class="flex-1 p-4 min-h-0 overflow-y-auto custom-scrollbar">
+    <!-- flex-1 fills remaining height exactly. min-h-0 prevents flex overflow bugs. -->
+    <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4">
       
-      <!-- Full Width Container -->
-      <div class="w-full max-w-[1920px] mx-auto pb-6">
+      <!-- Content Wrapper: w-full for 100% width. pb-24 ensures footer doesn't overlap content at bottom. -->
+      <div class="w-full mx-auto pb-24">
         
-        <!-- Main Card: Full Width -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+        <!-- Main Card -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col w-full">
 
-          <!-- Hero Image: Adjusted height for full width aspect ratio -->
+          <!-- Hero Image -->
           <div class="relative h-48 md:h-60 w-full group shrink-0">
             <img src="static/agrivUA.jpg"
               alt="Agrivoltaic solar panels over a field of crops at the University of Arizona"
@@ -190,12 +189,10 @@
     import { authState, initAuth, signOut } from './auth.js';
     import { initSharedUI, renderHeader, applyI18n, tr, $$, show, hide, getAvatarUrl, $ } from './ui.js';
 
-    // Inject Layout (About Active)
     renderLayout('about');
 
     const state = { language: localStorage.getItem("lang") || "en" };
     
-    // Translations
     const t = {
       en: {
         nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
@@ -223,13 +220,11 @@
 
     function applyPageI18n() {
       applyI18n(t, state.language);
-
       const s = document.querySelector('#langSwitchDesktop div:last-child');
       if (s) {
         s.style.transform = state.language === 'es' ? 'translateX(100%)' : 'translateX(0)';
         s.innerText = state.language.toUpperCase();
       }
-
       $$("[data-lang-content]").forEach(el => {
         if (el.dataset.langContent === state.language) show(el);
         else hide(el);
