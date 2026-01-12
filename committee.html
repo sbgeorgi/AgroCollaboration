@@ -35,10 +35,9 @@
         background-size: 24px 24px;
       }
 
-      /* Ensure text doesn't overflow on very short screens */
       .line-clamp-dynamic {
         display: -webkit-box;
-        -webkit-line-clamp: 4; /* Default */
+        -webkit-line-clamp: 4;
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
@@ -51,7 +50,7 @@
       }
     }
     
-    /* UPDATED: Removed grayscale filter so images are always color */
+    /* Images always in color */
     .profile-img {
       transition: transform 0.7s ease;
     }
@@ -79,7 +78,7 @@
       </div>
     </div>
 
-    <!-- THE GRID (Flex-1 ensures it fills space, grid-rows-3 ensures equal height division) -->
+    <!-- THE GRID -->
     <div class="flex-1 p-3 min-h-0">
       <div class="h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 grid-rows-3 gap-3 w-full max-w-[1920px] mx-auto">
 
@@ -89,15 +88,16 @@
           <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/gregb.jpg" class="profile-img w-full h-full object-cover" alt="Greg">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0">
-             <div class="flex justify-between items-start mb-2">
-               <div>
-                 <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-brand-600 transition-colors">Greg Barron-Gafford</h3>
-                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">University of Arizona</p>
-               </div>
-               <img src="static/b2ua.jpg" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
+          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+             <!-- Badge -->
+             <div class="absolute top-3 right-3 z-10">
+               <img src="static/b2ua.jpg" class="w-10 h-10 rounded-md object-contain shadow-sm border border-gray-100" alt="Logo">
              </div>
-             <!-- UPDATED TYPOGRAPHY: text-sm (bigger) and text-slate-600 (darker) -->
+             <!-- Header -->
+             <div class="mb-2 pr-12">
+               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-brand-600 transition-colors">Greg Barron-Gafford</h3>
+               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">University of Arizona</p>
+             </div>
              <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                 Professor in the School of Geography & Development and Lead Researcher at Biosphere 2. Exploring the food-energy-water nexus and quantifying microclimatic benefits in drylands.
              </p>
@@ -110,13 +110,15 @@
           <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/christinel.jpeg" class="profile-img w-full h-full object-cover" alt="Christine">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0">
-             <div class="flex justify-between items-start mb-2">
-               <div>
-                 <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-brand-600 transition-colors">Christine Lamanna</h3>
-                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">University of Arizona</p>
-               </div>
-               <img src="static/b2ua.jpg" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
+          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+             <!-- Badge -->
+             <div class="absolute top-3 right-3 z-10">
+               <img src="static/b2ua.jpg" class="w-10 h-10 rounded-md object-contain shadow-sm border border-gray-100" alt="Logo">
+             </div>
+             <!-- Header -->
+             <div class="mb-2 pr-12">
+               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-brand-600 transition-colors">Christine Lamanna</h3>
+               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">University of Arizona</p>
              </div>
              <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Climate adaptation scientist focusing on decision support systems. Investigates how agrivoltaic systems increase resilience to climate variability and support sustainable development.
@@ -130,13 +132,15 @@
           <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/marciam.jpeg" class="profile-img w-full h-full object-cover" alt="Marcia">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0">
-             <div class="flex justify-between items-start mb-2">
-               <div>
-                 <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Marcia Montedonico</h3>
-                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Universidad de Chile</p>
-               </div>
-               <img src="static/aal.png" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
+          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+             <!-- Badge -->
+             <div class="absolute top-3 right-3 z-10">
+               <img src="static/aal.png" class="w-10 h-10 rounded-md object-contain" alt="Logo">
+             </div>
+             <!-- Header -->
+             <div class="mb-2 pr-12">
+               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Marcia Montedonico</h3>
+               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Universidad de Chile</p>
              </div>
              <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Director at Centro de Energía. Pivotal role in the Latin American Agrivoltaics Alliance (AAL), fostering strategic alliances and regulatory frameworks for dual-use solar.
@@ -150,13 +154,15 @@
           <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/thalitaa.jpg" class="profile-img w-full h-full object-cover" alt="Thalita">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0">
-             <div class="flex justify-between items-start mb-2">
-               <div>
-                 <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-amber-600 transition-colors">Thalita Abbruzzini</h3>
-                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">UNAM</p>
-               </div>
-               <img src="static/unam.png" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
+          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+             <!-- Badge -->
+             <div class="absolute top-3 right-3 z-10">
+               <img src="static/unam.png" class="w-10 h-10 rounded-md object-contain" alt="Logo">
+             </div>
+             <!-- Header -->
+             <div class="mb-2 pr-12">
+               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-amber-600 transition-colors">Thalita Abbruzzini</h3>
+               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">UNAM</p>
              </div>
              <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Specialist in soil science. Examining how agrivoltaic infrastructures impact soil health, nutrient cycling (C-N-P), and long-term land sustainability in Mexico.
@@ -170,13 +176,15 @@
           <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/adriang.png" class="profile-img w-full h-full object-cover" alt="Adrian">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0">
-             <div class="flex justify-between items-start mb-2">
-               <div>
-                 <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-purple-700 transition-colors">Adrián García</h3>
-                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IPN - CICATA</p>
-               </div>
-               <div class="w-6 h-6 flex items-center justify-center font-black text-[8px] text-purple-700 bg-purple-50 rounded border border-purple-100">IPN</div>
+          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+             <!-- Badge (Custom Text Box for IPN) -->
+             <div class="absolute top-3 right-3 z-10 w-10 h-10 flex items-center justify-center font-black text-[10px] text-purple-700 bg-purple-50 rounded-md border border-purple-100 shadow-sm">
+               IPN
+             </div>
+             <!-- Header -->
+             <div class="mb-2 pr-12">
+               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-purple-700 transition-colors">Adrián García</h3>
+               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IPN - CICATA</p>
              </div>
              <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Researcher at CICATA Querétaro. Focuses on "Green Tribology" and developing sustainable rural business models for agrivoltaics in central Mexico.
@@ -190,13 +198,15 @@
           <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/lizeth.jpg" class="profile-img w-full h-full object-cover" alt="Lizeth">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0">
-             <div class="flex justify-between items-start mb-2">
-               <div>
-                 <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-amber-600 transition-colors">Lizeth Caballero</h3>
-                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">UNAM - ENCiT</p>
-               </div>
-               <img src="static/unam.png" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
+          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+             <!-- Badge -->
+             <div class="absolute top-3 right-3 z-10">
+               <img src="static/unam.png" class="w-10 h-10 rounded-md object-contain" alt="Logo">
+             </div>
+             <!-- Header -->
+             <div class="mb-2 pr-12">
+               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-amber-600 transition-colors">Lizeth Caballero</h3>
+               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">UNAM - ENCiT</p>
              </div>
              <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Professor at ENCiT. Dedicated to sustainability education and the socio-environmental assessment of renewable energy projects in indigenous communities.
@@ -210,13 +220,15 @@
           <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/carlos.jpg" class="profile-img w-full h-full object-cover" alt="Carlos">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0">
-             <div class="flex justify-between items-start mb-2">
-               <div>
-                 <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-amber-600 transition-colors">Carlos Pérez Rábago</h3>
-                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">UNAM - IER</p>
-               </div>
-               <img src="static/unam.png" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
+          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+             <!-- Badge -->
+             <div class="absolute top-3 right-3 z-10">
+               <img src="static/unam.png" class="w-10 h-10 rounded-md object-contain" alt="Logo">
+             </div>
+             <!-- Header -->
+             <div class="mb-2 pr-12">
+               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-amber-600 transition-colors">Carlos Pérez Rábago</h3>
+               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">UNAM - IER</p>
              </div>
              <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Researcher at IER-UNAM. Expert in solar thermal systems and optical modeling, leading technical implementations for the PASE project.
@@ -230,13 +242,15 @@
           <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/josel.jpg" class="profile-img w-full h-full object-cover" alt="Jose">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0">
-             <div class="flex justify-between items-start mb-2">
-               <div>
-                 <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-brand-600 transition-colors">Jose Lever</h3>
-                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">University of Arizona</p>
-               </div>
-               <img src="static/b2ua.jpg" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
+          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+             <!-- Badge -->
+             <div class="absolute top-3 right-3 z-10">
+               <img src="static/b2ua.jpg" class="w-10 h-10 rounded-md object-contain shadow-sm border border-gray-100" alt="Logo">
+             </div>
+             <!-- Header -->
+             <div class="mb-2 pr-12">
+               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-brand-600 transition-colors">Jose Lever</h3>
+               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">University of Arizona</p>
              </div>
              <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty">
                Executive Director for Mexico Global Affairs. Facilitates bilateral cooperation, logistics, and institutional support for cross-border research initiatives.
@@ -251,15 +265,17 @@
              <img src="static/georgic.jpg" class="profile-img w-full h-full object-cover" alt="Georgi">
           </div>
           <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
-             <div class="absolute right-0 bottom-0 w-24 h-24 bg-gradient-to-tl from-emerald-50 to-transparent rounded-tl-full pointer-events-none"></div>
+             <div class="absolute right-0 bottom-0 w-24 h-24 bg-gradient-to-tl from-emerald-50 to-transparent rounded-tl-full pointer-events-none z-0"></div>
 
-             <div class="flex justify-between items-start mb-2 relative z-10">
-               <div>
-                 <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-emerald-600 transition-colors">Georgi Chertkov</h3>
-                 <!-- UPDATED: Affiliation Name -->
-                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">University of Arizona - Biosphere 2</p>
-               </div>
-               <img src="static/b2ua.jpg" class="w-6 h-6 rounded object-contain opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" alt="Logo">
+             <!-- Badge (Z-10 to stay above bg decoration) -->
+             <div class="absolute top-3 right-3 z-20">
+               <img src="static/b2ua.jpg" class="w-10 h-10 rounded-md object-contain shadow-sm border border-gray-100" alt="Logo">
+             </div>
+
+             <!-- Header -->
+             <div class="mb-2 pr-12 relative z-10">
+               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-emerald-600 transition-colors">Georgi Chertkov</h3>
+               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">University of Arizona - Biosphere 2</p>
              </div>
              <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty relative z-10">
                Platform Architect & Founder of OffsetMap. Specialist in data viz & AI. Designed and built the "Agrovoltaicos sin Fronteras" community platform.
