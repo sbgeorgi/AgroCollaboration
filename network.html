@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Member Network • Agrovoltaicos sin Fronteras</title>
-    <meta name="description"
-        content="Interactive network visualization of our community members and their connections.">
+    <meta name="description" content="Interactive network visualization of our community members and their connections.">
 
     <!-- Critical pre-render script -->
     <script src="auth-preloader.js"></script>
@@ -14,9 +13,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,56 +24,29 @@
 
     <!-- Custom CSS -->
     <style>
-        body {
-            overflow-y: auto;
-        }
+        body { overflow-y: auto; }
+        @media (min-width: 768px) { body { overflow: hidden; } }
 
-        @media (min-width: 768px) {
-            body {
-                overflow: hidden;
-            }
-        }
-
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-            background-clip: content-box;
-            border: 2px solid transparent;
-        }
-
-        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; background-clip: content-box; border: 2px solid transparent; }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; }
 
         /* Graph Canvas Styles */
         #network-container {
             cursor: grab;
             background-color: #f8fafc;
-            background-image:
-                radial-gradient(#e2e8f0 1px, transparent 1px),
-                radial-gradient(#f1f5f9 1px, transparent 1px);
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px), radial-gradient(#f1f5f9 1px, transparent 1px);
             background-size: 40px 40px, 10px 10px;
             background-position: 0 0, 20px 20px;
             touch-action: none;
             overflow: hidden;
-            /* Default height for mobile, overridden by JS/Style for desktop split */
             height: 500px;
             flex-grow: 0;
             flex-shrink: 0;
         }
 
-        #network-container:active {
-            cursor: grabbing;
-        }
+        #network-container:active { cursor: grabbing; }
 
         #networkCanvas {
             transform-origin: 0 0;
@@ -86,7 +56,7 @@
             height: 100%;
             pointer-events: none;
             will-change: transform;
-            transform-style: flat;
+            transform-style: preserve-3d; /* Optimization for GPU */
         }
 
         #networkNodes {
@@ -111,89 +81,48 @@
             transform: translate(-50%, -50%);
             cursor: pointer;
             pointer-events: auto;
-            will-change: transform, z-index;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            will-change: transform;
+            /* Default transition for layout changes (e.g. bubble to network) */
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        .member-node {
-            z-index: 20;
+        /* Crucial Fix: When interacting, disable transition to prevent jitter */
+        .network-node.is-interacting {
+            transition: none !important;
         }
 
-        .group-node {
-            z-index: 5;
-            transition: transform 0.1s linear;
-        }
+        .member-node { z-index: 20; }
+        .group-node { z-index: 5; }
 
         /* Bubble Mode Styles */
         .bubble-group {
             border-radius: 50%;
             opacity: 0.85;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-            transition: all 0.4s ease;
             border: 2px solid rgba(255, 255, 255, 0.5);
         }
 
-        .bubble-group:hover {
-            opacity: 1;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
-        }
+        .bubble-group:hover { opacity: 1; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12); }
 
         .bubble-member {
             border-radius: 50%;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .bubble-member:hover {
-            z-index: 1000 !important;
-            /* High Z-Index on hover to ensure tooltip isn't covered */
-        }
-
-        .network-node.magnified {
-            z-index: 1000 !important;
-        }
+        .bubble-member:hover { z-index: 1000 !important; }
+        .network-node.magnified { z-index: 1000 !important; }
 
         /* Edges */
-        .network-edge {
-            fill: none;
-            stroke: #cbd5e1;
-            stroke-width: 1.5px;
-            stroke-opacity: 0.3;
-        }
-
-        .collab-edge {
-            fill: none;
-            stroke: #f59e0b;
-            stroke-width: 2px;
-            stroke-opacity: 0.5;
-            stroke-dasharray: 4;
-        }
-
-        .dock-track {
-            stroke: #cbd5e1;
-            stroke-width: 4px;
-            stroke-linecap: round;
-            opacity: 0.3;
-        }
+        .network-edge { fill: none; stroke: #cbd5e1; stroke-width: 1.5px; stroke-opacity: 0.3; }
+        .collab-edge { fill: none; stroke: #f59e0b; stroke-width: 2px; stroke-opacity: 0.5; stroke-dasharray: 4; }
+        .dock-track { stroke: #cbd5e1; stroke-width: 4px; stroke-linecap: round; opacity: 0.3; }
 
         /* Table Sorting */
-        th[data-sort] {
-            user-select: none;
-        }
-
-        th.sort-asc::after {
-            content: ' ▲';
-            font-size: 10px;
-            margin-left: 4px;
-            color: #4f46e5;
-        }
-
-        th.sort-desc::after {
-            content: ' ▼';
-            font-size: 10px;
-            margin-left: 4px;
-            color: #4f46e5;
-        }
+        th[data-sort] { user-select: none; }
+        th.sort-asc::after { content: ' ▲'; font-size: 10px; margin-left: 4px; color: #4f46e5; }
+        th.sort-desc::after { content: ' ▼'; font-size: 10px; margin-left: 4px; color: #4f46e5; }
 
         /* Resizer Handle */
         #dragHandle {
@@ -210,40 +139,17 @@
             transition: background-color 0.2s;
             touch-action: none;
         }
-
-        #dragHandle:hover, #dragHandle.dragging {
-            background: #e2e8f0;
-        }
-        
-        #dragHandle::after {
-            content: '';
-            width: 40px;
-            height: 4px;
-            background-color: #cbd5e1;
-            border-radius: 2px;
-        }
+        #dragHandle:hover, #dragHandle.dragging { background: #e2e8f0; }
+        #dragHandle::after { content: ''; width: 40px; height: 4px; background-color: #cbd5e1; border-radius: 2px; }
 
         #flash {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-150%);
-            background-color: #0f172a;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 9999px;
-            font-weight: 500;
-            font-size: 0.9rem;
-            z-index: 9999;
-            opacity: 0;
+            position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-150%);
+            background-color: #0f172a; color: white; padding: 10px 20px; border-radius: 9999px;
+            font-weight: 500; font-size: 0.9rem; z-index: 9999; opacity: 0;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
-
-        #flash.visible {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
+        #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 
     <!-- Lucide Icons -->
@@ -258,24 +164,19 @@
     <main class="flex-1 relative bg-gray-50 overflow-visible md:overflow-hidden">
 
         <!-- Loaders -->
-        <div id="loadingScreen"
-            class="absolute inset-0 bg-gray-50 z-[60] flex flex-col items-center justify-center transition-opacity duration-500 fixed md:absolute">
+        <div id="loadingScreen" class="absolute inset-0 bg-gray-50 z-[60] flex flex-col items-center justify-center transition-opacity duration-500 fixed md:absolute">
             <div class="w-8 h-8 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin mb-4"></div>
             <span class="text-sm font-medium text-slate-500 animate-pulse" data-i18n="optimizing">Optimizing Layout...</span>
         </div>
 
-        <div id="signinGate"
-            class="absolute inset-0 bg-gray-50/90 backdrop-blur-sm z-[55] flex items-center justify-center fixed md:absolute"
-            style="display:none;">
+        <div id="signinGate" class="absolute inset-0 bg-gray-50/90 backdrop-blur-sm z-[55] flex items-center justify-center fixed md:absolute" style="display:none;">
             <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 max-w-md text-center mx-4">
                 <div class="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i data-lucide="lock" class="w-6 h-6 text-brand-600"></i>
                 </div>
                 <h2 class="font-display font-bold text-2xl text-slate-900 mb-2" data-i18n="pageTitle">Member Network</h2>
                 <p class="text-slate-500 mb-6 text-sm" data-i18n="signinPrompt">Sign in to visualize connections.</p>
-                <a href="signin.html"
-                    class="inline-flex items-center justify-center px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors w-full"
-                    data-i18n="signinBtn">Sign In</a>
+                <a href="signin.html" class="inline-flex items-center justify-center px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors w-full" data-i18n="signinBtn">Sign In</a>
             </div>
         </div>
 
@@ -283,74 +184,56 @@
         <div class="max-w-[1800px] mx-auto w-full h-auto md:h-full flex flex-col md:flex-row gap-4 p-4 md:p-6 relative">
 
             <!-- LEFT SIDEBAR -->
-            <aside
-                class="flex-none w-full md:w-80 bg-white border border-gray-200 rounded-2xl flex flex-col shadow-sm overflow-hidden h-auto md:h-full shrink-0">
+            <aside class="flex-none w-full md:w-80 bg-white border border-gray-200 rounded-2xl flex flex-col shadow-sm overflow-hidden h-auto md:h-full shrink-0">
                 <div class="p-5 border-b border-gray-100 space-y-4">
                     <h2 class="font-display font-bold text-lg text-brand-700 flex items-center gap-2">
                         <i data-lucide="share-2" class="w-5 h-5"></i> <span data-i18n="explore">Explore Network</span>
                     </h2>
 
                     <div class="relative z-30">
-                        <i data-lucide="search"
-                            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                        <input type="text" id="searchInput"
-                            class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-100 outline-none"
-                            placeholder="Search people, orgs..." data-i18n-placeholder="searchPlaceholder">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="searchInput" class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-100 outline-none" placeholder="Search people, orgs..." data-i18n-placeholder="searchPlaceholder">
                     </div>
 
                     <div class="grid grid-cols-1 gap-3">
                         <div>
-                            <label
-                                class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block" data-i18n="groupBy">Group Nodes By</label>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block" data-i18n="groupBy">Group Nodes By</label>
                             <div class="relative">
-                                <select id="groupByFilter"
-                                    class="w-full appearance-none bg-slate-50 border border-gray-200 text-slate-700 text-xs font-bold rounded-lg pl-3 pr-8 py-2.5 focus:ring-2 focus:ring-brand-100 outline-none">
+                                <select id="groupByFilter" class="w-full appearance-none bg-slate-50 border border-gray-200 text-slate-700 text-xs font-bold rounded-lg pl-3 pr-8 py-2.5 focus:ring-2 focus:ring-brand-100 outline-none">
                                     <option value="affiliation" data-i18n="optOrg">Organization</option>
                                     <option value="country" data-i18n="optCountry">Country</option>
                                 </select>
-                                <i data-lucide="chevron-down"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2">
                             <div class="relative">
-                                <select id="eventFilter"
-                                    class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
+                                <select id="eventFilter" class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
                                     <option value="all" data-i18n="allEvents">All Events</option>
                                 </select>
-                                <i data-lucide="chevron-down"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
                             </div>
                             <div class="relative">
-                                <select id="countryFilter"
-                                    class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
+                                <select id="countryFilter" class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
                                     <option value="all" data-i18n="allCountries">All Countries</option>
                                 </select>
-                                <i data-lucide="chevron-down"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
                             </div>
                         </div>
                     </div>
 
                     <div class="flex flex-wrap gap-2 pt-1">
-                        <button
-                            class="px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white"
-                            data-role="all" data-i18n="roleAll">All Roles</button>
-                        <button
-                            class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"
-                            data-role="speakers" data-i18n="roleSpeakers">Speakers</button>
-                        <button
-                            class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"
-                            data-role="organizers" data-i18n="roleHosts">Hosts</button>
+                        <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white" data-role="all" data-i18n="roleAll">All Roles</button>
+                        <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50" data-role="speakers" data-i18n="roleSpeakers">Speakers</button>
+                        <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50" data-role="organizers" data-i18n="roleHosts">Hosts</button>
                     </div>
                 </div>
 
                 <div class="flex-1 overflow-y-auto custom-scrollbar p-5 min-h-[200px] md:min-h-0">
                     <div class="flex items-center justify-between mb-2">
                         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="interests">Interests & Tags</label>
-                        <button id="clearFiltersBtn"
-                            class="text-[10px] font-bold text-brand-600 hover:underline" data-i18n="clear">Clear</button>
+                        <button id="clearFiltersBtn" class="text-[10px] font-bold text-brand-600 hover:underline" data-i18n="clear">Clear</button>
                     </div>
                     <div id="selectedTagsContainer" class="flex flex-wrap gap-1.5 mb-3 empty:hidden"></div>
                     <div id="tagFilters" class="space-y-0.5"></div>
@@ -359,24 +242,19 @@
                 <div class="p-4 bg-slate-50 border-t border-gray-200 mt-auto">
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                            <span id="statMembers"
-                                class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
+                            <span id="statMembers" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statMembers">Members</span>
                         </div>
                         <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                            <span id="statConnections"
-                                class="block text-xl font-display font-bold text-brand-600 leading-none mb-0.5">0</span>
-                            <span
-                                class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statConnections">Connections</span>
+                            <span id="statConnections" class="block text-xl font-display font-bold text-brand-600 leading-none mb-0.5">0</span>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statConnections">Connections</span>
                         </div>
                         <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                            <span id="statOrgs"
-                                class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
+                            <span id="statOrgs" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statOrgs">Orgs</span>
                         </div>
                         <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                            <span id="statEvents"
-                                class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
+                            <span id="statEvents" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statEvents">Events</span>
                         </div>
                     </div>
@@ -387,8 +265,7 @@
             <div class="flex-1 flex flex-col min-w-0 h-auto md:h-full relative" id="right-column">
 
                 <!-- VISUALIZATION (Resizable Top) -->
-                <section id="network-container"
-                    class="bg-white border border-gray-200 rounded-t-2xl shadow-sm relative overflow-hidden group">
+                <section id="network-container" class="bg-white border border-gray-200 rounded-t-2xl shadow-sm relative overflow-hidden group">
                     <div id="networkCanvas">
                         <svg class="network-connections" id="networkConnections"></svg>
                         <div id="networkNodes"></div>
@@ -396,8 +273,7 @@
 
                     <!-- Top Left Controls -->
                     <div class="absolute top-4 left-4 flex gap-2 z-40">
-                        <button id="viewToggleBtn"
-                            class="flex items-center gap-2 px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
+                        <button id="viewToggleBtn" class="flex items-center gap-2 px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
                             <i data-lucide="share-2" class="w-4 h-4 text-brand-500"></i>
                             <span id="viewModeText" data-i18n="switchNet">Switch to Network</span>
                         </button>
@@ -405,51 +281,36 @@
 
                     <!-- Top Right Controls -->
                     <div class="absolute top-4 right-4 flex gap-2 z-40">
-                        <div
-                            class="flex items-center gap-2 bg-white/90 backdrop-blur border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm text-xs text-slate-600 font-medium">
+                        <div class="flex items-center gap-2 bg-white/90 backdrop-blur border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm text-xs text-slate-600 font-medium">
                             <i data-lucide="scan-search" class="w-4 h-4 text-brand-500"></i>
                             <span data-i18n="hoverMagnify">Hover to Magnify</span>
                         </div>
-                        <button id="resetViewBtn"
-                            class="px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all" data-i18n="resetView">
+                        <button id="resetViewBtn" class="px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all" data-i18n="resetView">
                             Reset View
                         </button>
                     </div>
 
-                    <div id="legendContainer" class="absolute bottom-4 left-4 z-40 pointer-events-none">
-                        <!-- Content populated by script based on mode -->
-                    </div>
+                    <div id="legendContainer" class="absolute bottom-4 left-4 z-40 pointer-events-none"></div>
                 </section>
 
                 <!-- DRAG HANDLE -->
                 <div id="dragHandle"></div>
 
                 <!-- TABLE (Flexible Bottom) -->
-                <section id="table-container"
-                    class="bg-white border border-gray-200 rounded-b-2xl shadow-sm flex flex-col overflow-hidden shrink-0 flex-1 min-h-[100px]">
+                <section id="table-container" class="bg-white border border-gray-200 rounded-b-2xl shadow-sm flex flex-col overflow-hidden shrink-0 flex-1 min-h-[100px]">
                     <div class="overflow-auto custom-scrollbar flex-1 h-full">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-gray-50 sticky top-0 z-20 shadow-sm">
                                 <tr>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                                        data-sort="name" data-i18n="tblName">Name</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                                        data-sort="affiliation" data-i18n="tblAff">Affiliation</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden lg:table-cell"
-                                        data-sort="interests" data-i18n="tblInterests">Interests</th>
-                                    
-                                    <!-- New Columns -->
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                                        data-sort="role" data-i18n="tblRole">Role</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                                        data-sort="country" data-i18n="tblCountry">Country</th>
-                                    
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors text-right"
-                                        data-sort="connections" data-i18n="tblConn">Connections</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="name" data-i18n="tblName">Name</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="affiliation" data-i18n="tblAff">Affiliation</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden lg:table-cell" data-sort="interests" data-i18n="tblInterests">Interests</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="role" data-i18n="tblRole">Role</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="country" data-i18n="tblCountry">Country</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors text-right" data-sort="connections" data-i18n="tblConn">Connections</th>
                                 </tr>
                             </thead>
-                            <tbody id="members-table-body" class="divide-y divide-gray-100 text-sm text-slate-700">
-                            </tbody>
+                            <tbody id="members-table-body" class="divide-y divide-gray-100 text-sm text-slate-700"></tbody>
                         </table>
                     </div>
                 </section>
@@ -458,17 +319,14 @@
     </main>
 
     <!-- LOGIC -->
-    <!-- LOGIC -->
     <script type="module">
         import { renderLayout } from './layout.js';
         import { supabase, authState, initAuth, signOut } from './auth.js';
         import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatarUrl } from './ui.js';
         import { openProfileModal } from './clickprofile.js';
 
-        // 1. Render Layout (Injects Header/Footer)
         renderLayout('network');
 
-        // Expanded Translations Object
         const t = {
             en: {
                 auth: { signin: "Sign in", signout: "Sign out" },
@@ -553,22 +411,19 @@
         const state = {
             members: [], profileById: new Map(), isSpeaker: new Set(), speakersByProfileId: new Map(),
             eventsById: new Map(), orgIndex: new Map(), tagIndex: new Map(), tagCounts: new Map(),
-            allCanonicalToDisplay: new Map(), connections: [], nodes: new Map(),
+            allCanonicalToDisplay: new Map(), connections: [], 
+            nodes: new Map(),
+            cachedNodes: [], // Performance Optimization: Cache DOM nodes
             positions: new Map(), panOffset: { x: 0, y: 0 }, zoom: 1,
             sort: { key: "connections", dir: "desc" },
             roleFilter: "all", eventFilterId: "all", countryFilterId: "all",
             groupBy: "affiliation",
             searchQuery: "", selectedTags: new Set(),
-            lang: localStorage.getItem("lang") || "en", // State tracks language
+            lang: localStorage.getItem("lang") || "en", 
             isDragging: false,
             viewMode: 'bubble',
             currentGroupBaseScale: 1,
-            countries: {
-                "US": "United States", "MX": "Mexico", "CA": "Canada", "CO": "Colombia", "BR": "Brazil",
-                "CL": "Chile", "AR": "Argentina", "PE": "Peru", "ES": "Spain", "FR": "France", "DE": "Germany",
-                "BE": "Belgium", "NL": "Netherlands", "IT": "Italy", "UK": "UK", "GB": "UK",
-                "IN": "India", "CN": "China", "AU": "Australia"
-            }
+            countries: { "US": "United States", "MX": "Mexico", "CA": "Canada", "CO": "Colombia", "BR": "Brazil", "CL": "Chile", "AR": "Argentina", "PE": "Peru", "ES": "Spain", "FR": "France", "DE": "Germany", "BE": "Belgium", "NL": "Netherlands", "IT": "Italy", "UK": "UK", "GB": "UK", "IN": "India", "CN": "China", "AU": "Australia" }
         };
 
         const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -582,59 +437,29 @@
             return `hsl(${h}, 55%, 75%)`;
         }
 
-        // --- Translation Helper ---
         function applyLocalTranslations() {
             const l = t[state.lang] || t.en;
-            
-            // 1. Update Static Text
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.dataset.i18n;
-                if (l[key]) el.innerText = l[key];
-            });
-            // 2. Update Placeholders
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                const key = el.dataset.i18nPlaceholder;
-                if (l[key]) el.placeholder = l[key];
-            });
-            
-            // 3. Update Dynamic Button Text
+            document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.dataset.i18n; if (l[key]) el.innerText = l[key]; });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const key = el.dataset.i18nPlaceholder; if (l[key]) el.placeholder = l[key]; });
             const btnText = state.viewMode === 'network' ? l.switchBub : l.switchNet;
-            const btnLabel = document.getElementById('viewModeText');
-            if (btnLabel) btnLabel.innerText = btnText;
-
-            // 4. Update Header/Nav (Important for Layout.js)
+            const btnLabel = document.getElementById('viewModeText'); if (btnLabel) btnLabel.innerText = btnText;
             applyI18n(t, state.lang);
-
-            // 5. Re-render Dynamic Content (Dropdowns, Graph Legend, Table Headers)
             populateDropdowns(); 
             const list = getFiltered();
-            renderTable(list); // Updates table headers
-            if(list.length > 0) renderGraph(list); // Updates legend and graph labels
+            renderTable(list); 
+            if(list.length > 0) renderGraph(list);
         }
 
-        // Separated dropdown logic to allow re-rendering on language switch
         function populateDropdowns() {
             const l = t[state.lang] || t.en;
-            
-            // Event Filter
-            const eventSelect = $('#eventFilter');
-            const currentEvent = eventSelect.value;
+            const eventSelect = $('#eventFilter'); const currentEvent = eventSelect.value;
             eventSelect.innerHTML = `<option value="all">${l.allEvents}</option>`;
-            state.eventsById.forEach(e => {
-                const title = state.lang === 'es' ? (e.title_es || e.title_en) : e.title_en;
-                eventSelect.add(new Option(new Date(e.start_time).toLocaleDateString() + ' - ' + title, e.id));
-            });
+            state.eventsById.forEach(e => { const title = state.lang === 'es' ? (e.title_es || e.title_en) : e.title_en; eventSelect.add(new Option(new Date(e.start_time).toLocaleDateString() + ' - ' + title, e.id)); });
             eventSelect.value = currentEvent;
-
-            // Country Filter
-            const countrySelect = $('#countryFilter');
-            const currentCountry = countrySelect.value;
+            const countrySelect = $('#countryFilter'); const currentCountry = countrySelect.value;
             countrySelect.innerHTML = `<option value="all">${l.allCountries}</option>`;
             const uniqueCountries = new Set(state.members.map(m => m.country).filter(Boolean));
-            Array.from(uniqueCountries).sort().forEach(code => {
-                const name = state.countries[code] || code;
-                countrySelect.add(new Option(`${name} (${code})`, code));
-            });
+            Array.from(uniqueCountries).sort().forEach(code => { const name = state.countries[code] || code; countrySelect.add(new Option(`${name} (${code})`, code)); });
             countrySelect.value = currentCountry;
         }
 
@@ -644,69 +469,26 @@
                 supabase.from('event_speakers').select('event_id, profile_id'),
                 supabase.from('events').select('id, title_en, title_es, start_time, topic_tags').order('start_time', { ascending: false })
             ]);
-
             state.members = profiles.data || [];
             state.members.forEach(m => state.profileById.set(m.id, m));
             (events.data || []).forEach(e => state.eventsById.set(e.id, e));
-
-            // Populate initial dropdowns
             populateDropdowns();
-
-            (speakers.data || []).forEach(s => {
-                if (!s.profile_id) return;
-                state.isSpeaker.add(s.profile_id);
-                if (!state.speakersByProfileId.has(s.profile_id)) state.speakersByProfileId.set(s.profile_id, new Set());
-                state.speakersByProfileId.get(s.profile_id).add(s.event_id);
-            });
-
+            (speakers.data || []).forEach(s => { if (!s.profile_id) return; state.isSpeaker.add(s.profile_id); if (!state.speakersByProfileId.has(s.profile_id)) state.speakersByProfileId.set(s.profile_id, new Set()); state.speakersByProfileId.get(s.profile_id).add(s.event_id); });
             state.members.forEach(m => {
-                const org = m.affiliation?.trim();
-                if (org) { if (!state.orgIndex.has(org)) state.orgIndex.set(org, new Set()); state.orgIndex.get(org).add(m.id); }
-
+                const org = m.affiliation?.trim(); if (org) { if (!state.orgIndex.has(org)) state.orgIndex.set(org, new Set()); state.orgIndex.get(org).add(m.id); }
                 const rawTags = (m.fields_of_study || "").split(",").map(s => s.trim()).filter(Boolean);
-                if (state.speakersByProfileId.has(m.id)) {
-                    state.speakersByProfileId.get(m.id).forEach(eid => {
-                        const ev = state.eventsById.get(eid);
-                        if (ev?.topic_tags) rawTags.push(...ev.topic_tags);
-                    });
-                }
+                if (state.speakersByProfileId.has(m.id)) { state.speakersByProfileId.get(m.id).forEach(eid => { const ev = state.eventsById.get(eid); if (ev?.topic_tags) rawTags.push(...ev.topic_tags); }); }
                 const unique = new Set(rawTags.map(t => t.toLowerCase()));
-                unique.forEach(u => {
-                    const display = rawTags.find(r => r.toLowerCase() === u) || u;
-                    if (!state.tagIndex.has(u)) state.tagIndex.set(u, new Set());
-                    state.tagIndex.get(u).add(m.id);
-                    state.allCanonicalToDisplay.set(u, display);
-                    state.tagCounts.set(u, (state.tagCounts.get(u) || 0) + 1);
-                });
+                unique.forEach(u => { const display = rawTags.find(r => r.toLowerCase() === u) || u; if (!state.tagIndex.has(u)) state.tagIndex.set(u, new Set()); state.tagIndex.get(u).add(m.id); state.allCanonicalToDisplay.set(u, display); state.tagCounts.set(u, (state.tagCounts.get(u) || 0) + 1); });
             });
-
             const conns = []; const processed = new Set();
-            state.members.forEach(m => {
-                if (m.collaborators && Array.isArray(m.collaborators)) {
-                    m.collaborators.forEach(targetId => {
-                        const key = [m.id, targetId].sort().join('-');
-                        if (!processed.has(key) && state.profileById.has(targetId)) {
-                            conns.push({ source: m.id, target: targetId, type: 'collab' });
-                            processed.add(key);
-                        }
-                    });
-                }
-            });
+            state.members.forEach(m => { if (m.collaborators && Array.isArray(m.collaborators)) { m.collaborators.forEach(targetId => { const key = [m.id, targetId].sort().join('-'); if (!processed.has(key) && state.profileById.has(targetId)) { conns.push({ source: m.id, target: targetId, type: 'collab' }); processed.add(key); } }); } });
             state.connections = conns;
-
-            $('#statMembers').innerText = state.members.length;
-            $('#statConnections').innerText = conns.length + state.members.filter(m => m.affiliation).length;
-            $('#statOrgs').innerText = state.orgIndex.size;
-            $('#statEvents').innerText = state.eventsById.size;
-
+            $('#statMembers').innerText = state.members.length; $('#statConnections').innerText = conns.length + state.members.filter(m => m.affiliation).length; $('#statOrgs').innerText = state.orgIndex.size; $('#statEvents').innerText = state.eventsById.size;
             populateTagFilters();
             onFiltersChanged();
         }
 
-        // ... [Include populateTagFilters, calculatePositions, renderGraph, fitGraph, getGroupBaseScale, updateTransform, applyMagnification, resetMagnification, getFiltered, renderTable as they were] ...
-        // For brevity, assuming standard implementations of the visualization logic from previous file remain here.
-        // Copy-paste the Visualization Functions here (populateTagFilters through renderTable)
-        
         function populateTagFilters() {
             const c = $('#tagFilters'); c.innerHTML = '';
             Array.from(state.tagCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 50).forEach(([tag, count]) => {
@@ -729,27 +511,13 @@
 
             members.forEach(m => {
                 let key = "";
-                if (state.groupBy === 'country') {
-                    key = m.country ? (state.countries[m.country] || m.country) : "Unknown";
-                } else {
-                    key = m.affiliation?.trim() || "Unaffiliated";
-                }
-
+                if (state.groupBy === 'country') { key = m.country ? (state.countries[m.country] || m.country) : "Unknown"; } else { key = m.affiliation?.trim() || "Unaffiliated"; }
                 const isDockKey = dockKeys.some(k => k.toLowerCase() === key.toLowerCase());
-
                 if (state.viewMode === 'bubble') {
-                    if (isDockKey) {
-                        return;
-                    }
-                    if (!byGroup.has(key)) byGroup.set(key, []);
-                    byGroup.get(key).push(m);
+                    if (isDockKey) return;
+                    if (!byGroup.has(key)) byGroup.set(key, []); byGroup.get(key).push(m);
                 } else {
-                    if (isDockKey) {
-                        dockMembers.push(m);
-                    } else {
-                        if (!byGroup.has(key)) byGroup.set(key, []);
-                        byGroup.get(key).push(m);
-                    }
+                    if (isDockKey) { dockMembers.push(m); } else { if (!byGroup.has(key)) byGroup.set(key, []); byGroup.get(key).push(m); }
                 }
             });
 
@@ -758,31 +526,21 @@
                 const containerWidth = container.offsetWidth || 800;
                 const containerHeight = container.offsetHeight || 600;
                 const aspectRatio = Math.max(1.8, containerWidth / containerHeight);
-
                 const clusters = [];
                 let totalMemberCount = 0;
-
-                for (const [name, list] of byGroup.entries()) {
-                    const count = list.length;
-                    totalMemberCount += count;
-                    clusters.push({ name, list, count });
-                }
-
+                for (const [name, list] of byGroup.entries()) { const count = list.length; totalMemberCount += count; clusters.push({ name, list, count }); }
                 clusters.sort((a, b) => b.count - a.count);
-
                 const pos = new Map();
                 const availableArea = containerWidth * containerHeight * 0.95;
                 const areaPerMember = availableArea / Math.max(totalMemberCount, 1);
                 const memberRadius = Math.max(22, Math.min(32, Math.sqrt(areaPerMember / Math.PI) * 0.45));
                 const packedClusters = [];
-
                 clusters.forEach((cluster) => {
                     const count = cluster.count;
                     const innerArea = count * Math.PI * (memberRadius + 12) * (memberRadius + 12) * 3.5;
                     const clusterRadius = Math.max(70, Math.sqrt(innerArea / Math.PI) * 1.1);
                     packedClusters.push({ ...cluster, radius: clusterRadius, x: 0, y: 0 });
                 });
-
                 if (packedClusters.length > 0) {
                     packedClusters[0].x = 0; packedClusters[0].y = 0;
                     for (let i = 1; i < packedClusters.length; i++) {
@@ -806,13 +564,10 @@
                         current.x = bestX; current.y = bestY;
                     }
                 }
-
                 packedClusters.forEach(cluster => {
                     pos.set(`group-${cluster.name}`, { x: cluster.x, y: cluster.y, r: cluster.radius });
                     const mCount = cluster.list.length;
-                    if (mCount === 1) {
-                        pos.set(cluster.list[0].id, { x: cluster.x, y: cluster.y });
-                    } else {
+                    if (mCount === 1) { pos.set(cluster.list[0].id, { x: cluster.x, y: cluster.y }); } else {
                         const goldenAngle = Math.PI * (3 - Math.sqrt(5));
                         const maxRadius = cluster.radius - memberRadius - 20;
                         cluster.list.forEach((m, idx) => {
@@ -836,13 +591,11 @@
                 clusters.push({ name, list, ringR, size });
             }
             clusters.sort((a, b) => b.list.length - a.list.length);
-
             const aspectRatio = 3.5;
             const TARGET_ROW_WIDTH = Math.sqrt(totalStageArea * aspectRatio) + 500;
             const CLUSTER_GAP = 220;
             const pos = new Map();
             let rowX = 0, rowY = 0, rowItems = [], maxH = 0, minStageX = 0;
-
             const flushRow = () => {
                 const rowTotalWidth = rowX - CLUSTER_GAP;
                 let startX = -(rowTotalWidth / 2);
@@ -861,22 +614,15 @@
                 });
                 rowY += maxH + CLUSTER_GAP; rowX = 0; rowItems = []; maxH = 0;
             };
-
-            clusters.forEach(c => {
-                if (rowX + c.size > TARGET_ROW_WIDTH && rowItems.length > 0) flushRow();
-                rowItems.push(c); rowX += c.size + CLUSTER_GAP; if (c.size > maxH) maxH = c.size;
-            });
+            clusters.forEach(c => { if (rowX + c.size > TARGET_ROW_WIDTH && rowItems.length > 0) flushRow(); rowItems.push(c); rowX += c.size + CLUSTER_GAP; if (c.size > maxH) maxH = c.size; });
             if (rowItems.length > 0) flushRow();
-
             const stageHeight = rowY;
             for (const [k, p] of pos.entries()) p.y -= stageHeight / 2;
-
             dockMembers.sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
             const DOCK_X = (minStageX || -900) - 800;
             const DOCK_ITEM_H = 40;
             const totalDockH = dockMembers.length * DOCK_ITEM_H;
             dockMembers.forEach((m, i) => { pos.set(m.id, { x: DOCK_X, y: (i * DOCK_ITEM_H) - (totalDockH / 2) }); });
-
             return { pos, clusters, dockX: DOCK_X, dockYMin: -(totalDockH / 2), dockYMax: (totalDockH / 2), mode: 'network' };
         }
 
@@ -894,12 +640,8 @@
             if (state.viewMode === 'bubble') {
                 $('#legendContainer').innerHTML = `
                    <div class="flex items-center gap-3 bg-white/90 backdrop-blur p-3 rounded-xl border border-gray-200 shadow-sm text-[11px] font-medium text-slate-600">
-                        <div class="flex items-center gap-2">
-                            <div class="w-4 h-4 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 border-2 border-white shadow-sm"></div><span>${l.legendOrg}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <div class="w-4 h-4 rounded-full bg-white border-2 border-brand-400 shadow-sm"></div><span>${l.legendMember}</span>
-                        </div>
+                        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 border-2 border-white shadow-sm"></div><span>${l.legendOrg}</span></div>
+                        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-white border-2 border-brand-400 shadow-sm"></div><span>${l.legendMember}</span></div>
                     </div>`;
 
                 const memberRadius = layout.memberRadius || 20;
@@ -916,7 +658,6 @@
                     el.onclick = (e) => { e.stopPropagation(); $('#searchInput').value = cluster.name; onFiltersChanged(); };
                     nodes.appendChild(el);
                 });
-
                 members.forEach(m => {
                     const p = state.positions.get(m.id);
                     if (!p) return;
@@ -930,7 +671,6 @@
                     el.onclick = (e) => { e.stopPropagation(); openProfileModal(m); };
                     nodes.appendChild(el);
                 });
-
                 layout.clusters.forEach(cluster => {
                     const p = state.positions.get(`group-${cluster.name}`);
                     if (!p) return;
@@ -941,18 +681,15 @@
                     label.innerHTML = `<div class="flex flex-col items-center"><span class="px-6 py-2.5 bg-white/95 backdrop-blur shadow-xl border border-gray-200 rounded-full text-lg font-extrabold text-slate-900 whitespace-nowrap ring-1 ring-black/5" style="max-width: 400px; overflow: hidden; text-overflow: ellipsis;">${cluster.name}</span></div>`;
                     nodes.appendChild(label);
                 });
+                state.cachedNodes = Array.from(nodes.children).filter(n => n.classList.contains('network-node'));
                 if (window.lucide) window.lucide.createIcons();
                 fitGraph();
                 return;
             }
 
             $('#legendContainer').innerHTML = `<div class="flex flex-col gap-1.5 bg-white/80 backdrop-blur p-2 rounded-lg border border-gray-100 shadow-sm text-[10px] font-medium text-slate-600"><div class="flex items-center gap-2"><div class="w-6 h-0.5 bg-slate-300 opacity-50"></div><span>${l.legendAff}</span></div><div class="flex items-center gap-2"><div class="w-6 h-0.5 bg-amber-500 opacity-60"></div><span>${l.legendCollab}</span></div><div class="flex items-center gap-2"><div class="w-1 h-4 bg-slate-300 opacity-50 rounded-full mx-2"></div><span>${l.legendTrack}</span></div></div>`;
-
             let paths = '';
-            if (layout.dockYMin !== undefined && layout.dockYMax !== undefined) {
-                const pad = 50;
-                paths += `<path d="M ${layout.dockX + 120} ${layout.dockYMin - pad} L ${layout.dockX + 120} ${layout.dockYMax + pad}" class="dock-track" />`;
-            }
+            if (layout.dockYMin !== undefined && layout.dockYMax !== undefined) { const pad = 50; paths += `<path d="M ${layout.dockX + 120} ${layout.dockYMin - pad} L ${layout.dockX + 120} ${layout.dockYMax + pad}" class="dock-track" />`; }
             members.forEach(m => {
                 const mp = state.positions.get(m.id);
                 let groupKey = "";
@@ -963,14 +700,9 @@
             state.connections.forEach(conn => {
                 const p1 = state.positions.get(conn.source);
                 const p2 = state.positions.get(conn.target);
-                if (p1 && p2) {
-                    const cx = (p1.x + p2.x) / 2;
-                    const cy = (p1.y + p2.y) / 2 - 25;
-                    paths += `<path d="M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}" class="collab-edge"/>`;
-                }
+                if (p1 && p2) { const cx = (p1.x + p2.x) / 2; const cy = (p1.y + p2.y) / 2 - 25; paths += `<path d="M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}" class="collab-edge"/>`; }
             });
             svg.innerHTML = paths;
-
             layout.clusters.forEach(cluster => {
                 const p = state.positions.get(`group-${cluster.name}`);
                 if (!p) return;
@@ -981,7 +713,6 @@
                 label.innerHTML = `<div class="flex flex-col items-center"><span class="px-8 py-3.5 bg-white/95 backdrop-blur shadow-xl border border-gray-200 rounded-full text-2xl font-extrabold text-slate-900 whitespace-nowrap ring-1 ring-black/5" style="max-width: 500px; overflow: hidden; text-overflow: ellipsis;">${cluster.name}</span></div>`;
                 nodes.appendChild(label);
             });
-
             members.forEach(m => {
                 const p = state.positions.get(m.id);
                 if (!p) return;
@@ -994,7 +725,8 @@
                 el.onclick = (e) => { e.stopPropagation(); openProfileModal(m); };
                 nodes.appendChild(el);
             });
-
+            // Optimization: Cache nodes for fast iteration in animation loop
+            state.cachedNodes = Array.from(nodes.children).filter(n => n.classList.contains('network-node'));
             if (window.lucide) window.lucide.createIcons();
             fitGraph();
         }
@@ -1003,11 +735,7 @@
             const pts = Array.from(state.positions.values()).filter(p => !isNaN(p.x) && !isNaN(p.y));
             if (!pts.length) return;
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-            pts.forEach(p => {
-                const r = p.r || 0;
-                if (p.x - r < minX) minX = p.x - r; if (p.x + r > maxX) maxX = p.x + r;
-                if (p.y - r < minY) minY = p.y - r; if (p.y + r > maxY) maxY = p.y + r;
-            });
+            pts.forEach(p => { const r = p.r || 0; if (p.x - r < minX) minX = p.x - r; if (p.x + r > maxX) maxX = p.x + r; if (p.y - r < minY) minY = p.y - r; if (p.y + r > maxY) maxY = p.y + r; });
             const padding = state.viewMode === 'bubble' ? 150 : 500;
             const w = maxX - minX + padding; const h = maxY - minY + padding;
             const c = $('#network-container');
@@ -1030,53 +758,103 @@
             $('#networkCanvas').style.transform = `translate(${state.panOffset.x}px, ${state.panOffset.y}px) scale(${state.zoom})`;
             state.currentGroupBaseScale = getGroupBaseScale();
             if (state.viewMode !== 'bubble') {
-                document.querySelectorAll('.group-node').forEach(node => {
-                    if (!node.classList.contains('magnified')) {
+                const groupBaseScale = state.currentGroupBaseScale;
+                // Optimization: Use cached nodes
+                state.cachedNodes.forEach(node => {
+                    if (node.dataset.type === 'group' && !node.classList.contains('magnified')) {
                         const wx = parseFloat(node.dataset.x); const wy = parseFloat(node.dataset.y);
-                        node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${state.currentGroupBaseScale})`;
+                        node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${groupBaseScale})`;
                     }
                 });
             }
         }
 
-        function applyMagnification(mouseX, mouseY) {
-            if (state.isDragging) return;
-            const radius = 250; const maxScale = state.viewMode === 'bubble' ? 2.0 : 4.0;
-            let nearestNode = null; let minDist = Infinity;
+        // OPTIMIZED MAGNIFICATION LOGIC
+        // 1. Uses requestAnimationFrame to prevent layout thrashing
+        // 2. Uses cached nodes instead of querySelectorAll
+        // 3. Adds 'is-interacting' class to disable CSS transitions during JS animation (FIXES GLITCH/JITTER)
+        let mousePos = { x: 0, y: 0 };
+        let rafId = null;
+
+        function updateVisuals() {
+            if (state.isDragging) { rafId = null; return; }
+            
+            const radius = 250; 
+            const radiusSq = radius * radius;
+            const maxScale = state.viewMode === 'bubble' ? 2.0 : 4.0;
             const groupBaseScale = getGroupBaseScale();
-            document.querySelectorAll('.network-node').forEach(node => {
-                if (node.dataset.type === 'group-label') return;
-                const wx = parseFloat(node.dataset.x); const wy = parseFloat(node.dataset.y);
+            let nearestNode = null; 
+            let minDistSq = Infinity;
+
+            // Iterate cached nodes
+            for (let i = 0; i < state.cachedNodes.length; i++) {
+                const node = state.cachedNodes[i];
+                if (node.dataset.type === 'group-label') continue;
+                
                 const isGroup = node.dataset.type === 'group';
-                if (state.viewMode === 'bubble' && isGroup) { return; }
+                if (state.viewMode === 'bubble' && isGroup) continue;
+
+                const wx = parseFloat(node.dataset.x); 
+                const wy = parseFloat(node.dataset.y);
                 const screenX = (wx * state.zoom) + state.panOffset.x;
                 const screenY = (wy * state.zoom) + state.panOffset.y;
-                const dx = screenX - mouseX; const dy = screenY - mouseY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                let baseScale = 1; if (state.viewMode !== 'bubble' && isGroup) { baseScale = groupBaseScale; }
-                if (dist < radius) {
-                    const factor = 1 - (dist / radius); const ease = factor * factor * factor;
-                    const magnifyAmount = ease * (maxScale - 1); const finalScale = baseScale + magnifyAmount;
+                
+                const dx = screenX - mousePos.x; 
+                const dy = screenY - mousePos.y;
+                const distSq = dx * dx + dy * dy;
+
+                let baseScale = 1; 
+                if (state.viewMode !== 'bubble' && isGroup) baseScale = groupBaseScale;
+
+                if (distSq < radiusSq) {
+                    const dist = Math.sqrt(distSq);
+                    const factor = 1 - (dist / radius); 
+                    const ease = factor * factor * factor;
+                    const magnifyAmount = ease * (maxScale - 1); 
+                    const finalScale = baseScale + magnifyAmount;
+                    
+                    // Critical: Disable CSS transition during interaction
+                    if (!node.classList.contains('is-interacting')) node.classList.add('is-interacting');
+                    
                     node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${finalScale})`;
-                    if (dist < minDist) { minDist = dist; nearestNode = node; }
+                    
+                    if (distSq < minDistSq) { minDistSq = distSq; nearestNode = node; }
                 } else {
-                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale})`;
+                    // Reset if needed
+                    if (node.classList.contains('is-interacting')) {
+                        node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale})`;
+                        node.classList.remove('is-interacting'); // Re-enable CSS transitions for smooth reset
+                        node.classList.remove('magnified');
+                    }
                 }
-                node.classList.remove('magnified');
-            });
-            if (nearestNode && minDist < 100) { nearestNode.classList.add('magnified'); }
+                
+                // Remove magnified class from everyone first (cleaner than toggle inside loop)
+                if (node !== nearestNode) node.classList.remove('magnified');
+            }
+
+            if (nearestNode && minDistSq < (100 * 100)) { 
+                nearestNode.classList.add('magnified'); 
+            }
+            
+            rafId = null;
         }
 
         function resetMagnification() {
             const groupBaseScale = getGroupBaseScale();
-            document.querySelectorAll('.network-node').forEach(node => {
-                if (state.viewMode === 'bubble' && node.classList.contains('bubble-group')) { return; }
+            if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+            
+            state.cachedNodes.forEach(node => {
+                if (state.viewMode === 'bubble' && node.classList.contains('bubble-group')) return;
                 if (node.dataset.type === 'group-label') return;
-                const wx = parseFloat(node.dataset.x); const wy = parseFloat(node.dataset.y);
+                
+                const wx = parseFloat(node.dataset.x); 
+                const wy = parseFloat(node.dataset.y);
                 const isGroup = node.dataset.type === 'group';
-                let baseScale = 1; if (state.viewMode !== 'bubble' && isGroup) { baseScale = groupBaseScale; }
+                let baseScale = 1; 
+                if (state.viewMode !== 'bubble' && isGroup) baseScale = groupBaseScale;
+                
                 node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale})`;
-                node.classList.remove('magnified');
+                node.classList.remove('magnified', 'is-interacting');
             });
         }
 
@@ -1088,25 +866,13 @@
             if (state.countryFilterId !== 'all') ids = new Set([...ids].filter(id => state.profileById.get(id).country === state.countryFilterId));
             if (state.searchQuery) {
                 const q = state.searchQuery.toLowerCase();
-                ids = new Set([...ids].filter(id => {
-                    const m = state.profileById.get(id);
-                    return (m.full_name || "").toLowerCase().includes(q) || (m.affiliation || "").toLowerCase().includes(q);
-                }));
+                ids = new Set([...ids].filter(id => { const m = state.profileById.get(id); return (m.full_name || "").toLowerCase().includes(q) || (m.affiliation || "").toLowerCase().includes(q); }));
             }
-            if (state.selectedTags.size > 0) {
-                ids = new Set([...ids].filter(id => {
-                    for (const t of state.selectedTags) if (state.tagIndex.get(t)?.has(id)) return true;
-                    return false;
-                }));
-            }
+            if (state.selectedTags.size > 0) { ids = new Set([...ids].filter(id => { for (const t of state.selectedTags) if (state.tagIndex.get(t)?.has(id)) return true; return false; })); }
             const res = [...ids].map(id => state.profileById.get(id));
             const k = state.sort.key; const d = state.sort.dir === 'asc' ? 1 : -1;
             res.sort((a, b) => {
-                if (k === 'connections') {
-                    const ca = state.connections.filter(c => c.source === a.id || c.target === a.id).length;
-                    const cb = state.connections.filter(c => c.source === b.id || c.target === b.id).length;
-                    return (ca - cb) * d;
-                }
+                if (k === 'connections') { const ca = state.connections.filter(c => c.source === a.id || c.target === a.id).length; const cb = state.connections.filter(c => c.source === b.id || c.target === b.id).length; return (ca - cb) * d; }
                 return (a[k === 'name' ? 'full_name' : k] || "").localeCompare(b[k === 'name' ? 'full_name' : k] || "") * d;
             });
             return res;
@@ -1114,14 +880,7 @@
 
         function renderTable(list) {
             const l = t[state.lang] || t.en;
-            // Update Headers with translation keys
-            $$('th[data-i18n]').forEach(th => {
-                const key = th.dataset.i18n;
-                if (l[key]) th.innerText = l[key]; // NOTE: This wipes the sort indicator, but logic re-adds it via class styles if setup
-            });
-            // Re-apply sort indicators manually if text replacement wiped them
-            // (CSS handles the arrows via ::after on classes sort-asc/desc, so purely text update is safe)
-
+            $$('th[data-i18n]').forEach(th => { const key = th.dataset.i18n; if (l[key]) th.innerText = l[key]; });
             $('#members-table-body').innerHTML = list.map(m => {
                 const displayName = m.full_name || 'Member';
                 const countryName = m.country ? (state.countries[m.country] || m.country) : '—';
@@ -1166,20 +925,11 @@
         }
 
         (async function () {
-            // FIXED: onLangSwitch now toggles state and updates all UI parts
             initSharedUI({ 
-                onLangSwitch: () => {
-                    // 1. Toggle State
-                    state.lang = state.lang === 'en' ? 'es' : 'en';
-                    // 2. Persist
-                    localStorage.setItem("lang", state.lang);
-                    // 3. Update UI
-                    applyLocalTranslations();
-                }, 
+                onLangSwitch: () => { state.lang = state.lang === 'en' ? 'es' : 'en'; localStorage.setItem("lang", state.lang); applyLocalTranslations(); }, 
                 onSignOut: signOut 
             });
 
-            // Initial Translation Application
             applyLocalTranslations();
             initResizer();
 
@@ -1210,25 +960,60 @@
             };
 
             const cv = $('#network-container'); let sx = 0, sy = 0;
-            cv.onmousemove = e => { const rect = cv.getBoundingClientRect(); const mouseX = e.clientX - rect.left; const mouseY = e.clientY - rect.top; if (!state.isDragging) { applyMagnification(mouseX, mouseY); } else { state.panOffset.x = e.clientX - sx; state.panOffset.y = e.clientY - sy; updateTransform(); } };
+            
+            // OPTIMIZED MOUSE HANDLER
+            cv.onmousemove = e => { 
+                const rect = cv.getBoundingClientRect(); 
+                mousePos.x = e.clientX - rect.left; 
+                mousePos.y = e.clientY - rect.top; 
+                
+                if (!state.isDragging) {
+                    if (!rafId) rafId = requestAnimationFrame(updateVisuals);
+                } else { 
+                    state.panOffset.x = e.clientX - sx; 
+                    state.panOffset.y = e.clientY - sy; 
+                    if (!rafId) rafId = requestAnimationFrame(updateTransform);
+                } 
+            };
+
             cv.onmouseleave = () => { resetMagnification(); };
             cv.onmousedown = e => { if (e.target.closest('.network-node')) return; if (e.target.id === 'networkCanvas' || e.target === cv || e.target.closest('#networkNodes')) { state.isDragging = true; sx = e.clientX - state.panOffset.x; sy = e.clientY - state.panOffset.y; cv.style.cursor = 'grabbing'; resetMagnification(); } };
             window.onmouseup = () => { state.isDragging = false; cv.style.cursor = 'grab'; };
-            cv.onwheel = e => { e.preventDefault(); const s = e.deltaY > 0 ? 0.9 : 1.1; state.zoom = clamp(state.zoom * s, 0.1, 5); updateTransform(); resetMagnification(); };
-            cv.ontouchstart = e => { if (e.target.closest('.network-node')) return; if (e.target.id === 'networkCanvas' || e.target === cv) { state.isDragging = true; sx = e.touches[0].clientX - state.panOffset.x; sy = e.touches[0].clientY - state.panOffset.y; } };
-            cv.ontouchmove = e => { if (state.isDragging) { e.preventDefault(); state.panOffset.x = e.touches[0].clientX - sx; state.panOffset.y = e.touches[0].clientY - sy; updateTransform(); } };
+            
+            cv.onwheel = e => { 
+                e.preventDefault(); 
+                const s = e.deltaY > 0 ? 0.9 : 1.1; 
+                state.zoom = clamp(state.zoom * s, 0.1, 5); 
+                requestAnimationFrame(() => {
+                    updateTransform(); 
+                    resetMagnification();
+                });
+            };
+
+            // Touch optimization: Don't magnify on touch, just pan
+            cv.ontouchstart = e => { 
+                if (e.target.closest('.network-node')) return; 
+                if (e.target.id === 'networkCanvas' || e.target === cv) { 
+                    state.isDragging = true; 
+                    sx = e.touches[0].clientX - state.panOffset.x; 
+                    sy = e.touches[0].clientY - state.panOffset.y; 
+                } 
+            };
+            cv.ontouchmove = e => { 
+                if (state.isDragging) { 
+                    e.preventDefault(); 
+                    state.panOffset.x = e.touches[0].clientX - sx; 
+                    state.panOffset.y = e.touches[0].clientY - sy; 
+                    if(!rafId) rafId = requestAnimationFrame(updateTransform);
+                } 
+            };
             cv.ontouchend = () => { state.isDragging = false; };
 
             if (window.lucide) window.lucide.createIcons();
 
             const authPromise = initAuth({
-                onAuthReady: () => {
-                    renderHeader(authState, t, state.lang);
-                    applyLocalTranslations();
-                },
-                onAuthChange: () => {
-                    renderHeader(authState, t, state.lang);
-                }
+                onAuthReady: () => { renderHeader(authState, t, state.lang); applyLocalTranslations(); },
+                onAuthChange: () => { renderHeader(authState, t, state.lang); }
             });
 
             const dataPromise = loadNetworkData();
@@ -1239,5 +1024,4 @@
         })();
     </script>
 </body>
-
 </html>
