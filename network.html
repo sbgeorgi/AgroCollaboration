@@ -68,6 +68,10 @@
             background-position: 0 0, 20px 20px;
             touch-action: none;
             overflow: hidden;
+            /* Default height for mobile, overridden by JS/Style for desktop split */
+            height: 500px;
+            flex-grow: 0;
+            flex-shrink: 0;
         }
 
         #network-container:active {
@@ -191,6 +195,34 @@
             color: #4f46e5;
         }
 
+        /* Resizer Handle */
+        #dragHandle {
+            height: 10px;
+            background: #f1f5f9;
+            cursor: row-resize;
+            width: 100%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 0.2s;
+            touch-action: none;
+        }
+
+        #dragHandle:hover, #dragHandle.dragging {
+            background: #e2e8f0;
+        }
+        
+        #dragHandle::after {
+            content: '';
+            width: 40px;
+            height: 4px;
+            background-color: #cbd5e1;
+            border-radius: 2px;
+        }
+
         #flash {
             position: fixed;
             top: 80px;
@@ -229,7 +261,7 @@
         <div id="loadingScreen"
             class="absolute inset-0 bg-gray-50 z-[60] flex flex-col items-center justify-center transition-opacity duration-500 fixed md:absolute">
             <div class="w-8 h-8 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin mb-4"></div>
-            <span class="text-sm font-medium text-slate-500 animate-pulse">Optimizing Layout...</span>
+            <span class="text-sm font-medium text-slate-500 animate-pulse" data-i18n="optimizing">Optimizing Layout...</span>
         </div>
 
         <div id="signinGate"
@@ -239,11 +271,11 @@
                 <div class="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i data-lucide="lock" class="w-6 h-6 text-brand-600"></i>
                 </div>
-                <h2 class="font-display font-bold text-2xl text-slate-900 mb-2">Member Network</h2>
-                <p class="text-slate-500 mb-6 text-sm">Sign in to visualize connections.</p>
+                <h2 class="font-display font-bold text-2xl text-slate-900 mb-2" data-i18n="pageTitle">Member Network</h2>
+                <p class="text-slate-500 mb-6 text-sm" data-i18n="signinPrompt">Sign in to visualize connections.</p>
                 <a href="signin.html"
-                    class="inline-flex items-center justify-center px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors w-full">Sign
-                    In</a>
+                    class="inline-flex items-center justify-center px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors w-full"
+                    data-i18n="signinBtn">Sign In</a>
             </div>
         </div>
 
@@ -255,7 +287,7 @@
                 class="flex-none w-full md:w-80 bg-white border border-gray-200 rounded-2xl flex flex-col shadow-sm overflow-hidden h-auto md:h-full shrink-0">
                 <div class="p-5 border-b border-gray-100 space-y-4">
                     <h2 class="font-display font-bold text-lg text-brand-700 flex items-center gap-2">
-                        <i data-lucide="share-2" class="w-5 h-5"></i> Explore Network
+                        <i data-lucide="share-2" class="w-5 h-5"></i> <span data-i18n="explore">Explore Network</span>
                     </h2>
 
                     <div class="relative z-30">
@@ -263,19 +295,18 @@
                             class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
                         <input type="text" id="searchInput"
                             class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-100 outline-none"
-                            placeholder="Search people, orgs...">
+                            placeholder="Search people, orgs..." data-i18n-placeholder="searchPlaceholder">
                     </div>
 
                     <div class="grid grid-cols-1 gap-3">
                         <div>
                             <label
-                                class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">Group
-                                Nodes By</label>
+                                class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block" data-i18n="groupBy">Group Nodes By</label>
                             <div class="relative">
                                 <select id="groupByFilter"
                                     class="w-full appearance-none bg-slate-50 border border-gray-200 text-slate-700 text-xs font-bold rounded-lg pl-3 pr-8 py-2.5 focus:ring-2 focus:ring-brand-100 outline-none">
-                                    <option value="affiliation">Organization</option>
-                                    <option value="country">Country</option>
+                                    <option value="affiliation" data-i18n="optOrg">Organization</option>
+                                    <option value="country" data-i18n="optCountry">Country</option>
                                 </select>
                                 <i data-lucide="chevron-down"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
@@ -286,7 +317,7 @@
                             <div class="relative">
                                 <select id="eventFilter"
                                     class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
-                                    <option value="all">All Events</option>
+                                    <option value="all" data-i18n="allEvents">All Events</option>
                                 </select>
                                 <i data-lucide="chevron-down"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
@@ -294,7 +325,7 @@
                             <div class="relative">
                                 <select id="countryFilter"
                                     class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none">
-                                    <option value="all">All Countries</option>
+                                    <option value="all" data-i18n="allCountries">All Countries</option>
                                 </select>
                                 <i data-lucide="chevron-down"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
@@ -305,22 +336,21 @@
                     <div class="flex flex-wrap gap-2 pt-1">
                         <button
                             class="px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white"
-                            data-role="all">All Roles</button>
+                            data-role="all" data-i18n="roleAll">All Roles</button>
                         <button
                             class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"
-                            data-role="speakers">Speakers</button>
+                            data-role="speakers" data-i18n="roleSpeakers">Speakers</button>
                         <button
                             class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"
-                            data-role="organizers">Hosts</button>
+                            data-role="organizers" data-i18n="roleHosts">Hosts</button>
                     </div>
                 </div>
 
                 <div class="flex-1 overflow-y-auto custom-scrollbar p-5 min-h-[200px] md:min-h-0">
                     <div class="flex items-center justify-between mb-2">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Interests &
-                            Tags</label>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="interests">Interests & Tags</label>
                         <button id="clearFiltersBtn"
-                            class="text-[10px] font-bold text-brand-600 hover:underline">Clear</button>
+                            class="text-[10px] font-bold text-brand-600 hover:underline" data-i18n="clear">Clear</button>
                     </div>
                     <div id="selectedTagsContainer" class="flex flex-wrap gap-1.5 mb-3 empty:hidden"></div>
                     <div id="tagFilters" class="space-y-0.5"></div>
@@ -331,34 +361,34 @@
                         <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
                             <span id="statMembers"
                                 class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
-                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Members</span>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statMembers">Members</span>
                         </div>
                         <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
                             <span id="statConnections"
                                 class="block text-xl font-display font-bold text-brand-600 leading-none mb-0.5">0</span>
                             <span
-                                class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Connections</span>
+                                class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statConnections">Connections</span>
                         </div>
                         <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
                             <span id="statOrgs"
                                 class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
-                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Orgs</span>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statOrgs">Orgs</span>
                         </div>
                         <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
                             <span id="statEvents"
                                 class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
-                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Events</span>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statEvents">Events</span>
                         </div>
                     </div>
                 </div>
             </aside>
 
             <!-- RIGHT COLUMN -->
-            <div class="flex-1 flex flex-col gap-4 min-w-0 h-auto md:h-full">
+            <div class="flex-1 flex flex-col min-w-0 h-auto md:h-full relative" id="right-column">
 
-                <!-- VISUALIZATION -->
+                <!-- VISUALIZATION (Resizable Top) -->
                 <section id="network-container"
-                    class="md:flex-[2] bg-white border border-gray-200 rounded-2xl shadow-sm relative overflow-hidden h-[500px] md:h-auto shrink-0 group">
+                    class="bg-white border border-gray-200 rounded-t-2xl shadow-sm relative overflow-hidden group">
                     <div id="networkCanvas">
                         <svg class="network-connections" id="networkConnections"></svg>
                         <div id="networkNodes"></div>
@@ -369,7 +399,7 @@
                         <button id="viewToggleBtn"
                             class="flex items-center gap-2 px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
                             <i data-lucide="share-2" class="w-4 h-4 text-brand-500"></i>
-                            <span id="viewModeText">Switch to Network</span>
+                            <span id="viewModeText" data-i18n="switchNet">Switch to Network</span>
                         </button>
                     </div>
 
@@ -378,10 +408,10 @@
                         <div
                             class="flex items-center gap-2 bg-white/90 backdrop-blur border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm text-xs text-slate-600 font-medium">
                             <i data-lucide="scan-search" class="w-4 h-4 text-brand-500"></i>
-                            <span>Hover to Magnify</span>
+                            <span data-i18n="hoverMagnify">Hover to Magnify</span>
                         </div>
                         <button id="resetViewBtn"
-                            class="px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
+                            class="px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all" data-i18n="resetView">
                             Reset View
                         </button>
                     </div>
@@ -391,23 +421,31 @@
                     </div>
                 </section>
 
-                <!-- TABLE -->
-                <section
-                    class="md:flex-1 bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden h-[500px] md:h-auto shrink-0">
-                    <div class="overflow-auto custom-scrollbar flex-1">
+                <!-- DRAG HANDLE -->
+                <div id="dragHandle"></div>
+
+                <!-- TABLE (Flexible Bottom) -->
+                <section id="table-container"
+                    class="bg-white border border-gray-200 rounded-b-2xl shadow-sm flex flex-col overflow-hidden shrink-0 flex-1 min-h-[100px]">
+                    <div class="overflow-auto custom-scrollbar flex-1 h-full">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-gray-50 sticky top-0 z-20 shadow-sm">
                                 <tr>
                                     <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                                        data-sort="name">Name</th>
+                                        data-sort="name" data-i18n="tblName">Name</th>
                                     <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                                        data-sort="affiliation">Affiliation / Institution</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-1/3 hidden lg:table-cell"
-                                        data-sort="interests">Interests</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden sm:table-cell"
-                                        data-sort="country">Country</th>
+                                        data-sort="affiliation" data-i18n="tblAff">Affiliation</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden lg:table-cell"
+                                        data-sort="interests" data-i18n="tblInterests">Interests</th>
+                                    
+                                    <!-- New Columns -->
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                                        data-sort="role" data-i18n="tblRole">Role</th>
+                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                                        data-sort="country" data-i18n="tblCountry">Country</th>
+                                    
                                     <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors text-right"
-                                        data-sort="connections">Connections</th>
+                                        data-sort="connections" data-i18n="tblConn">Connections</th>
                                 </tr>
                             </thead>
                             <tbody id="members-table-body" class="divide-y divide-gray-100 text-sm text-slate-700">
@@ -427,6 +465,86 @@
         import { openProfileModal } from './clickprofile.js';
 
         renderLayout('network');
+
+        // Expanded Translations Object for complete UI coverage
+        const t = {
+            en: {
+                auth: { signin: "Sign in", signout: "Sign out" },
+                pageTitle: "Member Network",
+                optimizing: "Optimizing Layout...",
+                signinPrompt: "Sign in to visualize connections.",
+                signinBtn: "Sign In",
+                explore: "Explore Network",
+                searchPlaceholder: "Search people, orgs...",
+                groupBy: "Group Nodes By",
+                optOrg: "Organization",
+                optCountry: "Country",
+                allEvents: "All Events",
+                allCountries: "All Countries",
+                roleAll: "All Roles",
+                roleSpeakers: "Speakers",
+                roleHosts: "Hosts",
+                interests: "Interests & Tags",
+                clear: "Clear",
+                statMembers: "Members",
+                statConnections: "Connections",
+                statOrgs: "Orgs",
+                statEvents: "Events",
+                switchNet: "Switch to Network",
+                switchBub: "Switch to Bubbles",
+                hoverMagnify: "Hover to Magnify",
+                resetView: "Reset View",
+                tblName: "Name",
+                tblAff: "Affiliation / Institution",
+                tblInterests: "Interests",
+                tblRole: "Role",
+                tblCountry: "Country",
+                tblConn: "Connections",
+                legendMember: "Member",
+                legendOrg: "Organization",
+                legendAff: "Affiliation / Group",
+                legendCollab: "Collaborator",
+                legendTrack: "Drag vertical track"
+            },
+            es: {
+                auth: { signin: "Ingresar", signout: "Salir" },
+                pageTitle: "Red de Miembros",
+                optimizing: "Optimizando Diseño...",
+                signinPrompt: "Inicia sesión para visualizar conexiones.",
+                signinBtn: "Ingresar",
+                explore: "Explorar Red",
+                searchPlaceholder: "Buscar personas, orgs...",
+                groupBy: "Agrupar Nodos Por",
+                optOrg: "Organización",
+                optCountry: "País",
+                allEvents: "Todos los Eventos",
+                allCountries: "Todos los Países",
+                roleAll: "Todos",
+                roleSpeakers: "Ponentes",
+                roleHosts: "Organizadores",
+                interests: "Intereses y Etiquetas",
+                clear: "Limpiar",
+                statMembers: "Miembros",
+                statConnections: "Conexiones",
+                statOrgs: "Orgs",
+                statEvents: "Eventos",
+                switchNet: "Cambiar a Red",
+                switchBub: "Cambiar a Burbujas",
+                hoverMagnify: "Hover para Ampliar",
+                resetView: "Reiniciar Vista",
+                tblName: "Nombre",
+                tblAff: "Afiliación / Institución",
+                tblInterests: "Intereses",
+                tblRole: "Rol",
+                tblCountry: "País",
+                tblConn: "Conexiones",
+                legendMember: "Miembro",
+                legendOrg: "Organización",
+                legendAff: "Afiliación / Grupo",
+                legendCollab: "Colaborador",
+                legendTrack: "Arrastrar pista vertical"
+            }
+        };
 
         const state = {
             members: [], profileById: new Map(), isSpeaker: new Set(), speakersByProfileId: new Map(),
@@ -449,8 +567,6 @@
             }
         };
 
-        const t = { en: { auth: { signin: "Sign in", signout: "Sign out" } }, es: { auth: { signin: "Ingresar", signout: "Salir" } } };
-
         const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
         const highlight = (text, q) => { if (!q || !text) return text || ""; try { const rx = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "ig"); return (text + "").replace(rx, '<span class="bg-yellow-100 text-yellow-800 px-0.5 rounded">$1</span>'); } catch { return text; } };
         const debounce = (fn, ms = 200) => { let t = null; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
@@ -460,6 +576,29 @@
             for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
             const h = Math.abs(hash) % 360;
             return `hsl(${h}, 55%, 75%)`;
+        }
+
+        // --- Translation Helper ---
+        function applyLocalTranslations() {
+            const l = t[state.lang] || t.en;
+            // Static elements
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (l[key]) el.innerText = l[key];
+            });
+            // Placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.dataset.i18nPlaceholder;
+                if (l[key]) el.placeholder = l[key];
+            });
+            // Dynamic Button Text
+            const btnText = state.viewMode === 'network' ? l.switchBub : l.switchNet;
+            const btnLabel = document.getElementById('viewModeText');
+            if (btnLabel) btnLabel.innerText = btnText;
+            
+            // Re-render Graph to update legends
+            const list = getFiltered();
+            if(list.length > 0) renderGraph(list);
         }
 
         async function loadNetworkData() {
@@ -475,11 +614,13 @@
             (events.data || []).forEach(e => state.eventsById.set(e.id, e));
 
             const eventSelect = $('#eventFilter');
-            eventSelect.innerHTML = '<option value="all">All Events</option>';
-            state.eventsById.forEach(e => eventSelect.add(new Option(new Date(e.start_time).toLocaleDateString() + ' - ' + e.title_en, e.id)));
+            const l = t[state.lang] || t.en;
+            eventSelect.innerHTML = `<option value="all">${l.allEvents}</option>`;
+            
+            state.eventsById.forEach(e => eventSelect.add(new Option(new Date(e.start_time).toLocaleDateString() + ' - ' + (state.lang === 'es' ? (e.title_es||e.title_en) : e.title_en), e.id)));
 
             const countrySelect = $('#countryFilter');
-            countrySelect.innerHTML = '<option value="all">All Countries</option>';
+            countrySelect.innerHTML = `<option value="all">${l.allCountries}</option>`;
             const uniqueCountries = new Set(state.members.map(m => m.country).filter(Boolean));
             Array.from(uniqueCountries).sort().forEach(code => {
                 const name = state.countries[code] || code;
@@ -792,16 +933,18 @@
             svg.innerHTML = '';
             nodes.innerHTML = '';
 
+            const l = t[state.lang] || t.en;
+
             if (state.viewMode === 'bubble') {
                 $('#legendContainer').innerHTML = `
                    <div class="flex items-center gap-3 bg-white/90 backdrop-blur p-3 rounded-xl border border-gray-200 shadow-sm text-[11px] font-medium text-slate-600">
                         <div class="flex items-center gap-2">
                             <div class="w-4 h-4 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 border-2 border-white shadow-sm"></div>
-                            <span>Organization</span>
+                            <span>${l.legendOrg}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="w-4 h-4 rounded-full bg-white border-2 border-brand-400 shadow-sm"></div>
-                            <span>Member</span>
+                            <span>${l.legendMember}</span>
                         </div>
                     </div>`;
 
@@ -896,15 +1039,15 @@
                 <div class="flex flex-col gap-1.5 bg-white/80 backdrop-blur p-2 rounded-lg border border-gray-100 shadow-sm text-[10px] font-medium text-slate-600">
                     <div class="flex items-center gap-2">
                         <div class="w-6 h-0.5 bg-slate-300 opacity-50"></div>
-                        <span>Affiliation / Group</span>
+                        <span>${l.legendAff}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-6 h-0.5 bg-amber-500 opacity-60"></div>
-                        <span>Collaborator</span>
+                        <span>${l.legendCollab}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-1 h-4 bg-slate-300 opacity-50 rounded-full mx-2"></div>
-                        <span>Drag vertical track</span>
+                        <span>${l.legendTrack}</span>
                     </div>
                 </div>`;
 
@@ -1167,6 +1310,7 @@
             $('#members-table-body').innerHTML = list.map(m => {
                 const displayName = m.full_name || 'Member';
                 const countryName = m.country ? (state.countries[m.country] || m.country) : '—';
+                const roleName = m.role ? (m.role.charAt(0).toUpperCase() + m.role.slice(1)) : 'Member';
                 const connCount = state.connections.filter(c => c.source === m.id || c.target === m.id).length;
 
                 return `<tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="document.dispatchEvent(new CustomEvent('openProfile',{detail:'${m.id}'}))">
@@ -1180,7 +1324,8 @@
               </td>
               <td class="py-2.5 px-6 border-b border-gray-50 text-slate-500">${highlight(m.affiliation || '—', state.searchQuery)}</td>
               <td class="py-2.5 px-6 border-b border-gray-50 text-slate-400 truncate max-w-xs hidden lg:table-cell">${m.fields_of_study || '—'}</td>
-              <td class="py-2.5 px-6 border-b border-gray-50 text-slate-500 hidden sm:table-cell">${countryName}</td>
+              <td class="py-2.5 px-6 border-b border-gray-50 text-slate-500"><span class="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-600">${roleName}</span></td>
+              <td class="py-2.5 px-6 border-b border-gray-50 text-slate-500">${countryName}</td>
               <td class="py-2.5 px-6 border-b border-gray-50 text-right">
                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-600">
                     ${connCount}
@@ -1211,8 +1356,66 @@
             renderGraph(list);
         }
 
+        // --- Drag/Resize Logic ---
+        function initResizer() {
+            const resizer = document.getElementById('dragHandle');
+            const topElement = document.getElementById('network-container');
+            const container = document.getElementById('right-column');
+            let startY, startHeight;
+
+            resizer.addEventListener('mousedown', initDrag);
+            
+            function initDrag(e) {
+                // Prevent text selection
+                e.preventDefault(); 
+                startY = e.clientY;
+                startHeight = parseInt(document.defaultView.getComputedStyle(topElement).height, 10);
+                
+                document.documentElement.addEventListener('mousemove', doDrag);
+                document.documentElement.addEventListener('mouseup', stopDrag);
+                resizer.classList.add('dragging');
+                document.body.style.cursor = 'row-resize';
+                
+                // Temporarily disable pointer events on iframes/maps/canvas to prevent drag lag
+                topElement.style.pointerEvents = 'none';
+            }
+
+            function doDrag(e) {
+                const dy = e.clientY - startY;
+                const newHeight = startHeight + dy;
+                
+                // Limits
+                const minHeight = 200;
+                const maxHeight = container.offsetHeight - 200; // Leave space for table header
+                
+                if (newHeight > minHeight && newHeight < maxHeight) {
+                    topElement.style.height = `${newHeight}px`;
+                    // Need to refit graph if resize happens
+                    requestAnimationFrame(fitGraph);
+                }
+            }
+
+            function stopDrag() {
+                document.documentElement.removeEventListener('mousemove', doDrag);
+                document.documentElement.removeEventListener('mouseup', stopDrag);
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                topElement.style.pointerEvents = 'auto';
+                fitGraph();
+            }
+        }
+
         (async function () {
-            initSharedUI({ onLangSwitch: () => location.reload(), onSignOut: signOut });
+            initSharedUI({ onLangSwitch: () => {
+                // When language switches, we need to update our local keys
+                applyLocalTranslations();
+            }, onSignOut: signOut });
+
+            // Apply translations immediately
+            applyLocalTranslations();
+
+            // Init Resizer
+            initResizer();
 
             document.addEventListener('click', e => {
                 if (e.target.closest('#btnProfile') || e.target.closest('#userName')) {
@@ -1258,14 +1461,15 @@
             $('#viewToggleBtn').onclick = () => {
                 const btn = $('#viewToggleBtn');
                 const icon = btn.querySelector('i');
+                const l = t[state.lang] || t.en;
 
                 if (state.viewMode === 'network') {
                     state.viewMode = 'bubble';
-                    $('#viewModeText').innerText = "Switch to Network";
+                    $('#viewModeText').innerText = l.switchNet;
                     if (icon) icon.setAttribute('data-lucide', 'share-2');
                 } else {
                     state.viewMode = 'network';
-                    $('#viewModeText').innerText = "Switch to Bubbles";
+                    $('#viewModeText').innerText = l.switchBub;
                     if (icon) icon.setAttribute('data-lucide', 'layout-grid');
                 }
 
@@ -1376,9 +1580,12 @@
             const authPromise = initAuth({
                 onAuthReady: () => {
                     renderHeader(authState, t, state.lang);
-                    applyI18n(t, state.lang);
+                    applyI18n(t, state.lang); // This handles the nav
+                    applyLocalTranslations(); // This handles the page content
                 },
-                onAuthChange: () => renderHeader(authState, t, state.lang)
+                onAuthChange: () => {
+                    renderHeader(authState, t, state.lang);
+                }
             });
 
             const dataPromise = loadNetworkData();
