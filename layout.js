@@ -4,11 +4,13 @@ import { $ } from './ui.js';
 export function renderLayout(activePage) {
   const app = document.querySelector('body');
   
-  // 1. Navigation Data
+  // 1. Navigation Data - SOURCE OF TRUTH FOR BOTH MENUS
   const navLinks = [
     { key: 'schedule', href: 'index.html', label: 'nav.schedule', text: 'Schedule' },
     { key: 'archive',  href: 'archive.html', label: 'nav.archive', text: 'Archive' },
-    // About Group (Improved Nested View)
+    { key: 'network',  href: 'network.html', label: 'nav.network', text: 'Network' },
+    { key: 'map',      href: 'map.html',     label: 'nav.map', text: 'Map' },
+    // About Group (Moved to the end)
     { 
       key: 'about_group', 
       label: 'nav.about', 
@@ -19,8 +21,6 @@ export function renderLayout(activePage) {
         { key: 'organizations', href: 'organizations.html', label: 'nav.orgs', text: 'Organizations' }
       ]
     },
-    { key: 'network',  href: 'network.html', label: 'nav.network', text: 'Network' },
-    { key: 'map',      href: 'map.html',     label: 'nav.map', text: 'Map' },
   ];
 
   // 2. DESKTOP NAV HTML
@@ -71,6 +71,7 @@ export function renderLayout(activePage) {
   }).join('');
 
   // 3. MOBILE NAV LINKS HTML
+  // Uses the same navLinks array, so the order is automatically updated here as well
   const mobileNavHtml = navLinks.map(link => {
     
     // Helper for mobile links
@@ -137,14 +138,12 @@ export function renderLayout(activePage) {
         </div>
         
         <!-- DESKTOP AUTH AREA -->
-        <!-- Matches styles.css structure exactly -->
         <div class="auth-area">
           <button id="btnProfile" class="profile-button" style="display: none" aria-label="Profile">
             <span id="userInitial"></span>
             <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="Avatar" />
           </button>
           
-          <!-- FIXED: Added cursor: pointer to style -->
           <span id="userName" style="display: none; font-weight: 600; font-size: 0.9rem; cursor: pointer;"></span>
           
           <a href="signin.html" id="btnSignIn" class="btn-primary" style="text-decoration: none; padding: 8px 16px; font-size: 0.9rem;" data-i18n="auth.signin">Sign in</a>
@@ -186,7 +185,6 @@ export function renderLayout(activePage) {
         </div>
         
         <!-- MOBILE AUTH CONTAINER -->
-        <!-- We use distinct IDs for mobile elements, and sync them via JS below -->
         <div id="mobileAuthContainer" class="auth-area" style="flex-direction: column; gap: 12px; width: 100%;">
           
           <!-- Profile Info (Synced from Desktop) -->
@@ -195,7 +193,6 @@ export function renderLayout(activePage) {
               <span id="mobileUserInitial"></span>
               <img id="mobileUserAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
             </button>
-            <!-- FIXED: Added cursor: pointer -->
             <span id="mobileUserName" style="font-weight: 700; color: var(--text-primary); cursor: pointer;"></span>
           </div>
 
@@ -209,8 +206,7 @@ export function renderLayout(activePage) {
   </div>
   `;
 
-  // 5. FOOTER TEMPLATE (COMPACT VERSION)
-  // Inline styles override CSS classes to force a very slim profile
+  // 5. FOOTER TEMPLATE
   const footerHTML = `
   <footer class="site-footer" style="padding: 12px 0; border-top: 1px solid var(--border); margin-top: auto;">
     <div class="container" style="display: flex; align-items: center; justify-content: space-between;">
@@ -284,9 +280,7 @@ function initMobileMenu() {
   }
 
   // --- AUTH SYNC LOGIC ---
-  // We observe the Desktop elements (updated by your Auth system) and copy state to Mobile elements
   const syncMobileAuth = () => {
-    // Desktop Elements
     const dSignIn = $('#btnSignIn');
     const dSignOut = $('#btnSignOut');
     const dProfileBtn = $('#btnProfile');
@@ -295,7 +289,6 @@ function initMobileMenu() {
     const dName = $('#userName');
     const dAdmin = $('#btnAdmin');
 
-    // Mobile Elements
     const mSignIn = $('#mobileSignIn');
     const mSignOut = $('#mobileSignOut');
     const mProfileContainer = $('#mobileProfileContainer');
@@ -304,40 +297,33 @@ function initMobileMenu() {
     const mName = $('#mobileUserName');
     const mAdmin = $('#btnAdminMobile');
 
-    // 1. Sync Buttons Visibility
     if (dSignIn && mSignIn) mSignIn.style.display = dSignIn.style.display;
     if (dSignOut && mSignOut) mSignOut.style.display = dSignOut.style.display;
     
-    // 2. Sync Profile Info
     const isProfileVisible = dProfileBtn && dProfileBtn.style.display !== 'none';
     if (mProfileContainer) {
       mProfileContainer.style.display = isProfileVisible ? 'flex' : 'none';
     }
 
     if (isProfileVisible) {
-      // Copy Avatar Source
       if (dAvatar && mAvatar) {
         mAvatar.src = dAvatar.src;
         mAvatar.style.display = dAvatar.style.display;
       }
-      // Copy Initials
       if (dInitial && mInitial) {
         mInitial.textContent = dInitial.textContent;
       }
-      // Copy Name
       if (dName && mName) {
         mName.textContent = dName.textContent;
       }
     }
 
-    // 3. Sync Admin Link
     if (dAdmin && mAdmin) {
       const isAdminVisible = dAdmin.style.display !== 'none';
       mAdmin.style.display = isAdminVisible ? 'flex' : 'none';
     }
   };
 
-  // Wire up Mobile Sign Out to trigger Desktop Sign Out
   const mSignOut = $('#mobileSignOut');
   const dSignOut = $('#btnSignOut');
   if (mSignOut && dSignOut) {
@@ -347,7 +333,6 @@ function initMobileMenu() {
     });
   }
 
-  // Create Observer to watch for style/attribute changes on Desktop Auth elements
   const observer = new MutationObserver(syncMobileAuth);
   
   const observeTarget = (id) => {
@@ -363,6 +348,5 @@ function initMobileMenu() {
   observeTarget('userName');
   observeTarget('btnAdmin');
 
-  // Initial Sync
   setTimeout(syncMobileAuth, 50);
 }
