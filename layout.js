@@ -144,7 +144,8 @@ export function renderLayout(activePage) {
             <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="Avatar" />
           </button>
           
-          <span id="userName" style="display: none; font-weight: 600; font-size: 0.9rem;"></span>
+          <!-- FIXED: Added cursor: pointer to style -->
+          <span id="userName" style="display: none; font-weight: 600; font-size: 0.9rem; cursor: pointer;"></span>
           
           <a href="signin.html" id="btnSignIn" class="btn-primary" style="text-decoration: none; padding: 8px 16px; font-size: 0.9rem;" data-i18n="auth.signin">Sign in</a>
           <button id="btnSignOut" class="btn-ghost" style="display: none" data-i18n="auth.signout">Sign out</button>
@@ -194,7 +195,8 @@ export function renderLayout(activePage) {
               <span id="mobileUserInitial"></span>
               <img id="mobileUserAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
             </button>
-            <span id="mobileUserName" style="font-weight: 700; color: var(--text-primary);"></span>
+            <!-- FIXED: Added cursor: pointer -->
+            <span id="mobileUserName" style="font-weight: 700; color: var(--text-primary); cursor: pointer;"></span>
           </div>
 
           <a href="signin.html" id="mobileSignIn" class="btn btn-primary" style="width: 100%; text-decoration: none;" data-i18n="auth.signin">Sign in</a>
