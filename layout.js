@@ -4,10 +4,11 @@ import { $ } from './ui.js';
 export function renderLayout(activePage) {
   const app = document.querySelector('body');
   
-  // 1. Define the Navigation Links Data
+  // 1. Navigation Data
   const navLinks = [
     { key: 'schedule', href: 'index.html', label: 'nav.schedule', text: 'Schedule' },
     { key: 'archive',  href: 'archive.html', label: 'nav.archive', text: 'Archive' },
+    // About Group (Improved Nested View)
     { 
       key: 'about_group', 
       label: 'nav.about', 
@@ -18,39 +19,46 @@ export function renderLayout(activePage) {
         { key: 'organizations', href: 'organizations.html', label: 'nav.orgs', text: 'Organizations' }
       ]
     },
-    // RESTORED NETWORK LINK HERE
     { key: 'network',  href: 'network.html', label: 'nav.network', text: 'Network' },
     { key: 'map',      href: 'map.html',     label: 'nav.map', text: 'Map' },
   ];
 
-  // 2. Generate Nav HTML with Dropdown Support
+  // 2. DESKTOP NAV HTML
   const navItemsHtml = navLinks.map(link => {
-    // Check if any child is active to highlight the parent
     const isParentActive = link.children?.some(child => child.key === activePage);
     const isActive = link.key === activePage || isParentActive;
-
-    // Base classes
-    const baseClasses = "text-sm font-medium px-3 py-1 rounded-full transition-all flex items-center gap-1 cursor-pointer";
-    const activeClasses = isActive 
-      ? "text-brand-700 bg-brand-50"
-      : "text-slate-500 hover:text-brand-700 hover:bg-brand-50";
+    
+    // Using .link class from styles.css
+    const baseClass = "link"; 
+    const activeClass = isActive ? " active" : "";
 
     if (link.children) {
-      // RENDER DROPDOWN
+      // Desktop Dropdown
       const dropdownItems = link.children.map(child => {
         const isChildActive = child.key === activePage;
-        const childClass = isChildActive ? "bg-brand-50 text-brand-700" : "text-slate-600 hover:bg-gray-50 hover:text-slate-900";
-        return `<a href="${child.href}" class="block px-4 py-2 text-sm ${childClass}" data-i18n="${child.label}">${child.text}</a>`;
+        // Inline styles for dropdown internals as styles.css doesn't define specific dropdown classes
+        const childStyle = isChildActive 
+          ? "background: var(--color-brand-light); color: var(--color-brand-dark); font-weight: 600;" 
+          : "color: var(--text-secondary);";
+          
+        return `
+          <a href="${child.href}" 
+             class="block px-4 py-2 text-sm hover:bg-slate-50 transition-colors" 
+             style="${childStyle}"
+             data-i18n="${child.label}">
+            ${child.text}
+          </a>`;
       }).join('');
 
       return `
-        <div class="relative group z-50">
-          <button class="${baseClasses} ${activeClasses}" aria-expanded="false">
+        <div class="relative group z-50" style="display:flex; align-items:center;">
+          <button class="${baseClass}${activeClass} flex items-center gap-1 cursor-pointer" style="background:none; border:none; padding:4px 0; font-family:inherit;" aria-expanded="false">
             <span data-i18n="${link.label}">${link.text}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:rotate-180"><path d="m6 9 6 6 6-6"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:rotate-180 ml-1"><path d="m6 9 6 6 6-6"/></svg>
           </button>
-          <!-- Dropdown Menu -->
-          <div class="absolute left-0 mt-1 w-48 bg-white rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-gray-100 overflow-hidden opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 ease-out origin-top-left">
+          
+          <!-- Dropdown Panel -->
+          <div class="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 ease-out origin-top-left" style="top: 100%;">
             <div class="py-1">
               ${dropdownItems}
             </div>
@@ -58,93 +66,300 @@ export function renderLayout(activePage) {
         </div>
       `;
     } else {
-      // RENDER STANDARD LINK
-      return `<a href="${link.href}" class="${baseClasses} ${activeClasses}" data-i18n="${link.label}">${link.text}</a>`;
+      return `<a href="${link.href}" class="${baseClass}${activeClass}" data-i18n="${link.label}">${link.text}</a>`;
     }
   }).join('');
 
-  // 3. The Header HTML Template
+  // 3. MOBILE NAV LINKS HTML
+  const mobileNavHtml = navLinks.map(link => {
+    
+    // Helper for mobile links
+    const createMobileLink = (key, href, label, text, isSubItem = false) => {
+      const isActive = key === activePage;
+      const activeClass = isActive ? " active" : "";
+      
+      // Indentation for sub-items
+      const subItemStyle = isSubItem 
+        ? "font-size: 1rem; padding-left: 32px; opacity: 0.9; background: transparent;" 
+        : "";
+      
+      return `
+        <a href="${href}" 
+           class="link${activeClass}" 
+           style="${subItemStyle}"
+           data-i18n="${label}">
+          ${text}
+        </a>`;
+    };
+
+    // Render Group Headers for nested items
+    if (link.children && Array.isArray(link.children)) {
+      const groupLabel = `
+        <div style="width: 100%; text-align: left; padding: 16px 16px 8px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-tertiary); font-weight: 700;">
+          ${link.text}
+        </div>
+      `;
+      const childrenHtml = link.children.map(child => {
+        return createMobileLink(child.key, child.href, child.label, child.text, true);
+      }).join('');
+      return groupLabel + childrenHtml;
+    }
+    
+    return createMobileLink(link.key, link.href, link.label, link.text);
+  }).join('');
+
+  // 4. HEADER TEMPLATE
   const headerHTML = `
-  <header class="site-header bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+  <header class="site-header">
     <div class="container header-grid">
       <a href="index.html" class="brand group">
-        <img src="static/icon.png" alt="Agrovoltaicos sin Fronteras logo" class="logo-image">
+        <img src="static/icon.png" alt="Logo" class="logo-image">
         <div class="brand-text">
-          <div class="title font-display font-bold text-slate-900 group-hover:text-brand-700 transition-colors">Agrovoltaicos sin Fronteras</div>
+          <div class="title">Agrovoltaicos sin Fronteras</div>
+          <div class="subtitle" data-i18n="header.subtitle">Community-Driven Agrivoltaics in the Americas</div>
         </div>
       </a>
       
-      <button id="mobileMenuBtn" class="mobile-menu-btn text-slate-600 hover:bg-gray-100 rounded-lg p-2" aria-label="Open menu">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
 
-      <nav class="nav items-center">
+      <nav class="nav">
         ${navItemsHtml}
         
-        <div class="divider border-r border-gray-200 h-6 mx-2 hidden md:block"></div>
+        <div class="divider"></div>
         
-        <a href="admin.html" id="btnAdmin" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-full transition-all" data-i18n="nav.admin" style="display: none;">Admin</a>
+        <a href="admin.html" id="btnAdmin" class="link" style="color: var(--color-danger); display: none;" data-i18n="nav.admin">Admin</a>
         
-        <div id="langSwitchDesktop" class="lang-switch-slider border border-gray-200 bg-gray-50 hover:border-brand-300 cursor-pointer rounded-full ml-1">
-          <span class="text-[10px] font-bold text-slate-500">EN</span>
-          <span class="text-[10px] font-bold text-slate-500">ES</span>
+        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
+          <span>EN</span>
+          <span>ES</span>
         </div>
         
-        <div class="auth-area flex items-center gap-3 ml-2">
-          <button id="btnProfile" class="profile-button w-9 h-9 rounded-full bg-brand-500 text-white shadow-sm ring-2 ring-white hover:ring-brand-200 transition-all" style="display: none" aria-label="Open profile">
-            <span id="userInitial" class="font-bold text-xs"></span>
-            <img id="userAvatar" class="rounded-full" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />
+        <!-- DESKTOP AUTH AREA -->
+        <!-- Matches styles.css structure exactly -->
+        <div class="auth-area">
+          <button id="btnProfile" class="profile-button" style="display: none" aria-label="Profile">
+            <span id="userInitial"></span>
+            <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="Avatar" />
           </button>
-          <span id="userName" class="text-sm font-bold text-slate-700 hover:text-brand-600 cursor-pointer hidden lg:block" style="display: none;"></span>
-          <a href="signin.html" id="btnSignIn" class="text-sm font-bold text-slate-700 hover:text-brand-600 transition-colors" data-i18n="auth.signin">Sign in</a>
-          <button id="btnSignOut" class="btn-ghost text-xs font-medium text-slate-400 hover:text-red-600 transition-colors" data-i18n="auth.signout" style="display: none">Sign out</button>
+          
+          <span id="userName" style="display: none; font-weight: 600; font-size: 0.9rem;"></span>
+          
+          <a href="signin.html" id="btnSignIn" class="btn-primary" style="text-decoration: none; padding: 8px 16px; font-size: 0.9rem;" data-i18n="auth.signin">Sign in</a>
+          <button id="btnSignOut" class="btn-ghost" style="display: none" data-i18n="auth.signout">Sign out</button>
         </div>
       </nav>
     </div>
   </header>
   
-  <!-- Mobile Overlay -->
-  <div id="mobileNavOverlay" class="mobile-nav-overlay fixed inset-0 z-[60] bg-slate-900/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
-    <div class="mobile-nav-content absolute right-0 top-0 bottom-0 w-72 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col p-4 overflow-y-auto">
-        <div class="flex justify-end mb-4">
-             <button id="mobileMenuClose" class="p-2 text-slate-400 hover:text-slate-600"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+  <!-- MOBILE OVERLAY -->
+  <div id="mobileNavOverlay" class="mobile-nav-overlay">
+    <div id="mobileNavPanel" class="mobile-nav-content">
+      
+      <button id="mobileMenuClose" class="mobile-nav-close-btn" aria-label="Close menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div style="flex: 1; overflow-y: auto; width: 100%; padding-top: 60px;">
+        <nav>
+          ${mobileNavHtml}
+        </nav>
+      </div>
+      
+      <!-- MOBILE FOOTER (Auth + Lang) -->
+      <div style="padding: 24px; border-top: 1px solid var(--border); background: rgba(255,255,255,0.5); display: flex; flex-direction: column; gap: 16px;">
+        
+        <a href="admin.html" id="btnAdminMobile" class="link" style="color: var(--color-danger); display: none; text-align: center; justify-content: center;" data-i18n="nav.admin">
+          Admin
+        </a>
+        
+        <div style="display: flex; justify-content: center;">
+          <div id="langSwitchMobile" class="lang-switch-slider" data-lang="en">
+            <span>EN</span>
+            <span>ES</span>
+          </div>
         </div>
-        <div id="mobileLinksContainer" class="flex flex-col gap-2">
-           ${navLinks.map(link => {
-              if(link.children) {
-                 return `
-                    <div class="flex flex-col gap-1">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mt-2 mb-1" data-i18n="${link.label}">${link.text}</span>
-                        ${link.children.map(child => `<a href="${child.href}" class="px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-50 text-slate-600" data-i18n="${child.label}">${child.text}</a>`).join('')}
-                    </div>
-                 `;
-              }
-              return `<a href="${link.href}" class="px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-50 text-slate-600" data-i18n="${link.label}">${link.text}</a>`;
-           }).join('')}
+        
+        <!-- MOBILE AUTH CONTAINER -->
+        <!-- We use distinct IDs for mobile elements, and sync them via JS below -->
+        <div id="mobileAuthContainer" class="auth-area" style="flex-direction: column; gap: 12px; width: 100%;">
+          
+          <!-- Profile Info (Synced from Desktop) -->
+          <div id="mobileProfileContainer" style="display: none; flex-direction: column; align-items: center; gap: 8px;">
+            <button id="mobileProfileBtn" class="profile-button">
+              <span id="mobileUserInitial"></span>
+              <img id="mobileUserAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
+            </button>
+            <span id="mobileUserName" style="font-weight: 700; color: var(--text-primary);"></span>
+          </div>
+
+          <a href="signin.html" id="mobileSignIn" class="btn btn-primary" style="width: 100%; text-decoration: none;" data-i18n="auth.signin">Sign in</a>
+          <button id="mobileSignOut" class="btn btn-secondary" style="width: 100%; display: none;" data-i18n="auth.signout">Sign out</button>
         </div>
+
+      </div>
+      
     </div>
   </div>
   `;
 
-  // 4. The Footer HTML Template
+  // 5. FOOTER TEMPLATE
   const footerHTML = `
-  <footer class="site-footer bg-white border-t border-gray-200 py-4 mt-auto z-10 text-[10px] text-slate-400">
-    <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-      <div class="footer-text text-center md:text-left">
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-text">
         &copy; <span id="year">${new Date().getFullYear()}</span> Agrovoltaicos sin Fronteras •&nbsp;
-        <span data-i18n="footer.note">Bilingual, community-driven seminar on agrivoltaics in the Americas.</span>
+        <span data-i18n="footer.note">Bilingual, community-driven seminar.</span>
       </div>
-      <div class="footer-logos flex gap-4 items-center opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300">
-          <a href="https://biosphere2.org/research/research-initiatives/agrivoltaics" target="_blank"><img src="static/b2ua.jpg" class="h-6 w-auto mix-blend-multiply" alt="Biosphere 2"></a>
-          <a href="https://www.ier.unam.mx/ParcelaAgrovoltaica.html" target="_blank"><img src="static/unam.png" class="h-6 w-auto mix-blend-multiply" alt="UNAM"></a>
-          <a href="https://centroenergia.cl" target="_blank"><img src="static/aal.png" class="h-6 w-auto object-contain mix-blend-multiply" alt="AAL"></a>
-          <a href="https://redagvmx.com" target="_blank"><img src="static/rame.png" class="h-6 w-auto object-contain mix-blend-multiply" alt="RAME"></a>
+      <div class="footer-logos">
+          <a href="https://biosphere2.org" target="_blank"><img src="static/b2ua.jpg" alt="Biosphere 2"></a>
+          <a href="https://www.ier.unam.mx" target="_blank"><img src="static/unam.png" alt="UNAM"></a>
+          <a href="https://centroenergia.cl" target="_blank"><img src="static/aal.png" alt="AAL"></a>
+          <a href="https://redagvmx.com" target="_blank"><img src="static/rame.png" alt="RAME"></a>
       </div>
     </div>
   </footer>
   `;
 
-  // 5. Inject into DOM
   app.insertAdjacentHTML('afterbegin', headerHTML);
   app.insertAdjacentHTML('beforeend', footerHTML);
+  initMobileMenu();
+}
+
+/**
+ * Initialize mobile menu toggle & Auth Sync
+ */
+function initMobileMenu() {
+  const mobileMenuBtn = $('#mobileMenuBtn');
+  const mobileMenuClose = $('#mobileMenuClose');
+  const mobileNavOverlay = $('#mobileNavOverlay');
+  
+  if (!mobileMenuBtn || !mobileNavOverlay) return;
+
+  const openMenu = () => {
+    mobileNavOverlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeMenu = () => {
+    mobileNavOverlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  };
+
+  mobileMenuBtn.addEventListener('click', openMenu);
+  if (mobileMenuClose) mobileMenuClose.addEventListener('click', closeMenu);
+
+  mobileNavOverlay.addEventListener('click', (e) => {
+    if (e.target === mobileNavOverlay) closeMenu();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mobileNavOverlay.classList.contains('is-open')) closeMenu();
+  });
+
+  // --- LANGUAGE SWITCH ---
+  const langSwitchMobile = $('#langSwitchMobile');
+  const langSwitchDesktop = $('#langSwitchDesktop');
+  
+  if (langSwitchMobile && langSwitchDesktop) {
+    langSwitchMobile.addEventListener('click', () => {
+      langSwitchDesktop.click(); // Trigger desktop logic
+      // Visual sync
+      const isES = langSwitchDesktop.getAttribute('data-lang') === 'es';
+      langSwitchMobile.setAttribute('data-lang', isES ? 'en' : 'es'); // toggle
+    });
+    
+    // Observer to keep them physically in sync if desktop changes programmatically
+    const langObserver = new MutationObserver(() => {
+        langSwitchMobile.setAttribute('data-lang', langSwitchDesktop.getAttribute('data-lang'));
+    });
+    langObserver.observe(langSwitchDesktop, { attributes: true, attributeFilter: ['data-lang'] });
+  }
+
+  // --- AUTH SYNC LOGIC ---
+  // We observe the Desktop elements (updated by your Auth system) and copy state to Mobile elements
+  const syncMobileAuth = () => {
+    // Desktop Elements
+    const dSignIn = $('#btnSignIn');
+    const dSignOut = $('#btnSignOut');
+    const dProfileBtn = $('#btnProfile');
+    const dAvatar = $('#userAvatar');
+    const dInitial = $('#userInitial');
+    const dName = $('#userName');
+    const dAdmin = $('#btnAdmin');
+
+    // Mobile Elements
+    const mSignIn = $('#mobileSignIn');
+    const mSignOut = $('#mobileSignOut');
+    const mProfileContainer = $('#mobileProfileContainer');
+    const mAvatar = $('#mobileUserAvatar');
+    const mInitial = $('#mobileUserInitial');
+    const mName = $('#mobileUserName');
+    const mAdmin = $('#btnAdminMobile');
+
+    // 1. Sync Buttons Visibility
+    if (dSignIn && mSignIn) mSignIn.style.display = dSignIn.style.display;
+    if (dSignOut && mSignOut) mSignOut.style.display = dSignOut.style.display;
+    
+    // 2. Sync Profile Info
+    const isProfileVisible = dProfileBtn && dProfileBtn.style.display !== 'none';
+    if (mProfileContainer) {
+      mProfileContainer.style.display = isProfileVisible ? 'flex' : 'none';
+    }
+
+    if (isProfileVisible) {
+      // Copy Avatar Source
+      if (dAvatar && mAvatar) {
+        mAvatar.src = dAvatar.src;
+        mAvatar.style.display = dAvatar.style.display;
+      }
+      // Copy Initials
+      if (dInitial && mInitial) {
+        mInitial.textContent = dInitial.textContent;
+      }
+      // Copy Name
+      if (dName && mName) {
+        mName.textContent = dName.textContent;
+      }
+    }
+
+    // 3. Sync Admin Link
+    if (dAdmin && mAdmin) {
+      const isAdminVisible = dAdmin.style.display !== 'none';
+      mAdmin.style.display = isAdminVisible ? 'flex' : 'none';
+    }
+  };
+
+  // Wire up Mobile Sign Out to trigger Desktop Sign Out
+  const mSignOut = $('#mobileSignOut');
+  const dSignOut = $('#btnSignOut');
+  if (mSignOut && dSignOut) {
+    mSignOut.addEventListener('click', () => {
+      dSignOut.click();
+      closeMenu();
+    });
+  }
+
+  // Create Observer to watch for style/attribute changes on Desktop Auth elements
+  const observer = new MutationObserver(syncMobileAuth);
+  
+  const observeTarget = (id) => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el, { attributes: true, childList: true, subtree: true, characterData: true });
+  };
+
+  observeTarget('btnSignIn');
+  observeTarget('btnSignOut');
+  observeTarget('btnProfile');
+  observeTarget('userAvatar');
+  observeTarget('userInitial');
+  observeTarget('userName');
+  observeTarget('btnAdmin');
+
+  // Initial Sync
+  setTimeout(syncMobileAuth, 50);
 }

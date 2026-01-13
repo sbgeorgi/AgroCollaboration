@@ -34,20 +34,28 @@
         background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
         background-size: 24px 24px;
       }
+    }
+    
+    /* Responsive line clamping - mobile: 2 lines, desktop: height-based */
+    .line-clamp-responsive {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
 
-      .line-clamp-dynamic {
-        display: -webkit-box;
+    @media (min-width: 640px) {
+      .line-clamp-responsive {
         -webkit-line-clamp: 4;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
       }
-      
-      @media (max-height: 800px) {
-        .line-clamp-dynamic { -webkit-line-clamp: 3; }
-      }
-      @media (max-height: 700px) {
-        .line-clamp-dynamic { -webkit-line-clamp: 2; }
-      }
+    }
+
+    @media (min-width: 640px) and (max-height: 800px) {
+      .line-clamp-responsive { -webkit-line-clamp: 3; }
+    }
+    
+    @media (min-width: 640px) and (max-height: 700px) {
+      .line-clamp-responsive { -webkit-line-clamp: 2; }
     }
     
     /* Images always in color */
@@ -60,230 +68,232 @@
   </style>
 </head>
 
-<body class="text-slate-800 flex flex-col h-full overflow-hidden font-sans bg-slate-50">
+<body class="text-slate-800 flex flex-col h-full font-sans bg-slate-50">
 
   <!-- ================= MAIN APP CONTAINER ================= -->
   <main class="flex-1 relative overflow-hidden flex flex-col bg-dot-pattern">
 
     <!-- Page Header (Compact) -->
-    <div class="flex-none px-6 py-3 flex flex-col md:flex-row gap-2 justify-between items-center z-20 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm h-14">
-      <div class="flex items-center gap-3">
-         <h2 class="font-display font-bold text-lg text-slate-900 tracking-tight leading-none" data-i18n="committee.title">Leadership Team</h2>
-         <div class="h-4 w-px bg-slate-300 mx-1"></div>
-         <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400" data-i18n="committee.breadcrumb">Steering Committee</span>
+    <div class="flex-none px-4 sm:px-6 py-3 flex flex-row gap-2 justify-between items-center z-20 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm h-14">
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+         <h2 class="font-display font-bold text-base sm:text-lg text-slate-900 tracking-tight leading-none truncate sm:truncate-none" data-i18n="committee.title">Leadership Team</h2>
+         <div class="hidden sm:block h-4 w-px bg-slate-300 mx-1 flex-shrink-0"></div>
+         <span class="hidden sm:inline text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap" data-i18n="committee.breadcrumb">Steering Committee</span>
       </div>
-      <div class="hidden md:flex gap-2">
-         <span class="px-2 py-0.5 bg-white border border-gray-200 rounded text-[9px] font-bold text-slate-500 uppercase tracking-wide" data-i18n="committee.stat_members">9 Members</span>
-         <span class="px-2 py-0.5 bg-white border border-gray-200 rounded text-[9px] font-bold text-slate-500 uppercase tracking-wide" data-i18n="committee.stat_inst">4 Institutions</span>
+      <div class="hidden md:flex gap-2 flex-shrink-0">
+         <span class="px-2 py-0.5 bg-white border border-gray-200 rounded text-[9px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap" data-i18n="committee.stat_members">9 Members</span>
+         <span class="px-2 py-0.5 bg-white border border-gray-200 rounded text-[9px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap" data-i18n="committee.stat_inst">4 Institutions</span>
       </div>
     </div>
 
-    <!-- THE GRID -->
-    <div class="flex-1 p-3 min-h-0">
-      <div class="h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 grid-rows-3 gap-3 w-full max-w-[1920px] mx-auto">
+    <!-- THE GRID - Scrollable on mobile, fixed on desktop -->
+    <div class="flex-1 p-2 sm:p-3 min-h-0 overflow-y-auto sm:overflow-hidden">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 sm:grid-rows-3 sm:h-full gap-2 sm:gap-3 w-full max-w-[1920px] mx-auto">
 
         <!-- CARD 1: Greg -->
-        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-brand-300 transition-all duration-300 h-full">
-          <div class="w-1.5 bg-red-600 flex-shrink-0"></div>
-          <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
+        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-brand-300 transition-all duration-300 min-h-[120px] sm:min-h-0 sm:h-full">
+          <div class="w-1 sm:w-1.5 bg-red-600 flex-shrink-0"></div>
+          <div class="w-20 sm:w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/gregb.jpg" class="profile-img w-full h-full object-cover" alt="Greg">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+          <div class="flex-1 p-3 sm:p-4 flex flex-col justify-center min-w-0 relative">
              <!-- Badge -->
-             <div class="absolute top-3 right-3 z-10">
-               <img src="static/b2ua.jpg" class="w-10 h-10 rounded-md object-contain shadow-sm border border-gray-100" alt="Logo">
+             <div class="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
+               <img src="static/b2ua.jpg" class="w-8 h-8 sm:w-10 sm:h-10 rounded-md object-contain shadow-sm border border-gray-100" alt="Logo">
              </div>
              <!-- Header -->
-             <div class="mb-2 pr-12">
-               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-brand-600 transition-colors">Greg Barron-Gafford</h3>
-               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="committee.role_ua">University of Arizona</p>
+             <div class="mb-1 sm:mb-2 pr-10 sm:pr-12">
+               <h3 class="font-display font-bold text-sm sm:text-base lg:text-lg text-slate-900 leading-tight group-hover:text-brand-600 transition-colors truncate sm:whitespace-normal">Greg Barron-Gafford</h3>
+               <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate sm:whitespace-normal" data-i18n="committee.role_ua">University of Arizona</p>
              </div>
-             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty" data-i18n="committee.greg_desc">
+             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-responsive text-pretty" data-i18n="committee.greg_desc">
                 Professor in the School of Geography & Development and Lead Researcher at Biosphere 2. Exploring the food-energy-water nexus and quantifying microclimatic benefits in drylands.
              </p>
           </div>
         </div>
 
         <!-- CARD 2: Christine -->
-        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-brand-300 transition-all duration-300 h-full">
-          <div class="w-1.5 bg-red-600 flex-shrink-0"></div>
-          <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
+        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-brand-300 transition-all duration-300 min-h-[120px] sm:min-h-0 sm:h-full">
+          <div class="w-1 sm:w-1.5 bg-red-600 flex-shrink-0"></div>
+          <div class="w-20 sm:w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/christinel.jpeg" class="profile-img w-full h-full object-cover" alt="Christine">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+          <div class="flex-1 p-3 sm:p-4 flex flex-col justify-center min-w-0 relative">
              <!-- Badge -->
-             <div class="absolute top-3 right-3 z-10">
-               <img src="static/b2ua.jpg" class="w-10 h-10 rounded-md object-contain shadow-sm border border-gray-100" alt="Logo">
+             <div class="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
+               <img src="static/b2ua.jpg" class="w-8 h-8 sm:w-10 sm:h-10 rounded-md object-contain shadow-sm border border-gray-100" alt="Logo">
              </div>
              <!-- Header -->
-             <div class="mb-2 pr-12">
-               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-brand-600 transition-colors">Christine Lamanna</h3>
-               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="committee.role_ua">University of Arizona</p>
+             <div class="mb-1 sm:mb-2 pr-10 sm:pr-12">
+               <h3 class="font-display font-bold text-sm sm:text-base lg:text-lg text-slate-900 leading-tight group-hover:text-brand-600 transition-colors truncate sm:whitespace-normal">Christine Lamanna</h3>
+               <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate sm:whitespace-normal" data-i18n="committee.role_ua">University of Arizona</p>
              </div>
-             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty" data-i18n="committee.christine_desc">
+             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-responsive text-pretty" data-i18n="committee.christine_desc">
                Climate adaptation scientist focusing on decision support systems. Investigates how agrivoltaic systems increase resilience to climate variability and support sustainable development.
              </p>
           </div>
         </div>
 
         <!-- CARD 3: Marcia -->
-        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-blue-400 transition-all duration-300 h-full">
-          <div class="w-1.5 bg-blue-600 flex-shrink-0"></div>
-          <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
+        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-blue-400 transition-all duration-300 min-h-[120px] sm:min-h-0 sm:h-full">
+          <div class="w-1 sm:w-1.5 bg-blue-600 flex-shrink-0"></div>
+          <div class="w-20 sm:w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/marciam.jpeg" class="profile-img w-full h-full object-cover" alt="Marcia">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+          <div class="flex-1 p-3 sm:p-4 flex flex-col justify-center min-w-0 relative">
              <!-- Badge -->
-             <div class="absolute top-3 right-3 z-10">
-               <img src="static/aal.png" class="w-10 h-10 rounded-md object-contain" alt="Logo">
+             <div class="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
+               <img src="static/aal.png" class="w-8 h-8 sm:w-10 sm:h-10 rounded-md object-contain" alt="Logo">
              </div>
              <!-- Header -->
-             <div class="mb-2 pr-12">
-               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Marcia Montedonico</h3>
-               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="committee.role_uchile">Universidad de Chile</p>
+             <div class="mb-1 sm:mb-2 pr-10 sm:pr-12">
+               <h3 class="font-display font-bold text-sm sm:text-base lg:text-lg text-slate-900 leading-tight group-hover:text-blue-600 transition-colors truncate sm:whitespace-normal">Marcia Montedonico</h3>
+               <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate sm:whitespace-normal" data-i18n="committee.role_uchile">Universidad de Chile</p>
              </div>
-             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty" data-i18n="committee.marcia_desc">
+             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-responsive text-pretty" data-i18n="committee.marcia_desc">
                Director at Centro de Energía. Pivotal role in the Latin American Agrivoltaics Alliance (AAL), fostering strategic alliances and regulatory frameworks for dual-use solar.
              </p>
           </div>
         </div>
 
         <!-- CARD 4: Thalita -->
-        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-amber-400 transition-all duration-300 h-full">
-          <div class="w-1.5 bg-amber-500 flex-shrink-0"></div>
-          <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
+        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-amber-400 transition-all duration-300 min-h-[120px] sm:min-h-0 sm:h-full">
+          <div class="w-1 sm:w-1.5 bg-amber-500 flex-shrink-0"></div>
+          <div class="w-20 sm:w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/thalitaa.jpg" class="profile-img w-full h-full object-cover" alt="Thalita">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+          <div class="flex-1 p-3 sm:p-4 flex flex-col justify-center min-w-0 relative">
              <!-- Badge -->
-             <div class="absolute top-3 right-3 z-10">
-               <img src="static/unam.png" class="w-10 h-10 rounded-md object-contain" alt="Logo">
+             <div class="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
+               <img src="static/unam.png" class="w-8 h-8 sm:w-10 sm:h-10 rounded-md object-contain" alt="Logo">
              </div>
              <!-- Header -->
-             <div class="mb-2 pr-12">
-               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-amber-600 transition-colors">Thalita Abbruzzini</h3>
-               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">UNAM</p>
+             <div class="mb-1 sm:mb-2 pr-10 sm:pr-12">
+               <h3 class="font-display font-bold text-sm sm:text-base lg:text-lg text-slate-900 leading-tight group-hover:text-amber-600 transition-colors truncate sm:whitespace-normal">Thalita Abbruzzini</h3>
+               <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate sm:whitespace-normal">UNAM</p>
              </div>
-             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty" data-i18n="committee.thalita_desc">
+             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-responsive text-pretty" data-i18n="committee.thalita_desc">
                Specialist in soil science. Examining how agrivoltaic infrastructures impact soil health, nutrient cycling (C-N-P), and long-term land sustainability in Mexico.
              </p>
           </div>
         </div>
 
         <!-- CARD 5: Adrian -->
-        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-400 transition-all duration-300 h-full">
-          <div class="w-1.5 bg-purple-700 flex-shrink-0"></div>
-          <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
+        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-400 transition-all duration-300 min-h-[120px] sm:min-h-0 sm:h-full">
+          <div class="w-1 sm:w-1.5 bg-purple-700 flex-shrink-0"></div>
+          <div class="w-20 sm:w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/adriang.png" class="profile-img w-full h-full object-cover" alt="Adrian">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+          <div class="flex-1 p-3 sm:p-4 flex flex-col justify-center min-w-0 relative">
              <!-- Badge (Custom Text Box for IPN) -->
-             <div class="absolute top-3 right-3 z-10 w-10 h-10 flex items-center justify-center font-black text-[10px] text-purple-700 bg-purple-50 rounded-md border border-purple-100 shadow-sm">
+             <div class="absolute top-2 sm:top-3 right-2 sm:right-3 z-10 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center font-black text-[8px] sm:text-[10px] text-purple-700 bg-purple-50 rounded-md border border-purple-100 shadow-sm">
                IPN
              </div>
              <!-- Header -->
-             <div class="mb-2 pr-12">
-               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-purple-700 transition-colors">Adrián García</h3>
-               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IPN - CICATA</p>
+             <div class="mb-1 sm:mb-2 pr-10 sm:pr-12">
+               <h3 class="font-display font-bold text-sm sm:text-base lg:text-lg text-slate-900 leading-tight group-hover:text-purple-700 transition-colors truncate sm:whitespace-normal">Adrián García</h3>
+               <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate sm:whitespace-normal">IPN - CICATA</p>
              </div>
-             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty" data-i18n="committee.adrian_desc">
+             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-responsive text-pretty" data-i18n="committee.adrian_desc">
                Researcher at CICATA Querétaro. Focuses on "Green Tribology" and developing sustainable rural business models for agrivoltaics in central Mexico.
              </p>
           </div>
         </div>
 
         <!-- CARD 6: Lizeth -->
-        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-amber-400 transition-all duration-300 h-full">
-          <div class="w-1.5 bg-amber-500 flex-shrink-0"></div>
-          <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
+        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-amber-400 transition-all duration-300 min-h-[120px] sm:min-h-0 sm:h-full">
+          <div class="w-1 sm:w-1.5 bg-amber-500 flex-shrink-0"></div>
+          <div class="w-20 sm:w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/lizeth.jpg" class="profile-img w-full h-full object-cover" alt="Lizeth">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+          <div class="flex-1 p-3 sm:p-4 flex flex-col justify-center min-w-0 relative">
              <!-- Badge -->
-             <div class="absolute top-3 right-3 z-10">
-               <img src="static/unam.png" class="w-10 h-10 rounded-md object-contain" alt="Logo">
+             <div class="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
+               <img src="static/unam.png" class="w-8 h-8 sm:w-10 sm:h-10 rounded-md object-contain" alt="Logo">
              </div>
              <!-- Header -->
-             <div class="mb-2 pr-12">
-               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-amber-600 transition-colors">Lizeth Caballero</h3>
-               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">UNAM - ENCiT</p>
+             <div class="mb-1 sm:mb-2 pr-10 sm:pr-12">
+               <h3 class="font-display font-bold text-sm sm:text-base lg:text-lg text-slate-900 leading-tight group-hover:text-amber-600 transition-colors truncate sm:whitespace-normal">Lizeth Caballero</h3>
+               <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate sm:whitespace-normal">UNAM - ENCiT</p>
              </div>
-             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty" data-i18n="committee.lizeth_desc">
+             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-responsive text-pretty" data-i18n="committee.lizeth_desc">
                Professor at ENCiT. Dedicated to sustainability education and the socio-environmental assessment of renewable energy projects in indigenous communities.
              </p>
           </div>
         </div>
 
         <!-- CARD 7: Carlos -->
-        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-amber-400 transition-all duration-300 h-full">
-          <div class="w-1.5 bg-amber-500 flex-shrink-0"></div>
-          <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
+        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-amber-400 transition-all duration-300 min-h-[120px] sm:min-h-0 sm:h-full">
+          <div class="w-1 sm:w-1.5 bg-amber-500 flex-shrink-0"></div>
+          <div class="w-20 sm:w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/carlos.jpg" class="profile-img w-full h-full object-cover" alt="Carlos">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+          <div class="flex-1 p-3 sm:p-4 flex flex-col justify-center min-w-0 relative">
              <!-- Badge -->
-             <div class="absolute top-3 right-3 z-10">
-               <img src="static/unam.png" class="w-10 h-10 rounded-md object-contain" alt="Logo">
+             <div class="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
+               <img src="static/unam.png" class="w-8 h-8 sm:w-10 sm:h-10 rounded-md object-contain" alt="Logo">
              </div>
              <!-- Header -->
-             <div class="mb-2 pr-12">
-               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-amber-600 transition-colors">Carlos Pérez Rábago</h3>
-               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">UNAM - IER</p>
+             <div class="mb-1 sm:mb-2 pr-10 sm:pr-12">
+               <h3 class="font-display font-bold text-sm sm:text-base lg:text-lg text-slate-900 leading-tight group-hover:text-amber-600 transition-colors truncate sm:whitespace-normal">Carlos Pérez Rábago</h3>
+               <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate sm:whitespace-normal">UNAM - IER</p>
              </div>
-             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty" data-i18n="committee.carlos_desc">
+             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-responsive text-pretty" data-i18n="committee.carlos_desc">
                Researcher at IER-UNAM. Expert in solar thermal systems and optical modeling, leading technical implementations for the PASE project.
              </p>
           </div>
         </div>
 
         <!-- CARD 8: Jose -->
-        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-brand-300 transition-all duration-300 h-full">
-          <div class="w-1.5 bg-red-600 flex-shrink-0"></div>
-          <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
+        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-brand-300 transition-all duration-300 min-h-[120px] sm:min-h-0 sm:h-full">
+          <div class="w-1 sm:w-1.5 bg-red-600 flex-shrink-0"></div>
+          <div class="w-20 sm:w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/josel.jpg" class="profile-img w-full h-full object-cover" alt="Jose">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
+          <div class="flex-1 p-3 sm:p-4 flex flex-col justify-center min-w-0 relative">
              <!-- Badge -->
-             <div class="absolute top-3 right-3 z-10">
-               <img src="static/b2ua.jpg" class="w-10 h-10 rounded-md object-contain shadow-sm border border-gray-100" alt="Logo">
+             <div class="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
+               <img src="static/b2ua.jpg" class="w-8 h-8 sm:w-10 sm:h-10 rounded-md object-contain shadow-sm border border-gray-100" alt="Logo">
              </div>
              <!-- Header -->
-             <div class="mb-2 pr-12">
-               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-brand-600 transition-colors">Jose Lever</h3>
-               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="committee.role_ua">University of Arizona</p>
+             <div class="mb-1 sm:mb-2 pr-10 sm:pr-12">
+               <h3 class="font-display font-bold text-sm sm:text-base lg:text-lg text-slate-900 leading-tight group-hover:text-brand-600 transition-colors truncate sm:whitespace-normal">Jose Lever</h3>
+               <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate sm:whitespace-normal" data-i18n="committee.role_ua">University of Arizona</p>
              </div>
-             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty" data-i18n="committee.jose_desc">
+             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-responsive text-pretty" data-i18n="committee.jose_desc">
                Executive Director for Mexico Global Affairs. Facilitates bilateral cooperation, logistics, and institutional support for cross-border research initiatives.
              </p>
           </div>
         </div>
 
         <!-- CARD 9: Georgi -->
-        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-emerald-400 transition-all duration-300 h-full">
-          <div class="w-1.5 bg-emerald-500 flex-shrink-0"></div>
-          <div class="w-32 h-full relative overflow-hidden flex-shrink-0">
+        <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-emerald-400 transition-all duration-300 min-h-[120px] sm:min-h-0 sm:h-full">
+          <div class="w-1 sm:w-1.5 bg-emerald-500 flex-shrink-0"></div>
+          <div class="w-20 sm:w-32 h-full relative overflow-hidden flex-shrink-0">
              <img src="static/georgic.jpg" class="profile-img w-full h-full object-cover" alt="Georgi">
           </div>
-          <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
-             <div class="absolute right-0 bottom-0 w-24 h-24 bg-gradient-to-tl from-emerald-50 to-transparent rounded-tl-full pointer-events-none z-0"></div>
+          <div class="flex-1 p-3 sm:p-4 flex flex-col justify-center min-w-0 relative">
+             <div class="absolute right-0 bottom-0 w-16 sm:w-24 h-16 sm:h-24 bg-gradient-to-tl from-emerald-50 to-transparent rounded-tl-full pointer-events-none z-0"></div>
 
-             <!-- Badge (Z-10 to stay above bg decoration) -->
-             <div class="absolute top-3 right-3 z-20">
-               <img src="static/b2ua.jpg" class="w-10 h-10 rounded-md object-contain shadow-sm border border-gray-100" alt="Logo">
+             <!-- Badge (Z-20 to stay above bg decoration) -->
+             <div class="absolute top-2 sm:top-3 right-2 sm:right-3 z-20">
+               <img src="static/b2ua.jpg" class="w-8 h-8 sm:w-10 sm:h-10 rounded-md object-contain shadow-sm border border-gray-100" alt="Logo">
              </div>
 
              <!-- Header -->
-             <div class="mb-2 pr-12 relative z-10">
-               <h3 class="font-display font-bold text-base lg:text-lg text-slate-900 leading-tight group-hover:text-emerald-600 transition-colors">Georgi Chertkov</h3>
-               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="committee.role_b2">University of Arizona - Biosphere 2</p>
+             <div class="mb-1 sm:mb-2 pr-10 sm:pr-12 relative z-10">
+               <h3 class="font-display font-bold text-sm sm:text-base lg:text-lg text-slate-900 leading-tight group-hover:text-emerald-600 transition-colors truncate sm:whitespace-normal">Georgi Chertkov</h3>
+               <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate sm:whitespace-normal" data-i18n="committee.role_b2">University of Arizona - Biosphere 2</p>
              </div>
-             <p class="text-sm text-slate-600 leading-relaxed line-clamp-dynamic text-pretty relative z-10" data-i18n="committee.georgi_desc">
+             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-responsive text-pretty relative z-10" data-i18n="committee.georgi_desc">
                Platform Architect & Founder of OffsetMap. Specialist in data viz & AI. Designed and built the "Agrovoltaicos sin Fronteras" community platform.
              </p>
           </div>
         </div>
 
       </div>
+      <!-- Bottom padding for mobile scroll -->
+      <div class="h-4 sm:hidden"></div>
     </div>
   </main>
 

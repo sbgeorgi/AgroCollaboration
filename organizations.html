@@ -2,249 +2,299 @@
 <html lang="en" class="h-full bg-slate-50 antialiased">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Agrovoltaicos sin Fronteras • Organizations</title>
-  <meta name="description" content="Our partner organizations driving agrivoltaics research in the Americas.">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Agrovoltaicos sin Fronteras • Organizations</title>
+    <meta name="description" content="Our partner organizations driving agrivoltaics research in the Americas.">
 
-  <!-- Critical pre-render script -->
-  <script src="auth-preloader.js"></script>
+    <!-- Critical pre-render script -->
+    <script src="auth-preloader.js"></script>
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
-    rel="stylesheet">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+        rel="stylesheet">
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="styles.css">
-  <script src="theme.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="theme.js"></script>
 
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .no-scrollbar::-webkit-scrollbar { display: none; }
-      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      
-      .bg-dot-pattern {
-        background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-        background-size: 24px 24px;
-      }
-
-      .line-clamp-dynamic {
-        display: -webkit-box;
-        -webkit-line-clamp: 5;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-      
-      @media (max-height: 800px) {
-        .line-clamp-dynamic { -webkit-line-clamp: 4; }
-      }
-    }
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .no-scrollbar::-webkit-scrollbar { display: none; }
+            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            
+            .bg-dot-pattern {
+                background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+                background-size: 24px 24px;
+            }
+            
+            .text-pretty {
+                text-wrap: pretty;
+            }
+        }
     
-    .org-img {
-      transition: transform 0.7s ease;
-    }
-    .group:hover .org-img {
-      transform: scale(1.05);
-    }
-  </style>
+        .org-img {
+            transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .group:hover .org-img {
+            transform: scale(1.05);
+        }
+    </style>
 </head>
 
 <body class="text-slate-800 flex flex-col h-full overflow-hidden font-sans bg-slate-50">
 
-  <!-- ================= MAIN APP CONTAINER ================= -->
-  <main class="flex-1 relative overflow-hidden flex flex-col bg-dot-pattern">
+    <!-- ================= MAIN APP CONTAINER ================= -->
+    <main class="flex-1 relative overflow-hidden flex flex-col bg-dot-pattern">
 
-    <!-- PAGE HEADER: Exact Typography Match -->
-    <div class="flex-none px-8 py-4 flex flex-col md:flex-row gap-2 justify-between items-center z-20 bg-white border-b border-gray-200 shadow-sm h-16">
-      
-      <!-- Left Side: Title | Subtitle -->
-      <div class="flex items-center h-full">
-         <!-- Main Title: Dark, Bold, Tight -->
-         <h2 class="font-bold text-xl text-slate-900 tracking-tight" data-i18n="orgs.title">
-           Partner Organizations
-         </h2>
-         
-         <!-- Vertical Separator: Distinct spacing -->
-         <div class="h-5 w-px bg-slate-300 mx-4"></div>
-         
-         <!-- Subtitle: Grey, Uppercase, Wide Tracking -->
-         <span class="font-bold text-xs text-slate-400 uppercase tracking-[0.15em]" data-i18n="orgs.breadcrumb">
-           Research Network
-         </span>
-      </div>
+        <!-- PAGE HEADER -->
+        <div
+            class="flex-none px-6 py-4 md:px-8 flex flex-col md:flex-row gap-2 justify-between items-center z-20 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm min-h-[4rem]">
 
-      <!-- Right Side: Stats (Kept subtle to not distract) -->
-      <div class="hidden md:flex gap-2">
-         <span class="px-3 py-1 bg-slate-50 border border-gray-200 rounded text-[10px] font-bold text-slate-400 uppercase tracking-wide">4 Partners</span>
-      </div>
-    </div>
+            <!-- Left Side: Title | Subtitle -->
+            <div class="flex items-center h-full">
+                <h2 class="font-bold text-xl text-slate-900 tracking-tight" data-i18n="orgs.title">
+                    Partner Organizations
+                </h2>
 
-    <!-- THE GRID -->
-    <div class="flex-1 p-4 min-h-0 overflow-y-auto">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-[1920px] mx-auto pb-6">
+                <div class="h-5 w-px bg-slate-300 mx-4 hidden sm:block"></div>
 
-        <!-- CARD 1: UA (Biosphere 2) -->
-        <a href="https://salsav.org" target="_blank" class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-red-300 transition-all duration-300 min-h-[340px]">
-          <div class="w-1.5 bg-red-600 flex-shrink-0"></div>
-          <!-- Increased width from w-40 to w-64 for better proportion -->
-          <div class="w-32 md:w-64 h-full relative overflow-hidden flex-shrink-0">
-             <img src="static/b2agrivoltaics.jpg" class="org-img w-full h-full object-cover" alt="Biosphere 2">
-          </div>
-          <div class="flex-1 p-6 flex flex-col justify-center min-w-0 relative">
-             <div class="absolute top-4 right-4 z-10">
-               <img src="static/b2ua.jpg" class="w-14 h-14 rounded-md object-contain" alt="UA Logo">
-             </div>
-             <div class="mb-4 pr-16">
-               <h3 class="font-display font-bold text-xl text-slate-900 leading-tight group-hover:text-red-600 transition-colors">University of Arizona</h3>
-               <div class="flex items-center gap-2 mt-1.5">
-                 <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">USA</span>
-                 <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-red-400 transition-colors"></i>
-               </div>
-             </div>
-             <!-- Removed line-clamp to fill space -->
-             <p class="text-base text-slate-600 leading-relaxed text-pretty" data-i18n="orgs.ua_desc">
-                Home to the Biosphere 2 Agrivoltaic Learning Labs. Pioneering research on the food-energy-water nexus in arid lands, demonstrating how shading crops reduces water stress while improving panel efficiency.
-             </p>
-          </div>
-        </a>
+                <span class="font-bold text-xs text-slate-400 uppercase tracking-[0.15em] hidden sm:block" data-i18n="orgs.breadcrumb">
+                    Research Network
+                </span>
+            </div>
 
-        <!-- CARD 2: UNAM (PASE) -->
-        <a href="https://www.ier.unam.mx" target="_blank" class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-amber-400 transition-all duration-300 min-h-[340px]">
-          <div class="w-1.5 bg-amber-500 flex-shrink-0"></div>
-          <div class="w-32 md:w-64 h-full relative overflow-hidden flex-shrink-0">
-             <img src="static/paseagriv.jpg" class="org-img w-full h-full object-cover" alt="UNAM PASE">
-          </div>
-          <div class="flex-1 p-6 flex flex-col justify-center min-w-0 relative">
-             <div class="absolute top-4 right-4 z-10">
-               <img src="static/unam.png" class="w-14 h-14 rounded-md object-contain" alt="UNAM Logo">
-             </div>
-             <div class="mb-4 pr-16">
-               <h3 class="font-display font-bold text-xl text-slate-900 leading-tight group-hover:text-amber-600 transition-colors">UNAM</h3>
-               <div class="flex items-center gap-2 mt-1.5">
-                 <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Mexico</span>
-                 <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-amber-400 transition-colors"></i>
-               </div>
-             </div>
-             <p class="text-base text-slate-600 leading-relaxed text-pretty" data-i18n="orgs.unam_desc">
-                Leading the "PASE" project (Parcela Agrovoltaica Sostenible y Educacional) at Topilejo. The Institute of Renewable Energies (IER) focuses on rain harvesting, optimized radiation dosing, and crop protection.
-             </p>
-          </div>
-        </a>
+            <!-- Right Side: Stats -->
+            <div class="hidden md:flex gap-2">
+                <span
+                    class="px-3 py-1 bg-slate-50 border border-gray-200 rounded-full text-[10px] font-bold text-slate-400 uppercase tracking-wide">4
+                    Partners</span>
+            </div>
+        </div>
 
-        <!-- CARD 3: AAL -->
-        <a href="https://centroenergia.cl" target="_blank" class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-blue-400 transition-all duration-300 min-h-[340px]">
-          <div class="w-1.5 bg-blue-600 flex-shrink-0"></div>
-          <div class="w-32 md:w-64 h-full relative overflow-hidden flex-shrink-0">
-             <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=600&auto=format&fit=crop" class="org-img w-full h-full object-cover" alt="AAL">
-          </div>
-          <div class="flex-1 p-6 flex flex-col justify-center min-w-0 relative">
-             <div class="absolute top-4 right-4 z-10">
-               <img src="static/aal.png" class="w-14 h-14 rounded-md object-contain" alt="AAL Logo">
-             </div>
-             <div class="mb-4 pr-16">
-               <h3 class="font-display font-bold text-xl text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Alianza Agrovoltaica Latinoamericana</h3>
-               <div class="flex items-center gap-2 mt-1.5">
-                 <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">LatAm</span>
-                 <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-400 transition-colors"></i>
-               </div>
-             </div>
-             <p class="text-base text-slate-600 leading-relaxed text-pretty" data-i18n="orgs.aal_desc">
-                A multinational alliance fostering cross-border collaboration between Chile, Colombia, Brazil, and beyond. Promoting regulatory frameworks and knowledge sharing to accelerate adoption.
-             </p>
-          </div>
-        </a>
+        <!-- THE GRID -->
+        <div class="flex-1 p-4 md:p-6 min-h-0 overflow-y-auto overflow-x-hidden scroll-smooth">
+            <!-- 
+               UPDATED GRID:
+               - auto-rows-fr: Ensures all cards in the same row are equal height
+               - min-h-full: Ensures the grid takes up at least the full container height
+            -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full max-w-[1920px] mx-auto pb-10 min-h-full auto-rows-fr">
 
-        <!-- CARD 4: RAME -->
-        <a href="https://redagvmx.com" target="_blank" class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:border-green-400 transition-all duration-300 min-h-[340px]">
-          <div class="w-1.5 bg-green-600 flex-shrink-0"></div>
-          <div class="w-32 md:w-64 h-full relative overflow-hidden flex-shrink-0">
-             <img src="static/jacksagriv.jpg" class="org-img w-full h-full object-cover" alt="RAME">
-          </div>
-          <div class="flex-1 p-6 flex flex-col justify-center min-w-0 relative">
-             <div class="absolute top-4 right-4 z-10">
-               <img src="static/rame.png" class="w-14 h-14 rounded-md object-contain" alt="RAME Logo">
-             </div>
-             <div class="mb-4 pr-16">
-               <h3 class="font-display font-bold text-xl text-slate-900 leading-tight group-hover:text-green-600 transition-colors">RAME</h3>
-               <div class="flex items-center gap-2 mt-1.5">
-                 <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Mexico</span>
-                 <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-green-400 transition-colors"></i>
-               </div>
-             </div>
-             <p class="text-base text-slate-600 leading-relaxed text-pretty" data-i18n="orgs.rame_desc">
-                Red de Agrivoltaica Mexicana. The national network connecting researchers, farmers, and government policymakers to create sustainable, dual-use business models specific to Mexico's climatic zones.
-             </p>
-          </div>
-        </a>
+                <!-- CARD 1: UA (Biosphere 2) -->
+                <a href="https://salsav.org" target="_blank"
+                    class="group relative flex flex-col sm:flex-row bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-2xl hover:border-red-300 hover:-translate-y-1 transition-all duration-300 h-full">
+                    
+                    <!-- Color Strip -->
+                    <div class="h-1.5 w-full sm:w-1.5 sm:h-auto bg-red-600 flex-shrink-0"></div>
+                    
+                    <!-- Image Area (UPDATED) 
+                         - sm:w-72: Fixed width on desktop
+                         - relative: Container for absolute image
+                         - sm:h-auto: Stretches to match the text height
+                    -->
+                    <div class="w-full h-64 sm:w-64 xl:w-72 sm:h-auto relative overflow-hidden flex-shrink-0">
+                        <div class="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors z-10"></div>
+                        <!-- absolute inset-0: Forces image to fill the container exactly -->
+                        <img src="static/b2agrivoltaics.jpg" class="org-img absolute inset-0 w-full h-full object-cover" alt="Biosphere 2">
+                    </div>
 
-      </div>
-    </div>
-  </main>
+                    <!-- Content Area -->
+                    <div class="flex-1 p-6 md:p-8 flex flex-col justify-center relative bg-white">
+                        <div class="absolute top-6 right-6 z-20">
+                            <img src="static/b2ua.jpg" class="w-12 h-12 md:w-14 md:h-14 rounded-lg object-contain bg-white shadow-sm border border-gray-100" alt="UA Logo">
+                        </div>
+                        
+                        <div class="mb-4 pr-16">
+                            <h3 class="font-display font-bold text-xl md:text-2xl text-slate-900 leading-tight group-hover:text-red-600 transition-colors">
+                                University of Arizona
+                            </h3>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">USA</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-red-400 transition-colors"></i>
+                            </div>
+                        </div>
 
-  <script type="module">
-    import { renderLayout } from './layout.js';
-    import { authState, initAuth, signOut } from './auth.js';
-    import { initSharedUI, renderHeader, applyI18n, getAvatarUrl, show, hide, $ } from './ui.js';
+                        <p class="text-sm md:text-base text-slate-600 leading-relaxed text-pretty" data-i18n="orgs.ua_desc">
+                            Home to the Biosphere 2 Agrivoltaic Learning Labs. Pioneering research on the
+                            food-energy-water nexus in arid lands, demonstrating how shading crops reduces water stress
+                            while improving panel efficiency.
+                        </p>
+                    </div>
+                </a>
 
-    renderLayout('organizations');
+                <!-- CARD 2: UNAM (PASE) -->
+                <a href="https://www.ier.unam.mx" target="_blank"
+                    class="group relative flex flex-col sm:flex-row bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-2xl hover:border-amber-400 hover:-translate-y-1 transition-all duration-300 h-full">
+                    
+                    <div class="h-1.5 w-full sm:w-1.5 sm:h-auto bg-amber-500 flex-shrink-0"></div>
+                    
+                    <div class="w-full h-64 sm:w-64 xl:w-72 sm:h-auto relative overflow-hidden flex-shrink-0">
+                        <div class="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors z-10"></div>
+                        <img src="static/paseagriv.jpg" class="org-img absolute inset-0 w-full h-full object-cover" alt="UNAM PASE">
+                    </div>
+                    
+                    <div class="flex-1 p-6 md:p-8 flex flex-col justify-center relative bg-white">
+                        <div class="absolute top-6 right-6 z-20">
+                            <img src="static/unam.png" class="w-12 h-12 md:w-14 md:h-14 rounded-lg object-contain bg-white shadow-sm border border-gray-100" alt="UNAM Logo">
+                        </div>
+                        
+                        <div class="mb-4 pr-16">
+                            <h3 class="font-display font-bold text-xl md:text-2xl text-slate-900 leading-tight group-hover:text-amber-600 transition-colors">
+                                UNAM
+                            </h3>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mexico</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-amber-400 transition-colors"></i>
+                            </div>
+                        </div>
+                        
+                        <p class="text-sm md:text-base text-slate-600 leading-relaxed text-pretty" data-i18n="orgs.unam_desc">
+                            Leading the "PASE" project (Parcela Agrovoltaica Sostenible y Educacional) at Topilejo. The
+                            Institute of Renewable Energies (IER) focuses on rain harvesting, optimized radiation
+                            dosing, and crop protection.
+                        </p>
+                    </div>
+                </a>
 
-    const state = { language: localStorage.getItem("lang") || "en" };
-    const t = {
-      en: {
-        nav: { schedule: "Schedule", archive: "Archive", about: "About", about_us: "About Us", committee: "Steering Committee", orgs: "Organizations", map: "Map", admin: "Admin" },
-        auth: { signin: "Sign in", signout: "Sign out" },
-        orgs: {
-           title: "Partner Organizations",
-           breadcrumb: "Research Network",
-           ua_desc: "Home to the Biosphere 2 Agrivoltaic Learning Labs. Pioneering research on the food-energy-water nexus in arid lands, demonstrating how shading crops reduces water stress while improving panel efficiency.",
-           unam_desc: "Leading the 'PASE' project (Parcela Agrovoltaica Sostenible y Educacional) at Topilejo. The Institute of Renewable Energies (IER) focuses on rain harvesting, optimized radiation dosing, and crop protection in high-altitude climates.",
-           aal_desc: "The Latin American Agrivoltaic Alliance (AAL). An initiative promoted by the Energy Center (University of Chile) and partners to foster regional collaboration, research, and technical standards across Latin America.",
-           rame_desc: "Red de Agrivoltaica Mexicana. The national network connecting researchers, farmers, and government policymakers to create sustainable, dual-use business models specific to Mexico's diverse climatic zones.",
+                <!-- CARD 3: AAL -->
+                <a href="https://centroenergia.cl" target="_blank"
+                    class="group relative flex flex-col sm:flex-row bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-2xl hover:border-blue-400 hover:-translate-y-1 transition-all duration-300 h-full">
+                    
+                    <div class="h-1.5 w-full sm:w-1.5 sm:h-auto bg-blue-600 flex-shrink-0"></div>
+                    
+                    <div class="w-full h-64 sm:w-64 xl:w-72 sm:h-auto relative overflow-hidden flex-shrink-0">
+                        <div class="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=600&auto=format&fit=crop"
+                            class="org-img absolute inset-0 w-full h-full object-cover" alt="AAL">
+                    </div>
+                    
+                    <div class="flex-1 p-6 md:p-8 flex flex-col justify-center relative bg-white">
+                        <div class="absolute top-6 right-6 z-20">
+                            <img src="static/aal.png" class="w-12 h-12 md:w-14 md:h-14 rounded-lg object-contain bg-white shadow-sm border border-gray-100" alt="AAL Logo">
+                        </div>
+                        
+                        <div class="mb-4 pr-16">
+                            <h3 class="font-display font-bold text-xl md:text-2xl text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
+                                Alianza Agrovoltaica
+                            </h3>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">LatAm</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-400 transition-colors"></i>
+                            </div>
+                        </div>
+                        
+                        <p class="text-sm md:text-base text-slate-600 leading-relaxed text-pretty" data-i18n="orgs.aal_desc">
+                            A multinational alliance fostering cross-border collaboration between Chile, Colombia,
+                            Brazil, and beyond. Promoting regulatory frameworks and knowledge sharing to accelerate
+                            adoption.
+                        </p>
+                    </div>
+                </a>
+
+                <!-- CARD 4: RAME -->
+                <a href="https://redagvmx.com" target="_blank"
+                    class="group relative flex flex-col sm:flex-row bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-2xl hover:border-green-400 hover:-translate-y-1 transition-all duration-300 h-full">
+                    
+                    <div class="h-1.5 w-full sm:w-1.5 sm:h-auto bg-green-600 flex-shrink-0"></div>
+                    
+                    <div class="w-full h-64 sm:w-64 xl:w-72 sm:h-auto relative overflow-hidden flex-shrink-0">
+                        <div class="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors z-10"></div>
+                        <img src="static/jacksagriv.jpg" class="org-img absolute inset-0 w-full h-full object-cover" alt="RAME">
+                    </div>
+                    
+                    <div class="flex-1 p-6 md:p-8 flex flex-col justify-center relative bg-white">
+                        <div class="absolute top-6 right-6 z-20">
+                            <img src="static/rame.png" class="w-12 h-12 md:w-14 md:h-14 rounded-lg object-contain bg-white shadow-sm border border-gray-100" alt="RAME Logo">
+                        </div>
+                        
+                        <div class="mb-4 pr-16">
+                            <h3 class="font-display font-bold text-xl md:text-2xl text-slate-900 leading-tight group-hover:text-green-600 transition-colors">
+                                RAME
+                            </h3>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mexico</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-green-400 transition-colors"></i>
+                            </div>
+                        </div>
+                        
+                        <p class="text-sm md:text-base text-slate-600 leading-relaxed text-pretty" data-i18n="orgs.rame_desc">
+                            Red de Agrivoltaica Mexicana. The national network connecting researchers, farmers, and
+                            government policymakers to create sustainable, dual-use business models specific to Mexico's
+                            diverse climatic zones.
+                        </p>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { renderLayout } from './layout.js';
+        import { authState, initAuth, signOut } from './auth.js';
+        import { initSharedUI, renderHeader, applyI18n, getAvatarUrl, show, hide, $ } from './ui.js';
+
+        renderLayout('organizations');
+
+        const state = { language: localStorage.getItem("lang") || "en" };
+        const t = {
+            en: {
+                nav: { schedule: "Schedule", archive: "Archive", about: "About", about_us: "About Us", committee: "Steering Committee", orgs: "Organizations", map: "Map", admin: "Admin" },
+                auth: { signin: "Sign in", signout: "Sign out" },
+                orgs: {
+                    title: "Partner Organizations",
+                    breadcrumb: "Research Network",
+                    ua_desc: "Home to the Biosphere 2 Agrivoltaic Learning Labs. Pioneering research on the food-energy-water nexus in arid lands, demonstrating how shading crops reduces water stress while improving panel efficiency.",
+                    unam_desc: "Leading the 'PASE' project (Parcela Agrovoltaica Sostenible y Educacional) at Topilejo. The Institute of Renewable Energies (IER) focuses on rain harvesting, optimized radiation dosing, and crop protection in high-altitude climates.",
+                    aal_desc: "The Latin American Agrivoltaic Alliance (AAL). An initiative promoted by the Energy Center (University of Chile) and partners to foster regional collaboration, research, and technical standards across Latin America.",
+                    rame_desc: "Red de Agrivoltaica Mexicana. The national network connecting researchers, farmers, and government policymakers to create sustainable, dual-use business models specific to Mexico's diverse climatic zones.",
+                }
+            },
+            es: {
+                nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", about_us: "Acerca de Nosotros", committee: "Comité Directivo", orgs: "Organizaciones", map: "Mapa", admin: "Admin" },
+                auth: { signin: "Ingresar", signout: "Salir" },
+                orgs: {
+                    title: "Organizaciones Asociadas",
+                    breadcrumb: "Red de Investigación",
+                    ua_desc: "Hogar de los Laboratorios de Aprendizaje Agrovoltaico Biosphere 2. Investigación pionera sobre el nexo alimentos-energía-agua en zonas áridas, demostrando cómo la sombra reduce el estrés hídrico y mejora la eficiencia de los paneles.",
+                    unam_desc: "Liderando el proyecto 'PASE' (Parcela Agrovoltaica Sostenible y Educacional) en Topilejo. El Instituto de Energías Renovables (IER) se enfoca en la captación pluvial y dosificación de radiación en climas de gran altitud.",
+                    aal_desc: "Alianza Agrovoltaica Latinoamericana (AAL). Una iniciativa impulsada por el Centro de Energía (U. de Chile) y socios para fomentar la colaboración regional, la investigación y los estándares técnicos en América Latina.",
+                    rame_desc: "Red de Agrivoltaica Mexicana. La red nacional que conecta a investigadores, agricultores y responsables de políticas para crear modelos de negocio sostenibles de doble uso, específicos para las diversas zonas climáticas de México."
+                }
+            }
+        };
+
+        function handleLangSwitch() {
+            state.language = state.language === 'en' ? 'es' : 'en';
+            localStorage.setItem("lang", state.language);
+            applyI18n(t, state.language);
         }
-      },
-      es: {
-        nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", about_us: "Acerca de Nosotros", committee: "Comité Directivo", orgs: "Organizaciones", map: "Mapa", admin: "Admin" },
-        auth: { signin: "Ingresar", signout: "Salir" },
-        orgs: {
-           title: "Organizaciones Asociadas",
-           breadcrumb: "Red de Investigación",
-           ua_desc: "Hogar de los Laboratorios de Aprendizaje Agrovoltaico Biosphere 2. Investigación pionera sobre el nexo alimentos-energía-agua en zonas áridas, demostrando cómo la sombra reduce el estrés hídrico y mejora la eficiencia de los paneles.",
-           unam_desc: "Liderando el proyecto 'PASE' (Parcela Agrovoltaica Sostenible y Educacional) en Topilejo. El Instituto de Energías Renovables (IER) se enfoca en la captación pluvial y dosificación de radiación en climas de gran altitud.",
-           aal_desc: "Alianza Agrovoltaica Latinoamericana (AAL). Una iniciativa impulsada por el Centro de Energía (U. de Chile) y socios para fomentar la colaboración regional, la investigación y los estándares técnicos en América Latina.",
-           rame_desc: "Red de Agrivoltaica Mexicana. La red nacional que conecta a investigadores, agricultores y responsables de políticas para crear modelos de negocio sostenibles de doble uso, específicos para las diversas zonas climáticas de México."
-        }
-      }
-    };
 
-    function handleLangSwitch() {
-      state.language = state.language === 'en' ? 'es' : 'en';
-      localStorage.setItem("lang", state.language);
-      applyI18n(t, state.language);
-    }
-
-    (async function main() {
-      initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
-      applyI18n(t, state.language);
-      lucide.createIcons();
-      await initAuth({
-        onAuthReady: () => renderHeader(authState, t, state.language),
-        onAuthChange: async () => {
-          renderHeader(authState, t, state.language);
-          if (authState.profile?.avatar_url) {
-            const url = await getAvatarUrl(authState.profile.avatar_url);
-            const img = $('#userAvatar');
-            if (img && url) { img.src = url; show(img); hide($('#userInitial')); }
-          }
-        }
-      });
-    })();
-  </script>
+        (async function main() {
+            initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
+            applyI18n(t, state.language);
+            lucide.createIcons();
+            await initAuth({
+                onAuthReady: () => renderHeader(authState, t, state.language),
+                onAuthChange: async () => {
+                    renderHeader(authState, t, state.language);
+                    if (authState.profile?.avatar_url) {
+                        const url = await getAvatarUrl(authState.profile.avatar_url);
+                        const img = $('#userAvatar');
+                        if (img && url) { img.src = url; show(img); hide($('#userInitial')); }
+                    }
+                }
+            });
+        })();
+    </script>
 </body>
+
 </html>
