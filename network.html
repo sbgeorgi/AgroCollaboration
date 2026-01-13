@@ -78,22 +78,33 @@
 
         .network-node {
             position: absolute;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) translateZ(0); /* Force GPU */
+            backface-visibility: hidden; /* Prevent flickering */
             cursor: pointer;
             pointer-events: auto;
             will-change: transform;
-            /* Default transition for layout changes (e.g. bubble to network) */
+            /* Default transition for layout changes */
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             user-select: none;
             -webkit-user-select: none;
+            z-index: 20; /* Default Z */
         }
 
-        /* Crucial Fix: When interacting, disable transition to prevent jitter */
+        /* 
+           FIX: When interacting (JS animation active), we must:
+           1. Disable CSS transitions to prevent jitter.
+           2. Increase Z-Index immediately so it scales ON TOP of neighbors, not behind.
+        */
         .network-node.is-interacting {
             transition: none !important;
+            z-index: 500 !important; 
         }
 
-        .member-node { z-index: 20; }
+        /* Topmost z-index for the closest node */
+        .network-node.magnified { 
+            z-index: 1000 !important; 
+        }
+
         .group-node { z-index: 5; }
 
         /* Bubble Mode Styles */
@@ -110,9 +121,6 @@
             border-radius: 50%;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-
-        .bubble-member:hover { z-index: 1000 !important; }
-        .network-node.magnified { z-index: 1000 !important; }
 
         /* Edges */
         .network-edge { fill: none; stroke: #cbd5e1; stroke-width: 1.5px; stroke-opacity: 0.3; }
@@ -654,30 +662,41 @@
                     const diameter = p.r * 2;
                     el.style.width = `${diameter}px`; el.style.height = `${diameter}px`;
                     el.style.backgroundColor = stringToColor(cluster.name);
-                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px)`;
+                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
                     el.onclick = (e) => { e.stopPropagation(); $('#searchInput').value = cluster.name; onFiltersChanged(); };
                     nodes.appendChild(el);
                 });
+                
+                // BUBBLE MEMBER RENDER - BUG FIX
+                // Removed 'hover:scale-125' and transition from innerHTML to prevent conflict with JS scaling
                 members.forEach(m => {
                     const p = state.positions.get(m.id);
                     if (!p) return;
                     const el = document.createElement('div');
                     el.className = 'network-node member-node bubble-member group/bub';
                     el.dataset.x = p.x; el.dataset.y = p.y;
-                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px)`;
+                    
+                    // Added translateZ(0) to initial transform
+                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
+                    
                     const size = memberRadius * 2;
-                    el.innerHTML = `<div class="rounded-full bg-white flex items-center justify-center shadow-md border-2 border-white hover:border-brand-500 hover:scale-125 transition-all duration-200 overflow-hidden cursor-pointer relative" style="width: ${size}px; height: ${size}px;">${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : `<span class="text-xs font-bold text-brand-600">${(m.full_name||'M')[0]}</span>`}</div><div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 backdrop-blur text-white text-[11px] py-1.5 px-3 rounded-lg opacity-0 group-hover/bub:opacity-100 pointer-events-none transition-opacity duration-200 z-[100] shadow-xl border border-white/10"><div class="font-bold">${m.full_name}</div>${m.affiliation ? `<div class="text-slate-300 text-[9px] font-medium">${m.affiliation}</div>` : ''}<div class="absolute -top-1 left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-slate-900/90"></div></div>`;
+                    
+                    // CRITICAL FIX: Removed "hover:scale-125" and "transition-all" from inner div. 
+                    // JS handles the scale on parent.
+                    el.innerHTML = `<div class="rounded-full bg-white flex items-center justify-center shadow-md border-2 border-white overflow-hidden cursor-pointer relative" style="width: ${size}px; height: ${size}px;">${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : `<span class="text-xs font-bold text-brand-600">${(m.full_name||'M')[0]}</span>`}</div><div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 backdrop-blur text-white text-[11px] py-1.5 px-3 rounded-lg opacity-0 group-hover/bub:opacity-100 pointer-events-none transition-opacity duration-200 z-[100] shadow-xl border border-white/10"><div class="font-bold">${m.full_name}</div>${m.affiliation ? `<div class="text-slate-300 text-[9px] font-medium">${m.affiliation}</div>` : ''}<div class="absolute -top-1 left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-slate-900/90"></div></div>`;
+                    
                     if (m.avatar_url) getAvatarUrl(m.avatar_url).then(u => { if (u) { const img = el.querySelector('img'); if (img) img.src = u; } });
                     el.onclick = (e) => { e.stopPropagation(); openProfileModal(m); };
                     nodes.appendChild(el);
                 });
+
                 layout.clusters.forEach(cluster => {
                     const p = state.positions.get(`group-${cluster.name}`);
                     if (!p) return;
                     const label = document.createElement('div');
                     label.className = 'network-node pointer-events-none z-30';
                     label.dataset.x = p.x; label.dataset.y = p.y - p.r; label.dataset.type = 'group-label';
-                    label.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px)`;
+                    label.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px) translateZ(0)`;
                     label.innerHTML = `<div class="flex flex-col items-center"><span class="px-6 py-2.5 bg-white/95 backdrop-blur shadow-xl border border-gray-200 rounded-full text-lg font-extrabold text-slate-900 whitespace-nowrap ring-1 ring-black/5" style="max-width: 400px; overflow: hidden; text-overflow: ellipsis;">${cluster.name}</span></div>`;
                     nodes.appendChild(label);
                 });
@@ -709,7 +728,7 @@
                 const label = document.createElement('div');
                 label.className = 'network-node pointer-events-none z-30';
                 label.dataset.x = p.x; label.dataset.y = p.y - p.r; label.dataset.type = 'group-label';
-                label.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px)`;
+                label.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px) translateZ(0)`;
                 label.innerHTML = `<div class="flex flex-col items-center"><span class="px-8 py-3.5 bg-white/95 backdrop-blur shadow-xl border border-gray-200 rounded-full text-2xl font-extrabold text-slate-900 whitespace-nowrap ring-1 ring-black/5" style="max-width: 500px; overflow: hidden; text-overflow: ellipsis;">${cluster.name}</span></div>`;
                 nodes.appendChild(label);
             });
@@ -719,7 +738,7 @@
                 const el = document.createElement('div');
                 el.className = 'network-node member-node';
                 el.dataset.x = p.x; el.dataset.y = p.y;
-                el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px)`;
+                el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
                 el.innerHTML = `<div class="node-pill flex items-center gap-3 pl-1 pr-4 py-1 bg-white border border-gray-200 rounded-full shadow-sm transition-all duration-200 min-w-[150px] group-hover:border-brand-400 group-hover:shadow-md group-hover:ring-2 group-hover:ring-brand-100"><div class="node-avatar w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center text-xs font-bold overflow-hidden shrink-0 ring-2 ring-white shadow-sm">${(m.full_name||'M')[0].toUpperCase()}</div><div class="min-w-0"><span class="node-name text-xs font-bold text-slate-700 leading-tight block truncate">${m.full_name||'Member'}</span><span class="node-affiliation text-[9px] text-slate-400 leading-tight truncate max-w-[120px] block mt-0.5">${m.affiliation || '—'}</span></div></div>`;
                 if (m.avatar_url) getAvatarUrl(m.avatar_url).then(u => { if (u) el.querySelector('.node-avatar').innerHTML = `<img src="${u}" class="w-full h-full object-cover">` });
                 el.onclick = (e) => { e.stopPropagation(); openProfileModal(m); };
@@ -763,16 +782,13 @@
                 state.cachedNodes.forEach(node => {
                     if (node.dataset.type === 'group' && !node.classList.contains('magnified')) {
                         const wx = parseFloat(node.dataset.x); const wy = parseFloat(node.dataset.y);
-                        node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${groupBaseScale})`;
+                        node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${groupBaseScale}) translateZ(0)`;
                     }
                 });
             }
         }
 
         // OPTIMIZED MAGNIFICATION LOGIC
-        // 1. Uses requestAnimationFrame to prevent layout thrashing
-        // 2. Uses cached nodes instead of querySelectorAll
-        // 3. Adds 'is-interacting' class to disable CSS transitions during JS animation (FIXES GLITCH/JITTER)
         let mousePos = { x: 0, y: 0 };
         let rafId = null;
 
@@ -816,13 +832,14 @@
                     // Critical: Disable CSS transition during interaction
                     if (!node.classList.contains('is-interacting')) node.classList.add('is-interacting');
                     
-                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${finalScale})`;
+                    // TranslateZ ensures it stays on its own GPU layer
+                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${finalScale}) translateZ(0)`;
                     
                     if (distSq < minDistSq) { minDistSq = distSq; nearestNode = node; }
                 } else {
                     // Reset if needed
                     if (node.classList.contains('is-interacting')) {
-                        node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale})`;
+                        node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale}) translateZ(0)`;
                         node.classList.remove('is-interacting'); // Re-enable CSS transitions for smooth reset
                         node.classList.remove('magnified');
                     }
@@ -853,7 +870,7 @@
                 let baseScale = 1; 
                 if (state.viewMode !== 'bubble' && isGroup) baseScale = groupBaseScale;
                 
-                node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale})`;
+                node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale}) translateZ(0)`;
                 node.classList.remove('magnified', 'is-interacting');
             });
         }
