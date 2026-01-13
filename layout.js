@@ -207,19 +207,20 @@ export function renderLayout(activePage) {
   </div>
   `;
 
-  // 5. FOOTER TEMPLATE
+  // 5. FOOTER TEMPLATE (COMPACT VERSION)
+  // Inline styles override CSS classes to force a very slim profile
   const footerHTML = `
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-text">
+  <footer class="site-footer" style="padding: 12px 0; border-top: 1px solid var(--border); margin-top: auto;">
+    <div class="container" style="display: flex; align-items: center; justify-content: space-between;">
+      <div class="footer-text" style="margin: 0; font-size: 0.8rem; line-height: 1; white-space: nowrap; color: var(--text-tertiary);">
         &copy; <span id="year">${new Date().getFullYear()}</span> Agrovoltaicos sin Fronteras •&nbsp;
         <span data-i18n="footer.note">Bilingual, community-driven seminar.</span>
       </div>
-      <div class="footer-logos">
-          <a href="https://biosphere2.org" target="_blank"><img src="static/b2ua.jpg" alt="Biosphere 2"></a>
-          <a href="https://www.ier.unam.mx" target="_blank"><img src="static/unam.png" alt="UNAM"></a>
-          <a href="https://centroenergia.cl" target="_blank"><img src="static/aal.png" alt="AAL"></a>
-          <a href="https://redagvmx.com" target="_blank"><img src="static/rame.png" alt="RAME"></a>
+      <div class="footer-logos" style="display: flex; gap: 1rem; align-items: center; margin: 0;">
+          <a href="https://biosphere2.org" target="_blank" style="display: flex; align-items: center;"><img src="static/b2ua.jpg" alt="Biosphere 2" style="height: 24px; width: auto; display: block;"></a>
+          <a href="https://www.ier.unam.mx" target="_blank" style="display: flex; align-items: center;"><img src="static/unam.png" alt="UNAM" style="height: 24px; width: auto; display: block;"></a>
+          <a href="https://centroenergia.cl" target="_blank" style="display: flex; align-items: center;"><img src="static/aal.png" alt="AAL" style="height: 24px; width: auto; display: block;"></a>
+          <a href="https://redagvmx.com" target="_blank" style="display: flex; align-items: center;"><img src="static/rame.png" alt="RAME" style="height: 24px; width: auto; display: block;"></a>
       </div>
     </div>
   </footer>
