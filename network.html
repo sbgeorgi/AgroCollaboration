@@ -444,6 +444,9 @@
                 const containerWidth = container.offsetWidth || 800;
                 const containerHeight = container.offsetHeight || 600;
                 
+                // Calculate Aspect Ratio to bias the spread horizontally
+                const aspectRatio = Math.max(1.8, containerWidth / containerHeight);
+                
                 const clusters = [];
                 let totalMemberCount = 0;
                 
@@ -457,16 +460,20 @@
                 
                 const pos = new Map();
                 
-                const availableArea = containerWidth * containerHeight * 0.85;
+                // Increased area calculation to provide more breathing room
+                const availableArea = containerWidth * containerHeight * 0.95;
                 const areaPerMember = availableArea / Math.max(totalMemberCount, 1);
-                const memberRadius = Math.max(18, Math.min(30, Math.sqrt(areaPerMember / Math.PI) * 0.4));
+                
+                // Slightly larger base size for members
+                const memberRadius = Math.max(22, Math.min(32, Math.sqrt(areaPerMember / Math.PI) * 0.45));
                 
                 const packedClusters = [];
                 
                 clusters.forEach((cluster) => {
                     const count = cluster.count;
-                    const innerArea = count * Math.PI * (memberRadius + 8) * (memberRadius + 8) * 2.5;
-                    const clusterRadius = Math.max(60, Math.sqrt(innerArea / Math.PI));
+                    // Increased spacing inside the bubble
+                    const innerArea = count * Math.PI * (memberRadius + 12) * (memberRadius + 12) * 3.5;
+                    const clusterRadius = Math.max(70, Math.sqrt(innerArea / Math.PI) * 1.1);
                     packedClusters.push({
                         ...cluster,
                         radius: clusterRadius,
@@ -486,9 +493,11 @@
                         let bestX = 0;
                         let bestY = 0;
                         
-                        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 36) {
-                            for (let dist = 0; dist < 3000; dist += 20) {
-                                const testX = Math.cos(angle) * dist;
+                        // Modified spiral search: uses Ellipse based on aspect ratio
+                        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 45) {
+                            for (let dist = 0; dist < 4000; dist += 25) {
+                                // Multiply X by aspect ratio to create an oval packing shape
+                                const testX = Math.cos(angle) * dist * aspectRatio;
                                 const testY = Math.sin(angle) * dist;
                                 
                                 let valid = true;
@@ -496,15 +505,21 @@
                                     const other = packedClusters[j];
                                     const dx = testX - other.x;
                                     const dy = testY - other.y;
-                                    const minDist = current.radius + other.radius + 30;
+                                    
+                                    // Increased buffer between clusters to reduce crowding
+                                    const minDist = current.radius + other.radius + 60;
+                                    
                                     if (dx * dx + dy * dy < minDist * minDist) {
                                         valid = false;
                                         break;
                                     }
                                 }
                                 
-                                if (valid && dist < bestDistance) {
-                                    bestDistance = dist;
+                                // Weighted distance check (normalize X back for distance comparison)
+                                const weightedDist = Math.sqrt((testX/aspectRatio)**2 + testY**2);
+
+                                if (valid && weightedDist < bestDistance) {
+                                    bestDistance = weightedDist;
                                     bestX = testX;
                                     bestY = testY;
                                     bestAngle = angle;
@@ -532,7 +547,7 @@
                         });
                     } else {
                         const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-                        const maxRadius = cluster.radius - memberRadius - 15;
+                        const maxRadius = cluster.radius - memberRadius - 20;
                         
                         cluster.list.forEach((m, idx) => {
                             const normalizedIndex = idx / memberCount;
@@ -707,29 +722,29 @@
                 });
 
                 layout.clusters.forEach(cluster => {
-                    const p = state.positions.get(`group-${cluster.name}`);
-                    if (!p) return;
+    const p = state.positions.get(`group-${cluster.name}`);
+    if (!p) return;
 
-                    const label = document.createElement('div');
-                    label.className = 'network-node pointer-events-none z-30';
-                    label.dataset.x = p.x;
-                    label.dataset.y = p.y - p.r; 
-                    label.dataset.type = 'group-label';
-                    
-                    label.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px)`;
+    const label = document.createElement('div');
+    label.className = 'network-node pointer-events-none z-30';
+    label.dataset.x = p.x;
+    label.dataset.y = p.y - p.r; 
+    label.dataset.type = 'group-label';
+    
+    label.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px)`;
 
-                    label.innerHTML = `
-                        <div class="flex flex-col items-center">
-                            <span class="px-3 py-1 bg-white/95 backdrop-blur shadow-md border border-gray-200 rounded-full text-[11px] font-bold text-slate-700 whitespace-nowrap ring-1 ring-black/5" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis;">
-                                ${cluster.name}
-                            </span>
-                            <span class="mt-0.5 text-[9px] font-bold text-slate-500 bg-white/75 px-1.5 rounded-full shadow-sm border border-gray-100">
-                                ${cluster.count}
-                            </span>
-                        </div>
-                    `;
-                    nodes.appendChild(label);
-                });
+    label.innerHTML = `
+        <div class="flex flex-col items-center">
+            <span class="px-6 py-2.5 bg-white/95 backdrop-blur shadow-xl border border-gray-200 rounded-full text-lg font-extrabold text-slate-900 whitespace-nowrap ring-1 ring-black/5" style="max-width: 400px; overflow: hidden; text-overflow: ellipsis;">
+                ${cluster.name}
+            </span>
+            <span class="mt-2 text-sm font-bold text-slate-600 bg-white/90 px-4 py-1 rounded-full shadow-sm border border-gray-200">
+                ${cluster.count}
+            </span>
+        </div>
+    `;
+    nodes.appendChild(label);
+});
                 
                 if (window.lucide) window.lucide.createIcons();
                 fitGraph();
@@ -867,11 +882,12 @@
                 if (p.y + r > maxY) maxY = p.y + r; 
             });
 
-            const padding = state.viewMode === 'bubble' ? 100 : 500;
+            const padding = state.viewMode === 'bubble' ? 150 : 500;
             const w = maxX - minX + padding;
             const h = maxY - minY + padding;
             const c = $('#network-container');
-            const scale = Math.min(c.offsetWidth / w, c.offsetHeight / h, state.viewMode === 'bubble' ? 1.5 : 1.2);
+            
+            const scale = Math.min(c.offsetWidth / w, c.offsetHeight / h, state.viewMode === 'bubble' ? 1.0 : 1.2);
 
             if (isFinite(scale) && scale > 0) {
                 state.zoom = scale;
