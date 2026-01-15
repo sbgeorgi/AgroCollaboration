@@ -447,7 +447,7 @@
 
       const filtered = state.events.filter(e => {
         const end = new Date(e.start_time); end.setHours(end.getHours() + 2);
-        if (!term && end < now && (now - end > 86400000 * 7)) return false;
+        if (!term && end < now && (now - end > 86400000 * 1)) return false;
         if (!term) return true;
         return (JSON.stringify(e) + (e.topic_tags || []).join(' ')).toLowerCase().includes(term);
       });
