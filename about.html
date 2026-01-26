@@ -58,32 +58,35 @@
   <main class="flex-1 relative overflow-hidden flex flex-col bg-dot-pattern">
 
     <!-- PAGE HEADER: Flex-none ensures it keeps its height. h-auto allows text wrapping if needed. -->
-    <div class="flex-none px-8 py-4 flex flex-col md:flex-row gap-2 justify-between items-center z-20 bg-white border-b border-gray-200 shadow-sm min-h-[4rem] h-auto shrink-0">
-      
+    <div
+      class="flex-none px-8 py-4 flex flex-col md:flex-row gap-2 justify-between items-center z-20 bg-white border-b border-gray-200 shadow-sm min-h-[4rem] h-auto shrink-0">
+
       <!-- Left Side -->
       <div class="flex items-center h-full">
-         <h2 class="font-bold text-xl text-slate-900 tracking-tight" data-i18n="about_page.title">
-           About the Seminar
-         </h2>
-         <div class="h-5 w-px bg-slate-300 mx-4"></div>
-         <span class="font-bold text-xs text-slate-400 uppercase tracking-[0.15em]" data-i18n="about_page.subtitle">
-           Overview
-         </span>
+        <h2 class="font-bold text-xl text-slate-900 tracking-tight" data-i18n="about_page.title">
+          About the Seminar
+        </h2>
+        <div class="h-5 w-px bg-slate-300 mx-4"></div>
+        <span class="font-bold text-xs text-slate-400 uppercase tracking-[0.15em]" data-i18n="about_page.subtitle">
+          Overview
+        </span>
       </div>
 
       <!-- Right Side -->
       <div class="hidden md:flex gap-2">
-         <span class="px-3 py-1 bg-slate-50 border border-gray-200 rounded text-[10px] font-bold text-slate-400 uppercase tracking-wide" data-i18n="about_page.badge">Bilingual Series</span>
+        <span
+          class="px-3 py-1 bg-slate-50 border border-gray-200 rounded text-[10px] font-bold text-slate-400 uppercase tracking-wide"
+          data-i18n="about_page.badge">Bilingual Series</span>
       </div>
     </div>
 
     <!-- SCROLLABLE CONTENT AREA -->
     <!-- flex-1 fills remaining height exactly. min-h-0 prevents flex overflow bugs. -->
     <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4">
-      
+
       <!-- Content Wrapper: w-full for 100% width. pb-24 ensures footer doesn't overlap content at bottom. -->
       <div class="w-full mx-auto pb-24">
-        
+
         <!-- Main Card -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col w-full">
 
@@ -94,7 +97,8 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
             <div class="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent"></div>
             <div class="absolute bottom-5 left-6 md:left-10 text-white">
-              <h1 class="font-display font-bold text-3xl tracking-tight mb-1 drop-shadow-md text-white" data-i18n="about_page.hero_title">
+              <h1 class="font-display font-bold text-3xl tracking-tight mb-1 drop-shadow-md text-white"
+                data-i18n="about_page.hero_title">
                 Bridging Research
               </h1>
               <p class="text-sm opacity-90 font-medium drop-shadow-sm tracking-wide" data-i18n="about_page.hero_sub">
@@ -105,7 +109,7 @@
 
           <!-- Content Text Area -->
           <div class="p-6 md:p-10 w-full">
-            
+
             <!-- English Content -->
             <div class="prose w-full animate-fade-in" data-lang-content="en">
               <h2 class="mt-0">What is Agrivoltaics?</h2>
@@ -192,7 +196,7 @@
     renderLayout('about');
 
     const state = { language: localStorage.getItem("lang") || "en" };
-    
+
     const t = {
       en: {
         nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
@@ -242,7 +246,8 @@
       lucide.createIcons();
 
       document.addEventListener('click', e => {
-        if (e.target.closest('#btnProfile') || e.target.closest('#userName')) {
+        if (e.target.closest('#btnProfile') || e.target.closest('#userName') ||
+          e.target.closest('#mobileProfileBtn') || e.target.closest('#mobileUserName')) {
           window.location.href = 'profile.html';
         }
       });
@@ -259,10 +264,11 @@
         },
         onAuthChange: () => renderHeader(authState, t, state.language)
       });
-      
+
       applyPageI18n();
     })();
   </script>
 
 </body>
+
 </html>
