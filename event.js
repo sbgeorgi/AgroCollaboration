@@ -16,14 +16,14 @@ export function initEventLogic(deps) {
 
   // --- UTILITIES ---
   const isOrganizerOrAdmin = () => ['admin', 'organizer'].includes(authState.profile?.role);
-  
+
   const scrollToLatest = (smooth = true) => {
     $('#commentsBottomAnchor')?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'end' });
   };
 
   const formatName = (p) => p?.full_name || p?.username || 'Anonymous';
   const initialLetter = (n) => (n || 'U').charAt(0).toUpperCase();
-  
+
   const timeMeta = (created, updated) => {
     const base = fmtDateTime(created);
     return updated && updated !== created ? `${base} · edited ${fmtDateTime(updated)}` : base;
@@ -33,7 +33,7 @@ export function initEventLogic(deps) {
     if (!d) return "";
     const date = new Date(d);
     const p = n => String(n).padStart(2, "0");
-    return `${date.getFullYear()}-${p(date.getMonth()+1)}-${p(date.getDate())}T${p(date.getHours())}:${p(date.getMinutes())}`;
+    return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}T${p(date.getHours())}:${p(date.getMinutes())}`;
   };
 
   const lucideRefresh = () => window.lucide?.createIcons();
@@ -76,10 +76,10 @@ export function initEventLogic(deps) {
     if (availableProfiles.length) return;
     const { data } = await supabase.from('profiles').select('id, full_name, affiliation').order('full_name');
     availableProfiles = data || [];
-    
+
     const dl = document.getElementById('js-dl-profiles');
     if (dl) dl.innerHTML = availableProfiles.map(p => `<option value="${escapeHtml(p.full_name)}">`).join('');
-    
+
     const dlAff = document.getElementById('js-dl-affiliations');
     if (dlAff) {
       const affs = [...new Set(availableProfiles.map(p => p.affiliation).filter(Boolean))].sort();
@@ -145,7 +145,7 @@ export function initEventLogic(deps) {
         </div>
       </dialog>
       <datalist id="js-dl-profiles"></datalist><datalist id="js-dl-affiliations"></datalist>`;
-    
+
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     quillInstances.en = initQuillEditor('#jsEditDescEn');
     quillInstances.es = initQuillEditor('#jsEditDescEs');
@@ -155,19 +155,19 @@ export function initEventLogic(deps) {
     spContainer.addEventListener('click', e => {
       if (e.target.closest('.js-remove-speaker')) e.target.closest('.js-speaker-row').remove();
     });
-    
+
     // Autofill logic via delegation
     spContainer.addEventListener('input', (e) => {
-        if (!e.target.matches('.js-sp-profile-search')) return;
-        const profile = availableProfiles.find(p => p.full_name === e.target.value);
-        const row = e.target.closest('.js-speaker-row');
-        if (profile) {
-            row.querySelector('.js-sp-profile-id').value = profile.id;
-            row.querySelector('.js-sp-name').value = profile.full_name;
-            if (profile.affiliation) row.querySelector('.js-sp-aff').value = profile.affiliation;
-        } else {
-            row.querySelector('.js-sp-profile-id').value = '';
-        }
+      if (!e.target.matches('.js-sp-profile-search')) return;
+      const profile = availableProfiles.find(p => p.full_name === e.target.value);
+      const row = e.target.closest('.js-speaker-row');
+      if (profile) {
+        row.querySelector('.js-sp-profile-id').value = profile.id;
+        row.querySelector('.js-sp-name').value = profile.full_name;
+        if (profile.affiliation) row.querySelector('.js-sp-aff').value = profile.affiliation;
+      } else {
+        row.querySelector('.js-sp-profile-id').value = '';
+      }
     });
 
     document.getElementById('close-js-editor').onclick = () => document.getElementById('event-js-editor-modal').close();
@@ -178,10 +178,10 @@ export function initEventLogic(deps) {
   }
 
   function addJsSpeakerRow(s = {}) {
-    const profileName = s.profile_id && availableProfiles.length 
-        ? availableProfiles.find(p => p.id === s.profile_id)?.full_name || '' 
-        : '';
-    
+    const profileName = s.profile_id && availableProfiles.length
+      ? availableProfiles.find(p => p.id === s.profile_id)?.full_name || ''
+      : '';
+
     const html = `
     <div class="js-speaker-row flex flex-col gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm mb-3">
         <div class="w-full space-y-2">
@@ -293,7 +293,7 @@ export function initEventLogic(deps) {
     const listEl = $('#filesList');
     if (!listEl) return;
     if (!state.files?.length) { hide(listEl); show($('#emptyFiles')); return; }
-    
+
     show(listEl); hide($('#emptyFiles'));
     const uid = authState.profile?.id;
     const isAdmin = isOrganizerOrAdmin();
@@ -326,7 +326,7 @@ export function initEventLogic(deps) {
 
     const path = `${state.selectedEvent.id}/${self.crypto.randomUUID()}-${file.name}`;
     setFlash('Uploading...', -1);
-    
+
     const { error: upErr } = await supabase.storage.from('attachments').upload(path, file);
     if (upErr) return setFlash('Upload failed', 4000);
 
@@ -334,7 +334,7 @@ export function initEventLogic(deps) {
       event_id: state.selectedEvent.id, created_by: authState.session.user.id,
       bucket_id: 'attachments', object_path: path, file_name: file.name, file_size: file.size, file_type: file.type
     });
-    
+
     setFlash(dbErr ? 'Upload failed' : 'Upload complete!', 3000);
     e.target.value = '';
   }
@@ -346,7 +346,7 @@ export function initEventLogic(deps) {
 
     const { error: sErr } = await supabase.storage.from('attachments').remove([path]);
     if (sErr) return setFlash('Delete failed', 4000);
-    
+
     const { error: dErr } = await supabase.from('attachments').delete().eq('id', id);
     if (dErr) return setFlash('Database error', 4000);
 
@@ -360,7 +360,7 @@ export function initEventLogic(deps) {
     if (!state.selectedEvent) return;
     const { data, error } = await supabase.from('threads').select('id, event_id, title, created_by, created_at, pinned').eq('event_id', state.selectedEvent.id).order('pinned', { ascending: false }).order('created_at', { ascending: false });
     if (error) return console.error(error);
-    
+
     state.threads = await resolveProfiles(data || []);
     renderThreads();
   }
@@ -376,7 +376,7 @@ export function initEventLogic(deps) {
     listEl.innerHTML = state.threads.map(t => {
       const active = String(t.id) === String(state.selectedThreadId);
       const canMod = t.created_by === uid || isAdmin;
-      
+
       return `<div class="group flex items-center justify-between gap-2 p-2 rounded-lg cursor-pointer transition-colors ${active ? 'bg-brand-50 ring-1 ring-brand-200' : 'hover:bg-slate-100'}" data-thread-row="${t.id}">
           <div class="flex items-center gap-2 min-w-0 flex-1" data-thread-id="${t.id}">
             <i data-lucide="${t.pinned ? 'pin' : 'hash'}" class="w-3.5 h-3.5 shrink-0 ${t.pinned ? 'text-amber-500 fill-current' : 'text-slate-400'}"></i>
@@ -416,16 +416,16 @@ export function initEventLogic(deps) {
 
     let error;
     if (action === 'edit') {
-        const title = prompt('New title:', t.title);
-        if (title && title.trim() !== t.title) ({ error } = await supabase.from('threads').update({ title: title.trim() }).eq('id', id));
+      const title = prompt('New title:', t.title);
+      if (title && title.trim() !== t.title) ({ error } = await supabase.from('threads').update({ title: title.trim() }).eq('id', id));
     } else if (action === 'pin') {
-        ({ error } = await supabase.from('threads').update({ pinned: !t.pinned }).eq('id', id));
+      ({ error } = await supabase.from('threads').update({ pinned: !t.pinned }).eq('id', id));
     } else if (action === 'delete') {
-        ({ error } = await supabase.from('threads').delete().eq('id', id));
-        if (!error && String(state.selectedThreadId) === String(id)) {
-            state.selectedThreadId = null;
-            hide($('#threadDetailView')); show($('#thread-welcome'));
-        }
+      ({ error } = await supabase.from('threads').delete().eq('id', id));
+      if (!error && String(state.selectedThreadId) === String(id)) {
+        state.selectedThreadId = null;
+        hide($('#threadDetailView')); show($('#thread-welcome'));
+      }
     }
     if (error) setFlash('Action failed'); else await loadAndRenderThreads();
   }
@@ -434,7 +434,7 @@ export function initEventLogic(deps) {
   async function loadCommentsForThread(tId) {
     const { data, error } = await supabase.from('comments').select('id, event_id, thread_id, parent_id, content, created_by, created_at, updated_at').eq('thread_id', tId).order('created_at', { ascending: true });
     if (error) return console.error(error);
-    
+
     // Enrich with Author Profiles (Bulk)
     state.comments = await resolveProfiles(data || [], 'created_by');
 
@@ -461,44 +461,46 @@ export function initEventLogic(deps) {
     }
 
     const byParent = state.comments.reduce((acc, c) => { (acc[c.parent_id || 'root'] ||= []).push(c); return acc; }, {});
+
     const buildTree = (pid) => (byParent[pid] || []).map(c => {
       const name = formatName(c.author);
       const isMe = authState.profile?.id === c.author?.id;
       const isAdmin = isOrganizerOrAdmin();
       const ava = c.author?.public_avatar_url ? `<img src="${c.author.public_avatar_url}" class="w-full h-full object-cover">` : `<span class="font-bold text-slate-600 text-xs">${initialLetter(name)}</span>`;
-      
+
       return `<div class="mb-4" data-comment-root="${c.id}">
-        <div class="flex items-start gap-3">
-          <button class="flex-shrink-0 w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm cursor-pointer" data-open-profile="${c.author?.id || ''}">${ava}</button>
-          <div class="flex-1 min-w-0">
-            <div class="bg-slate-50 border border-slate-100 rounded-2xl rounded-tl-none p-3 group/card">
-                <div class="flex justify-between gap-2 mb-1">
-                    <div class="flex items-center gap-2 min-w-0">
-                        <span class="text-sm font-bold text-slate-800 cursor-pointer hover:underline" data-open-profile="${c.author?.id || ''}">${escapeHtml(name)}</span>
-                        <span class="text-[10px] text-slate-400">${timeMeta(c.created_at, c.updated_at)}</span>
-                    </div>
-                    <button class="flex items-center gap-1 text-slate-400 hover:text-rose-600 transition-colors opacity-0 group-hover/card:opacity-100 ${c.liked_by_me ? 'text-rose-600' : ''}" data-like-comment="${c.id}">
-                        <i data-lucide="heart" class="w-3.5 h-3.5 ${c.liked_by_me ? 'fill-current' : ''}"></i><span class="text-[10px] font-bold">${c.likes_count || ''}</span>
-                    </button>
-                </div>
-                <div class="comment-content text-sm text-slate-700 prose prose-sm max-w-none prose-p:my-0 prose-a:text-brand-600">${linkify(c.content)}</div>
-                <form class="comment-edit-form hidden mt-2" data-edit-form-for="${c.id}">
-                    <textarea class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" rows="2">${escapeHtml(c.content)}</textarea>
-                    <div class="flex justify-end gap-2 mt-2"><button type="button" class="text-xs font-bold text-slate-500 px-3 py-1" data-cancel-edit>Cancel</button><button type="submit" class="text-xs font-bold text-white bg-brand-600 rounded px-3 py-1">Save</button></div>
-                </form>
-            </div>
-            <div class="flex items-center gap-3 mt-1 pl-2 text-[11px] font-bold">
-                <button class="text-slate-500 hover:text-brand-600" data-reply-to="${c.id}" data-reply-name="${escapeHtml(name)}">Reply</button>
-                ${isMe ? `<button class="text-slate-400 hover:text-slate-600" data-edit-comment="${c.id}">Edit</button>` : ''}
-                ${(isMe || isAdmin) ? `<button class="text-slate-400 hover:text-red-600" data-delete-comment="${c.id}">Delete</button>` : ''}
-            </div>
+      <div class="flex items-start gap-3">
+        <button class="flex-shrink-0 w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm cursor-pointer" data-open-profile="${c.author?.id || ''}">${ava}</button>
+        <div class="flex-1 min-w-0">
+          <div class="bg-slate-50 border border-slate-100 rounded-2xl rounded-tl-none p-3 group/card">
+              <div class="flex justify-between gap-2 mb-1">
+                  <div class="flex items-center gap-2 min-w-0">
+                      <span class="text-sm font-bold text-slate-800 cursor-pointer hover:underline" data-open-profile="${c.author?.id || ''}">${escapeHtml(name)}</span>
+                      <span class="text-[10px] text-slate-400">${timeMeta(c.created_at, c.updated_at)}</span>
+                  </div>
+                  <button class="flex items-center gap-1 text-slate-400 hover:text-rose-600 transition-colors opacity-0 group-hover/card:opacity-100 ${c.liked_by_me ? 'text-rose-600' : ''}" data-like-comment="${c.id}">
+                      <i data-lucide="heart" class="w-3.5 h-3.5 ${c.liked_by_me ? 'fill-current' : ''}"></i><span class="text-[10px] font-bold">${c.likes_count || ''}</span>
+                  </button>
+              </div>
+              <div class="comment-content text-sm text-slate-700 prose prose-sm max-w-none prose-p:my-0 prose-a:text-brand-600">${linkify(c.content)}</div>
+              <form class="comment-edit-form hidden mt-2" data-edit-form-for="${c.id}">
+                  <textarea class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" rows="2">${escapeHtml(c.content)}</textarea>
+                  <div class="flex justify-end gap-2 mt-2"><button type="button" class="text-xs font-bold text-slate-500 px-3 py-1" data-cancel-edit>Cancel</button><button type="submit" class="text-xs font-bold text-white bg-brand-600 rounded px-3 py-1">Save</button></div>
+              </form>
+          </div>
+          <div class="flex items-center gap-3 mt-1 pl-2 text-[11px] font-bold">
+              <button class="text-slate-500 hover:text-brand-600" data-reply-to="${c.id}" data-reply-name="${escapeHtml(name)}">Reply</button>
+              ${isMe ? `<button class="text-slate-400 hover:text-slate-600" data-edit-comment="${c.id}">Edit</button>` : ''}
+              ${(isMe || isAdmin) ? `<button class="text-slate-400 hover:text-red-600" data-delete-comment="${c.id}">Delete</button>` : ''}
           </div>
         </div>
-        ${(byParent[c.id]?.length) ? `<div class="ml-8 mt-3 pl-3 border-l-2 border-slate-100 space-y-4">${buildTree(c.id).join('')}</div>` : ''}
-      </div>`;
+      </div>
+      ${(byParent[c.id]?.length) ? `<div class="ml-8 mt-3 pl-3 border-l-2 border-slate-100 space-y-4">${buildTree(c.id)}</div>` : ''}
+    </div>`;
     }).join('');
 
-    listEl.innerHTML = `<div class="pb-2">${buildTree('root').join('')}</div><div id="commentsBottomAnchor"></div>`;
+    // ✅ FIXED: No .join() here since buildTree already returns a string
+    listEl.innerHTML = `<div class="pb-2">${buildTree('root')}</div><div id="commentsBottomAnchor"></div>`;
     lucideRefresh();
   }
 
@@ -507,7 +509,7 @@ export function initEventLogic(deps) {
     const input = e.target.querySelector('input, textarea');
     const content = input.value.trim();
     if (!content) return;
-    
+
     const { error } = await supabase.from('comments').insert({ content, thread_id: state.selectedThreadId, created_by: authState.session.user.id, event_id: state.selectedEvent.id, parent_id: e.target.dataset.parentId || null });
     if (error) setFlash('Failed to post');
     else {
@@ -554,8 +556,8 @@ export function initEventLogic(deps) {
   async function loadRSVPFollow(id) {
     if (!authState.profile) return;
     const [{ data: f }, { data: r }] = await Promise.all([
-        supabase.from('event_follows').select('id').eq('event_id', id).eq('profile_id', authState.profile.id).maybeSingle(),
-        supabase.from('event_rsvps').select('status').eq('event_id', id).eq('profile_id', authState.profile.id).maybeSingle()
+      supabase.from('event_follows').select('id').eq('event_id', id).eq('profile_id', authState.profile.id).maybeSingle(),
+      supabase.from('event_rsvps').select('status').eq('event_id', id).eq('profile_id', authState.profile.id).maybeSingle()
     ]);
     state.isFollowing = !!f;
     state.rsvpStatus = r?.status || 'not_going';
@@ -596,7 +598,7 @@ export function initEventLogic(deps) {
     if (!ev) return;
     const desc = (state.language === "es" && ev.description_es) || ev.description_en || '';
     const isPast = new Date(ev.start_time) < new Date();
-    
+
     let access = `<div class="w-full py-3 bg-gray-100 text-gray-400 font-bold text-center rounded-lg text-sm cursor-not-allowed">Access Unavailable</div>`;
     if (!isPast && ev.zoom_url) access = `<a href="${ev.zoom_url}" target="_blank" class="block w-full text-center py-3 bg-[#0077b6] hover:bg-[#023e8a] text-white font-bold rounded-lg shadow-sm mb-1"><i data-lucide="video" class="inline w-4 h-4 mr-2"></i>Register/Join via Zoom</a>`;
     else if (ev.recording_url) access = `<a href="${ev.recording_url}" target="_blank" class="block w-full text-center py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg shadow-sm mb-1"><i data-lucide="play-circle" class="inline w-4 h-4 mr-2"></i>Watch Recording</a>`;
@@ -604,18 +606,18 @@ export function initEventLogic(deps) {
     const speakersHtml = await Promise.all((ev.event_speakers || []).map(async s => {
       const p = s.profile;
       const img = p?.avatar_url ? await getAvatarUrl(p.avatar_url) : null;
-      const ava = img ? `<img src="${img}" class="w-full h-full object-cover">` : `<span class="text-brand-600 font-bold">${(s.name||'?')[0]}</span>`;
+      const ava = img ? `<img src="${img}" class="w-full h-full object-cover">` : `<span class="text-brand-600 font-bold">${(s.name || '?')[0]}</span>`;
       const flag = p?.country ? `<img src="https://flagcdn.com/w80/${p.country.toLowerCase()}.png" class="ml-auto h-8 w-auto rounded-md shadow-sm border border-gray-100 object-cover shrink-0">` : '';
 
       return `<div ${p?.id ? `data-open-profile="${p.id}" class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer group/speaker"` : `class="flex items-center gap-3 p-2 -mx-2 opacity-80"`}>
          <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm ring-2 ring-transparent ${p?.id ? 'group-hover/speaker:ring-brand-100' : ''}">${ava}</div>
-         <div class="min-w-0 flex-1"><div class="text-sm font-bold text-slate-800 truncate ${p?.id ? 'group-hover/speaker:text-brand-700' : ''}">${escapeHtml(s.name||p?.full_name)}</div>${s.affiliation ? `<div class="text-xs text-slate-500 truncate">${escapeHtml(s.affiliation)}</div>` : ''}</div>
+         <div class="min-w-0 flex-1"><div class="text-sm font-bold text-slate-800 truncate ${p?.id ? 'group-hover/speaker:text-brand-700' : ''}">${escapeHtml(s.name || p?.full_name)}</div>${s.affiliation ? `<div class="text-xs text-slate-500 truncate">${escapeHtml(s.affiliation)}</div>` : ''}</div>
          ${flag}
       </div>`;
     }));
 
     const tags = (ev.topic_tags || []).map(t => `<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-[11px] font-bold uppercase">${escapeHtml(t)}</span>`).join('');
-    
+
     $('#tab_description').innerHTML = `
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         <div class="lg:col-span-8"><h3 class="flex items-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">About this session</h3>${formatRichText(desc)}</div>
@@ -653,23 +655,38 @@ export function initEventLogic(deps) {
     state.selectedThreadId = null;
     showView('event');
     window.history.pushState({ event: eid }, '', `?event=${eid}`);
-    
+
     renderEventHeader();
     renderDescriptionTab();
     hide($('#threadDetailView')); show($('#thread-welcome'));
-    
+
     // Cleanup old channels
-    Object.values(channels).forEach(c => c?.unsubscribe());
-    
+    Object.values(channels).forEach(c => {
+      if (c) supabase.removeChannel(c);
+    });
     // Parallel Fetching
     await Promise.all([loadAndRenderThreads(), loadAndRenderFiles()]);
-    
-    // Subscriptions
-    channels.threads = supabase.channel(`t-${eid}`).on('postgres_changes', { event: '*', schema: 'public', table: 'threads', filter: `event_id=eq.${eid}` }, loadAndRenderThreads).subscribe();
-    channels.comments = supabase.channel(`c-${eid}`).on('postgres_changes', { event: '*', schema: 'public', table: 'comments', filter: `event_id=eq.${eid}` }, () => state.selectedThreadId && loadCommentsForThread(state.selectedThreadId)).subscribe();
-    channels.files = supabase.channel(`f-${eid}`).on('postgres_changes', { event: '*', schema: 'public', table: 'attachments', filter: `event_id=eq.${eid}` }, loadAndRenderFiles).subscribe();
-    channels.likes = supabase.channel(`l-${eid}`).on('postgres_changes', { event: '*', schema: 'public', table: 'comment_likes' }, () => state.selectedThreadId && loadCommentsForThread(state.selectedThreadId)).subscribe();
 
+    // Subscriptions
+    // ✅ REPLACE WITH:
+    channels.threads = supabase.channel(`t-${eid}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'threads', filter: `event_id=eq.${eid}` }, loadAndRenderThreads);
+
+    channels.comments = supabase.channel(`c-${eid}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'comments', filter: `event_id=eq.${eid}` }, () => {
+        if (state.selectedThreadId) loadCommentsForThread(state.selectedThreadId);
+      });
+
+    channels.files = supabase.channel(`f-${eid}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attachments', filter: `event_id=eq.${eid}` }, loadAndRenderFiles);
+
+    channels.likes = supabase.channel(`l-${eid}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'comment_likes' }, () => {
+        if (state.selectedThreadId) loadCommentsForThread(state.selectedThreadId);
+      });
+
+    // Subscribe to all channels (don't store the promise)
+    Object.values(channels).forEach(ch => ch?.subscribe());
     $('.tab-link[data-tab="description"]')?.click();
   }
 
@@ -682,13 +699,13 @@ export function initEventLogic(deps) {
 
   // --- GLOBAL LISTENERS ---
   const bindListener = (sel, event, handler) => $(sel)?.addEventListener(event, handler);
-  
+
   bindListener('#newThreadForm', 'submit', handleNewThread);
   bindListener('#replyToThreadForm', 'submit', handleNewComment);
   bindListener('#fileInput', 'change', handleFileUpload);
   bindListener('#btnToggleThreadForm', 'click', () => { show($('#newThreadForm')); hide($('#btnToggleThreadForm')); $('#threadTitle').focus(); });
   bindListener('#cancelThreadBtn', 'click', () => { hide($('#newThreadForm')); show($('#btnToggleThreadForm')); $('#threadTitle').value = ''; });
-  
+
   bindListener('#filesList', 'click', async e => {
     const btn = e.target.closest('[data-delete-file]');
     if (btn) { e.preventDefault(); await deleteFile(btn.dataset.deleteFile, btn.dataset.filePath, btn); }
@@ -702,12 +719,12 @@ export function initEventLogic(deps) {
     // Profile Click
     const pBtn = e.target.closest('[data-open-profile]');
     if (pBtn) {
-        e.preventDefault(); e.stopPropagation();
-        const pid = pBtn.dataset.openProfile;
-        if (!pid) return;
-        const profile = await ensureProfileInCache(pid);
-        if (profile) openProfileModal({ ...profile }); // Pass copy
-        return;
+      e.preventDefault(); e.stopPropagation();
+      const pid = pBtn.dataset.openProfile;
+      if (!pid) return;
+      const profile = await ensureProfileInCache(pid);
+      if (profile) openProfileModal({ ...profile }); // Pass copy
+      return;
     }
 
     // Thread Dropdowns (Global Close)
@@ -718,19 +735,19 @@ export function initEventLogic(deps) {
   $('#threadsList')?.addEventListener('click', e => {
     const menu = e.target.closest('[data-thread-menu]');
     if (menu) {
-        e.stopPropagation();
-        const dd = document.querySelector(`[data-thread-dropdown="${menu.dataset.threadMenu}"]`);
-        $$('.thread-actions-dropdown').forEach(d => d !== dd && d.classList.add('hidden'));
-        return dd?.classList.toggle('hidden');
+      e.stopPropagation();
+      const dd = document.querySelector(`[data-thread-dropdown="${menu.dataset.threadMenu}"]`);
+      $$('.thread-actions-dropdown').forEach(d => d !== dd && d.classList.add('hidden'));
+      return dd?.classList.toggle('hidden');
     }
     const actionMap = { 'data-edit-thread': 'edit', 'data-toggle-pin-thread': 'pin', 'data-delete-thread': 'delete' };
     for (const [attr, action] of Object.entries(actionMap)) {
-        const btn = e.target.closest(`[${attr}]`);
-        if (btn) {
-            e.stopPropagation();
-            $$('[data-thread-dropdown]').forEach(d => d.classList.add('hidden'));
-            return threadAction(action, btn.getAttribute(attr));
-        }
+      const btn = e.target.closest(`[${attr}]`);
+      if (btn) {
+        e.stopPropagation();
+        $$('[data-thread-dropdown]').forEach(d => d.classList.add('hidden'));
+        return threadAction(action, btn.getAttribute(attr));
+      }
     }
     const row = e.target.closest('[data-thread-id]');
     if (row) selectThread(row.dataset.threadId);
@@ -740,46 +757,46 @@ export function initEventLogic(deps) {
   $('#commentsList')?.addEventListener('click', async e => {
     const btn = e.target.closest('button');
     if (!btn) return;
-    
+
     if (btn.matches('[data-reply-to]')) {
-        const form = $('#replyToThreadForm');
-        form.dataset.parentId = btn.dataset.replyTo;
-        form.querySelector('.reply-indicator')?.remove();
-        const ind = document.createElement('div');
-        ind.className = 'reply-indicator flex justify-between items-center px-3 py-1 text-xs bg-slate-100 text-slate-500 border-b border-slate-200';
-        ind.innerHTML = `<span>Replying to <b>${btn.dataset.replyName}</b></span><button type="button">&times;</button>`;
-        form.insertBefore(ind, form.firstChild);
-        ind.querySelector('button').onclick = () => { delete form.dataset.parentId; ind.remove(); };
-        form.querySelector('input').focus();
+      const form = $('#replyToThreadForm');
+      form.dataset.parentId = btn.dataset.replyTo;
+      form.querySelector('.reply-indicator')?.remove();
+      const ind = document.createElement('div');
+      ind.className = 'reply-indicator flex justify-between items-center px-3 py-1 text-xs bg-slate-100 text-slate-500 border-b border-slate-200';
+      ind.innerHTML = `<span>Replying to <b>${btn.dataset.replyName}</b></span><button type="button">&times;</button>`;
+      form.insertBefore(ind, form.firstChild);
+      ind.querySelector('button').onclick = () => { delete form.dataset.parentId; ind.remove(); };
+      form.querySelector('input').focus();
     } else if (btn.matches('[data-like-comment]')) {
-        const id = btn.dataset.likeComment;
-        if (!authState.profile) return;
-        const c = state.comments.find(x => x.id === id);
-        if (c?.liked_by_me) await supabase.from('comment_likes').delete().match({ comment_id: id, profile_id: authState.profile.id });
-        else await supabase.from('comment_likes').insert({ comment_id: id, profile_id: authState.profile.id });
+      const id = btn.dataset.likeComment;
+      if (!authState.profile) return;
+      const c = state.comments.find(x => x.id === id);
+      if (c?.liked_by_me) await supabase.from('comment_likes').delete().match({ comment_id: id, profile_id: authState.profile.id });
+      else await supabase.from('comment_likes').insert({ comment_id: id, profile_id: authState.profile.id });
     } else if (btn.matches('[data-edit-comment]')) {
-        const r = btn.closest('[data-comment-root]');
-        r.querySelector('.comment-content').classList.add('hidden');
-        r.querySelector('.comment-edit-form').classList.remove('hidden');
+      const r = btn.closest('[data-comment-root]');
+      r.querySelector('.comment-content').classList.add('hidden');
+      r.querySelector('.comment-edit-form').classList.remove('hidden');
     } else if (btn.matches('[data-cancel-edit]')) {
-        const r = btn.closest('[data-comment-root]');
-        r.querySelector('.comment-content').classList.remove('hidden');
-        r.querySelector('.comment-edit-form').classList.add('hidden');
+      const r = btn.closest('[data-comment-root]');
+      r.querySelector('.comment-content').classList.remove('hidden');
+      r.querySelector('.comment-edit-form').classList.add('hidden');
     } else if (btn.matches('[data-delete-comment]')) {
-        if (confirm('Delete comment?')) await supabase.from('comments').delete().eq('id', btn.dataset.deleteComment);
-        loadCommentsForThread(state.selectedThreadId);
+      if (confirm('Delete comment?')) await supabase.from('comments').delete().eq('id', btn.dataset.deleteComment);
+      loadCommentsForThread(state.selectedThreadId);
     }
   });
 
   // Edit Comment Submit
   $('#commentsList')?.addEventListener('submit', async e => {
     if (e.target.matches('.comment-edit-form')) {
-        e.preventDefault();
-        const txt = e.target.querySelector('textarea').value.trim();
-        if (txt) {
-            await supabase.from('comments').update({ content: txt, updated_at: new Date().toISOString() }).eq('id', e.target.dataset.editFormFor);
-            loadCommentsForThread(state.selectedThreadId);
-        }
+      e.preventDefault();
+      const txt = e.target.querySelector('textarea').value.trim();
+      if (txt) {
+        await supabase.from('comments').update({ content: txt, updated_at: new Date().toISOString() }).eq('id', e.target.dataset.editFormFor);
+        loadCommentsForThread(state.selectedThreadId);
+      }
     }
   });
 
