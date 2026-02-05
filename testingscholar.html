@@ -14,7 +14,7 @@
     <style>
         :root { --border: #e2e8f0; }
         body { font-family: 'Inter', sans-serif; overflow: hidden; }
-        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
@@ -25,118 +25,121 @@
         .pub-card:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); z-index: 10; border-radius: 6px; }
         .network-member { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
         .external-author { background-color: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
-        .d3-tooltip { pointer-events: none; position: absolute; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; z-index: 50; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); min-width: 220px; font-size: 12px; }
+        .d3-tooltip { pointer-events: none; position: absolute; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; z-index: 50; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.1); min-width: 200px; font-size: 11px; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 60; opacity: 0; pointer-events: none; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         .profile-modal { transform: scale(0.95); transition: 0.2s; }
         .modal-overlay.active .profile-modal { transform: scale(1); }
-        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #16a34a; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #16a34a; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         #graphContainer {
-            background:
-                radial-gradient(circle at 1px 1px, rgba(148,163,184,0.25) 1px, transparent 1px);
-            background-size: 26px 26px;
+            background: radial-gradient(circle at 1px 1px, rgba(148,163,184,0.15) 1px, transparent 1px);
+            background-size: 24px 24px;
             background-position: -8px -8px;
         }
         #graphContainer:active { cursor: grabbing; }
-        .page-btn.active { background-color: #16a34a; color: white; border-color: #16a34a; }
         .node-label {
             paint-order: stroke;
-            stroke: rgba(255,255,255,0.92);
-            stroke-width: 4px;
+            stroke: rgba(255,255,255,0.8);
+            stroke-width: 3px;
             stroke-linejoin: round;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.01em;
         }
-        .range-thin::-webkit-slider-thumb { width: 14px; height: 14px; }
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #16a34a; cursor: pointer; margin-top: -5px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: #e2e8f0; border-radius: 1px; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { opacity: 1; }
     </style>
 </head>
 <body class="bg-white text-slate-700 h-screen w-screen flex overflow-hidden">
 
     <!-- Sidebar -->
-    <aside class="w-[340px] flex flex-col border-r border-slate-200 bg-slate-50/50 shrink-0 h-full z-30">
-        <div class="p-5 border-b border-slate-200 bg-white">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-9 h-9 rounded-lg bg-green-600 text-white flex items-center justify-center shadow-md shadow-green-200"><i class="fas fa-leaf text-sm"></i></div>
-                <div><h1 class="font-bold text-slate-800 text-base leading-tight">AgriPV Network</h1><p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Research Explorer</p></div>
+    <aside class="w-[320px] flex flex-col border-r border-slate-200 bg-slate-50/80 shrink-0 h-full z-30 backdrop-blur-sm">
+        <div class="p-4 border-b border-slate-200 bg-white">
+            <div class="flex items-center gap-2.5 mb-3">
+                <div class="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center shadow-md shadow-green-200/50"><i class="fas fa-leaf text-sm"></i></div>
+                <div><h1 class="font-bold text-slate-800 text-sm leading-tight">AgriPV Network</h1><p class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Research Explorer</p></div>
             </div>
             <div class="relative group">
-                <input type="text" id="globalSearch" placeholder="Search title, author, topic..." class="w-full bg-slate-100 border-none rounded-lg py-2.5 pl-10 pr-3 text-xs font-medium focus:ring-2 focus:ring-green-500/20 focus:bg-white transition-all placeholder:text-slate-400">
-                <i class="fas fa-search text-slate-400 absolute left-3.5 top-3 text-xs group-focus-within:text-green-600"></i>
+                <input type="text" id="globalSearch" placeholder="Search title, author, topic..." class="w-full bg-slate-100 border-none rounded-md py-2 pl-9 pr-3 text-xs font-medium focus:ring-1 focus:ring-green-500 focus:bg-white transition-all placeholder:text-slate-400">
+                <i class="fas fa-search text-slate-400 absolute left-3 top-2.5 text-xs group-focus-within:text-green-600"></i>
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto custom-scroll p-5 space-y-6">
+        <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-5">
             <div>
-                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Network Stats</h3>
+                <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Network Stats</h3>
                 <div class="grid grid-cols-2 gap-2" id="statsGrid"></div>
             </div>
 
             <div>
-                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Relevance Threshold</h3>
-                <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
-                    <div class="flex justify-between mb-1">
-                        <label class="text-[9px] font-bold text-slate-400 uppercase">Min Score</label>
-                        <span class="text-[9px] text-slate-400" id="valMinRel">3.0</span>
+                <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Relevance Threshold</h3>
+                <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                    <div class="flex justify-between mb-1.5">
+                        <label class="text-[9px] font-semibold text-slate-500">Min Score</label>
+                        <span class="text-[9px] font-mono text-green-600 font-bold" id="valMinRel">3.0</span>
                     </div>
-                    <input type="range" id="minRelevance" min="0" max="30" step="0.5" value="3" class="range-thin w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600 block">
-                    <div class="text-[10px] text-slate-400 mt-2 leading-snug">
-                        Lower = broader (captures spelling variants + abstract-only mentions). Higher = strict AgriPV.
+                    <input type="range" id="minRelevance" min="0" max="30" step="0.5" value="3" class="w-full block">
+                    <div class="text-[9px] text-slate-400 mt-1.5 leading-snug">
+                        Strictness filter. Lower includes broad matches; Higher restricts to core AgriPV.
                     </div>
                 </div>
             </div>
 
             <div>
-                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Publication Year</h3>
+                <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Publication Year</h3>
                 <div class="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
-                    <input type="number" id="yearFrom" placeholder="2015" class="w-full border-none bg-transparent text-center text-xs font-medium focus:ring-0 p-1">
-                    <span class="text-slate-300 text-xs">to</span>
-                    <input type="number" id="yearTo" placeholder="2025" class="w-full border-none bg-transparent text-center text-xs font-medium focus:ring-0 p-1">
+                    <input type="number" id="yearFrom" min="2000" max="2026" placeholder="2015" class="w-full border-none bg-transparent text-center text-xs font-medium focus:ring-0 p-1 text-slate-600">
+                    <span class="text-slate-300 text-[10px] uppercase font-bold">to</span>
+                    <input type="number" id="yearTo" min="2000" max="2026" placeholder="2025" class="w-full border-none bg-transparent text-center text-xs font-medium focus:ring-0 p-1 text-slate-600">
                 </div>
             </div>
 
-            <div class="flex flex-col h-48">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Institutions</h3>
-                    <button class="text-[10px] text-green-600 font-semibold hover:underline" onclick="app.clear('insts')">Reset</button>
+            <div class="flex flex-col h-40">
+                <div class="flex justify-between items-center mb-1.5">
+                    <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Institutions</h3>
+                    <button class="text-[9px] text-green-600 font-semibold hover:underline" onclick="app.clear('insts')">Reset</button>
                 </div>
                 <div id="institutionFilters" class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-0.5"></div>
             </div>
 
-            <div class="flex flex-col h-48">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Topics</h3>
-                    <button class="text-[10px] text-green-600 font-semibold hover:underline" onclick="app.clear('topics')">Reset</button>
+            <div class="flex flex-col h-40">
+                <div class="flex justify-between items-center mb-1.5">
+                    <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Topics</h3>
+                    <button class="text-[9px] text-green-600 font-semibold hover:underline" onclick="app.clear('topics')">Reset</button>
                 </div>
-                <div id="topicFilters" class="flex flex-wrap gap-1.5 pb-2"></div>
+                <div id="topicFilters" class="flex flex-wrap gap-1 pb-2"></div>
             </div>
         </div>
 
-        <div id="activeFiltersPanel" class="p-3 bg-white border-t border-slate-200 hidden shrink-0">
+        <div id="activeFiltersPanel" class="px-4 py-3 bg-white border-t border-slate-200 hidden shrink-0">
             <div class="flex justify-between items-center mb-2">
                 <span class="text-[10px] font-semibold text-slate-500"><span id="activeFilterCount">0</span> filters active</span>
-                <button class="text-[10px] text-red-500 font-semibold hover:text-red-700" onclick="app.reset()">Clear All</button>
+                <button class="text-[9px] text-red-500 font-semibold hover:text-red-700" onclick="app.reset()">Clear All</button>
             </div>
-            <div id="activeFilterTags" class="flex flex-wrap gap-1 max-h-16 overflow-y-auto custom-scroll"></div>
+            <div id="activeFilterTags" class="flex flex-wrap gap-1 max-h-14 overflow-y-auto custom-scroll"></div>
         </div>
     </aside>
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full overflow-hidden bg-white relative">
-        <header class="h-14 border-b border-slate-200 flex items-center justify-between px-4 bg-white shrink-0 z-20">
-            <div class="flex gap-1 p-1 bg-slate-100 rounded-lg">
-                <button data-view="both" class="view-btn px-3 py-1.5 text-xs font-semibold rounded-md bg-white shadow-sm text-slate-800"><i class="fas fa-columns mr-1.5"></i>Split</button>
-                <button data-view="publications" class="view-btn px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-700"><i class="fas fa-list mr-1.5"></i>List</button>
-                <button data-view="network" class="view-btn px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-700"><i class="fas fa-project-diagram mr-1.5"></i>Graph</button>
+        <header class="h-12 border-b border-slate-200 flex items-center justify-between px-4 bg-white shrink-0 z-20">
+            <div class="flex gap-0.5 p-0.5 bg-slate-100 rounded-md border border-slate-200">
+                <button data-view="both" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded bg-white shadow-sm text-slate-800"><i class="fas fa-columns mr-1.5"></i>Split</button>
+                <button data-view="publications" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i class="fas fa-list mr-1.5"></i>List</button>
+                <button data-view="network" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i class="fas fa-project-diagram mr-1.5"></i>Graph</button>
             </div>
             <div class="flex items-center gap-4">
-                <div class="text-xs text-slate-500 font-medium">Showing <span id="filteredCount" class="text-slate-900 font-bold">0</span> results</div>
-                <div class="h-4 w-px bg-slate-300"></div>
-                <select id="sortSelect" class="text-xs font-medium bg-transparent border-none outline-none text-slate-600 cursor-pointer hover:text-slate-900 focus:ring-0">
+                <div class="text-[11px] text-slate-500 font-medium">Found <span id="filteredCount" class="text-slate-900 font-bold">0</span> results</div>
+                <div class="h-3 w-px bg-slate-300"></div>
+                <select id="sortSelect" class="text-[11px] font-medium bg-transparent border-none outline-none text-slate-600 cursor-pointer hover:text-slate-900 focus:ring-0 py-0 pl-0 pr-6">
                     <option value="recent">Newest First</option>
                     <option value="relevance">Relevance Score</option>
                     <option value="cited">Most Cited</option>
                     <option value="title">A-Z Title</option>
                 </select>
-                <button class="px-3 py-1.5 bg-slate-900 text-white text-xs font-medium rounded-md hover:bg-slate-800 shadow-sm" onclick="app.export()"><i class="fas fa-download mr-1"></i> Export</button>
+                <button class="px-2.5 py-1 bg-slate-900 text-white text-[11px] font-semibold rounded hover:bg-slate-800 shadow-sm transition-colors" onclick="app.export()"><i class="fas fa-download mr-1.5"></i>Export</button>
             </div>
         </header>
 
@@ -144,9 +147,9 @@
             <!-- List Panel -->
             <div id="publicationsPanel" class="flex flex-col min-w-0 w-1/2 bg-white h-full border-r border-slate-100">
                 <div id="publicationsList" class="flex-1 overflow-y-auto p-2 custom-scroll bg-white"></div>
-                <div class="p-3 border-t border-slate-200 bg-white shrink-0 flex flex-col gap-2">
-                    <div class="flex justify-between items-center text-[10px] text-slate-400">
-                        <span>Showing <span id="showingFrom">0</span>-<span id="showingTo">0</span> of <span id="totalPublications">0</span></span>
+                <div class="p-2 border-t border-slate-200 bg-white shrink-0 flex flex-col gap-2">
+                    <div class="flex justify-between items-center text-[10px] text-slate-400 px-1">
+                        <span><span id="showingFrom">0</span>-<span id="showingTo">0</span> of <span id="totalPublications">0</span></span>
                     </div>
                     <div id="paginationContainer" class="flex justify-center gap-1"></div>
                 </div>
@@ -156,35 +159,38 @@
 
             <!-- Network Panel -->
             <div id="networkPanel" class="flex flex-col min-w-0 w-1/2 bg-slate-50 relative h-full">
-                <div class="absolute top-4 left-4 z-10 flex gap-2">
-                    <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-1 flex gap-1">
-                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.zoom(1.3)" title="Zoom In"><i class="fas fa-plus text-xs"></i></button>
-                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.zoom(0.7)" title="Zoom Out"><i class="fas fa-minus text-xs"></i></button>
-                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.fitGraph()" title="Fit to Screen"><i class="fas fa-compress-arrows-alt text-xs"></i></button>
+                <!-- Graph Controls -->
+                <div class="absolute top-3 left-3 z-10 flex flex-col gap-2">
+                    <div class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
+                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.zoom(1.3)" title="Zoom In"><i class="fas fa-plus text-[10px]"></i></button>
+                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.zoom(0.7)" title="Zoom Out"><i class="fas fa-minus text-[10px]"></i></button>
+                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.fitGraph()" title="Fit to Screen"><i class="fas fa-compress-arrows-alt text-[10px]"></i></button>
                     </div>
-                    <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-1 flex gap-1">
-                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.toggleCluster()" title="Toggle institution grouping"><i class="fas fa-layer-group text-xs"></i></button>
-                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.toggleLabels()" title="Toggle labels"><i class="fas fa-tag text-xs"></i></button>
-                    </div>
-                </div>
-
-                <div class="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
-                     <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-3 w-40 space-y-3">
-                        <div>
-                            <div class="flex justify-between mb-1"><label class="text-[9px] font-bold text-slate-400 uppercase">Link Dist</label><span class="text-[9px] text-slate-400" id="valLink">120</span></div>
-                            <input type="range" id="linkDistance" min="50" max="320" value="120" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600 block">
-                        </div>
-                        <div>
-                            <div class="flex justify-between mb-1"><label class="text-[9px] font-bold text-slate-400 uppercase">Gravity</label><span class="text-[9px] text-slate-400" id="valCharge">320</span></div>
-                            <input type="range" id="chargeStrength" min="100" max="900" value="320" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600 block">
-                        </div>
+                    <div class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
+                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.toggleCluster()" title="Toggle Grouping"><i class="fas fa-layer-group text-[10px]"></i></button>
+                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.toggleLabels()" title="Toggle Labels"><i class="fas fa-tag text-[10px]"></i></button>
                     </div>
                 </div>
 
-                <div class="absolute bottom-4 left-4 z-10">
-                    <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-3 max-h-40 overflow-y-auto custom-scroll w-48">
-                        <div class="text-[9px] font-bold text-slate-400 uppercase mb-2">Legend</div>
-                        <div id="legendContainer" class="space-y-1"></div>
+                <!-- Sim Params (Right) -->
+                <div class="absolute top-3 right-3 z-10">
+                     <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 w-32 space-y-2">
+                        <div>
+                            <div class="flex justify-between mb-0.5"><label class="text-[8px] font-bold text-slate-400 uppercase">Link Dist</label></div>
+                            <input type="range" id="linkDistance" min="50" max="320" value="120" class="w-full block">
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-0.5"><label class="text-[8px] font-bold text-slate-400 uppercase">Gravity</label></div>
+                            <input type="range" id="chargeStrength" min="100" max="900" value="320" class="w-full block">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="absolute bottom-3 left-3 z-10 pointer-events-none">
+                    <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 max-h-32 overflow-y-auto custom-scroll w-40 pointer-events-auto">
+                        <div class="text-[8px] font-bold text-slate-400 uppercase mb-1">Affiliations</div>
+                        <div id="legendContainer" class="space-y-0.5"></div>
                     </div>
                 </div>
 
@@ -198,17 +204,18 @@
 
     <!-- Overlay & Modals -->
     <div id="loadingOverlay" class="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
-        <div class="spinner mb-4"></div><h3 class="text-xl font-bold text-slate-800">Building Research Network</h3>
-        <p id="loadingStatus" class="text-sm text-slate-500 mt-2">Connecting...</p>
-        <div class="w-64 bg-slate-100 rounded-full h-1.5 mt-6 overflow-hidden"><div id="loadingProgress" class="h-full bg-green-500 w-0 transition-all duration-300"></div></div>
+        <div class="spinner mb-4 border-slate-200 border-t-green-600"></div>
+        <h3 class="text-base font-bold text-slate-800 tracking-tight">Initializing Explorer</h3>
+        <p id="loadingStatus" class="text-xs text-slate-400 mt-1 font-medium">Connecting to network...</p>
+        <div class="w-48 bg-slate-100 rounded-full h-1 mt-6 overflow-hidden"><div id="loadingProgress" class="h-full bg-green-500 w-0 transition-all duration-300"></div></div>
     </div>
 
     <div id="citationModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-        <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 p-6">
-            <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-100"><h3 class="font-bold text-slate-800">Cite Publication</h3><button onclick="document.getElementById('citationModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button></div>
-            <div class="space-y-4">
-                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">APA</label><div class="bg-slate-50 p-3 rounded-lg border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed"><span id="citeAPA"></span><button class="absolute top-2 right-2 px-2 py-1 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-xs" onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button></div></div>
-                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">BibTeX</label><div class="bg-slate-50 p-3 rounded-lg border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all"><span id="citeBib"></span><button class="absolute top-2 right-2 px-2 py-1 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-xs" onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button></div></div>
+        <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 p-5">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100"><h3 class="font-bold text-sm text-slate-800">Cite Publication</h3><button onclick="document.getElementById('citationModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button></div>
+            <div class="space-y-3">
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">APA</label><div class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed"><span id="citeAPA"></span><button class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]" onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button></div></div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">BibTeX</label><div class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all"><span id="citeBib"></span><button class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]" onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button></div></div>
             </div>
         </div>
     </div>
@@ -239,7 +246,7 @@
         const RX = {
             AGRIPV_STRONG: /\b(agri[\s-]?(pv|photovoltaic(s)?|voltaic(s)?)|agro[\s-]?voltaic(s)?|agro[\s-]?photovoltaic(s)?|agrophotovoltaic(s)?|agri[\s-]?photovoltaik|agrivoltaic(s)?|agrivoltaik|agrivoltaico|agrivoltaica|agrivoltaque|solar[\s-]sharing|solar\s*sharing|solar\s*farming|solar\s*agriculture|farming\s*with\s*(solar|pv)|dual[\s-]?use\s*(solar|pv)|co[\s-]?locat(ed|ion)\s*(solar|pv)|colocat(ed|ion)\s*(solar|pv)|co[\s-]?develop(ed|ment)\s*(solar|pv)|photovoltaic\s*greenhouse|greenhouse\s*photovoltaic|solar\s*greenhouse|pv\s*(over|above)\s*crops?|solar\s*(over|above)\s*crops?|integrat(ed|ing)\s*(solar|pv)\s*(and|with)\s*agricultur|energy\s*and\s*food\s*production)\b/i,
             AGRIPV_FUZZY: /\bagri.{0,5}(volt|pv|photo)\b/i,
-            AGRIPV_ACRONYM: /\bapv\b/i, // only counts w/ context
+            AGRIPV_ACRONYM: /\bapv\b/i,
             SOLAR: /\b(pv|photovoltaic(s)?|photovoltaik|solar(\s*(energy|power|electricity|panel(s)?|cell(s)?|module(s)?|array(s)?|system(s)?|farm(s)?|plant(s)?))?)\b/i,
             AGRI: /\b(agricultur(e|al)?|agronom(y|ic)|crop(s)?|farming|farm(s|er)?|pasture|graz(e|ing)|livestock|horticultur(e|al)?|greenhouse(s)?|orchard(s)?|viticultur(e|al)?|food\s*production|field\s*trial(s)?)\b/i,
             LAND: /\b(land\s*use|microclimat(e|ic)|soil(s)?|irrigat(e|ion|ing)|water\s*(use|saving)|evapotranspirat(ion|e)|biodiversit(y|ies)|ecosystem(s)?|habitat(s)?|shade|albedo|pollinat(or|ion)|runoff|erosion)\b/i,
@@ -308,14 +315,11 @@
 
             if (econ && (solar || strong || fuzzy)) { s += 2; why.push('econ'); }
 
-            // Concepts can be noisy; give small credit for relevant signals
             if ((w.concepts||[]).some(c => /agrivoltaic|agrovoltaic|agrophotovoltaic|photovoltaic|solar energy|renewable energy|agriculture|land use/i.test(c.display_name))) s += 2;
 
-            // Small quality nudges (kept tiny to avoid bias)
             s += Math.min(2.5, Math.log10((w.cited_by_count||0)+1));
             if (w.publication_year >= NOWY-2) s += 0.6;
 
-            // Penalties
             if (neg && !(strong||fuzzy)) s -= 12;
             if ((w.type||"").match(/dataset|reference|erratum/i)) s -= 3;
 
@@ -441,7 +445,6 @@
                     prog(38 + (i/Math.max(1,ids.length))*42, "Fetching publications...");
                 }
 
-                // Abstract enrichment (targets borderline / abstract-only matches)
                 const all = [...works.values()];
                 const border = all
                     .filter(w => w._relevance < (RELCFG.defaultMin + 1.5) && w._relevance >= RELCFG.keepMin && !(w._why||[]).includes('agripv-title') && !(w._why||[]).includes('agripv-meta'))
@@ -521,9 +524,9 @@
 
                 const nodes = app.data.researchers.map(r => {
                     const d = deg.get(r.id)||0;
-                    const base = 11 + Math.sqrt(r.net_works||0)*3.2;
-                    const bump = Math.sqrt(d)*1.8;
-                    return {...r, deg: d, radius: clamp(base + bump, 12, 34)};
+                    const base = 10 + Math.sqrt(r.net_works||0)*3;
+                    const bump = Math.sqrt(d)*1.5;
+                    return {...r, deg: d, radius: clamp(base + bump, 10, 30)};
                 });
 
                 app.data.graph = { nodes, links: [...links.values()] };
@@ -567,17 +570,19 @@
 
                 app.state.lastFiltered = filtered;
 
+                const activeMembers = new Set(filtered.flatMap(p => p._memberAuthors.map(a => a.id)));
+                
                 const stats = {
                     pubs: filtered.length,
                     cites: filtered.reduce((s,p)=>s+p.cited_by_count,0),
-                    mems: new Set(filtered.flatMap(p=>p._memberAuthors.map(a=>a.id))).size
+                    mems: activeMembers.size
                 };
 
                 document.getElementById('statsGrid').innerHTML = `
-                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-lg font-bold text-slate-700 leading-none">${stats.mems}</span><span class="text-[9px] text-slate-400 font-semibold mt-1">MEMBERS</span></div>
-                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-lg font-bold text-slate-700 leading-none">${stats.pubs}</span><span class="text-[9px] text-slate-400 font-semibold mt-1">WORKS</span></div>
-                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-lg font-bold text-slate-700 leading-none">${stats.cites.toLocaleString()}</span><span class="text-[9px] text-slate-400 font-semibold mt-1">CITES</span></div>
-                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-lg font-bold text-slate-700 leading-none">${app.data.topics.size}</span><span class="text-[9px] text-slate-400 font-semibold mt-1">TOPICS</span></div>`;
+                    <div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-base font-bold text-slate-700 leading-none">${stats.mems}</span><span class="text-[8px] text-slate-400 font-bold mt-0.5">MEMBERS</span></div>
+                    <div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-base font-bold text-slate-700 leading-none">${stats.pubs}</span><span class="text-[8px] text-slate-400 font-bold mt-0.5">WORKS</span></div>
+                    <div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-base font-bold text-slate-700 leading-none">${stats.cites >= 1000 ? (stats.cites/1000).toFixed(1)+'k' : stats.cites}</span><span class="text-[8px] text-slate-400 font-bold mt-0.5">CITES</span></div>
+                    <div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-base font-bold text-slate-700 leading-none">${new Set(filtered.flatMap(p=>p._topics)).size}</span><span class="text-[8px] text-slate-400 font-bold mt-0.5">TOPICS</span></div>`;
                 document.getElementById('filteredCount').textContent = stats.pubs;
 
                 const sortFn = {
@@ -593,69 +598,83 @@
 
                 const whyBadge = p => {
                     const w = new Set(p._why||[]);
-                    if (w.has('agripv-title')) return `<span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-green-100 text-green-800 border border-green-200">AgriPV</span>`;
-                    if (w.has('agripv-meta') || w.has('agripv-fuzzy')) return `<span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">Likely</span>`;
-                    if (w.has('abs')) return `<span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-100 text-amber-800 border border-amber-200">Abstract</span>`;
+                    if (w.has('agripv-title')) return `<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-green-100 text-green-800 border border-green-200">AgriPV</span>`;
+                    if (w.has('agripv-meta') || w.has('agripv-fuzzy')) return `<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">Likely</span>`;
                     return '';
                 };
 
                 list.innerHTML = filtered.slice((page-1)*size, page*size).map(p => `
-                    <div class="pub-card p-4 bg-white mb-2" onclick="app.detail('${p.id}')">
-                        <div class="flex items-start justify-between gap-3 mb-2">
-                            <h4 class="font-bold text-slate-800 text-sm leading-snug flex-1">${esc(p.title)}</h4>
-                            <div class="shrink-0 flex items-center gap-1.5">
-                                ${p.is_oa?'<span class="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded uppercase tracking-wide">OA</span>':''}
+                    <div class="pub-card p-3 bg-white mb-2 cursor-pointer" onclick="app.detail('${p.id}')">
+                        <div class="flex items-start justify-between gap-2 mb-1.5">
+                            <h4 class="font-bold text-slate-800 text-xs leading-snug flex-1">${esc(p.title)}</h4>
+                            <div class="shrink-0 flex items-center gap-1">
+                                ${p.is_oa?'<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[8px] font-bold rounded border border-amber-100 uppercase">OA</span>':''}
                                 ${whyBadge(p)}
                             </div>
                         </div>
-                        <div class="flex flex-wrap gap-1 mb-2.5">
-                            ${p._allAuthors.slice(0,5).map(a => `<span class="px-2 py-0.5 rounded text-[10px] truncate max-w-[120px] ${a.isMember?'network-member font-medium':'external-author'}">${esc(a.name)}</span>`).join('')}
-                            ${p._allAuthors.length>5?`<span class="text-[10px] text-slate-400 self-center">+${p._allAuthors.length-5}</span>`:''}
+                        <div class="flex flex-wrap gap-1 mb-2">
+                            ${p._allAuthors.slice(0,5).map(a => `<span class="px-1.5 py-0.5 rounded text-[9px] truncate max-w-[100px] ${a.isMember?'network-member font-medium':'external-author'}">${esc(a.name)}</span>`).join('')}
+                            ${p._allAuthors.length>5?`<span class="text-[9px] text-slate-400 self-center">+${p._allAuthors.length-5}</span>`:''}
                         </div>
-                        <div class="flex items-center gap-4 text-[10px] text-slate-500 font-medium">
+                        <div class="flex items-center gap-3 text-[9px] text-slate-500 font-medium">
                             <span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${p.publication_year||''}</span>
                             <span class="flex items-center gap-1"><i class="fas fa-quote-right text-slate-400"></i> ${p.cited_by_count}</span>
-                            <span class="ml-auto text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-100">Score: ${p._relevance.toFixed(1)}</span>
-                            <div class="flex gap-1 ml-2">
+                            <span class="ml-auto text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 font-semibold">Score: ${p._relevance.toFixed(1)}</span>
+                            <div class="flex gap-1 ml-1">
                                 <button class="hover:text-brand p-1" onclick="event.stopPropagation();app.cite('${p.id}')" title="Cite"><i class="fas fa-quote-left"></i></button>
                                 ${p.url?`<a href="${p.url}" target="_blank" onclick="event.stopPropagation()" class="hover:text-blue-600 p-1" title="Open"><i class="fas fa-external-link-alt"></i></a>`:''}
                             </div>
                         </div>
-                    </div>`).join('') || '<div class="text-center py-20 text-slate-400 text-sm">No results found.</div>';
+                    </div>`).join('') || '<div class="text-center py-20 text-slate-400 text-xs">No results found matching your criteria.</div>';
                 list.scrollTop = 0;
 
                 document.getElementById('showingFrom').textContent = filtered.length ? (page-1)*size + 1 : 0;
                 document.getElementById('showingTo').textContent = Math.min(page*size, filtered.length);
                 document.getElementById('totalPublications').textContent = filtered.length;
 
-                let btns = [], addB = (p,l=p,a=false) => btns.push(`<button onclick="app.setPage(${p})" class="w-7 h-7 flex items-center justify-center rounded text-[10px] font-medium transition-colors ${a?'bg-slate-800 text-white':'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`);
+                let btns = [], addB = (p,l=p,a=false) => btns.push(`<button onclick="app.setPage(${p})" class="w-6 h-6 flex items-center justify-center rounded text-[9px] font-medium transition-colors ${a?'bg-slate-800 text-white':'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`);
                 if(pages>1) {
                     addB(Math.max(1,page-1),'<i class="fas fa-chevron-left"></i>');
-                    let r = pages<=7 ? Array.from({length:pages},(_,i)=>i+1) : (page<=4 ? [1,2,3,4,5,'...',pages] : (page>=pages-3 ? [1,'...',pages-4,pages-3,pages-2,pages-1,pages] : [1,'...',page-1,page,page+1,'...',pages]));
-                    r.forEach(x => x==='...' ? btns.push('<span class="text-xs text-slate-400 self-end px-1">...</span>') : addB(x,x,x===page));
+                    let r = pages<=5 ? Array.from({length:pages},(_,i)=>i+1) : (page<=3 ? [1,2,3,'...',pages] : (page>=pages-2 ? [1,'...',pages-2,pages-1,pages] : [1,'...',page,page+1,'...',pages]));
+                    r.forEach(x => x==='...' ? btns.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : addB(x,x,x===page));
                     addB(Math.min(pages,page+1),'<i class="fas fa-chevron-right"></i>');
                 }
                 document.getElementById('paginationContainer').innerHTML = btns.join('');
 
                 app.renderGraph(filtered);
-                app.renderFilters();
+                app.renderFilters(filtered, activeMembers);
             },
 
-            renderFilters: () => {
+            renderFilters: (filteredPubs, activeMemberIds) => {
+                // Reactive filtering: Recalculate options based on the CURRENT filtered set
                 const { insts, topics } = app.state.filters;
+                
+                // Count institutions only for active members
                 const iCounts = new Map();
-                app.data.researchers.forEach(r => iCounts.set(r.inst, (iCounts.get(r.inst)||0)+1));
+                app.data.researchers.forEach(r => {
+                    if (activeMemberIds.has(r.id)) {
+                        iCounts.set(r.inst, (iCounts.get(r.inst)||0)+1);
+                    }
+                });
+
+                // Count topics only for filtered publications
+                const tCounts = new Map();
+                filteredPubs.forEach(p => {
+                    p._topics.forEach(t => tCounts.set(t, (tCounts.get(t)||0)+1));
+                });
 
                 document.getElementById('institutionFilters').innerHTML = [...iCounts].sort((a,b)=>b[1]-a[1]).map(([i,c]) => `
-                    <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1.5 rounded group transition-colors">
-                        <input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 focus:ring-green-500 w-3.5 h-3.5" ${insts.has(i)?'checked':''}>
-                        <div class="w-2 h-2 rounded-full shrink-0" style="background:${app.col(i)}"></div>
-                        <span class="text-[11px] text-slate-600 truncate flex-1 group-hover:text-slate-900">${esc(i)}</span>
-                        <span class="text-[9px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 p-1 rounded group transition-colors">
+                        <input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 focus:ring-green-500 w-3 h-3" ${insts.has(i)?'checked':''}>
+                        <div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${app.col(i)}"></div>
+                        <span class="text-[10px] text-slate-600 truncate flex-1 group-hover:text-slate-900">${esc(i)}</span>
+                        <span class="text-[8px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span>
                     </label>`).join('');
 
-                document.getElementById('topicFilters').innerHTML = [...app.data.topics].sort((a,b)=>b[1]-a[1]).slice(0,40).map(([t]) =>
-                    `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-2 py-1 rounded text-[10px] transition-all border ${topics.has(t)?'bg-green-100 text-green-800 border-green-200 font-semibold':'bg-slate-50 text-slate-500 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-sm'}">${esc(t)}</button>`
+                document.getElementById('topicFilters').innerHTML = [...tCounts].sort((a,b)=>b[1]-a[1]).slice(0,35).map(([t,c]) =>
+                    `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] transition-all border flex items-center gap-1 ${topics.has(t)?'bg-green-100 text-green-800 border-green-200 font-semibold':'bg-slate-50 text-slate-500 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-sm'}">
+                        ${esc(t)} <span class="opacity-50 text-[8px]">${c}</span>
+                    </button>`
                 ).join('');
 
                 const act = topics.size + insts.size;
@@ -669,8 +688,8 @@
                 document.getElementById('activeFilterTags').innerHTML = tags;
 
                 document.getElementById('legendContainer').innerHTML = [...app.instColors]
-                    .filter(([i]) => app.data.researchers.some(r=>r.inst===i))
-                    .map(([i,c]) => `<div class="flex items-center gap-2 py-0.5"><span class="w-2 h-2 rounded-full shadow-sm" style="background:${c}"></span><span class="text-[10px] text-slate-600 truncate">${esc(i)}</span></div>`)
+                    .filter(([i]) => activeMemberIds.has(app.data.researchers.find(r=>r.inst===i)?.id))
+                    .map(([i,c]) => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full shadow-sm" style="background:${c}"></span><span class="text-[9px] text-slate-600 truncate">${esc(i)}</span></div>`)
                     .join('');
             },
 
@@ -678,7 +697,7 @@
                 const cls = c==='green'
                     ? 'bg-green-50 text-green-700 border-green-200'
                     : 'bg-blue-50 text-blue-700 border-blue-200';
-                return `<span class="${cls} px-2 py-0.5 rounded border text-[10px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-1"><i class="fas fa-times"></i></button></span>`;
+                return `<span class="${cls} px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>`;
             },
 
             setupGraph: () => {
@@ -687,21 +706,22 @@
                 const defs = svg.append('defs');
 
                 COLORS.forEach(c => {
-                    const gr = defs.append('radialGradient').attr('id', 'g-'+c.slice(1)).attr('cx','35%').attr('cy','35%');
-                    gr.append('stop').attr('offset','0%').attr('stop-color', d3.color(c).brighter(0.9));
+                    // Refined gradients for 2025 look
+                    const gr = defs.append('radialGradient').attr('id', 'g-'+c.slice(1)).attr('cx','30%').attr('cy','30%');
+                    gr.append('stop').attr('offset','0%').attr('stop-color', d3.color(c).brighter(1.2));
                     gr.append('stop').attr('offset','100%').attr('stop-color', c);
                 });
 
-                const zoom = d3.zoom().scaleExtent([0.12, 6]).on('zoom', e => {
+                const zoom = d3.zoom().scaleExtent([0.1, 8]).on('zoom', e => {
                     g.attr('transform', e.transform);
                     app.d3.k = e.transform.k;
-                    if(app.d3.lblSel) app.d3.lblSel.style('display', app.state.graph.labels && app.d3.k >= 0.9 ? null : 'none');
+                    if(app.d3.lblSel) app.d3.lblSel.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none');
                 });
 
                 const sim = d3.forceSimulation()
-                    .force('link', d3.forceLink().id(d=>d.id).distance(120).strength(0.2))
+                    .force('link', d3.forceLink().id(d=>d.id).distance(120).strength(0.3))
                     .force('charge', d3.forceManyBody().strength(-320))
-                    .force('collide', d3.forceCollide().radius(d=>d.radius+6).iterations(2));
+                    .force('collide', d3.forceCollide().radius(d=>d.radius+4).iterations(3));
 
                 app.d3 = { svg, g, defs, zoom, sim, k: 1, lastNodes: [], lastLinks: [] };
                 svg.call(zoom);
@@ -716,7 +736,7 @@
                 app.d3.svg.attr('viewBox', `0 0 ${w} ${h}`);
                 app.d3.sim.force('center', d3.forceCenter(w/2, h/2));
                 app.applyClusterForces();
-                app.d3.sim.alpha(0.25).restart();
+                app.d3.sim.alpha(0.3).restart();
             },
 
             applyClusterForces: () => {
@@ -732,15 +752,15 @@
 
                 const insts = [...new Set((app.d3.lastNodes||[]).map(n=>n.inst))].sort();
                 const pos = new Map();
-                const r = Math.min(w,h)*0.26;
+                const r = Math.min(w,h)*0.28;
                 insts.forEach((inst, i) => {
                     const a = (i/Math.max(1,insts.length))*Math.PI*2 - Math.PI/2;
                     pos.set(inst, { x: cx + Math.cos(a)*r, y: cy + Math.sin(a)*r });
                 });
 
                 app.d3.sim
-                    .force('x', d3.forceX(d => (pos.get(d.inst)?.x ?? cx)).strength(0.18))
-                    .force('y', d3.forceY(d => (pos.get(d.inst)?.y ?? cy)).strength(0.18));
+                    .force('x', d3.forceX(d => (pos.get(d.inst)?.x ?? cx)).strength(0.15))
+                    .force('y', d3.forceY(d => (pos.get(d.inst)?.y ?? cy)).strength(0.15));
             },
 
             renderGraph: (pubs) => {
@@ -762,19 +782,19 @@
                 g.selectAll('*').remove();
 
                 const maxW = d3.max(links, d=>d.weight) || 1;
-                const wScale = d3.scaleSqrt().domain([1, maxW]).range([0.7, 4.2]);
+                const wScale = d3.scaleSqrt().domain([1, maxW]).range([0.5, 3]);
 
+                // Links: Clean, thin, technical
                 const lnk = g.append('g')
-                    .attr('stroke-linecap','round')
                     .selectAll('line').data(links).enter().append('line')
-                    .attr('stroke', '#94a3b8')
-                    .attr('stroke-opacity', d => 0.22 + 0.26*(d.weight/maxW))
+                    .attr('stroke', '#cbd5e1') // Cool gray
+                    .attr('stroke-opacity', d => 0.4 + 0.3*(d.weight/maxW))
                     .attr('stroke-width', d => wScale(d.weight));
 
                 const nd = g.append('g')
                     .selectAll('g').data(nodes).enter().append('g')
                     .call(d3.drag()
-                        .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(0.25).restart(); d.fx=d.x; d.fy=d.y; })
+                        .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
                         .on('drag',(e,d)=>{ d.fx=e.x; d.fy=e.y; })
                         .on('end',(e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; })
                     );
@@ -785,32 +805,41 @@
                     return (parts.length>1 ? parts[parts.length-1] : (parts[0]||"")).replace(/[,;]/g,'');
                 };
 
+                // Nodes: Refined, no thick white border, subtle glow
                 nd.append('circle')
                     .attr('r', d=>d.radius)
                     .attr('fill', d=>`url(#g-${d.color.slice(1)})`)
-                    .attr('stroke', 'rgba(255,255,255,0.95)')
-                    .attr('stroke-width', 2)
-                    .style('filter','drop-shadow(0 2px 3px rgba(0,0,0,0.18))')
+                    .attr('stroke', d=>d.color)
+                    .attr('stroke-width', 0)
+                    .attr('stroke-opacity', 0.4)
+                    .style('filter', 'drop-shadow(0 4px 6px rgba(0,0,0,0.15))') 
                     .style('cursor','pointer');
+                
+                // Add ring for stroke effect via separate circle for cleaner rendering
+                nd.append('circle')
+                    .attr('r', d=>d.radius)
+                    .attr('fill', 'none')
+                    .attr('stroke', 'rgba(255,255,255,0.3)')
+                    .attr('stroke-width', 1.5);
 
                 nd.append('text')
                     .text(d=>ini(d.display_name))
                     .attr('dy','0.35em')
                     .attr('text-anchor','middle')
                     .attr('fill','white')
-                    .attr('font-size', d=>Math.max(9, d.radius*0.52))
-                    .attr('font-weight','700')
+                    .attr('font-size', d=>Math.max(8, d.radius*0.45))
+                    .attr('font-weight','600')
                     .style('pointer-events','none')
-                    .style('text-shadow','0 1px 2px rgba(0,0,0,0.25)');
+                    .style('text-shadow','0 1px 2px rgba(0,0,0,0.2)');
 
                 const lbl = nd.append('text')
                     .attr('class','node-label lbl')
                     .text(d=>last(d.display_name))
                     .attr('text-anchor','middle')
-                    .attr('y', d=>d.radius + 14)
-                    .attr('fill', '#0f172a')
-                    .attr('font-size', 11)
-                    .attr('font-weight','700')
+                    .attr('y', d=>d.radius + 12)
+                    .attr('fill', '#334155')
+                    .attr('font-size', 10)
+                    .attr('font-weight','600')
                     .style('pointer-events','none');
 
                 app.d3.lblSel = lbl;
@@ -822,30 +851,27 @@
                 });
 
                 nd.on('mouseover', (e,d) => {
-                    nd.attr('opacity', n => (n.id===d.id || isNbr(n.id, d.id)) ? 1 : 0.12);
-                    lnk
-                        .attr('stroke', l => ((l.source.id||l.source)===d.id || (l.target.id||l.target)===d.id) ? '#0f172a' : '#cbd5e1')
-                        .attr('stroke-opacity', l => ((l.source.id||l.source)===d.id || (l.target.id||l.target)===d.id) ? 0.95 : 0.08)
-                        .attr('stroke-width', l => ((l.source.id||l.source)===d.id || (l.target.id||l.target)===d.id) ? Math.max(2.2, wScale(l.weight)+1.2) : wScale(l.weight));
+                    nd.transition().duration(200).attr('opacity', n => (n.id===d.id || isNbr(n.id, d.id)) ? 1 : 0.1);
+                    lnk.transition().duration(200)
+                        .attr('stroke', l => ((l.source.id||l.source)===d.id || (l.target.id||l.target)===d.id) ? '#475569' : '#e2e8f0')
+                        .attr('stroke-opacity', l => ((l.source.id||l.source)===d.id || (l.target.id||l.target)===d.id) ? 1 : 0.05);
 
                     const r = document.getElementById('graphContainer').getBoundingClientRect();
-                    tip.style.left = Math.min(e.clientX-r.left+18, r.width-240)+'px';
-                    tip.style.top = Math.min(e.clientY-r.top+18, r.height-170)+'px';
+                    tip.style.left = Math.min(e.clientX-r.left+15, r.width-210)+'px';
+                    tip.style.top = Math.min(e.clientY-r.top+15, r.height-140)+'px';
                     tip.innerHTML = `
                         <div class="font-bold text-slate-800 mb-0.5">${esc(d.display_name)}</div>
-                        <div class="text-[10px] text-slate-500 mb-2 font-medium">${esc(d.inst)}</div>
-                        <div class="grid grid-cols-3 gap-2 text-center">
-                            <div class="bg-slate-50 border rounded px-2 py-1"><div class="font-bold text-slate-700">${d.net_works}</div><div class="text-[8px] uppercase text-slate-400">Works</div></div>
-                            <div class="bg-slate-50 border rounded px-2 py-1"><div class="font-bold text-slate-700">${d.net_cited.toLocaleString()}</div><div class="text-[8px] uppercase text-slate-400">Cites</div></div>
-                            <div class="bg-slate-50 border rounded px-2 py-1"><div class="font-bold text-slate-700">${d.deg||0}</div><div class="text-[8px] uppercase text-slate-400">Links</div></div>
+                        <div class="text-[9px] text-slate-500 mb-2 font-medium truncate">${esc(d.inst)}</div>
+                        <div class="flex gap-2 text-center">
+                            <div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_works}</div><div class="text-[7px] uppercase text-slate-400">Works</div></div>
+                            <div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_cited}</div><div class="text-[7px] uppercase text-slate-400">Cites</div></div>
                         </div>`;
                     tip.classList.remove('hidden');
                 }).on('mouseout', () => {
-                    nd.attr('opacity', 1);
-                    lnk
-                        .attr('stroke','#94a3b8')
-                        .attr('stroke-opacity', d => 0.22 + 0.26*(d.weight/maxW))
-                        .attr('stroke-width', d => wScale(d.weight));
+                    nd.transition().duration(200).attr('opacity', 1);
+                    lnk.transition().duration(200)
+                        .attr('stroke','#cbd5e1')
+                        .attr('stroke-opacity', d => 0.4 + 0.3*(d.weight/maxW));
                     tip.classList.add('hidden');
                 }).on('click', (e,d) => { e.stopPropagation(); app.profile(d); });
 
@@ -853,15 +879,14 @@
 
                 const c = document.getElementById('graphContainer');
                 const W = c.clientWidth || 800, H = c.clientHeight || 600;
-                const pad = 20;
+                const pad = 25;
 
                 sim.nodes(nodes).on('tick', () => {
                     nodes.forEach(n => {
                         n.x = clamp(n.x, pad + n.radius, W - pad - n.radius);
                         n.y = clamp(n.y, pad + n.radius, H - pad - n.radius);
                     });
-                    lnk
-                        .attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+                    lnk.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
                     nd.attr('transform',d=>`translate(${d.x},${d.y})`);
                 });
 
@@ -887,7 +912,7 @@
             fitGraph: () => {
                 const b = app.d3.g.node().getBBox();
                 if (b.width === 0) return;
-                const p = 40, c = document.getElementById('graphContainer');
+                const p = 50, c = document.getElementById('graphContainer');
                 const w = c.clientWidth, h = c.clientHeight;
                 const s = Math.min(0.9, 1 / Math.max(b.width / (w - p*2), b.height / (h - p*2)));
                 const t = d3.zoomIdentity.translate(w/2 - (b.x + b.width/2)*s, h/2 - (b.y + b.height/2)*s).scale(s);
@@ -896,38 +921,37 @@
             toggleCluster: () => { app.state.graph.cluster = !app.state.graph.cluster; app.applyClusterForces(); app.d3.sim.alpha(0.3).restart(); },
             toggleLabels: () => {
                 app.state.graph.labels = !app.state.graph.labels;
-                if(app.d3.lblSel) app.d3.lblSel.style('display', app.state.graph.labels && app.d3.k >= 0.9 ? null : 'none');
+                if(app.d3.lblSel) app.d3.lblSel.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none');
             },
 
             // Modals
             profile: (r) => {
                 document.getElementById('researcherModal').classList.add('active');
-                // Prioritize pubs in current filter view for context, else fall back to most recent
                 let pubs = app.data.pubs.filter(p => p._memberAuthors.some(a=>a.id===r.id)).sort((a,b)=>b.publication_year-a.publication_year);
                 const stats = { w: pubs.length, c: pubs.reduce((s,p)=>s+p.cited_by_count,0) };
                 pubs = pubs.slice(0, 15);
 
                 document.getElementById('researcherContent').innerHTML = `
-                    <div class="sticky top-0 bg-white z-10 p-6 border-b border-slate-100">
+                    <div class="sticky top-0 bg-white z-10 p-5 border-b border-slate-100">
                         <div class="flex justify-between items-start">
                             <div class="flex items-center gap-4">
-                                <div class="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0,2)}</div>
-                                <div><h2 class="text-xl font-bold text-slate-800">${esc(r.display_name)}</h2><p class="text-sm text-slate-500 font-medium">${esc(r.inst)}</p></div>
+                                <div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0,2)}</div>
+                                <div><h2 class="text-lg font-bold text-slate-800 leading-tight">${esc(r.display_name)}</h2><p class="text-xs text-slate-500 font-medium">${esc(r.inst)}</p></div>
                             </div>
-                            <button onclick="document.getElementById('researcherModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700"><i class="fas fa-times text-lg"></i></button>
+                            <button onclick="document.getElementById('researcherModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700"><i class="fas fa-times"></i></button>
                         </div>
-                        <div class="grid grid-cols-2 gap-4 mt-6">
-                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-center"><span class="block font-bold text-2xl text-slate-700">${stats.w}</span><span class="text-[10px] font-bold uppercase text-slate-400">Publications</span></div>
-                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-center"><span class="block font-bold text-2xl text-slate-700">${stats.c.toLocaleString()}</span><span class="text-[10px] font-bold uppercase text-slate-400">Total Citations</span></div>
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${stats.w}</span><span class="text-[9px] font-bold uppercase text-slate-400">Publications</span></div>
+                            <div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${stats.c.toLocaleString()}</span><span class="text-[9px] font-bold uppercase text-slate-400">Total Citations</span></div>
                         </div>
                     </div>
-                    <div class="p-6">
-                        <h4 class="font-bold text-xs uppercase text-slate-400 mb-4 tracking-wider">Latest Contributions</h4>
-                        <div class="space-y-3">
+                    <div class="p-5">
+                        <h4 class="font-bold text-[10px] uppercase text-slate-400 mb-3 tracking-wider">Latest Contributions</h4>
+                        <div class="space-y-2">
                             ${pubs.map(p => `
-                                <div class="p-3 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="document.getElementById('researcherModal').classList.remove('active');app.detail('${p.id}')">
-                                    <div class="font-semibold text-sm text-slate-700 mb-1">${esc(p.title)}</div>
-                                    <div class="text-xs text-slate-400 flex justify-between items-center">
+                                <div class="p-2.5 rounded border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="document.getElementById('researcherModal').classList.remove('active');app.detail('${p.id}')">
+                                    <div class="font-semibold text-xs text-slate-700 mb-1 leading-snug">${esc(p.title)}</div>
+                                    <div class="text-[10px] text-slate-400 flex justify-between items-center">
                                         <span>${p.publication_year} • ${p._relevance.toFixed(1)} score</span>
                                         <span class="bg-slate-100 px-1.5 py-0.5 rounded">${p.cited_by_count} cites</span>
                                     </div>
@@ -942,47 +966,47 @@
                 
                 const render = (abs) => {
                     const absHtml = abs 
-                        ? `<div class="text-slate-600 text-sm leading-relaxed bg-slate-50 p-6 rounded-xl border border-slate-100 text-justify">${esc(abs)}</div>` 
-                        : `<div class="text-slate-400 text-sm italic bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">Abstract not available via API.</div>`;
+                        ? `<div class="text-slate-600 text-xs leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100 text-justify font-normal">${esc(abs)}</div>` 
+                        : `<div class="text-slate-400 text-xs italic bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">Abstract not available via API.</div>`;
 
                     document.getElementById('detailContent').innerHTML = `
-                        <div class="flex justify-between items-start mb-6 pb-4 border-b border-slate-100">
-                            <h2 class="text-2xl font-bold text-slate-800 pr-12 leading-tight">${esc(p.title)}</h2>
-                            <button onclick="document.getElementById('detailModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700 text-xl"><i class="fas fa-times"></i></button>
+                        <div class="flex justify-between items-start mb-4 pb-3 border-b border-slate-100">
+                            <h2 class="text-lg font-bold text-slate-800 pr-8 leading-tight">${esc(p.title)}</h2>
+                            <button onclick="document.getElementById('detailModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700 text-lg"><i class="fas fa-times"></i></button>
                         </div>
-                        <div class="flex flex-wrap gap-4 text-sm text-slate-500 mb-8 font-medium">
-                            <span class="flex items-center gap-2"><i class="fas fa-calendar"></i> ${p.publication_year}</span>
-                            <span class="flex items-center gap-2"><i class="fas fa-quote-right"></i> ${p.cited_by_count} Citations</span>
-                            ${p.source ? `<span class="flex items-center gap-2"><i class="fas fa-book"></i> ${esc(p.source)}</span>`:''}
-                            <span class="flex items-center gap-2 text-green-600 bg-green-50 px-2 rounded border border-green-100">Score: ${p._relevance.toFixed(1)}</span>
-                            ${p.url ? `<a href="${p.url}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-2"><i class="fas fa-external-link-alt"></i> View Source</a>`:''}
+                        <div class="flex flex-wrap gap-3 text-xs text-slate-500 mb-6 font-medium">
+                            <span class="flex items-center gap-1.5"><i class="fas fa-calendar"></i> ${p.publication_year}</span>
+                            <span class="flex items-center gap-1.5"><i class="fas fa-quote-right"></i> ${p.cited_by_count} Citations</span>
+                            ${p.source ? `<span class="flex items-center gap-1.5"><i class="fas fa-book"></i> ${esc(p.source)}</span>`:''}
+                            <span class="flex items-center gap-1.5 text-green-600 bg-green-50 px-1.5 rounded border border-green-100">Score: ${p._relevance.toFixed(1)}</span>
+                            ${p.url ? `<a href="${p.url}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1.5"><i class="fas fa-external-link-alt"></i> View Source</a>`:''}
                         </div>
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div class="lg:col-span-2">
-                                <h4 class="font-bold text-sm text-slate-800 uppercase tracking-wide mb-3">Abstract</h4>
+                                <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Abstract</h4>
                                 ${absHtml}
-                                ${p._why.length ? `<div class="mt-4"><h4 class="font-bold text-[10px] text-slate-400 uppercase tracking-wide mb-2">Relevance Factors</h4><div class="flex flex-wrap gap-1">${p._why.map(w=>`<span class="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] rounded border border-slate-200 font-mono">${w}</span>`).join('')}</div></div>` : ''}
+                                ${p._why.length ? `<div class="mt-4"><h4 class="font-bold text-[9px] text-slate-400 uppercase tracking-wide mb-1.5">Relevance Factors</h4><div class="flex flex-wrap gap-1">${p._why.map(w=>`<span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] rounded border border-slate-200 font-mono">${w}</span>`).join('')}</div></div>` : ''}
                             </div>
                             <div>
-                                <h4 class="font-bold text-sm text-slate-800 uppercase tracking-wide mb-3">Authors</h4>
-                                <div class="flex flex-col gap-2">
+                                <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Authors</h4>
+                                <div class="flex flex-col gap-1.5">
                                     ${p._allAuthors.map(a => `
-                                        <div class="flex items-center gap-2 text-sm p-2 rounded-lg border ${a.isMember?'border-green-200 bg-green-50 cursor-pointer hover:bg-green-100':'border-transparent text-slate-500'}" ${a.isMember?`onclick="document.getElementById('detailModal').classList.remove('active');app.profile(app.data.researchers.find(r=>r.id==='${a.id}'))"`:''}>
-                                            ${a.isMember?'<span class="w-2 h-2 rounded-full bg-green-500 shrink-0"></span>':''}
+                                        <div class="flex items-center gap-2 text-xs p-1.5 rounded-lg border ${a.isMember?'border-green-200 bg-green-50 cursor-pointer hover:bg-green-100':'border-transparent text-slate-500'}" ${a.isMember?`onclick="document.getElementById('detailModal').classList.remove('active');app.profile(app.data.researchers.find(r=>r.id==='${a.id}'))"`:''}>
+                                            ${a.isMember?'<span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>':''}
                                             <span class="${a.isMember?'font-semibold text-green-800':''} truncate">${esc(a.name)}</span>
                                         </div>`).join('')}
                                 </div>
-                                <div class="mt-8">
-                                    <h4 class="font-bold text-sm text-slate-800 uppercase tracking-wide mb-3">Topics</h4>
-                                    <div class="flex flex-wrap gap-1.5">
-                                        ${p._topics.map(t => `<span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded border border-slate-200">${esc(t)}</span>`).join('')}
+                                <div class="mt-6">
+                                    <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Topics</h4>
+                                    <div class="flex flex-wrap gap-1">
+                                        ${p._topics.map(t => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded border border-slate-200">${esc(t)}</span>`).join('')}
                                     </div>
                                 </div>
                             </div>
                         </div>`;
                 };
 
-                render(null); // Clear previous / Loading state
+                render(null); 
                 try {
                    const d = await fetchJSON(`${API}/works/${suffix(id)}?select=abstract_inverted_index`);
                    render(absText(d?.abstract_inverted_index));
@@ -1012,7 +1036,17 @@
                 el('globalSearch').oninput = e => { clearTimeout(tm); tm=setTimeout(() => { app.state.filters.q = e.target.value; app.state.page = 1; app.render(); }, 300); };
                 el('sortSelect').onchange = e => { app.state.sort = e.target.value; app.state.page = 1; app.render(); };
                 
-                ['yearFrom','yearTo'].forEach(id => el(id).onchange = e => { app.state.filters[id==='yearFrom'?'yFrom':'yTo'] = e.target.value?+e.target.value:null; app.render(); });
+                ['yearFrom','yearTo'].forEach(id => el(id).onchange = e => { 
+                    // Prevent bounds issues
+                    let val = e.target.value ? +e.target.value : null;
+                    if (val) {
+                        if (val < 2000) val = 2000;
+                        if (val > 2026) val = 2026;
+                        e.target.value = val;
+                    }
+                    app.state.filters[id==='yearFrom'?'yFrom':'yTo'] = val; 
+                    app.render(); 
+                });
                 
                 el('minRelevance').oninput = e => { 
                     const v = +e.target.value; 
@@ -1021,21 +1055,28 @@
                     tm=setTimeout(() => { app.state.filters.minRel = v; app.state.page = 1; app.render(); }, 200);
                 };
 
-                el('linkDistance').oninput = e => { el('valLink').textContent = e.target.value; app.d3.sim.force('link').distance(+e.target.value).alpha(0.3).restart(); };
-                el('chargeStrength').oninput = e => { el('valCharge').textContent = e.target.value; app.d3.sim.force('charge').strength(-e.target.value).alpha(0.3).restart(); };
+                // Link dest/gravity fixed functionality
+                el('linkDistance').oninput = e => { 
+                    app.d3.sim.force('link').distance(+e.target.value); 
+                    app.d3.sim.alpha(0.3).restart(); 
+                };
+                el('chargeStrength').oninput = e => { 
+                    app.d3.sim.force('charge').strength(-e.target.value); 
+                    app.d3.sim.alpha(0.3).restart(); 
+                };
 
                 document.querySelectorAll('.view-btn').forEach(b => b.onclick = () => {
                     const v = b.dataset.view, both = v === 'both', pp = el('publicationsPanel'), np = el('networkPanel');
                     pp.style.display = (both||v==='publications')?'flex':'none'; pp.style.width = both?'50%':(v==='publications'?'100%':'0%');
                     np.style.display = (both||v==='network')?'flex':'none'; np.style.width = both?'50%':(v==='network'?'100%':'0%');
                     el('splitHandle').style.display = both?'block':'none';
-                    document.querySelectorAll('.view-btn').forEach(x => x.className = `view-btn px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${x===b?'bg-white shadow-sm text-slate-800 ring-1 ring-slate-200':'text-slate-500 hover:text-slate-700'}`);
+                    document.querySelectorAll('.view-btn').forEach(x => x.className = `view-btn px-2.5 py-1 text-[11px] font-semibold rounded transition-all ${x===b?'bg-white shadow-sm text-slate-800 ring-1 ring-slate-200':'text-slate-500 hover:text-slate-700'}`);
                     setTimeout(()=>app.resizeGraph(), 50);
                 });
 
                 el('splitHandle').onmousedown = () => { drag = true; document.body.style.cursor = 'col-resize'; };
                 document.onmouseup = () => { drag = false; document.body.style.cursor = 'default'; if(drag) app.resizeGraph(); };
-                document.onmousemove = e => { if(drag) { const p=(e.clientX-340)/(document.body.clientWidth-340)*100; if(p>15 && p<85) { el('publicationsPanel').style.width=p+'%'; el('networkPanel').style.width=(100-p)+'%'; app.resizeGraph(); } } };
+                document.onmousemove = e => { if(drag) { const p=(e.clientX-320)/(document.body.clientWidth-320)*100; if(p>15 && p<85) { el('publicationsPanel').style.width=p+'%'; el('networkPanel').style.width=(100-p)+'%'; app.resizeGraph(); } } };
             }
         };
 
