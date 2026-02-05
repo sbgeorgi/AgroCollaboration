@@ -9,64 +9,54 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        tailwind.config = {
-            theme: { 
-                extend: { 
-                    fontFamily: { 'inter': ['Inter', 'sans-serif'] }, 
-                    colors: { 'brand': '#16a34a', 'brand-light': '#dcfce7' } 
-                } 
-            }
-        }
+        tailwind.config = { theme: { extend: { fontFamily: { 'inter': ['Inter', 'sans-serif'] }, colors: { 'brand': '#16a34a', 'brand-light': '#dcfce7' } } } }
     </script>
     <style>
         :root { --border: #e2e8f0; }
         body { font-family: 'Inter', sans-serif; overflow: hidden; }
-        
-        /* Custom Scrollbar */
         .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Split Pane Handle */
         .split-handle { cursor: col-resize; width: 1px; background: #e2e8f0; position: relative; z-index: 20; transition: background 0.2s; }
         .split-handle::after { content: ''; position: absolute; top: 0; bottom: 0; left: -2px; right: -2px; z-index: 10; }
         .split-handle:hover, .split-handle:active { background: #16a34a; width: 2px; }
-
-        /* Component Styles */
         .pub-card { transition: all 0.2s ease; border: 1px solid transparent; border-bottom: 1px solid #f1f5f9; }
         .pub-card:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); z-index: 10; border-radius: 6px; }
-        
         .network-member { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
         .external-author { background-color: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
-        
-        .d3-tooltip { pointer-events: none; position: absolute; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; z-index: 50; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); min-width: 200px; font-size: 12px; }
-        
+        .d3-tooltip { pointer-events: none; position: absolute; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; z-index: 50; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); min-width: 220px; font-size: 12px; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 60; opacity: 0; pointer-events: none; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         .profile-modal { transform: scale(0.95); transition: 0.2s; }
         .modal-overlay.active .profile-modal { transform: scale(1); }
-
         .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #16a34a; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
+        #graphContainer {
+            background:
+                radial-gradient(circle at 1px 1px, rgba(148,163,184,0.25) 1px, transparent 1px);
+            background-size: 26px 26px;
+            background-position: -8px -8px;
+        }
+        #graphContainer:active { cursor: grabbing; }
         .page-btn.active { background-color: #16a34a; color: white; border-color: #16a34a; }
+        .node-label {
+            paint-order: stroke;
+            stroke: rgba(255,255,255,0.92);
+            stroke-width: 4px;
+            stroke-linejoin: round;
+        }
+        .range-thin::-webkit-slider-thumb { width: 14px; height: 14px; }
     </style>
 </head>
 <body class="bg-white text-slate-700 h-screen w-screen flex overflow-hidden">
 
-    <!-- Left Sidebar: Fixed width, full height -->
+    <!-- Sidebar -->
     <aside class="w-[340px] flex flex-col border-r border-slate-200 bg-slate-50/50 shrink-0 h-full z-30">
-        <!-- Header -->
         <div class="p-5 border-b border-slate-200 bg-white">
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-9 h-9 rounded-lg bg-green-600 text-white flex items-center justify-center shadow-md shadow-green-200">
-                    <i class="fas fa-leaf text-sm"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-slate-800 text-base leading-tight">AgriPV Network</h1>
-                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Research Explorer</p>
-                </div>
+                <div class="w-9 h-9 rounded-lg bg-green-600 text-white flex items-center justify-center shadow-md shadow-green-200"><i class="fas fa-leaf text-sm"></i></div>
+                <div><h1 class="font-bold text-slate-800 text-base leading-tight">AgriPV Network</h1><p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Research Explorer</p></div>
             </div>
             <div class="relative group">
                 <input type="text" id="globalSearch" placeholder="Search title, author, topic..." class="w-full bg-slate-100 border-none rounded-lg py-2.5 pl-10 pr-3 text-xs font-medium focus:ring-2 focus:ring-green-500/20 focus:bg-white transition-all placeholder:text-slate-400">
@@ -74,33 +64,26 @@
             </div>
         </div>
 
-        <!-- Scrollable Filters -->
         <div class="flex-1 overflow-y-auto custom-scroll p-5 space-y-6">
-            
-            <!-- Statistics Dashboard -->
             <div>
                 <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Network Stats</h3>
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center">
-                        <span id="statResearchers" class="text-lg font-bold text-slate-700 leading-none">0</span>
-                        <span class="text-[9px] text-slate-400 font-semibold mt-1">MEMBERS</span>
+                <div class="grid grid-cols-2 gap-2" id="statsGrid"></div>
+            </div>
+
+            <div>
+                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Relevance Threshold</h3>
+                <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                    <div class="flex justify-between mb-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">Min Score</label>
+                        <span class="text-[9px] text-slate-400" id="valMinRel">3.0</span>
                     </div>
-                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center">
-                        <span id="statPublications" class="text-lg font-bold text-slate-700 leading-none">0</span>
-                        <span class="text-[9px] text-slate-400 font-semibold mt-1">WORKS</span>
-                    </div>
-                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center">
-                        <span id="statCitations" class="text-lg font-bold text-slate-700 leading-none">0</span>
-                        <span class="text-[9px] text-slate-400 font-semibold mt-1">CITES</span>
-                    </div>
-                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center">
-                        <span id="statTopics" class="text-lg font-bold text-slate-700 leading-none">0</span>
-                        <span class="text-[9px] text-slate-400 font-semibold mt-1">TOPICS</span>
+                    <input type="range" id="minRelevance" min="0" max="30" step="0.5" value="3" class="range-thin w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600 block">
+                    <div class="text-[10px] text-slate-400 mt-2 leading-snug">
+                        Lower = broader (captures spelling variants + abstract-only mentions). Higher = strict AgriPV.
                     </div>
                 </div>
             </div>
 
-            <!-- Date Filter -->
             <div>
                 <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Publication Year</h3>
                 <div class="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
@@ -110,50 +93,42 @@
                 </div>
             </div>
 
-            <!-- Institutions -->
             <div class="flex flex-col h-48">
                 <div class="flex justify-between items-center mb-2">
                     <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Institutions</h3>
-                    <button class="text-[10px] text-green-600 font-semibold hover:underline" onclick="app.clearFilter('inst')">Reset</button>
+                    <button class="text-[10px] text-green-600 font-semibold hover:underline" onclick="app.clear('insts')">Reset</button>
                 </div>
                 <div id="institutionFilters" class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-0.5"></div>
             </div>
 
-            <!-- Topics -->
             <div class="flex flex-col h-48">
                 <div class="flex justify-between items-center mb-2">
                     <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Topics</h3>
-                    <button class="text-[10px] text-green-600 font-semibold hover:underline" onclick="app.clearFilter('topic')">Reset</button>
+                    <button class="text-[10px] text-green-600 font-semibold hover:underline" onclick="app.clear('topics')">Reset</button>
                 </div>
                 <div id="topicFilters" class="flex flex-wrap gap-1.5 pb-2"></div>
             </div>
         </div>
 
-        <!-- Active Filters Footer -->
         <div id="activeFiltersPanel" class="p-3 bg-white border-t border-slate-200 hidden shrink-0">
             <div class="flex justify-between items-center mb-2">
                 <span class="text-[10px] font-semibold text-slate-500"><span id="activeFilterCount">0</span> filters active</span>
-                <button class="text-[10px] text-red-500 font-semibold hover:text-red-700" onclick="app.clearAllFilters()">Clear All</button>
+                <button class="text-[10px] text-red-500 font-semibold hover:text-red-700" onclick="app.reset()">Clear All</button>
             </div>
             <div id="activeFilterTags" class="flex flex-wrap gap-1 max-h-16 overflow-y-auto custom-scroll"></div>
         </div>
     </aside>
 
-    <!-- Main Content Area: Flex-1, full height -->
+    <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full overflow-hidden bg-white relative">
-        
-        <!-- Toolbar -->
         <header class="h-14 border-b border-slate-200 flex items-center justify-between px-4 bg-white shrink-0 z-20">
             <div class="flex gap-1 p-1 bg-slate-100 rounded-lg">
-                <button data-view="both" class="view-btn px-3 py-1.5 text-xs font-semibold rounded-md bg-white shadow-sm text-slate-800 transition-all"><i class="fas fa-columns mr-1.5"></i>Split</button>
-                <button data-view="publications" class="view-btn px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-700 transition-all"><i class="fas fa-list mr-1.5"></i>List</button>
-                <button data-view="network" class="view-btn px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-700 transition-all"><i class="fas fa-project-diagram mr-1.5"></i>Graph</button>
+                <button data-view="both" class="view-btn px-3 py-1.5 text-xs font-semibold rounded-md bg-white shadow-sm text-slate-800"><i class="fas fa-columns mr-1.5"></i>Split</button>
+                <button data-view="publications" class="view-btn px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-700"><i class="fas fa-list mr-1.5"></i>List</button>
+                <button data-view="network" class="view-btn px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-700"><i class="fas fa-project-diagram mr-1.5"></i>Graph</button>
             </div>
-            
             <div class="flex items-center gap-4">
-                <div class="text-xs text-slate-500 font-medium">
-                    Showing <span id="filteredCount" class="text-slate-900 font-bold">0</span> results
-                </div>
+                <div class="text-xs text-slate-500 font-medium">Showing <span id="filteredCount" class="text-slate-900 font-bold">0</span> results</div>
                 <div class="h-4 w-px bg-slate-300"></div>
                 <select id="sortSelect" class="text-xs font-medium bg-transparent border-none outline-none text-slate-600 cursor-pointer hover:text-slate-900 focus:ring-0">
                     <option value="recent">Newest First</option>
@@ -161,54 +136,47 @@
                     <option value="cited">Most Cited</option>
                     <option value="title">A-Z Title</option>
                 </select>
-                <button class="px-3 py-1.5 bg-slate-900 text-white text-xs font-medium rounded-md hover:bg-slate-800 shadow-sm" onclick="app.exportData()">
-                    <i class="fas fa-download mr-1"></i> Export
-                </button>
+                <button class="px-3 py-1.5 bg-slate-900 text-white text-xs font-medium rounded-md hover:bg-slate-800 shadow-sm" onclick="app.export()"><i class="fas fa-download mr-1"></i> Export</button>
             </div>
         </header>
 
-        <!-- Content Split View -->
         <div id="contentArea" class="flex-1 flex overflow-hidden relative">
-            
-            <!-- List View Panel -->
+            <!-- List Panel -->
             <div id="publicationsPanel" class="flex flex-col min-w-0 w-1/2 bg-white h-full border-r border-slate-100">
                 <div id="publicationsList" class="flex-1 overflow-y-auto p-2 custom-scroll bg-white"></div>
-                
-                <!-- Improved Pagination -->
                 <div class="p-3 border-t border-slate-200 bg-white shrink-0 flex flex-col gap-2">
                     <div class="flex justify-between items-center text-[10px] text-slate-400">
                         <span>Showing <span id="showingFrom">0</span>-<span id="showingTo">0</span> of <span id="totalPublications">0</span></span>
                     </div>
-                    <div id="paginationContainer" class="flex justify-center gap-1">
-                        <!-- Generated by JS -->
-                    </div>
+                    <div id="paginationContainer" class="flex justify-center gap-1"></div>
                 </div>
             </div>
 
-            <!-- Draggable Handle -->
             <div id="splitHandle" class="split-handle" title="Drag to resize"></div>
 
-            <!-- Graph View Panel -->
+            <!-- Network Panel -->
             <div id="networkPanel" class="flex flex-col min-w-0 w-1/2 bg-slate-50 relative h-full">
-                <!-- Graph Toolbar -->
                 <div class="absolute top-4 left-4 z-10 flex gap-2">
                     <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-1 flex gap-1">
-                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.zoomGraph(1.3)" title="Zoom In"><i class="fas fa-plus text-xs"></i></button>
-                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.zoomGraph(0.7)" title="Zoom Out"><i class="fas fa-minus text-xs"></i></button>
-                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.resetGraph()" title="Fit to Screen"><i class="fas fa-compress-arrows-alt text-xs"></i></button>
+                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.zoom(1.3)" title="Zoom In"><i class="fas fa-plus text-xs"></i></button>
+                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.zoom(0.7)" title="Zoom Out"><i class="fas fa-minus text-xs"></i></button>
+                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.fitGraph()" title="Fit to Screen"><i class="fas fa-compress-arrows-alt text-xs"></i></button>
+                    </div>
+                    <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-1 flex gap-1">
+                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.toggleCluster()" title="Toggle institution grouping"><i class="fas fa-layer-group text-xs"></i></button>
+                        <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.toggleLabels()" title="Toggle labels"><i class="fas fa-tag text-xs"></i></button>
                     </div>
                 </div>
 
-                <!-- Settings & Legend -->
                 <div class="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
                      <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-3 w-40 space-y-3">
                         <div>
                             <div class="flex justify-between mb-1"><label class="text-[9px] font-bold text-slate-400 uppercase">Link Dist</label><span class="text-[9px] text-slate-400" id="valLink">120</span></div>
-                            <input type="range" id="linkDistance" min="50" max="300" value="120" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600 block">
+                            <input type="range" id="linkDistance" min="50" max="320" value="120" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600 block">
                         </div>
                         <div>
-                            <div class="flex justify-between mb-1"><label class="text-[9px] font-bold text-slate-400 uppercase">Gravity</label><span class="text-[9px] text-slate-400" id="valCharge">300</span></div>
-                            <input type="range" id="chargeStrength" min="100" max="800" value="300" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600 block">
+                            <div class="flex justify-between mb-1"><label class="text-[9px] font-bold text-slate-400 uppercase">Gravity</label><span class="text-[9px] text-slate-400" id="valCharge">320</span></div>
+                            <input type="range" id="chargeStrength" min="100" max="900" value="320" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600 block">
                         </div>
                     </div>
                 </div>
@@ -220,262 +188,313 @@
                     </div>
                 </div>
 
-                <!-- SVG Container -->
-                <div id="graphContainer" class="flex-1 w-full h-full cursor-grab active:cursor-grabbing overflow-hidden">
-                    <svg id="networkGraph" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"></svg>
+                <div id="graphContainer" class="flex-1 w-full h-full cursor-grab overflow-hidden">
+                    <svg id="networkGraph" width="100%" height="100%"></svg>
                 </div>
                 <div id="tooltip" class="d3-tooltip hidden"></div>
             </div>
         </div>
     </main>
 
-    <!-- Loading Overlay -->
+    <!-- Overlay & Modals -->
     <div id="loadingOverlay" class="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
-        <div class="spinner mb-4"></div>
-        <h3 class="text-xl font-bold text-slate-800">Building Research Network</h3>
-        <p id="loadingStatus" class="text-sm text-slate-500 mt-2">Connecting to data sources...</p>
-        <div class="w-64 bg-slate-100 rounded-full h-1.5 mt-6 overflow-hidden">
-            <div id="loadingProgress" class="h-full bg-green-500 w-0 transition-all duration-300"></div>
-        </div>
+        <div class="spinner mb-4"></div><h3 class="text-xl font-bold text-slate-800">Building Research Network</h3>
+        <p id="loadingStatus" class="text-sm text-slate-500 mt-2">Connecting...</p>
+        <div class="w-64 bg-slate-100 rounded-full h-1.5 mt-6 overflow-hidden"><div id="loadingProgress" class="h-full bg-green-500 w-0 transition-all duration-300"></div></div>
     </div>
 
-    <!-- Modals -->
     <div id="citationModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
         <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 p-6">
-            <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
-                <h3 class="font-bold text-slate-800">Cite Publication</h3>
-                <button onclick="document.getElementById('citationModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-            </div>
+            <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-100"><h3 class="font-bold text-slate-800">Cite Publication</h3><button onclick="document.getElementById('citationModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button></div>
             <div class="space-y-4">
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">APA Format</label>
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed">
-                        <span id="citeAPA"></span>
-                        <button class="absolute top-2 right-2 px-2 py-1 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-xs" onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">BibTeX</label>
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
-                        <span id="citeBib"></span>
-                        <button class="absolute top-2 right-2 px-2 py-1 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-xs" onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button>
-                    </div>
-                </div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">APA</label><div class="bg-slate-50 p-3 rounded-lg border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed"><span id="citeAPA"></span><button class="absolute top-2 right-2 px-2 py-1 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-xs" onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button></div></div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">BibTeX</label><div class="bg-slate-50 p-3 rounded-lg border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all"><span id="citeBib"></span><button class="absolute top-2 right-2 px-2 py-1 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-xs" onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button></div></div>
             </div>
         </div>
     </div>
 
-    <div id="detailModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-        <div class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
-            <div id="detailContent" class="overflow-y-auto p-8 custom-scroll"></div>
-        </div>
-    </div>
-    
-    <div id="researcherModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-        <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]">
-             <div id="researcherContent" class="overflow-y-auto custom-scroll p-0"></div>
-        </div>
-    </div>
+    <div id="detailModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')"><div class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden"><div id="detailContent" class="overflow-y-auto p-8 custom-scroll"></div></div></div>
+    <div id="researcherModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')"><div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]"><div id="researcherContent" class="overflow-y-auto custom-scroll p-0"></div></div></div>
 
     <script type="module">
         import { supabase } from "./auth.js";
 
-        // Constants & Config
-        const API = "https://api.openalex.org";
-        const CACHE_KEY = "asf_network_v6";
-        const HASH_KEY = "asf_members_hash_v6";
-        const CACHE_MS = 30 * 86400 * 1000;
-        const BATCH_SIZE = 25;
-        const RELEVANCE_THRESHOLD = 5;
-        
-        // Colors for Institutions
-        const COLORS = ['#16a34a','#059669','#0d9488','#0891b2','#0284c7','#2563eb','#4f46e5','#7c3aed','#9333ea','#c026d3','#db2777','#e11d48','#ea580c','#d97706'];
-
-        // Logic Helpers
+        // Utilities
         const sleep = ms => new Promise(r => setTimeout(r, ms));
-        const norm = s => (s||"").trim().toLowerCase().normalize("NFKD").replace(/\p{Diacritic}/gu, "").replace(/\s+/g, " ");
-        const esc = s => (s||"").replace(/[&<>"']/g, m => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[m]));
-        const jsStr = s => String(s??"").replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+        const norm = s => s?.trim().toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ") || "";
+        const esc = s => s ? s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])) : "";
+        const jsStr = s => (s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'");
         const suffix = id => (id||"").split("/").pop();
         const hashStr = s => { let h=0; for(let i=0;i<s.length;i++) h=Math.imul(31,h)+s.charCodeAt(i)|0; return h.toString(16); };
+        const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 
-        // Storage Wrapper
-        const Storage = {
-            get: k => { try { const i = JSON.parse(localStorage.getItem(k)); return (i && i.exp > Date.now()) ? i.val : null; } catch { return null; } },
-            set: (k, v) => {
-                try { localStorage.setItem(k, JSON.stringify({ val: v, exp: Date.now() + CACHE_MS })); }
-                catch { Object.keys(localStorage).filter(x => x.startsWith('asf_')).forEach(x => localStorage.removeItem(x)); try { localStorage.setItem(k, JSON.stringify({ val: v, exp: Date.now() + CACHE_MS })); } catch {} }
-            }
+        // Data & Config
+        const API = "https://api.openalex.org";
+        const STORAGE_KEY = "asf_network_v7";
+        const COLORS = ['#16a34a','#059669','#0d9488','#0891b2','#0284c7','#2563eb','#4f46e5','#7c3aed','#9333ea','#c026d3','#db2777','#e11d48','#ea580c','#d97706'];
+        const INST_MAP = [['arizona','Univ. of Arizona'],['unam','UNAM'],['nacional autonoma','UNAM'],['chile','Univ. de Chile'],['fraunhofer','Fraunhofer ISE'],['wageningen','Wageningen UR'],['nrel','NREL'],['davis','UC Davis'],['umass','UMass Amherst'],['massachusetts','UMass Amherst']];
+        const TOPIC_BLOCK = new Set(["medicine","physics","materials science","computer science","chemistry","biology","mathematics","philosophy","art","psychology","geology","sociology"]);
+        const NOWY = new Date().getFullYear();
+
+        const RX = {
+            AGRIPV_STRONG: /\b(agri[\s-]?(pv|photovoltaic(s)?|voltaic(s)?)|agro[\s-]?voltaic(s)?|agro[\s-]?photovoltaic(s)?|agrophotovoltaic(s)?|agri[\s-]?photovoltaik|agrivoltaic(s)?|agrivoltaik|agrivoltaico|agrivoltaica|agrivoltaque|solar[\s-]sharing|solar\s*sharing|solar\s*farming|solar\s*agriculture|farming\s*with\s*(solar|pv)|dual[\s-]?use\s*(solar|pv)|co[\s-]?locat(ed|ion)\s*(solar|pv)|colocat(ed|ion)\s*(solar|pv)|co[\s-]?develop(ed|ment)\s*(solar|pv)|photovoltaic\s*greenhouse|greenhouse\s*photovoltaic|solar\s*greenhouse|pv\s*(over|above)\s*crops?|solar\s*(over|above)\s*crops?|integrat(ed|ing)\s*(solar|pv)\s*(and|with)\s*agricultur|energy\s*and\s*food\s*production)\b/i,
+            AGRIPV_FUZZY: /\bagri.{0,5}(volt|pv|photo)\b/i,
+            AGRIPV_ACRONYM: /\bapv\b/i, // only counts w/ context
+            SOLAR: /\b(pv|photovoltaic(s)?|photovoltaik|solar(\s*(energy|power|electricity|panel(s)?|cell(s)?|module(s)?|array(s)?|system(s)?|farm(s)?|plant(s)?))?)\b/i,
+            AGRI: /\b(agricultur(e|al)?|agronom(y|ic)|crop(s)?|farming|farm(s|er)?|pasture|graz(e|ing)|livestock|horticultur(e|al)?|greenhouse(s)?|orchard(s)?|viticultur(e|al)?|food\s*production|field\s*trial(s)?)\b/i,
+            LAND: /\b(land\s*use|microclimat(e|ic)|soil(s)?|irrigat(e|ion|ing)|water\s*(use|saving)|evapotranspirat(ion|e)|biodiversit(y|ies)|ecosystem(s)?|habitat(s)?|shade|albedo|pollinat(or|ion)|runoff|erosion)\b/i,
+            ECON: /\b(economic(s)?|cost(\s*benefit)?|lcoe|finance|investment|policy|regulat(ion|ory)|market(s)?|business\s*model|adoption|acceptance|stakeholder(s)?)\b/i,
+            NEG: /\b(oncolog(y|ic)?|cancer|clinical|patient(s)?|surgery|astrophys(ic|ics)?|galax(y|ies)|cosmolog(y|ical)?|protein|genom(e|ic))\b/i
         };
 
-        // Network Fetcher
-        const fetchJSON = async (url, retries = 3) => {
+        const RELCFG = { keepMin: 2.0, absCap: 220, absConcurrency: 6, defaultMin: 3.0 };
+
+        const Storage = {
+            get: k => { try { const i=JSON.parse(localStorage.getItem(k)); return i&&i.e>Date.now()?i.v:null; } catch { return null; } },
+            set: (k,v) => { try { localStorage.setItem(k, JSON.stringify({v,e:Date.now()+2592e6})); } catch { localStorage.clear(); try { localStorage.setItem(k, JSON.stringify({v,e:Date.now()+2592e6})); } catch{} } }
+        };
+
+        const fetchJSON = async (url, retries=3) => {
             url += (url.includes('?') ? '&' : '?') + 'mailto=research-tool@agripv.org';
-            for (let i = 0; i < retries; i++) {
+            for (let i=0; i<retries; i++) {
                 try {
                     const r = await fetch(url);
                     if (r.ok) return await r.json();
                     if (r.status === 429) await sleep((parseFloat(r.headers.get("Retry-After")||1)*1000)*(i+1));
                     else if (r.status >= 500) await sleep(500*(i+1));
                     else throw 0;
-                } catch { if (i === retries - 1) return null; await sleep(300); }
+                } catch { if(i===retries-1) return null; await sleep(250); }
             }
         };
 
-        // Text Processing / Categorization
-        const RX = {
-            AGRIPV: /agrivoltaic|agrovoltaic|agrophotovoltaic|agri-pv|agri pv|solar sharing|dual.use.*(solar|pv)|co.locat.*(solar|pv)|farming.*(solar|pv)|(solar|pv).*farming/i,
-            SOLAR: /photovolta|solar\s*(panel|energy|power|cell|array|module|farm)|pv\s*system|renewable\s*energy/i,
-            LAND: /agricultur|crop|yield|farm|pasture|grazing|livestock|soil|irrigat|agronom|microclimate|shade|land\s*use/i,
-            ECON: /econom|cost.benefit|lcoe|policy|regulation|adoption|market|financ|business\s*model/i,
-            NEG: /\b(oncolog|cancer|clinical\s*trial|patient|surgery|nanoparticle|astrophys|galaxy|cosmolog|protein\s*fold)\b/i
-        };
-        const TOPIC_BLOCK = new Set(["medicine","physics","materials science","computer science","chemistry","biology","mathematics","philosophy","art","psychology","geology","sociology"]);
-
-        const calcRel = (w) => {
-            const t = norm(w.title);
-            if (RX.NEG.test(t)) return 0;
-            let s = 0;
-            if (RX.AGRIPV.test(t)) s += 15;
-            const sol = RX.SOLAR.test(t), land = RX.LAND.test(t);
-            if (sol && land) s += 10; else if (sol) s += 3; else if (land) s += 2;
-            if (RX.ECON.test(t) && s > 3) s += 2;
-            if ((w.concepts || []).some(c => /agri|solar|renew|land/i.test(c.display_name))) s += 3;
-            return s;
-        };
-
-        const getInst = (i) => {
+        const getInst = i => {
             if (!i) return "Unknown";
-            i = i.toLowerCase();
-            if (i.includes('arizona')) return "Univ. of Arizona";
-            if (i.includes('unam') || i.includes('nacional autónoma')) return "UNAM";
-            if (i.includes('chile')) return "Univ. de Chile";
-            if (i.includes('fraunhofer')) return "Fraunhofer ISE";
-            if (i.includes('wageningen')) return "Wageningen UR";
-            if (i.includes('nrel')) return "NREL";
-            if (i.includes('davis')) return "UC Davis";
-            if (i.includes('umass') || i.includes('massachusetts')) return "UMass Amherst";
-            return i.replace(/university/gi, 'Univ.').replace(/institute/gi, 'Inst.').split(',')[0].trim().substring(0, 25);
+            const low = norm(i), hit = INST_MAP.find(x => low.includes(x[0]));
+            return hit ? hit[1] : i.replace(/university/gi,'Univ.').replace(/institute/gi,'Inst.').split(',')[0].trim().substring(0, 28);
         };
 
-        // Application Core
+        const absText = idx => {
+            if(!idx) return "";
+            const a = [];
+            Object.keys(idx).forEach(k => idx[k].forEach(i => a[i] = k));
+            return a.join(' ');
+        };
+
+        const scoreWork = (w, abs="") => {
+            const title = norm(w.title);
+            const kw = norm((w.keywords||[]).map(k => k.display_name || k.keyword || "").join(" "));
+            const tops = norm((w.topics||[]).map(t => t.display_name).join(" "));
+            const conc = norm((w.concepts||[]).map(c => c.display_name).join(" "));
+            const txt = `${title} ${kw} ${tops} ${conc} ${norm(abs)}`.trim();
+
+            let s = 0, why = [];
+            const strong = RX.AGRIPV_STRONG.test(title) || RX.AGRIPV_STRONG.test(kw) || RX.AGRIPV_STRONG.test(tops) || RX.AGRIPV_STRONG.test(conc) || RX.AGRIPV_STRONG.test(abs);
+            const fuzzy = !strong && (RX.AGRIPV_FUZZY.test(title) || RX.AGRIPV_FUZZY.test(abs));
+            const solar = RX.SOLAR.test(title) || RX.SOLAR.test(kw) || RX.SOLAR.test(tops) || RX.SOLAR.test(conc) || RX.SOLAR.test(abs);
+            const agri = RX.AGRI.test(title) || RX.AGRI.test(kw) || RX.AGRI.test(tops) || RX.AGRI.test(conc) || RX.AGRI.test(abs);
+            const land = RX.LAND.test(title) || RX.LAND.test(kw) || RX.LAND.test(tops) || RX.LAND.test(conc) || RX.LAND.test(abs);
+            const econ = RX.ECON.test(title) || RX.ECON.test(kw) || RX.ECON.test(tops) || RX.ECON.test(conc) || RX.ECON.test(abs);
+
+            const neg = RX.NEG.test(txt);
+            if (strong) { s += (RX.AGRIPV_STRONG.test(title) ? 30 : 22); why.push(RX.AGRIPV_STRONG.test(title) ? 'agripv-title' : 'agripv-meta'); }
+            else if (fuzzy) { s += 11; why.push('agripv-fuzzy'); }
+
+            const apv = RX.AGRIPV_ACRONYM.test(title) && (solar || agri || land);
+            if (apv) { s += 8; why.push('apv'); }
+
+            if (solar && (agri || land)) { s += 12; why.push('solar+land'); }
+            else if (solar) s += 3;
+            else if (agri || land) s += 2;
+
+            if (econ && (solar || strong || fuzzy)) { s += 2; why.push('econ'); }
+
+            // Concepts can be noisy; give small credit for relevant signals
+            if ((w.concepts||[]).some(c => /agrivoltaic|agrovoltaic|agrophotovoltaic|photovoltaic|solar energy|renewable energy|agriculture|land use/i.test(c.display_name))) s += 2;
+
+            // Small quality nudges (kept tiny to avoid bias)
+            s += Math.min(2.5, Math.log10((w.cited_by_count||0)+1));
+            if (w.publication_year >= NOWY-2) s += 0.6;
+
+            // Penalties
+            if (neg && !(strong||fuzzy)) s -= 12;
+            if ((w.type||"").match(/dataset|reference|erratum/i)) s -= 3;
+
+            s = Math.round(Math.max(0, s) * 10) / 10;
+            return { s, why, strong: !!(strong || fuzzy) };
+        };
+
+        const mapLimit = async (items, limit, fn) => {
+            const out = new Array(items.length);
+            let i = 0;
+            const workers = Array.from({length: Math.min(limit, items.length)}, async () => {
+                while (i < items.length) {
+                    const idx = i++;
+                    out[idx] = await fn(items[idx], idx);
+                }
+            });
+            await Promise.all(workers);
+            return out;
+        };
+
+        // Main App
         const app = {
             data: { researchers: [], pubs: [], topics: new Map(), graph: { nodes: [], links: [] } },
-            state: { filters: { q: '', topics: new Set(), insts: new Set(), yFrom: null, yTo: null }, page: 1, sort: 'recent' },
+            state: {
+                filters: { q: '', topics: new Set(), insts: new Set(), yFrom: null, yTo: null, minRel: RELCFG.defaultMin },
+                page: 1, sort: 'recent',
+                graph: { cluster: true, labels: true },
+                lastFiltered: []
+            },
             d3: {}, instColors: new Map(),
 
             init: async () => {
-                app.setupUI(); app.setupGraph();
-                const stat = t => document.getElementById('loadingStatus').textContent = t;
-                const prog = p => document.getElementById('loadingProgress').style.width = `${p}%`;
+                app.setupUI();
+                app.setupGraph();
+                const prog = (p, t) => { document.getElementById('loadingProgress').style.width = `${p}%`; document.getElementById('loadingStatus').textContent = t; };
 
                 try {
-                    stat("Fetching network members..."); prog(10);
+                    prog(8, "Fetching network members...");
                     const { data: profiles } = await supabase.from("profiles").select("id,full_name,work_email,affiliation").not("full_name", "is", null);
-                    if (!profiles?.length) throw new Error("No network members found.");
+                    if (!profiles?.length) throw "No members found";
 
-                    const hash = hashStr(profiles.map(p => p.id).sort().join('|'));
-                    const cached = Storage.get(CACHE_KEY);
-
-                    if (Storage.get(HASH_KEY) === hash && cached) {
-                        stat("Loading from cache..."); prog(90);
-                        app.restore(cached, profiles);
+                    const hash = hashStr(profiles.map(p=>p.id).sort().join('|')), cached = Storage.get(STORAGE_KEY);
+                    if (Storage.get(STORAGE_KEY+"_hash") === hash && cached) {
+                        prog(85, "Loading from cache...");
+                        app.restore(cached);
                     } else {
-                        stat("Resolving author profiles..."); prog(20);
-                        const researchers = await app.resolve(profiles, (c, t) => prog(20 + (c/t)*20));
-                        
-                        stat("Fetching publications..."); prog(40);
-                        const pubs = await app.fetchWorks(researchers, (c, t) => prog(40 + (c/t)*50));
-                        
+                        prog(18, "Resolving profiles...");
+                        const researchers = await app.resolve(profiles, prog);
+                        prog(38, "Fetching publications...");
+                        const pubs = await app.fetchWorks(researchers, prog);
                         app.build(researchers, pubs);
-                        Storage.set(HASH_KEY, hash);
-                        Storage.set(CACHE_KEY, app.pack());
+                        Storage.set(STORAGE_KEY+"_hash", hash);
+                        Storage.set(STORAGE_KEY, app.pack());
                     }
-                    prog(100);
-                } catch (e) { console.error(e); alert("Failed to load network data."); }
-                
-                await sleep(500);
-                document.getElementById('loadingOverlay').classList.add('hidden');
-                app.render();
-                // Ensure graph fills container on first load
-                setTimeout(() => { app.resizeGraph(); app.centerGraph(); }, 200);
+
+                    prog(100, "Done");
+                    setTimeout(() => {
+                        document.getElementById('loadingOverlay').classList.add('hidden');
+                        app.render();
+                        setTimeout(()=>app.fitGraph(), 400);
+                    }, 450);
+                } catch (e) { console.error(e); alert("Failed to load data."); }
             },
 
-            // 1. Resolve Profile -> OpenAlex ID
-            resolve: async (profiles, onProg) => {
-                const authors = [];
-                for (let i = 0; i < profiles.length; i += 5) {
-                    const batch = profiles.slice(i, i + 5);
-                    const res = await Promise.all(batch.map(async p => {
-                        const data = await fetchJSON(`${API}/authors?search=${encodeURIComponent(p.full_name)}&per_page=1`);
-                        const match = data?.results?.find(r => norm(r.display_name) === norm(p.full_name)) || data?.results?.[0];
-                        const inst = getInst(match?.last_known_institutions?.[0]?.display_name || p.affiliation);
-                        return {
-                            id: match?.id || `local:${p.id}`,
-                            display_name: match?.display_name || p.full_name,
-                            supabase_id: p.id, inst, color: app.col(inst),
-                            net_works: 0, net_cited: 0, topics: {}
-                        };
+            resolve: async (profiles, prog) => {
+                const out = [];
+                const pick = (p, res=[]) => {
+                    const want = norm(p.full_name), aff = norm(p.affiliation||"");
+                    let best = null, bestS = -1;
+                    res.forEach(r => {
+                        const n = norm(r.display_name||"");
+                        const inst = norm(r.last_known_institutions?.[0]?.display_name||"");
+                        let s = 0;
+                        if (n === want) s += 10;
+                        if (n.includes(want) || want.includes(n)) s += 4;
+                        if (aff && inst && (inst.includes(aff) || aff.includes(inst) || inst.split(' ').some(x=>aff.includes(x) && x.length>4))) s += 4;
+                        s += Math.min(2, (r.works_count||0)/200);
+                        if (s > bestS) { bestS = s; best = r; }
+                    });
+                    return best;
+                };
+
+                for (let i=0; i<profiles.length; i+=6) {
+                    const chunk = profiles.slice(i, i+6);
+                    const res = await Promise.all(chunk.map(async p => {
+                        const d = await fetchJSON(`${API}/authors?search=${encodeURIComponent(p.full_name)}&per_page=10&select=id,display_name,works_count,cited_by_count,last_known_institutions`);
+                        const m = pick(p, d?.results||[]) || d?.results?.[0];
+                        const inst = getInst(m?.last_known_institutions?.[0]?.display_name || p.affiliation);
+                        return { id: m?.id||`local:${p.id}`, display_name: m?.display_name||p.full_name, inst, color: app.col(inst), net_works: 0, net_cited: 0, topics: {}, deg: 0 };
                     }));
-                    authors.push(...res);
-                    if (onProg) onProg(i + batch.length, profiles.length);
-                    await sleep(100);
+                    out.push(...res);
+                    prog(18 + (i/profiles.length)*18, "Resolving profiles...");
+                    await sleep(90);
                 }
-                return authors;
+                return out;
             },
 
-            // 2. Fetch Works
-            fetchWorks: async (authors, onProg) => {
-                const validIds = authors.filter(a => !a.id.startsWith('local:')).map(a => a.id);
+            fetchWorks: async (authors, prog) => {
+                const ids = authors.filter(a => !a.id.startsWith('local:')).map(a => a.id);
                 const works = new Map();
-                const batches = [];
-                for (let i = 0; i < validIds.length; i += BATCH_SIZE) batches.push(validIds.slice(i, i + BATCH_SIZE));
 
-                const startYear = new Date().getFullYear() - 10;
-                for (let i = 0; i < batches.length; i++) {
-                    let cursor = '*', page = 0;
-                    while (cursor && page < 6) { // Cap depth
-                        const res = await fetchJSON(`${API}/works?filter=authorships.author.id:${batches[i].join('|')},from_publication_date:${startYear}-01-01&per_page=200&cursor=${cursor}&select=id,title,publication_year,cited_by_count,primary_location,authorships,concepts,doi,open_access`);
-                        res?.results?.forEach(w => {
-                            if (!works.has(w.id)) {
-                                const rel = calcRel(w);
-                                if (rel >= RELEVANCE_THRESHOLD) works.set(w.id, { ...w, _relevance: rel });
-                            }
+                const fromY = Math.max(1990, NOWY - 20);
+                const sel = [
+                    "id","title","publication_year","cited_by_count","type",
+                    "primary_location","open_access","doi",
+                    "authorships","concepts","topics","keywords"
+                ].join(',');
+
+                for (let i=0; i<ids.length; i+=25) {
+                    let cursor = '*', page = 0, maxPages = 10;
+                    while (cursor && page < maxPages) {
+                        const url = `${API}/works?filter=authorships.author.id:${ids.slice(i, i+25).join('|')},from_publication_date:${fromY}-01-01&per_page=200&cursor=${encodeURIComponent(cursor)}&select=${sel}`;
+                        const res = await fetchJSON(url);
+                        (res?.results||[]).forEach(w => {
+                            if (works.has(w.id)) return;
+                            const rel = scoreWork(w);
+                            if (rel.s >= RELCFG.keepMin || rel.strong) works.set(w.id, {...w, _relevance: rel.s, _why: rel.why});
                         });
                         cursor = res?.meta?.next_cursor;
                         page++;
                         if (cursor) await sleep(50);
                     }
-                    if (onProg) onProg(i + 1, batches.length);
+                    prog(38 + (i/Math.max(1,ids.length))*42, "Fetching publications...");
                 }
+
+                // Abstract enrichment (targets borderline / abstract-only matches)
+                const all = [...works.values()];
+                const border = all
+                    .filter(w => w._relevance < (RELCFG.defaultMin + 1.5) && w._relevance >= RELCFG.keepMin && !(w._why||[]).includes('agripv-title') && !(w._why||[]).includes('agripv-meta'))
+                    .sort((a,b)=>b._relevance-a._relevance)
+                    .slice(0, RELCFG.absCap);
+
+                if (border.length) {
+                    prog(82, `Improving targeting (abstract scan: ${border.length})...`);
+                    let done = 0;
+                    await mapLimit(border, RELCFG.absConcurrency, async w => {
+                        const d = await fetchJSON(`${API}/works/${suffix(w.id)}?select=abstract_inverted_index`);
+                        const abs = absText(d?.abstract_inverted_index);
+                        if (abs) {
+                            const rel = scoreWork(w, abs);
+                            if (rel.s > w._relevance) { w._relevance = rel.s; w._why = [...new Set([...(w._why||[]), ...rel.why, 'abs'])]; }
+                        }
+                        done++;
+                        prog(82 + (done/border.length)*10, `Improving targeting (abstract scan ${done}/${border.length})...`);
+                        await sleep(35);
+                    });
+                }
+
                 return [...works.values()];
             },
 
-            // 3. Build Data Structures
             build: (researchers, rawPubs) => {
                 const rMap = new Map(researchers.map(r => [r.id, r]));
-                app.data.pubs = rawPubs.map(p => {
-                    const members = p.authorships.filter(a => rMap.has(a.author?.id)).map(a => rMap.get(a.author.id));
-                    if (!members.length) return null;
+                const cleanTopics = (w) => {
+                    const tp = (w.topics||[]).filter(t => (t.score||0) >= 0.25).map(t=>t.display_name).filter(Boolean);
+                    if (tp.length) return tp.slice(0, 7);
+                    return (w.concepts||[])
+                        .filter(c => (c.score||0) > 0.55 && (c.level||0) > 0 && !TOPIC_BLOCK.has(norm(c.display_name)))
+                        .map(c=>c.display_name).slice(0, 7);
+                };
 
-                    const topics = (p.concepts || [])
-                        .filter(c => c.score > 0.5 && c.level > 0 && !TOPIC_BLOCK.has(norm(c.display_name)))
-                        .map(c => c.display_name).slice(0, 6);
-                    
-                    members.forEach(r => {
-                        r.net_works++; r.net_cited += p.cited_by_count;
-                        topics.forEach(t => { r.topics[t] = (r.topics[t]||0)+1; app.data.topics.set(t, (app.data.topics.get(t)||0)+1); });
+                app.data.pubs = rawPubs.map(p => {
+                    const mems = (p.authorships||[]).filter(a => rMap.has(a.author?.id)).map(a => rMap.get(a.author.id));
+                    if (!mems.length) return null;
+
+                    const tops = cleanTopics(p);
+                    mems.forEach(r => {
+                        r.net_works++;
+                        r.net_cited += (p.cited_by_count||0);
+                        tops.forEach(t => { r.topics[t]=(r.topics[t]||0)+1; app.data.topics.set(t, (app.data.topics.get(t)||0)+1); });
                     });
 
+                    const url = p.primary_location?.landing_page_url || p.doi || p.primary_location?.pdf_url || null;
                     return {
-                        id: p.id, title: p.title, publication_year: p.publication_year, cited_by_count: p.cited_by_count,
-                        doi: p.doi, source: p.primary_location?.source?.display_name, is_oa: p.open_access?.is_oa,
-                        _relevance: p._relevance, _topics: topics,
-                        _allAuthors: p.authorships.map(a => ({
-                            id: a.author?.id, name: a.author?.display_name,
-                            isMember: rMap.has(a.author?.id)
-                        })),
-                        _memberAuthors: members
+                        id: p.id, title: p.title, publication_year: p.publication_year, cited_by_count: p.cited_by_count||0,
+                        doi: p.doi, url, source: p.primary_location?.source?.display_name, is_oa: p.open_access?.is_oa, type: p.type,
+                        _relevance: p._relevance||0, _why: p._why||[], _topics: tops,
+                        _allAuthors: (p.authorships||[]).map(a => ({ id: a.author?.id, name: a.author?.display_name, isMember: rMap.has(a.author?.id) })),
+                        _memberAuthors: mems
                     };
                 }).filter(Boolean);
 
@@ -485,413 +504,538 @@
             },
 
             buildGraph: () => {
-                const links = new Map();
-                const link = (a, b) => {
-                    const k = [a, b].sort().join('|');
-                    const l = links.get(k) || { source: a, target: b, weight: 0 };
-                    l.weight += 1; links.set(k, l);
+                const links = new Map(), deg = new Map();
+                const addL = (a,b) => {
+                    const k=[a,b].sort().join('|');
+                    const l=links.get(k)||{source:a,target:b,weight:0,pubs:0};
+                    l.weight++; l.pubs++;
+                    links.set(k,l);
+                    deg.set(a, (deg.get(a)||0)+1);
+                    deg.set(b, (deg.get(b)||0)+1);
                 };
-                
+
                 app.data.pubs.forEach(p => {
-                    const ids = p._memberAuthors.map(a => a.id);
-                    for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) link(ids[i], ids[j]);
+                    const ids = p._memberAuthors.map(a=>a.id);
+                    for(let i=0;i<ids.length;i++) for(let j=i+1;j<ids.length;j++) addL(ids[i],ids[j]);
                 });
-                
-                app.data.graph = {
-                    nodes: app.data.researchers.map(r => ({ ...r, radius: Math.min(35, 12 + Math.sqrt(r.net_works)*4) })),
-                    links: [...links.values()]
-                };
+
+                const nodes = app.data.researchers.map(r => {
+                    const d = deg.get(r.id)||0;
+                    const base = 11 + Math.sqrt(r.net_works||0)*3.2;
+                    const bump = Math.sqrt(d)*1.8;
+                    return {...r, deg: d, radius: clamp(base + bump, 12, 34)};
+                });
+
+                app.data.graph = { nodes, links: [...links.values()] };
             },
 
-            // 4. Cache & Restore
             pack: () => ({
-                researchers: app.data.researchers.map(r => ({ id: r.id, display_name: r.display_name, inst: r.inst, net_works: r.net_works, net_cited: r.net_cited, topics: r.topics })),
-                pubs: app.data.pubs.map(p => ({
-                    id: p.id, title: p.title, publication_year: p.publication_year, cited_by_count: p.cited_by_count,
-                    doi: p.doi, source: p.source, is_oa: p.is_oa, _relevance: p._relevance, _topics: p._topics,
-                    _allAuthors: p._allAuthors, _memIds: p._memberAuthors.map(a => a.id)
-                })),
-                topics: [...app.data.topics]
+                r: app.data.researchers.map(r=>({id:r.id, n:r.display_name, i:r.inst, nw:r.net_works, nc:r.net_cited, t:r.topics, d:r.deg})),
+                p: app.data.pubs.map(p=>({id:p.id, t:p.title, y:p.publication_year, c:p.cited_by_count, d:p.doi, u:p.url, s:p.source, oa:p.is_oa, ty:p.type, r:p._relevance, w:p._why, tp:p._topics, aa:p._allAuthors, ma:p._memberAuthors.map(m=>m.id)})),
+                t: [...app.data.topics]
             }),
 
-            restore: (cache, profiles) => {
-                app.data.researchers = cache.researchers.map(r => ({ ...r, color: app.col(r.inst) }));
+            restore: (c) => {
+                app.data.researchers = c.r.map(r => ({ ...r, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, topics: r.t, deg: r.d||0, color: app.col(r.i) }));
                 const rMap = new Map(app.data.researchers.map(r => [r.id, r]));
-                app.data.pubs = cache.pubs.map(p => ({ ...p, _memberAuthors: (p._memIds||[]).map(id => rMap.get(id)).filter(Boolean) }));
-                app.data.topics = new Map(cache.topics);
+                app.data.pubs = c.p.map(p => ({
+                    ...p, title: p.t, publication_year: p.y, cited_by_count: p.c, doi: p.d, url: p.u, source: p.s, is_oa: p.oa, type: p.ty,
+                    _relevance: p.r, _why: p.w||[], _topics: p.tp, _allAuthors: p.aa,
+                    _memberAuthors: p.ma.map(id => rMap.get(id)).filter(Boolean)
+                }));
+                app.data.topics = new Map(c.t);
                 app.buildGraph();
             },
 
-            col: (i) => {
-                if (!app.instColors.has(i)) app.instColors.set(i, COLORS[app.instColors.size % COLORS.length]);
-                return app.instColors.get(i);
-            },
+            col: i => { if(!app.instColors.has(i)) app.instColors.set(i, COLORS[app.instColors.size % COLORS.length]); return app.instColors.get(i); },
 
-            // 5. Renderers
             render: () => {
-                const { q, topics, insts, yFrom, yTo } = app.state.filters;
-                const ql = q.toLowerCase();
-                
+                const { q, topics, insts, yFrom, yTo, minRel } = app.state.filters;
+                const ql = norm(q);
+
                 const filtered = app.data.pubs.filter(p => {
+                    if (p._relevance < minRel) return false;
                     if (yFrom && p.publication_year < yFrom) return false;
                     if (yTo && p.publication_year > yTo) return false;
                     if (insts.size && !p._memberAuthors.some(a => insts.has(a.inst))) return false;
                     if (topics.size && !p._topics.some(t => topics.has(t))) return false;
-                    return !ql || p.title.toLowerCase().includes(ql) || p._allAuthors.some(a => a.name?.toLowerCase().includes(ql));
+                    if (!ql) return true;
+                    return norm(p.title).includes(ql)
+                        || p._allAuthors.some(a => norm(a.name).includes(ql))
+                        || p._topics.some(t => norm(t).includes(ql));
                 });
 
-                // Update Stats
-                const uniqueMems = new Set(filtered.flatMap(p => p._memberAuthors.map(a => a.id)));
-                document.getElementById('statPublications').textContent = filtered.length;
-                document.getElementById('statResearchers').textContent = uniqueMems.size;
-                document.getElementById('statCitations').textContent = filtered.reduce((s,p)=>s+p.cited_by_count,0).toLocaleString();
-                document.getElementById('statTopics').textContent = app.data.topics.size;
-                document.getElementById('filteredCount').textContent = filtered.length;
+                app.state.lastFiltered = filtered;
 
-                // Sort & Page
+                const stats = {
+                    pubs: filtered.length,
+                    cites: filtered.reduce((s,p)=>s+p.cited_by_count,0),
+                    mems: new Set(filtered.flatMap(p=>p._memberAuthors.map(a=>a.id))).size
+                };
+
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-lg font-bold text-slate-700 leading-none">${stats.mems}</span><span class="text-[9px] text-slate-400 font-semibold mt-1">MEMBERS</span></div>
+                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-lg font-bold text-slate-700 leading-none">${stats.pubs}</span><span class="text-[9px] text-slate-400 font-semibold mt-1">WORKS</span></div>
+                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-lg font-bold text-slate-700 leading-none">${stats.cites.toLocaleString()}</span><span class="text-[9px] text-slate-400 font-semibold mt-1">CITES</span></div>
+                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-lg font-bold text-slate-700 leading-none">${app.data.topics.size}</span><span class="text-[9px] text-slate-400 font-semibold mt-1">TOPICS</span></div>`;
+                document.getElementById('filteredCount').textContent = stats.pubs;
+
                 const sortFn = {
-                    cited: (a,b) => b.cited_by_count - a.cited_by_count,
-                    relevance: (a,b) => b._relevance - a._relevance,
-                    title: (a,b) => a.title.localeCompare(b.title),
-                    recent: (a,b) => b.publication_year - a.publication_year
+                    cited: (a,b)=>b.cited_by_count-a.cited_by_count,
+                    relevance: (a,b)=>b._relevance-a._relevance || b.cited_by_count-a.cited_by_count,
+                    title: (a,b)=>a.title.localeCompare(b.title),
+                    recent: (a,b)=>b.publication_year-a.publication_year || b._relevance-a._relevance
                 }[app.state.sort];
-                
-                const sorted = [...filtered].sort(sortFn);
-                const pageSize = 12;
-                const totalPages = Math.ceil(sorted.length / pageSize);
-                if (app.state.page > totalPages) app.state.page = 1;
+                filtered.sort(sortFn);
 
-                const start = (app.state.page - 1) * pageSize;
-                const pageItems = sorted.slice(start, start + pageSize);
+                const size = 12, pages = Math.ceil(filtered.length/size), page = app.state.page = (app.state.page > pages) ? 1 : app.state.page;
+                const list = document.getElementById('publicationsList');
 
-                // Render List
-                const listEl = document.getElementById('publicationsList');
-                listEl.innerHTML = pageItems.length ? pageItems.map(p => `
-                    <div class="pub-card p-4 bg-white mb-2" onclick="app.showWorkDetail('${p.id}')">
+                const whyBadge = p => {
+                    const w = new Set(p._why||[]);
+                    if (w.has('agripv-title')) return `<span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-green-100 text-green-800 border border-green-200">AgriPV</span>`;
+                    if (w.has('agripv-meta') || w.has('agripv-fuzzy')) return `<span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">Likely</span>`;
+                    if (w.has('abs')) return `<span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-100 text-amber-800 border border-amber-200">Abstract</span>`;
+                    return '';
+                };
+
+                list.innerHTML = filtered.slice((page-1)*size, page*size).map(p => `
+                    <div class="pub-card p-4 bg-white mb-2" onclick="app.detail('${p.id}')">
                         <div class="flex items-start justify-between gap-3 mb-2">
                             <h4 class="font-bold text-slate-800 text-sm leading-snug flex-1">${esc(p.title)}</h4>
-                            ${p.is_oa ? '<span class="shrink-0 px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded uppercase tracking-wide">OA</span>' : ''}
+                            <div class="shrink-0 flex items-center gap-1.5">
+                                ${p.is_oa?'<span class="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded uppercase tracking-wide">OA</span>':''}
+                                ${whyBadge(p)}
+                            </div>
                         </div>
                         <div class="flex flex-wrap gap-1 mb-2.5">
                             ${p._allAuthors.slice(0,5).map(a => `<span class="px-2 py-0.5 rounded text-[10px] truncate max-w-[120px] ${a.isMember?'network-member font-medium':'external-author'}">${esc(a.name)}</span>`).join('')}
                             ${p._allAuthors.length>5?`<span class="text-[10px] text-slate-400 self-center">+${p._allAuthors.length-5}</span>`:''}
                         </div>
                         <div class="flex items-center gap-4 text-[10px] text-slate-500 font-medium">
-                            <span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${p.publication_year}</span>
+                            <span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${p.publication_year||''}</span>
                             <span class="flex items-center gap-1"><i class="fas fa-quote-right text-slate-400"></i> ${p.cited_by_count}</span>
-                            <span class="ml-auto text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-100">Score: ${p._relevance}</span>
+                            <span class="ml-auto text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-100">Score: ${p._relevance.toFixed(1)}</span>
                             <div class="flex gap-1 ml-2">
                                 <button class="hover:text-brand p-1" onclick="event.stopPropagation();app.cite('${p.id}')" title="Cite"><i class="fas fa-quote-left"></i></button>
-                                ${p.doi ? `<a href="${p.doi}" target="_blank" onclick="event.stopPropagation()" class="hover:text-blue-600 p-1" title="DOI"><i class="fas fa-external-link-alt"></i></a>` : ''}
+                                ${p.url?`<a href="${p.url}" target="_blank" onclick="event.stopPropagation()" class="hover:text-blue-600 p-1" title="Open"><i class="fas fa-external-link-alt"></i></a>`:''}
                             </div>
                         </div>
-                    </div>`).join('') : '<div class="text-center py-20 text-slate-400 text-sm">No publications match your filters.</div>';
+                    </div>`).join('') || '<div class="text-center py-20 text-slate-400 text-sm">No results found.</div>';
+                list.scrollTop = 0;
 
-                listEl.scrollTop = 0;
-
-                // Render Pagination
-                document.getElementById('showingFrom').textContent = filtered.length ? start + 1 : 0;
-                document.getElementById('showingTo').textContent = Math.min(start + pageSize, filtered.length);
+                document.getElementById('showingFrom').textContent = filtered.length ? (page-1)*size + 1 : 0;
+                document.getElementById('showingTo').textContent = Math.min(page*size, filtered.length);
                 document.getElementById('totalPublications').textContent = filtered.length;
-                app.renderPagination(totalPages, app.state.page);
+
+                let btns = [], addB = (p,l=p,a=false) => btns.push(`<button onclick="app.setPage(${p})" class="w-7 h-7 flex items-center justify-center rounded text-[10px] font-medium transition-colors ${a?'bg-slate-800 text-white':'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`);
+                if(pages>1) {
+                    addB(Math.max(1,page-1),'<i class="fas fa-chevron-left"></i>');
+                    let r = pages<=7 ? Array.from({length:pages},(_,i)=>i+1) : (page<=4 ? [1,2,3,4,5,'...',pages] : (page>=pages-3 ? [1,'...',pages-4,pages-3,pages-2,pages-1,pages] : [1,'...',page-1,page,page+1,'...',pages]));
+                    r.forEach(x => x==='...' ? btns.push('<span class="text-xs text-slate-400 self-end px-1">...</span>') : addB(x,x,x===page));
+                    addB(Math.min(pages,page+1),'<i class="fas fa-chevron-right"></i>');
+                }
+                document.getElementById('paginationContainer').innerHTML = btns.join('');
 
                 app.renderGraph(filtered);
-                app.renderFilters(insts, topics);
+                app.renderFilters();
             },
 
-            renderPagination: (total, current) => {
-                const con = document.getElementById('paginationContainer');
-                if (total <= 1) { con.innerHTML = ''; return; }
-                
-                let btns = [];
-                const add = (p, lbl=p, active=false) => btns.push(`<button onclick="app.setPage(${p})" class="w-7 h-7 flex items-center justify-center rounded text-[10px] font-medium transition-colors ${active ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${lbl}</button>`);
-                
-                add(Math.max(1, current - 1), '<i class="fas fa-chevron-left"></i>');
-                
-                let range = [];
-                if (total <= 7) range = Array.from({length: total}, (_, i) => i + 1);
-                else {
-                    if (current <= 4) range = [1, 2, 3, 4, 5, '...', total];
-                    else if (current >= total - 3) range = [1, '...', total - 4, total - 3, total - 2, total - 1, total];
-                    else range = [1, '...', current - 1, current, current + 1, '...', total];
-                }
+            renderFilters: () => {
+                const { insts, topics } = app.state.filters;
+                const iCounts = new Map();
+                app.data.researchers.forEach(r => iCounts.set(r.inst, (iCounts.get(r.inst)||0)+1));
 
-                range.forEach(r => {
-                    if (r === '...') btns.push('<span class="text-xs text-slate-400 self-end px-1">...</span>');
-                    else add(r, r, r === current);
-                });
-
-                add(Math.min(total, current + 1), '<i class="fas fa-chevron-right"></i>');
-                con.innerHTML = btns.join('');
-            },
-            
-            setPage: (p) => { app.state.page = p; app.render(); },
-
-            renderFilters: (insts, topics) => {
-                const iCounts = new Map(); app.data.researchers.forEach(r => iCounts.set(r.inst, (iCounts.get(r.inst)||0)+1));
                 document.getElementById('institutionFilters').innerHTML = [...iCounts].sort((a,b)=>b[1]-a[1]).map(([i,c]) => `
                     <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1.5 rounded group transition-colors">
-                        <input type="checkbox" onchange="app.togF('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 focus:ring-green-500 w-3.5 h-3.5" ${insts.has(i)?'checked':''}>
+                        <input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 focus:ring-green-500 w-3.5 h-3.5" ${insts.has(i)?'checked':''}>
                         <div class="w-2 h-2 rounded-full shrink-0" style="background:${app.col(i)}"></div>
                         <span class="text-[11px] text-slate-600 truncate flex-1 group-hover:text-slate-900">${esc(i)}</span>
                         <span class="text-[9px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span>
                     </label>`).join('');
 
-                document.getElementById('topicFilters').innerHTML = [...app.data.topics].sort((a,b)=>b[1]-a[1]).slice(0,40).map(([t]) => `
-                    <button onclick="app.togF('topics','${jsStr(t)}')" class="px-2 py-1 rounded text-[10px] transition-all border ${topics.has(t)?'bg-green-100 text-green-800 border-green-200 font-semibold':'bg-slate-50 text-slate-500 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-sm'}">${esc(t)}</button>`).join('');
+                document.getElementById('topicFilters').innerHTML = [...app.data.topics].sort((a,b)=>b[1]-a[1]).slice(0,40).map(([t]) =>
+                    `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-2 py-1 rounded text-[10px] transition-all border ${topics.has(t)?'bg-green-100 text-green-800 border-green-200 font-semibold':'bg-slate-50 text-slate-500 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-sm'}">${esc(t)}</button>`
+                ).join('');
 
                 const act = topics.size + insts.size;
                 document.getElementById('activeFiltersPanel').classList.toggle('hidden', act === 0);
                 document.getElementById('activeFilterCount').textContent = act;
-                document.getElementById('activeFilterTags').innerHTML = 
-                    [...topics].map(t => `<span class="bg-green-50 text-green-700 px-2 py-0.5 rounded border border-green-200 text-[10px] flex gap-1 items-center font-medium">${esc(t)}<button onclick="app.togF('topics','${jsStr(t)}')" class="hover:text-red-500 ml-1"><i class="fas fa-times"></i></button></span>`).join('') +
-                    [...insts].map(i => `<span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200 text-[10px] flex gap-1 items-center font-medium">${esc(i)}<button onclick="app.togF('insts','${jsStr(i)}')" class="hover:text-red-500 ml-1"><i class="fas fa-times"></i></button></span>`).join('');
-                
-                // Update Legend
-                document.getElementById('legendContainer').innerHTML = [...app.instColors].filter(([i]) => app.data.researchers.some(r=>r.inst===i)).map(([i,c]) => `
-                    <div class="flex items-center gap-2 py-0.5">
-                        <span class="w-2 h-2 rounded-full shadow-sm" style="background:${c}"></span>
-                        <span class="text-[10px] text-slate-600 truncate">${esc(i)}</span>
-                    </div>`).join('');
+
+                const tags = [
+                    ...[...topics].map(t => app.tag(t,'topics','green')),
+                    ...[...insts].map(i => app.tag(i,'insts','blue'))
+                ].join('');
+                document.getElementById('activeFilterTags').innerHTML = tags;
+
+                document.getElementById('legendContainer').innerHTML = [...app.instColors]
+                    .filter(([i]) => app.data.researchers.some(r=>r.inst===i))
+                    .map(([i,c]) => `<div class="flex items-center gap-2 py-0.5"><span class="w-2 h-2 rounded-full shadow-sm" style="background:${c}"></span><span class="text-[10px] text-slate-600 truncate">${esc(i)}</span></div>`)
+                    .join('');
             },
 
-            // Graph Logic
-            setupGraph: () => {
-                const svg = d3.select('#networkGraph'), g = svg.append('g');
-                app.d3 = { svg, g, zoom: d3.zoom().scaleExtent([0.1, 5]).on('zoom', e => g.attr('transform', e.transform)) };
-                svg.call(app.d3.zoom);
-                
-                // Initialize simulation with dynamic centers
-                app.d3.sim = d3.forceSimulation()
-                    .force('link', d3.forceLink().id(d=>d.id).distance(120))
-                    .force('charge', d3.forceManyBody().strength(-300))
-                    .force('collide', d3.forceCollide().radius(d=>d.radius+2).iterations(2))
-                    .force('center', d3.forceCenter(window.innerWidth/4, window.innerHeight/2)); // Initial guess
+            tag: (l,k,c) => {
+                const cls = c==='green'
+                    ? 'bg-green-50 text-green-700 border-green-200'
+                    : 'bg-blue-50 text-blue-700 border-blue-200';
+                return `<span class="${cls} px-2 py-0.5 rounded border text-[10px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-1"><i class="fas fa-times"></i></button></span>`;
+            },
 
-                // Shared gradients
+            setupGraph: () => {
+                const svg = d3.select('#networkGraph');
+                const g = svg.append('g');
                 const defs = svg.append('defs');
+
                 COLORS.forEach(c => {
                     const gr = defs.append('radialGradient').attr('id', 'g-'+c.slice(1)).attr('cx','35%').attr('cy','35%');
-                    gr.append('stop').attr('offset','0%').attr('stop-color', d3.color(c).brighter(0.8));
+                    gr.append('stop').attr('offset','0%').attr('stop-color', d3.color(c).brighter(0.9));
                     gr.append('stop').attr('offset','100%').attr('stop-color', c);
                 });
-                
-                // Resize listener
-                window.addEventListener('resize', app.resizeGraph);
+
+                const zoom = d3.zoom().scaleExtent([0.12, 6]).on('zoom', e => {
+                    g.attr('transform', e.transform);
+                    app.d3.k = e.transform.k;
+                    if(app.d3.lblSel) app.d3.lblSel.style('display', app.state.graph.labels && app.d3.k >= 0.9 ? null : 'none');
+                });
+
+                const sim = d3.forceSimulation()
+                    .force('link', d3.forceLink().id(d=>d.id).distance(120).strength(0.2))
+                    .force('charge', d3.forceManyBody().strength(-320))
+                    .force('collide', d3.forceCollide().radius(d=>d.radius+6).iterations(2));
+
+                app.d3 = { svg, g, defs, zoom, sim, k: 1, lastNodes: [], lastLinks: [] };
+                svg.call(zoom);
+
+                window.onresize = () => app.resizeGraph();
+                app.resizeGraph();
             },
 
             resizeGraph: () => {
-                const con = document.getElementById('graphContainer');
-                if(!con) return;
-                app.d3.sim.force('center', d3.forceCenter(con.clientWidth/2, con.clientHeight/2));
-                app.d3.sim.alpha(0.3).restart();
+                const c = document.getElementById('graphContainer');
+                const w = c.clientWidth || 800, h = c.clientHeight || 600;
+                app.d3.svg.attr('viewBox', `0 0 ${w} ${h}`);
+                app.d3.sim.force('center', d3.forceCenter(w/2, h/2));
+                app.applyClusterForces();
+                app.d3.sim.alpha(0.25).restart();
+            },
+
+            applyClusterForces: () => {
+                const c = document.getElementById('graphContainer');
+                const w = c.clientWidth || 800, h = c.clientHeight || 600;
+                const cx = w/2, cy = h/2;
+
+                if(!app.state.graph.cluster) {
+                    app.d3.sim.force('x', null);
+                    app.d3.sim.force('y', null);
+                    return;
+                }
+
+                const insts = [...new Set((app.d3.lastNodes||[]).map(n=>n.inst))].sort();
+                const pos = new Map();
+                const r = Math.min(w,h)*0.26;
+                insts.forEach((inst, i) => {
+                    const a = (i/Math.max(1,insts.length))*Math.PI*2 - Math.PI/2;
+                    pos.set(inst, { x: cx + Math.cos(a)*r, y: cy + Math.sin(a)*r });
+                });
+
+                app.d3.sim
+                    .force('x', d3.forceX(d => (pos.get(d.inst)?.x ?? cx)).strength(0.18))
+                    .force('y', d3.forceY(d => (pos.get(d.inst)?.y ?? cy)).strength(0.18));
             },
 
             renderGraph: (pubs) => {
-                const visIds = new Set(pubs.flatMap(p => p._memberAuthors.map(a => a.id)));
-                const nodes = app.data.graph.nodes.filter(n => visIds.has(n.id));
+                const vis = new Set(pubs.flatMap(p => p._memberAuthors.map(a => a.id)));
+                const nodes = app.data.graph.nodes.filter(n => vis.has(n.id));
                 const nIds = new Set(nodes.map(n => n.id));
-                const links = app.data.graph.links.filter(l => nIds.has(l.source.id||l.source) && nIds.has(l.target.id||l.target));
+                const links = app.data.graph.links.filter(l => {
+                    const s = (typeof l.source === 'object') ? l.source.id : l.source;
+                    const t = (typeof l.target === 'object') ? l.target.id : l.target;
+                    return nIds.has(s) && nIds.has(t);
+                });
+
+                app.d3.lastNodes = nodes;
+                app.d3.lastLinks = links;
+
                 const { g, sim } = app.d3;
-
-                g.selectAll('*').remove(); // Full redraw for cleanness
-                
-                const link = g.append('g').selectAll('line').data(links).enter().append('line')
-                    .attr('stroke', '#cbd5e1').attr('stroke-opacity', 0.6).attr('stroke-width', 1);
-
-                const node = g.append('g').selectAll('g').data(nodes).enter().append('g')
-                    .call(d3.drag().on('start', (e,d)=>{ if(!e.active)sim.alphaTarget(0.3).restart(); d.fx=d.x;d.fy=d.y; }).on('drag', (e,d)=>{ d.fx=e.x;d.fy=e.y; }).on('end', (e,d)=>{ if(!e.active)sim.alphaTarget(0); d.fx=null;d.fy=null; }));
-
-                node.append('circle').attr('r', d=>d.radius)
-                    .attr('fill', d=>`url(#g-${d.color.slice(1)})`)
-                    .attr('stroke', '#fff').attr('stroke-width', 2)
-                    .style('filter', 'drop-shadow(0 2px 3px rgba(0,0,0,0.15))')
-                    .style('cursor', 'pointer');
-
-                node.append('text').text(d => d.display_name.split(' ').map(n=>n[0]).slice(0,2).join(''))
-                    .attr('dy', '0.35em').attr('text-anchor', 'middle')
-                    .attr('fill', 'white').attr('font-size', d => Math.max(8, d.radius*0.5)+'px').attr('font-weight', '600')
-                    .style('pointer-events', 'none').style('text-shadow', '0 1px 2px rgba(0,0,0,0.2)');
-
-                // Tooltip & Interactive Logic
                 const tip = document.getElementById('tooltip');
-                node.on('mouseover', (e, d) => {
-                    // Highlight logic
-                    node.attr('opacity', n => (n.id===d.id || links.some(l => (l.source.id===d.id && l.target.id===n.id) || (l.target.id===d.id && l.source.id===n.id))) ? 1 : 0.1);
-                    link.attr('stroke', l => (l.source.id===d.id||l.target.id===d.id) ? '#334155' : '#e2e8f0').attr('stroke-opacity', l => (l.source.id===d.id||l.target.id===d.id) ? 1 : 0.1).attr('stroke-width', l => (l.source.id===d.id||l.target.id===d.id) ? 2 : 1);
-                    
-                    // Tooltip position
-                    const rect = document.getElementById('graphContainer').getBoundingClientRect();
-                    tip.style.left = Math.min(e.clientX - rect.left + 20, rect.width - 220) + 'px';
-                    tip.style.top = Math.min(e.clientY - rect.top, rect.height - 150) + 'px';
+
+                g.selectAll('*').remove();
+
+                const maxW = d3.max(links, d=>d.weight) || 1;
+                const wScale = d3.scaleSqrt().domain([1, maxW]).range([0.7, 4.2]);
+
+                const lnk = g.append('g')
+                    .attr('stroke-linecap','round')
+                    .selectAll('line').data(links).enter().append('line')
+                    .attr('stroke', '#94a3b8')
+                    .attr('stroke-opacity', d => 0.22 + 0.26*(d.weight/maxW))
+                    .attr('stroke-width', d => wScale(d.weight));
+
+                const nd = g.append('g')
+                    .selectAll('g').data(nodes).enter().append('g')
+                    .call(d3.drag()
+                        .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(0.25).restart(); d.fx=d.x; d.fy=d.y; })
+                        .on('drag',(e,d)=>{ d.fx=e.x; d.fy=e.y; })
+                        .on('end',(e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; })
+                    );
+
+                const ini = n => (n||"").split(' ').filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+                const last = n => {
+                    const parts = (n||"").split(' ').filter(Boolean);
+                    return (parts.length>1 ? parts[parts.length-1] : (parts[0]||"")).replace(/[,;]/g,'');
+                };
+
+                nd.append('circle')
+                    .attr('r', d=>d.radius)
+                    .attr('fill', d=>`url(#g-${d.color.slice(1)})`)
+                    .attr('stroke', 'rgba(255,255,255,0.95)')
+                    .attr('stroke-width', 2)
+                    .style('filter','drop-shadow(0 2px 3px rgba(0,0,0,0.18))')
+                    .style('cursor','pointer');
+
+                nd.append('text')
+                    .text(d=>ini(d.display_name))
+                    .attr('dy','0.35em')
+                    .attr('text-anchor','middle')
+                    .attr('fill','white')
+                    .attr('font-size', d=>Math.max(9, d.radius*0.52))
+                    .attr('font-weight','700')
+                    .style('pointer-events','none')
+                    .style('text-shadow','0 1px 2px rgba(0,0,0,0.25)');
+
+                const lbl = nd.append('text')
+                    .attr('class','node-label lbl')
+                    .text(d=>last(d.display_name))
+                    .attr('text-anchor','middle')
+                    .attr('y', d=>d.radius + 14)
+                    .attr('fill', '#0f172a')
+                    .attr('font-size', 11)
+                    .attr('font-weight','700')
+                    .style('pointer-events','none');
+
+                app.d3.lblSel = lbl;
+                lbl.style('display', app.state.graph.labels ? null : 'none');
+
+                const isNbr = (a,b) => links.some(l => {
+                    const s = (l.source.id||l.source), t = (l.target.id||l.target);
+                    return (s===a && t===b) || (s===b && t===a);
+                });
+
+                nd.on('mouseover', (e,d) => {
+                    nd.attr('opacity', n => (n.id===d.id || isNbr(n.id, d.id)) ? 1 : 0.12);
+                    lnk
+                        .attr('stroke', l => ((l.source.id||l.source)===d.id || (l.target.id||l.target)===d.id) ? '#0f172a' : '#cbd5e1')
+                        .attr('stroke-opacity', l => ((l.source.id||l.source)===d.id || (l.target.id||l.target)===d.id) ? 0.95 : 0.08)
+                        .attr('stroke-width', l => ((l.source.id||l.source)===d.id || (l.target.id||l.target)===d.id) ? Math.max(2.2, wScale(l.weight)+1.2) : wScale(l.weight));
+
+                    const r = document.getElementById('graphContainer').getBoundingClientRect();
+                    tip.style.left = Math.min(e.clientX-r.left+18, r.width-240)+'px';
+                    tip.style.top = Math.min(e.clientY-r.top+18, r.height-170)+'px';
                     tip.innerHTML = `
                         <div class="font-bold text-slate-800 mb-0.5">${esc(d.display_name)}</div>
                         <div class="text-[10px] text-slate-500 mb-2 font-medium">${esc(d.inst)}</div>
-                        <div class="flex gap-2 text-center">
+                        <div class="grid grid-cols-3 gap-2 text-center">
                             <div class="bg-slate-50 border rounded px-2 py-1"><div class="font-bold text-slate-700">${d.net_works}</div><div class="text-[8px] uppercase text-slate-400">Works</div></div>
-                            <div class="bg-slate-50 border rounded px-2 py-1"><div class="font-bold text-slate-700">${d.net_cited}</div><div class="text-[8px] uppercase text-slate-400">Cites</div></div>
+                            <div class="bg-slate-50 border rounded px-2 py-1"><div class="font-bold text-slate-700">${d.net_cited.toLocaleString()}</div><div class="text-[8px] uppercase text-slate-400">Cites</div></div>
+                            <div class="bg-slate-50 border rounded px-2 py-1"><div class="font-bold text-slate-700">${d.deg||0}</div><div class="text-[8px] uppercase text-slate-400">Links</div></div>
                         </div>`;
                     tip.classList.remove('hidden');
-                })
-                .on('mouseout', () => {
-                    node.attr('opacity', 1); link.attr('stroke', '#cbd5e1').attr('stroke-opacity', 0.6).attr('stroke-width', 1);
+                }).on('mouseout', () => {
+                    nd.attr('opacity', 1);
+                    lnk
+                        .attr('stroke','#94a3b8')
+                        .attr('stroke-opacity', d => 0.22 + 0.26*(d.weight/maxW))
+                        .attr('stroke-width', d => wScale(d.weight));
                     tip.classList.add('hidden');
-                })
-                .on('click', (e, d) => { e.stopPropagation(); app.showResearcherDetail(d); });
+                }).on('click', (e,d) => { e.stopPropagation(); app.profile(d); });
+
+                app.applyClusterForces();
+
+                const c = document.getElementById('graphContainer');
+                const W = c.clientWidth || 800, H = c.clientHeight || 600;
+                const pad = 20;
 
                 sim.nodes(nodes).on('tick', () => {
-                    link.attr('x1', d=>d.source.x).attr('y1', d=>d.source.y).attr('x2', d=>d.target.x).attr('y2', d=>d.target.y);
-                    node.attr('transform', d=>`translate(${d.x},${d.y})`);
+                    nodes.forEach(n => {
+                        n.x = clamp(n.x, pad + n.radius, W - pad - n.radius);
+                        n.y = clamp(n.y, pad + n.radius, H - pad - n.radius);
+                    });
+                    lnk
+                        .attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+                    nd.attr('transform',d=>`translate(${d.x},${d.y})`);
                 });
+
                 sim.force('link').links(links);
                 sim.alpha(1).restart();
             },
 
-            // Filters & Actions
-            togF: (k, v) => { const s = app.state.filters[k]; s.has(v) ? s.delete(v) : s.add(v); app.state.page = 1; app.render(); },
-            clearFilter: (k) => { app.state.filters[k+'s'].clear(); app.state.page = 1; app.render(); },
-            clearAllFilters: () => { 
-                app.state.filters = { q: '', topics: new Set(), insts: new Set(), yFrom: null, yTo: null }; 
-                ['globalSearch','yearFrom','yearTo'].forEach(id=>document.getElementById(id).value=''); 
-                app.state.page = 1; app.render(); 
+            // Interaction & Filters
+            tog: (k,v) => { app.state.filters[k].has(v) ? app.state.filters[k].delete(v) : app.state.filters[k].add(v); app.state.page = 1; app.render(); },
+            clear: (k) => { app.state.filters[k].clear(); app.state.page = 1; app.render(); },
+            reset: () => {
+                app.state.filters = { q: '', topics: new Set(), insts: new Set(), yFrom: null, yTo: null, minRel: RELCFG.defaultMin };
+                ['globalSearch','yearFrom','yearTo'].forEach(i=>document.getElementById(i).value='');
+                document.getElementById('minRelevance').value = RELCFG.defaultMin;
+                document.getElementById('valMinRel').textContent = RELCFG.defaultMin.toFixed(1);
+                app.state.page = 1;
+                app.render();
+            },
+            setPage: (p) => { app.state.page = p; app.render(); },
+
+            // Graph Controls
+            zoom: (k) => app.d3.svg.transition().duration(600).call(app.d3.zoom.scaleBy, k),
+            fitGraph: () => {
+                const b = app.d3.g.node().getBBox();
+                if (b.width === 0) return;
+                const p = 40, c = document.getElementById('graphContainer');
+                const w = c.clientWidth, h = c.clientHeight;
+                const s = Math.min(0.9, 1 / Math.max(b.width / (w - p*2), b.height / (h - p*2)));
+                const t = d3.zoomIdentity.translate(w/2 - (b.x + b.width/2)*s, h/2 - (b.y + b.height/2)*s).scale(s);
+                app.d3.svg.transition().duration(750).call(app.d3.zoom.transform, t);
+            },
+            toggleCluster: () => { app.state.graph.cluster = !app.state.graph.cluster; app.applyClusterForces(); app.d3.sim.alpha(0.3).restart(); },
+            toggleLabels: () => {
+                app.state.graph.labels = !app.state.graph.labels;
+                if(app.d3.lblSel) app.d3.lblSel.style('display', app.state.graph.labels && app.d3.k >= 0.9 ? null : 'none');
             },
 
             // Modals
-            showResearcherDetail: (r) => {
+            profile: (r) => {
                 document.getElementById('researcherModal').classList.add('active');
-                const rPubs = app.data.pubs.filter(p => p._memberAuthors.some(a => a.id === r.id)).sort((a,b)=>b.publication_year-a.publication_year).slice(0,10);
+                // Prioritize pubs in current filter view for context, else fall back to most recent
+                let pubs = app.data.pubs.filter(p => p._memberAuthors.some(a=>a.id===r.id)).sort((a,b)=>b.publication_year-a.publication_year);
+                const stats = { w: pubs.length, c: pubs.reduce((s,p)=>s+p.cited_by_count,0) };
+                pubs = pubs.slice(0, 15);
+
                 document.getElementById('researcherContent').innerHTML = `
                     <div class="sticky top-0 bg-white z-10 p-6 border-b border-slate-100">
                         <div class="flex justify-between items-start">
                             <div class="flex items-center gap-4">
-                                <div class="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg" style="background: ${r.color}">${r.display_name.substring(0,2)}</div>
+                                <div class="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0,2)}</div>
                                 <div><h2 class="text-xl font-bold text-slate-800">${esc(r.display_name)}</h2><p class="text-sm text-slate-500 font-medium">${esc(r.inst)}</p></div>
                             </div>
                             <button onclick="document.getElementById('researcherModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700"><i class="fas fa-times text-lg"></i></button>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mt-6">
-                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-center"><span class="block font-bold text-2xl text-slate-700">${r.net_works}</span><span class="text-[10px] font-bold uppercase text-slate-400">Publications</span></div>
-                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-center"><span class="block font-bold text-2xl text-slate-700">${r.net_cited}</span><span class="text-[10px] font-bold uppercase text-slate-400">Total Citations</span></div>
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-center"><span class="block font-bold text-2xl text-slate-700">${stats.w}</span><span class="text-[10px] font-bold uppercase text-slate-400">Publications</span></div>
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-center"><span class="block font-bold text-2xl text-slate-700">${stats.c.toLocaleString()}</span><span class="text-[10px] font-bold uppercase text-slate-400">Total Citations</span></div>
                         </div>
                     </div>
                     <div class="p-6">
                         <h4 class="font-bold text-xs uppercase text-slate-400 mb-4 tracking-wider">Latest Contributions</h4>
                         <div class="space-y-3">
-                            ${rPubs.map(p => `<div class="p-3 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="document.getElementById('researcherModal').classList.remove('active');app.showWorkDetail('${p.id}')"><div class="font-semibold text-sm text-slate-700 mb-1">${esc(p.title)}</div><div class="text-xs text-slate-400 flex justify-between"><span>${p.publication_year}</span><span>${p.cited_by_count} citations</span></div></div>`).join('')}
+                            ${pubs.map(p => `
+                                <div class="p-3 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="document.getElementById('researcherModal').classList.remove('active');app.detail('${p.id}')">
+                                    <div class="font-semibold text-sm text-slate-700 mb-1">${esc(p.title)}</div>
+                                    <div class="text-xs text-slate-400 flex justify-between items-center">
+                                        <span>${p.publication_year} • ${p._relevance.toFixed(1)} score</span>
+                                        <span class="bg-slate-100 px-1.5 py-0.5 rounded">${p.cited_by_count} cites</span>
+                                    </div>
+                                </div>`).join('')}
                         </div>
                     </div>`;
             },
 
-            showWorkDetail: async (id) => {
-                const p = app.data.pubs.find(x => x.id === id); if (!p) return;
+            detail: async (id) => {
+                const p = app.data.pubs.find(x => x.id === id); if(!p) return;
                 document.getElementById('detailModal').classList.add('active');
-                const render = (abs) => document.getElementById('detailContent').innerHTML = `
-                    <div class="flex justify-between items-start mb-6 pb-4 border-b border-slate-100">
-                        <h2 class="text-2xl font-bold text-slate-800 pr-12 leading-tight">${esc(p.title)}</h2>
-                        <button onclick="document.getElementById('detailModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700 text-xl"><i class="fas fa-times"></i></button>
-                    </div>
-                    <div class="flex flex-wrap gap-4 text-sm text-slate-500 mb-8 font-medium">
-                        <span class="flex items-center gap-2"><i class="fas fa-calendar"></i> ${p.publication_year}</span>
-                        <span class="flex items-center gap-2"><i class="fas fa-quote-right"></i> ${p.cited_by_count} Citations</span>
-                        ${p.source ? `<span class="flex items-center gap-2"><i class="fas fa-book"></i> ${esc(p.source)}</span>` : ''}
-                        ${p.doi ? `<a href="${p.doi}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-2"><i class="fas fa-external-link-alt"></i> View Source</a>` : ''}
-                    </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="lg:col-span-2">
-                            <h4 class="font-bold text-sm text-slate-800 uppercase tracking-wide mb-3">Abstract</h4>
-                            <div class="text-slate-600 text-sm leading-relaxed bg-slate-50 p-6 rounded-xl border border-slate-100 text-justify">${esc(abs)}</div>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-sm text-slate-800 uppercase tracking-wide mb-3">Authors</h4>
-                            <div class="flex flex-col gap-2">
-                                ${p._allAuthors.map(a => `<div class="flex items-center gap-2 text-sm p-2 rounded-lg border ${a.isMember?'border-green-200 bg-green-50 cursor-pointer hover:bg-green-100':'border-transparent text-slate-500'}" ${a.isMember?`onclick="document.getElementById('detailModal').classList.remove('active');app.showResearcherDetail(app.data.researchers.find(r=>r.id==='${a.id}'))"`:''}>
-                                    ${a.isMember?'<span class="w-2 h-2 rounded-full bg-green-500"></span>':''}
-                                    <span class="${a.isMember?'font-semibold text-green-800':''}">${esc(a.name)}</span>
-                                </div>`).join('')}
-                            </div>
-                            <div class="mt-8">
-                                <h4 class="font-bold text-sm text-slate-800 uppercase tracking-wide mb-3">Topics</h4>
-                                <div class="flex flex-wrap gap-1.5">${p._topics.map(t => `<span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded border border-slate-200">${esc(t)}</span>`).join('')}</div>
-                            </div>
-                        </div>
-                    </div>`;
                 
-                render("Loading abstract...");
+                const render = (abs) => {
+                    const absHtml = abs 
+                        ? `<div class="text-slate-600 text-sm leading-relaxed bg-slate-50 p-6 rounded-xl border border-slate-100 text-justify">${esc(abs)}</div>` 
+                        : `<div class="text-slate-400 text-sm italic bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">Abstract not available via API.</div>`;
+
+                    document.getElementById('detailContent').innerHTML = `
+                        <div class="flex justify-between items-start mb-6 pb-4 border-b border-slate-100">
+                            <h2 class="text-2xl font-bold text-slate-800 pr-12 leading-tight">${esc(p.title)}</h2>
+                            <button onclick="document.getElementById('detailModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700 text-xl"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="flex flex-wrap gap-4 text-sm text-slate-500 mb-8 font-medium">
+                            <span class="flex items-center gap-2"><i class="fas fa-calendar"></i> ${p.publication_year}</span>
+                            <span class="flex items-center gap-2"><i class="fas fa-quote-right"></i> ${p.cited_by_count} Citations</span>
+                            ${p.source ? `<span class="flex items-center gap-2"><i class="fas fa-book"></i> ${esc(p.source)}</span>`:''}
+                            <span class="flex items-center gap-2 text-green-600 bg-green-50 px-2 rounded border border-green-100">Score: ${p._relevance.toFixed(1)}</span>
+                            ${p.url ? `<a href="${p.url}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-2"><i class="fas fa-external-link-alt"></i> View Source</a>`:''}
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2">
+                                <h4 class="font-bold text-sm text-slate-800 uppercase tracking-wide mb-3">Abstract</h4>
+                                ${absHtml}
+                                ${p._why.length ? `<div class="mt-4"><h4 class="font-bold text-[10px] text-slate-400 uppercase tracking-wide mb-2">Relevance Factors</h4><div class="flex flex-wrap gap-1">${p._why.map(w=>`<span class="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] rounded border border-slate-200 font-mono">${w}</span>`).join('')}</div></div>` : ''}
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-800 uppercase tracking-wide mb-3">Authors</h4>
+                                <div class="flex flex-col gap-2">
+                                    ${p._allAuthors.map(a => `
+                                        <div class="flex items-center gap-2 text-sm p-2 rounded-lg border ${a.isMember?'border-green-200 bg-green-50 cursor-pointer hover:bg-green-100':'border-transparent text-slate-500'}" ${a.isMember?`onclick="document.getElementById('detailModal').classList.remove('active');app.profile(app.data.researchers.find(r=>r.id==='${a.id}'))"`:''}>
+                                            ${a.isMember?'<span class="w-2 h-2 rounded-full bg-green-500 shrink-0"></span>':''}
+                                            <span class="${a.isMember?'font-semibold text-green-800':''} truncate">${esc(a.name)}</span>
+                                        </div>`).join('')}
+                                </div>
+                                <div class="mt-8">
+                                    <h4 class="font-bold text-sm text-slate-800 uppercase tracking-wide mb-3">Topics</h4>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${p._topics.map(t => `<span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded border border-slate-200">${esc(t)}</span>`).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                };
+
+                render(null); // Clear previous / Loading state
                 try {
-                    const d = await fetchJSON(`${API}/works/${suffix(id)}?select=abstract_inverted_index`);
-                    render(d?.abstract_inverted_index ? Object.keys(d.abstract_inverted_index).reduce((a, k) => (d.abstract_inverted_index[k].forEach(i => a[i] = k), a), []).join(' ') : "No abstract available.");
-                } catch { render("Abstract information not available."); }
+                   const d = await fetchJSON(`${API}/works/${suffix(id)}?select=abstract_inverted_index`);
+                   render(absText(d?.abstract_inverted_index));
+                } catch { render(null); }
             },
 
             cite: (id) => {
-                const p = app.data.pubs.find(x => x.id === id), aa = p._allAuthors.map(a => a.name);
-                document.getElementById('citeAPA').textContent = `${aa.slice(0,6).join(', ')}${aa.length>6?', ...':''} (${p.publication_year}). ${p.title}. ${p.source||'Journal'}.`;
-                document.getElementById('citeBib').textContent = `@article{${aa[0].split(' ').pop().toLowerCase()}${p.publication_year}, author={${aa.join(' and ')}}, title={${p.title}}, year={${p.publication_year}}, journal={${p.source||'Journal'}}}`;
+                const p = app.data.pubs.find(x => x.id === id), aa = p._allAuthors.map(a => a.name), y = p.publication_year;
+                const authorStr = aa.length > 0 ? (aa.length > 5 ? `${aa.slice(0,5).join(', ')}, et al.` : aa.join(', ')) : "Unknown";
+                document.getElementById('citeAPA').textContent = `${authorStr} (${y}). ${p.title}. ${p.source||'Journal'}.`;
+                document.getElementById('citeBib').textContent = `@article{${(aa[0]||'unknown').split(' ').pop().toLowerCase().replace(/[^a-z]/g,'')}${y}, author={${aa.join(' and ')}}, title={${p.title}}, year={${y}}, journal={${p.source||'Journal'}}}`;
                 document.getElementById('citationModal').classList.add('active');
             },
-
-            copy: (id) => {
-                navigator.clipboard.writeText(document.getElementById(id).textContent);
-                const btn = event.currentTarget; const og = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-check text-green-600"></i>';
-                setTimeout(()=>btn.innerHTML=og, 1500);
+            copy: (id) => { 
+                navigator.clipboard.writeText(document.getElementById(id).textContent); 
+                const b=event.currentTarget, o=b.innerHTML; 
+                b.innerHTML='<i class="fas fa-check text-green-600"></i>'; 
+                setTimeout(()=>b.innerHTML=o,1500); 
             },
-
-            exportData: () => {
-                const csv = [['Title','Year','Citations','Authors','DOI'], ...app.data.pubs.map(p => [`"${p.title.replace(/"/g,'""')}"`, p.publication_year, p.cited_by_count, `"${p._allAuthors.map(a=>a.name).join('; ')}"`, p.doi||''])];
-                const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv.map(r=>r.join(',')).join('\n')], {type:'text/csv'})); a.download = 'agripv_data.csv'; a.click();
-            },
-
-            // D3 Controls
-            zoomGraph: (k) => app.d3.svg.transition().duration(750).call(app.d3.zoom.scaleBy, k),
-            resetGraph: () => {
-                const con = document.getElementById('graphContainer');
-                app.d3.svg.transition().duration(750).call(app.d3.zoom.transform, d3.zoomIdentity);
-                app.d3.sim.force('center', d3.forceCenter(con.clientWidth/2, con.clientHeight/2)).alpha(0.3).restart();
+            export: () => {
+                const csv = [['Title','Year','Score','Citations','Authors','DOI','Source'], ...app.state.lastFiltered.map(p => [`"${p.title.replace(/"/g,'""')}"`, p.publication_year, p._relevance, p.cited_by_count, `"${p._allAuthors.map(a=>a.name).join('; ')}"`, p.doi||'', `"${(p.source||'').replace(/"/g,'""')}"`])];
+                const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv.map(r=>r.join(',')).join('\n')], {type:'text/csv'})); a.download = 'agripv_network.csv'; a.click();
             },
 
             setupUI: () => {
-                const el = (id) => document.getElementById(id);
-                
-                // Search & Filter Debounce
-                let tm;
-                el('globalSearch').oninput = e => { clearTimeout(tm); tm = setTimeout(() => { app.state.filters.q = e.target.value; app.state.page = 1; app.render(); }, 300); };
+                let tm, drag; const el=id=>document.getElementById(id);
+                el('globalSearch').oninput = e => { clearTimeout(tm); tm=setTimeout(() => { app.state.filters.q = e.target.value; app.state.page = 1; app.render(); }, 300); };
                 el('sortSelect').onchange = e => { app.state.sort = e.target.value; app.state.page = 1; app.render(); };
-                ['yearFrom','yearTo'].forEach(id => el(id).onchange = e => { app.state.filters[id==='yearFrom'?'yFrom':'yTo'] = e.target.value ? parseInt(e.target.value) : null; app.render(); });
+                
+                ['yearFrom','yearTo'].forEach(id => el(id).onchange = e => { app.state.filters[id==='yearFrom'?'yFrom':'yTo'] = e.target.value?+e.target.value:null; app.render(); });
+                
+                el('minRelevance').oninput = e => { 
+                    const v = +e.target.value; 
+                    el('valMinRel').textContent = v.toFixed(1); 
+                    clearTimeout(tm); 
+                    tm=setTimeout(() => { app.state.filters.minRel = v; app.state.page = 1; app.render(); }, 200);
+                };
 
-                // D3 Sliders
                 el('linkDistance').oninput = e => { el('valLink').textContent = e.target.value; app.d3.sim.force('link').distance(+e.target.value).alpha(0.3).restart(); };
                 el('chargeStrength').oninput = e => { el('valCharge').textContent = e.target.value; app.d3.sim.force('charge').strength(-e.target.value).alpha(0.3).restart(); };
 
-                // Split Pane Logic
-                let drag = false;
-                const updateViews = () => { setTimeout(() => { app.resizeGraph(); }, 50); };
-                
-                document.querySelectorAll('.view-btn').forEach(btn => btn.onclick = () => {
-                    const v = btn.dataset.view, both = v === 'both';
-                    el('publicationsPanel').style.display = (both || v === 'publications') ? 'flex' : 'none';
-                    el('publicationsPanel').style.width = both ? '50%' : (v === 'publications' ? '100%' : '0%');
-                    el('networkPanel').style.display = (both || v === 'network') ? 'flex' : 'none';
-                    el('networkPanel').style.width = both ? '50%' : (v === 'network' ? '100%' : '0%');
-                    el('splitHandle').style.display = both ? 'block' : 'none';
-                    document.querySelectorAll('.view-btn').forEach(b => {
-                        b.className = `view-btn px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${b===btn ? 'bg-white shadow-sm text-slate-800 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'}`;
-                    });
-                    updateViews();
+                document.querySelectorAll('.view-btn').forEach(b => b.onclick = () => {
+                    const v = b.dataset.view, both = v === 'both', pp = el('publicationsPanel'), np = el('networkPanel');
+                    pp.style.display = (both||v==='publications')?'flex':'none'; pp.style.width = both?'50%':(v==='publications'?'100%':'0%');
+                    np.style.display = (both||v==='network')?'flex':'none'; np.style.width = both?'50%':(v==='network'?'100%':'0%');
+                    el('splitHandle').style.display = both?'block':'none';
+                    document.querySelectorAll('.view-btn').forEach(x => x.className = `view-btn px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${x===b?'bg-white shadow-sm text-slate-800 ring-1 ring-slate-200':'text-slate-500 hover:text-slate-700'}`);
+                    setTimeout(()=>app.resizeGraph(), 50);
                 });
 
                 el('splitHandle').onmousedown = () => { drag = true; document.body.style.cursor = 'col-resize'; };
-                document.onmouseup = () => { drag = false; document.body.style.cursor = 'default'; if(drag) updateViews(); };
-                document.onmousemove = e => { 
-                    if(drag) { 
-                        const pct = (e.clientX - 340) / (document.body.clientWidth - 340) * 100; // Account for sidebar
-                        if(pct > 15 && pct < 85) {
-                            el('publicationsPanel').style.width = `${pct}%`; 
-                            el('networkPanel').style.width = `${100-pct}%`; 
-                            app.resizeGraph();
-                        }
-                    }
-                };
+                document.onmouseup = () => { drag = false; document.body.style.cursor = 'default'; if(drag) app.resizeGraph(); };
+                document.onmousemove = e => { if(drag) { const p=(e.clientX-340)/(document.body.clientWidth-340)*100; if(p>15 && p<85) { el('publicationsPanel').style.width=p+'%'; el('networkPanel').style.width=(100-p)+'%'; app.resizeGraph(); } } };
             }
         };
 
