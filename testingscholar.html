@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,94 +9,279 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>tailwind.config={theme:{extend:{fontFamily:{'inter':['Inter','sans-serif']},colors:{'brand':'#16a34a','brand-light':'#dcfce7'}}}}; </script>
+    <script>tailwind.config = { theme: { extend: { fontFamily: { 'inter': ['Inter', 'sans-serif'] }, colors: { 'brand': '#16a34a', 'brand-light': '#dcfce7' } } } }; </script>
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; }
-        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .split-handle { cursor: col-resize; width: 1px; background: #e2e8f0; position: relative; z-index: 20; transition: background 0.2s; }
-        .split-handle::after { content: ''; position: absolute; inset: 0 -2px; z-index: 10; }
-        .split-handle:hover, .split-handle:active { background: #16a34a; width: 2px; }
-        .pub-card { transition: all 0.2s ease; border-bottom: 1px solid #f1f5f9; }
-        .pub-card:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); z-index: 10; border-radius: 6px; }
-        .network-member { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-        .external-author { background-color: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
-        .d3-tooltip { pointer-events: none; position: absolute; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; z-index: 50; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.1); min-width: 200px; font-size: 11px; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 60; opacity: 0; pointer-events: none; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .profile-modal { transform: scale(0.95); transition: 0.2s; }
-        .modal-overlay.active .profile-modal { transform: scale(1); }
-        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #16a34a; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        #graphContainer { background: radial-gradient(circle at 1px 1px, rgba(148,163,184,0.15) 1px, transparent 1px) -8px -8px / 24px 24px; }
-        #graphContainer:active { cursor: grabbing; }
-        .node-label { paint-order: stroke; stroke: rgba(255,255,255,0.8); stroke-width: 3px; stroke-linejoin: round; font-family: 'Inter', sans-serif; letter-spacing: -0.01em; }
-        input[type=range] { -webkit-appearance: none; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #16a34a; cursor: pointer; margin-top: -5px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: #e2e8f0; border-radius: 1px; }
-        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .split-handle {
+            cursor: col-resize;
+            width: 1px;
+            background: #e2e8f0;
+            position: relative;
+            z-index: 20;
+            transition: background 0.2s;
+        }
+
+        .split-handle::after {
+            content: '';
+            position: absolute;
+            inset: 0 -2px;
+            z-index: 10;
+        }
+
+        .split-handle:hover,
+        .split-handle:active {
+            background: #16a34a;
+            width: 2px;
+        }
+
+        .pub-card {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .pub-card:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+            border-radius: 6px;
+        }
+
+        .network-member {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac;
+        }
+
+        .external-author {
+            background-color: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .d3-tooltip {
+            pointer-events: none;
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(4px);
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            z-index: 50;
+            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            font-size: 11px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
+            z-index: 60;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .profile-modal {
+            transform: scale(0.95);
+            transition: 0.2s;
+        }
+
+        .modal-overlay.active .profile-modal {
+            transform: scale(1);
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #16a34a;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #graphContainer {
+            background: radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.15) 1px, transparent 1px) -8px -8px / 24px 24px;
+        }
+
+        #graphContainer:active {
+            cursor: grabbing;
+        }
+
+        .node-label {
+            paint-order: stroke;
+            stroke: rgba(255, 255, 255, 0.8);
+            stroke-width: 3px;
+            stroke-linejoin: round;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.01em;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+            background: #16a34a;
+            cursor: pointer;
+            margin-top: -5px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 2px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 1px;
+        }
+
         /* New Histogram Styles */
-        .timeline-bar { fill: #16a34a; opacity: 0.4; cursor: pointer; transition: opacity 0.15s; }
-        .timeline-bar:hover { opacity: 0.8; }
-        .timeline-bar.selected { opacity: 1; fill: #15803d; }
+        .timeline-bar {
+            fill: #16a34a;
+            opacity: 0.4;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .timeline-bar:hover {
+            opacity: 0.8;
+        }
+
+        .timeline-bar.selected {
+            opacity: 1;
+            fill: #15803d;
+        }
     </style>
 </head>
+
 <body class="bg-white text-slate-700 h-screen w-screen flex overflow-hidden">
 
-    <aside class="w-[320px] flex flex-col border-r border-slate-200 bg-slate-50/80 shrink-0 h-full z-30 backdrop-blur-sm">
+    <aside
+        class="w-[320px] flex flex-col border-r border-slate-200 bg-slate-50/80 shrink-0 h-full z-30 backdrop-blur-sm">
         <div class="p-4 border-b border-slate-200 bg-white">
             <div class="flex items-center gap-2.5 mb-3">
-                <div class="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center shadow-md shadow-green-200/50"><i class="fas fa-leaf text-sm"></i></div>
-                <div><h1 class="font-bold text-slate-800 text-sm leading-tight">AgriPV Network</h1><p class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Research Explorer</p></div>
+                <div
+                    class="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center shadow-md shadow-green-200/50">
+                    <i class="fas fa-leaf text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-800 text-sm leading-tight">AgriPV Network</h1>
+                    <p class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Research Explorer</p>
+                </div>
             </div>
             <div class="relative group">
-                <input type="text" id="globalSearch" placeholder="Search title, author, topic..." class="w-full bg-slate-100 border-none rounded-md py-2 pl-9 pr-3 text-xs font-medium focus:ring-1 focus:ring-green-500 focus:bg-white transition-all placeholder:text-slate-400">
-                <i class="fas fa-search text-slate-400 absolute left-3 top-2.5 text-xs group-focus-within:text-green-600"></i>
+                <input type="text" id="globalSearch" placeholder="Search title, author, topic..."
+                    class="w-full bg-slate-100 border-none rounded-md py-2 pl-9 pr-3 text-xs font-medium focus:ring-1 focus:ring-green-500 focus:bg-white transition-all placeholder:text-slate-400">
+                <i
+                    class="fas fa-search text-slate-400 absolute left-3 top-2.5 text-xs group-focus-within:text-green-600"></i>
             </div>
         </div>
 
         <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-5">
-            <div><h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Network Stats</h3><div class="grid grid-cols-2 gap-2" id="statsGrid"></div></div>
-            
+            <div>
+                <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Network Stats</h3>
+                <div class="grid grid-cols-2 gap-2" id="statsGrid"></div>
+            </div>
+
             <!-- NEW: Histogram -->
             <div>
                 <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Publication Timeline</h3>
                 <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-2">
                     <svg id="timelineChart" width="100%" height="50"></svg>
-                    <div class="text-[8px] text-slate-400 mt-1 leading-snug text-center">Click bars to filter. Shift+click for range.</div>
+                    <div class="text-[8px] text-slate-400 mt-1 leading-snug text-center">Click bars to filter.
+                        Shift+click for range.</div>
                 </div>
             </div>
 
             <div>
                 <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Relevance Threshold</h3>
                 <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm">
-                    <div class="flex justify-between mb-1.5"><label class="text-[9px] font-semibold text-slate-500">Min Score</label><span class="text-[9px] font-mono text-green-600 font-bold" id="valMinRel">3.0</span></div>
+                    <div class="flex justify-between mb-1.5"><label class="text-[9px] font-semibold text-slate-500">Min
+                            Score</label><span class="text-[9px] font-mono text-green-600 font-bold"
+                            id="valMinRel">3.0</span></div>
                     <input type="range" id="minRelevance" min="0" max="30" step="0.5" value="3" class="w-full block">
-                    <div class="text-[9px] text-slate-400 mt-1.5 leading-snug">Strictness filter. Lower includes broad matches; Higher restricts to core AgriPV.</div>
+                    <div class="text-[9px] text-slate-400 mt-1.5 leading-snug">Strictness filter. Lower includes broad
+                        matches; Higher restricts to core AgriPV.</div>
                 </div>
             </div>
             <div>
                 <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Publication Year</h3>
                 <div class="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
-                    <input type="number" id="yearFrom" min="2000" max="2026" placeholder="2000" class="w-full border-none bg-transparent text-center text-xs font-medium focus:ring-0 p-1 text-slate-600">
+                    <input type="number" id="yearFrom" min="2000" max="2026" placeholder="2000"
+                        class="w-full border-none bg-transparent text-center text-xs font-medium focus:ring-0 p-1 text-slate-600">
                     <span class="text-slate-300 text-[10px] uppercase font-bold">to</span>
-                    <input type="number" id="yearTo" min="2000" max="2026" placeholder="2025" class="w-full border-none bg-transparent text-center text-xs font-medium focus:ring-0 p-1 text-slate-600">
+                    <input type="number" id="yearTo" min="2000" max="2026" placeholder="2025"
+                        class="w-full border-none bg-transparent text-center text-xs font-medium focus:ring-0 p-1 text-slate-600">
                 </div>
             </div>
             <div class="flex flex-col h-40">
-                <div class="flex justify-between items-center mb-1.5"><h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Institutions</h3><button class="text-[9px] text-green-600 font-semibold hover:underline" onclick="app.clear('insts')">Reset</button></div>
+                <div class="flex justify-between items-center mb-1.5">
+                    <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Institutions</h3><button
+                        class="text-[9px] text-green-600 font-semibold hover:underline"
+                        onclick="app.clear('insts')">Reset</button>
+                </div>
                 <div id="institutionFilters" class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-0.5"></div>
             </div>
             <div class="flex flex-col h-40">
-                <div class="flex justify-between items-center mb-1.5"><h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Topics</h3><button class="text-[9px] text-green-600 font-semibold hover:underline" onclick="app.clear('topics')">Reset</button></div>
+                <div class="flex justify-between items-center mb-1.5">
+                    <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Topics</h3><button
+                        class="text-[9px] text-green-600 font-semibold hover:underline"
+                        onclick="app.clear('topics')">Reset</button>
+                </div>
                 <div id="topicFilters" class="flex flex-wrap gap-1 pb-2"></div>
             </div>
         </div>
 
         <div id="activeFiltersPanel" class="px-4 py-3 bg-white border-t border-slate-200 hidden shrink-0">
-            <div class="flex justify-between items-center mb-2"><span class="text-[10px] font-semibold text-slate-500"><span id="activeFilterCount">0</span> filters active</span><button class="text-[9px] text-red-500 font-semibold hover:text-red-700" onclick="app.reset()">Clear All</button></div>
+            <div class="flex justify-between items-center mb-2"><span
+                    class="text-[10px] font-semibold text-slate-500"><span id="activeFilterCount">0</span> filters
+                    active</span><button class="text-[9px] text-red-500 font-semibold hover:text-red-700"
+                    onclick="app.reset()">Clear All</button></div>
             <div id="activeFilterTags" class="flex flex-wrap gap-1 max-h-14 overflow-y-auto custom-scroll"></div>
         </div>
     </aside>
@@ -103,25 +289,52 @@
     <main class="flex-1 flex flex-col h-full overflow-hidden bg-white relative">
         <header class="h-12 border-b border-slate-200 flex items-center justify-between px-4 bg-white shrink-0 z-20">
             <div class="flex gap-0.5 p-0.5 bg-slate-100 rounded-md border border-slate-200">
-                <button data-view="both" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded bg-white shadow-sm text-slate-800"><i class="fas fa-columns mr-1.5"></i>Split</button>
-                <button data-view="publications" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i class="fas fa-list mr-1.5"></i>List</button>
-                <button data-view="network" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i class="fas fa-project-diagram mr-1.5"></i>Graph</button>
+                <button data-view="both"
+                    class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded bg-white shadow-sm text-slate-800"><i
+                        class="fas fa-columns mr-1.5"></i>Split</button>
+                <button data-view="publications"
+                    class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i
+                        class="fas fa-list mr-1.5"></i>List</button>
+                <button data-view="network"
+                    class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i
+                        class="fas fa-project-diagram mr-1.5"></i>Graph</button>
             </div>
             <div class="flex items-center gap-4">
-                <div class="text-[11px] text-slate-500 font-medium">Found <span id="filteredCount" class="text-slate-900 font-bold">0</span> results</div>
+                <div class="text-[11px] text-slate-500 font-medium">Found <span id="filteredCount"
+                        class="text-slate-900 font-bold">0</span> results</div>
                 <div class="h-3 w-px bg-slate-300"></div>
-                <select id="sortSelect" class="text-[11px] font-medium bg-transparent border-none outline-none text-slate-600 cursor-pointer hover:text-slate-900 focus:ring-0 py-0 pl-0 pr-6"><option value="recent">Newest First</option><option value="relevance">Relevance Score</option><option value="cited">Most Cited</option><option value="title">A-Z Title</option></select>
-                
+                <select id="sortSelect"
+                    class="text-[11px] font-medium bg-transparent border-none outline-none text-slate-600 cursor-pointer hover:text-slate-900 focus:ring-0 py-0 pl-0 pr-6">
+                    <option value="recent">Newest First</option>
+                    <option value="relevance">Relevance Score</option>
+                    <option value="cited">Most Cited</option>
+                    <option value="title">A-Z Title</option>
+                </select>
+
                 <!-- IMPROVED: Export Menu -->
                 <div class="relative" id="exportDropdown">
-                    <button class="px-2.5 py-1 bg-slate-900 text-white text-[11px] font-semibold rounded hover:bg-slate-800 shadow-sm transition-colors flex items-center gap-1.5" onclick="app.toggleExportMenu()"><i class="fas fa-download"></i>Export <i class="fas fa-chevron-down text-[8px] opacity-60"></i></button>
-                    <div id="exportMenu" class="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-lg shadow-lg py-1 hidden z-50">
-                        <button onclick="app.exportCSV()" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-file-csv w-4 text-green-600"></i>CSV Spreadsheet</button>
-                        <button onclick="app.exportBibTeX()" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-code w-4 text-purple-600"></i>BibTeX (.bib)</button>
-                        <button onclick="app.exportRIS()" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-file-import w-4 text-blue-600"></i>RIS (Zotero)</button>
+                    <button
+                        class="px-2.5 py-1 bg-slate-900 text-white text-[11px] font-semibold rounded hover:bg-slate-800 shadow-sm transition-colors flex items-center gap-1.5"
+                        onclick="app.toggleExportMenu()"><i class="fas fa-download"></i>Export <i
+                            class="fas fa-chevron-down text-[8px] opacity-60"></i></button>
+                    <div id="exportMenu"
+                        class="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-lg shadow-lg py-1 hidden z-50">
+                        <button onclick="app.exportCSV()"
+                            class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
+                                class="fas fa-file-csv w-4 text-green-600"></i>CSV Spreadsheet</button>
+                        <button onclick="app.exportBibTeX()"
+                            class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
+                                class="fas fa-code w-4 text-purple-600"></i>BibTeX (.bib)</button>
+                        <button onclick="app.exportRIS()"
+                            class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
+                                class="fas fa-file-import w-4 text-blue-600"></i>RIS (Zotero)</button>
                         <div class="border-t border-slate-100 my-1"></div>
-                        <button onclick="app.exportGraphSVG()" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-image w-4 text-rose-600"></i>Graph as SVG</button>
-                        <button onclick="app.exportGraphPNG()" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-file-image w-4 text-orange-600"></i>Graph as PNG</button>
+                        <button onclick="app.exportGraphSVG()"
+                            class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
+                                class="fas fa-image w-4 text-rose-600"></i>Graph as SVG</button>
+                        <button onclick="app.exportGraphPNG()"
+                            class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
+                                class="fas fa-file-image w-4 text-orange-600"></i>Graph as PNG</button>
                     </div>
                 </div>
             </div>
@@ -131,7 +344,9 @@
             <div id="publicationsPanel" class="flex flex-col min-w-0 w-1/2 bg-white h-full border-r border-slate-100">
                 <div id="publicationsList" class="flex-1 overflow-y-auto p-2 custom-scroll bg-white"></div>
                 <div class="p-2 border-t border-slate-200 bg-white shrink-0 flex flex-col gap-2">
-                    <div class="flex justify-between items-center text-[10px] text-slate-400 px-1"><span><span id="showingFrom">0</span>-<span id="showingTo">0</span> of <span id="totalPublications">0</span></span></div>
+                    <div class="flex justify-between items-center text-[10px] text-slate-400 px-1"><span><span
+                                id="showingFrom">0</span>-<span id="showingTo">0</span> of <span
+                                id="totalPublications">0</span></span></div>
                     <div id="paginationContainer" class="flex justify-center gap-1"></div>
                 </div>
             </div>
@@ -140,28 +355,55 @@
 
             <div id="networkPanel" class="flex flex-col min-w-0 w-1/2 bg-slate-50 relative h-full">
                 <div class="absolute top-3 left-3 z-10 flex flex-col gap-2">
-                    <div class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
-                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.zoom(1.3)" title="Zoom In"><i class="fas fa-plus text-[10px]"></i></button>
-                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.zoom(0.7)" title="Zoom Out"><i class="fas fa-minus text-[10px]"></i></button>
-                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.fitGraph()" title="Fit to Screen"><i class="fas fa-compress-arrows-alt text-[10px]"></i></button>
+                    <div
+                        class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
+                        <button
+                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors"
+                            onclick="app.zoom(1.3)" title="Zoom In"><i class="fas fa-plus text-[10px]"></i></button>
+                        <button
+                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors"
+                            onclick="app.zoom(0.7)" title="Zoom Out"><i class="fas fa-minus text-[10px]"></i></button>
+                        <button
+                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors"
+                            onclick="app.fitGraph()" title="Fit to Screen"><i
+                                class="fas fa-compress-arrows-alt text-[10px]"></i></button>
                     </div>
-                    <div class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
-                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.toggleCluster()" title="Toggle Grouping"><i class="fas fa-layer-group text-[10px]"></i></button>
-                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors" onclick="app.toggleLabels()" title="Toggle Labels"><i class="fas fa-tag text-[10px]"></i></button>
+                    <div
+                        class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
+                        <button
+                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors"
+                            onclick="app.toggleCluster()" title="Toggle Grouping"><i
+                                class="fas fa-layer-group text-[10px]"></i></button>
+                        <button
+                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors"
+                            onclick="app.toggleLabels()" title="Toggle Labels"><i
+                                class="fas fa-tag text-[10px]"></i></button>
                     </div>
                 </div>
                 <div class="absolute top-3 right-3 z-10">
-                     <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 w-32 space-y-2">
-                        <div><div class="flex justify-between mb-0.5"><label class="text-[8px] font-bold text-slate-400 uppercase">Link Dist</label></div><input type="range" id="linkDistance" min="50" max="320" value="120" class="w-full block"></div>
-                        <div><div class="flex justify-between mb-0.5"><label class="text-[8px] font-bold text-slate-400 uppercase">Gravity</label></div><input type="range" id="chargeStrength" min="100" max="900" value="320" class="w-full block"></div>
+                    <div
+                        class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 w-32 space-y-2">
+                        <div>
+                            <div class="flex justify-between mb-0.5"><label
+                                    class="text-[8px] font-bold text-slate-400 uppercase">Link Dist</label></div><input
+                                type="range" id="linkDistance" min="50" max="320" value="120" class="w-full block">
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-0.5"><label
+                                    class="text-[8px] font-bold text-slate-400 uppercase">Gravity</label></div><input
+                                type="range" id="chargeStrength" min="100" max="900" value="320" class="w-full block">
+                        </div>
                     </div>
                 </div>
                 <div class="absolute bottom-3 left-3 z-10 pointer-events-none">
-                    <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 max-h-32 overflow-y-auto custom-scroll w-40 pointer-events-auto">
-                        <div class="text-[8px] font-bold text-slate-400 uppercase mb-1">Affiliations</div><div id="legendContainer" class="space-y-0.5"></div>
+                    <div
+                        class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 max-h-32 overflow-y-auto custom-scroll w-40 pointer-events-auto">
+                        <div class="text-[8px] font-bold text-slate-400 uppercase mb-1">Affiliations</div>
+                        <div id="legendContainer" class="space-y-0.5"></div>
                     </div>
                 </div>
-                <div id="graphContainer" class="flex-1 w-full h-full cursor-grab overflow-hidden"><svg id="networkGraph" width="100%" height="100%"></svg></div>
+                <div id="graphContainer" class="flex-1 w-full h-full cursor-grab overflow-hidden"><svg id="networkGraph"
+                        width="100%" height="100%"></svg></div>
                 <div id="tooltip" class="d3-tooltip hidden"></div>
             </div>
         </div>
@@ -171,21 +413,51 @@
         <div class="spinner mb-4 border-slate-200 border-t-green-600"></div>
         <h3 class="text-base font-bold text-slate-800 tracking-tight">Initializing Explorer</h3>
         <p id="loadingStatus" class="text-xs text-slate-400 mt-1 font-medium">Connecting to network...</p>
-        <div class="w-48 bg-slate-100 rounded-full h-1 mt-6 overflow-hidden"><div id="loadingProgress" class="h-full bg-green-500 w-0 transition-all duration-300"></div></div>
+        <div class="w-48 bg-slate-100 rounded-full h-1 mt-6 overflow-hidden">
+            <div id="loadingProgress" class="h-full bg-green-500 w-0 transition-all duration-300"></div>
+        </div>
     </div>
 
     <div id="citationModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
         <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 p-5">
-            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100"><h3 class="font-bold text-sm text-slate-800">Cite Publication</h3><button onclick="document.getElementById('citationModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button></div>
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+                <h3 class="font-bold text-sm text-slate-800">Cite Publication</h3><button
+                    onclick="document.getElementById('citationModal').classList.remove('active')"
+                    class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+            </div>
             <div class="space-y-3">
-                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">APA</label><div class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed"><span id="citeAPA"></span><button class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]" onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button></div></div>
-                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">BibTeX</label><div class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all"><span id="citeBib"></span><button class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]" onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button></div></div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">APA</label>
+                    <div
+                        class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed">
+                        <span id="citeAPA"></span><button
+                            class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
+                            onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">BibTeX</label>
+                    <div
+                        class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
+                        <span id="citeBib"></span><button
+                            class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
+                            onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="detailModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')"><div class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden"><div id="detailContent" class="overflow-y-auto p-8 custom-scroll"></div></div></div>
-    <div id="researcherModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')"><div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]"><div id="researcherContent" class="overflow-y-auto custom-scroll p-0"></div></div></div>
+    <div id="detailModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+        <div
+            class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+            <div id="detailContent" class="overflow-y-auto p-8 custom-scroll"></div>
+        </div>
+    </div>
+    <div id="researcherModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+        <div
+            class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]">
+            <div id="researcherContent" class="overflow-y-auto custom-scroll p-0"></div>
+        </div>
+    </div>
 
     <script type="module">
         import { supabase } from "./auth.js";
@@ -198,9 +470,8 @@
         const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
         // IMPROVEMENT: Adjusted minRel to 2.0 and cap to 250 to ensure we don't filter members out too aggressively (Restored from concern)
-        const CFG = { api: "https://api.openalex.org", key: "asf_network_v7", now: new Date().getFullYear(), minRel: 2.0, cap: 250, conc: 6, defMin: 3.0 };
-        const COLORS = ['#16a34a', '#059669', '#0d9488', '#0891b2', '#0284c7', '#2563eb', '#4f46e5', '#7c3aed', '#9333ea', '#c026d3', '#db2777', '#e11d48', '#ea580c', '#d97706'];
-        
+        const CFG = { api: "https://api.openalex.org", key: "asf_network_v7", now: new Date().getFullYear(), minRel: 2.0, cap: 250, conc: 10, defMin: 3.0 }; const COLORS = ['#16a34a', '#059669', '#0d9488', '#0891b2', '#0284c7', '#2563eb', '#4f46e5', '#7c3aed', '#9333ea', '#c026d3', '#db2777', '#e11d48', '#ea580c', '#d97706'];
+
         // IMPROVED SCORING REGEX (From Script 2)
         const RX = {
             strong: /\b(agri[\s-]?(pv|photo)?voltai[ckqs]?|agro[\s-]?(photo)?voltai[ckqs]?|agri[\s-]?photovoltai[ks]?|agrophotovoltai[ckqs]?|solar[\s-]?sharing|solar\s*(farming|agriculture)|farming\s*with\s*(solar|pv)|dual[\s-]?use\s*(solar|pv|land)|co[\s-]?locat(ed|ion)\s*(solar|pv|energy).{0,15}(farm|agri|crop|land)|co[\s-]?develop(ed|ment)\s*(solar|pv).{0,15}(farm|agri|crop)|photovoltaic\s*greenhouse|greenhouse\s*photovoltaic|solar\s*greenhouse|(?:pv|solar)\s*(?:over|above|between)\s*crops?|integrat(?:ed|ing)\s*(?:solar|pv)\s*(?:and|with)\s*agricultur|(?:food|crop)\s*(?:and|&)\s*(?:energy|electricity)\s*(?:production|co[\s-]?production|generation)|energy[\s-]?food[\s-]?(?:water\s*)?nexus\s*(?:solar|pv)?|symbiosis\s*(?:solar|pv|energy).{0,10}(?:crop|agri|farm))\b/i,
@@ -246,13 +517,13 @@
         const scoreWork = (w, abs = "") => {
             const title = norm(w.title || ""), kwText = norm((w.keywords || []).map(k => k.display_name || k.keyword).join(" ")), topicText = norm((w.topics || []).map(t => t.display_name).join(" ")), conceptText = norm((w.concepts || []).map(c => c.display_name).join(" ")), absText = norm(abs), metaText = `${kwText} ${topicText} ${conceptText}`, fullText = `${title} ${metaText} ${absText}`;
             let s = 0, why = [];
-            
+
             const stT = RX.strong.test(title), stK = !stT && RX.strong.test(kwText), stM = !stT && !stK && RX.strong.test(metaText), stA = !stT && !stK && !stM && RX.strong.test(absText), fzT = !stT && RX.fuzzy.test(title), fzA = !stT && !fzT && RX.fuzzy.test(absText);
             if (stT) { s += 30; why.push('agripv-title'); } else if (stK) { s += 24; why.push('agripv-keyword'); } else if (stM) { s += 18; why.push('agripv-meta'); } else if (stA) { s += 14; why.push('agripv-abstract'); } else if (fzT) { s += 12; why.push('agripv-fuzzy-title'); } else if (fzA) { s += 7; why.push('agripv-fuzzy-abs'); }
             const direct = stT || stK || stM || stA || fzT || fzA;
 
             if (RX.apv.test(title) && (RX.solar.test(fullText) || RX.agri.test(fullText))) { s += direct ? 3 : 10; why.push('apv'); }
-            
+
             const solT = RX.solar.test(title), agT = RX.agri.test(title), lnT = RX.land.test(title), sol = RX.solar.test(fullText), ag = RX.agri.test(fullText), ln = RX.land.test(fullText);
             if (solT && (agT || lnT)) { s += 15; why.push('solar+agri-title'); }
             else if (sol && ag && ln) { s += 8; why.push('solar+land'); }
@@ -261,15 +532,15 @@
             if (RX.econ.test(fullText) && (sol || direct)) { s += 2.5; why.push('econ'); }
             const dh = RX.techDomain.filter(r => r.test(fullText)).length;
             if (dh > 0) { s += Math.min(6, dh * 1.5); why.push(`domain(${dh})`); }
-            
+
             if (w.concepts?.some(c => /agrivoltaic|agrovoltaic/i.test(c.display_name) && c.score > 0.3)) { s += 6; why.push('agripv-concept'); }
-            
+
             s += Math.min(3, Math.log10((w.cited_by_count || 0) + 1));
             if (w.publication_year >= CFG.now - 2) s += 0.6;
-            
+
             if (RX.neg.test(fullText) && !direct) { s -= 15; why.push('neg'); }
             else if (sol && !ag && !ln && !direct && RX.negSolarOnly.test(fullText)) { s -= 5; why.push('pure-solar'); }
-            
+
             s = Math.round(Math.max(0, s) * 10) / 10;
             const tier = s >= 25 ? 'Core' : s >= 15 ? 'Strong' : s >= 8 ? 'Related' : 'Peripheral';
             return { s, why, strong: direct, tier };
@@ -309,15 +580,15 @@
             },
 
             resolve: async (profiles, prog) => {
-                const out = [];
-                for (let i = 0; i < profiles.length; i += 6) {
-                    const chunk = profiles.slice(i, i + 6);
-                    out.push(...await Promise.all(chunk.map(async p => {
+                const out = [], chunk = 12;
+                for (let i = 0; i < profiles.length; i += chunk) {
+                    const batch = profiles.slice(i, i + chunk);
+                    out.push(...await Promise.all(batch.map(async p => {
                         const d = await fetchJSON(`${CFG.api}/authors?search=${encodeURIComponent(p.full_name)}&per_page=10&select=id,display_name,works_count,cited_by_count,last_known_institutions`);
                         const want = norm(p.full_name), aff = norm(p.affiliation || "");
                         let best = null, bestS = -1;
                         (d?.results || []).forEach(r => {
-                            let sc = 0, n = norm(r.display_name||""), inst = norm(r.last_known_institutions?.[0]?.display_name||"");
+                            let sc = 0, n = norm(r.display_name || ""), inst = norm(r.last_known_institutions?.[0]?.display_name || "");
                             if (n === want) sc += 10; else if (n.includes(want) || want.includes(n)) sc += 4;
                             if (aff && inst && (inst.includes(aff) || aff.includes(inst) || inst.split(' ').some(x => x.length > 4 && aff.includes(x)))) sc += 4;
                             sc += Math.min(2, (r.works_count || 0) / 200);
@@ -326,46 +597,55 @@
                         const m = best || d?.results?.[0], inst = getInst(m?.last_known_institutions?.[0]?.display_name || p.affiliation);
                         return { id: m?.id || `local:${p.id}`, display_name: m?.display_name || p.full_name, inst, color: app.col(inst), net_works: 0, net_cited: 0, topics: {}, deg: 0 };
                     })));
-                    prog(18 + (i / profiles.length) * 18, "Resolving profiles...");
-                    await sleep(90);
+                    prog(18 + (Math.min(i + chunk, profiles.length) / profiles.length) * 18, "Resolving profiles...");
+                    await sleep(30);
                 }
                 return out;
             },
 
             fetchWorks: async (authors, prog) => {
                 const ids = authors.filter(a => !a.id.startsWith('local:')).map(a => a.id), works = new Map();
-                for (let i = 0; i < ids.length; i += 25) {
+                const batchSize = 25, batches = [];
+                for (let i = 0; i < ids.length; i += batchSize) batches.push(ids.slice(i, i + batchSize));
+
+                let completed = 0;
+                const processBatch = async (batch) => {
                     let cursor = '*', page = 0;
                     while (cursor && page++ < 10) {
-                        const res = await fetchJSON(`${CFG.api}/works?filter=authorships.author.id:${ids.slice(i, i + 25).join('|')},from_publication_date:${Math.max(1990, CFG.now - 20)}-01-01&per_page=200&cursor=${encodeURIComponent(cursor)}&select=id,title,publication_year,cited_by_count,type,primary_location,open_access,doi,authorships,concepts,topics,keywords`);
+                        const res = await fetchJSON(`${CFG.api}/works?filter=authorships.author.id:${batch.join('|')},from_publication_date:${Math.max(1990, CFG.now - 20)}-01-01&per_page=200&cursor=${encodeURIComponent(cursor)}&select=id,title,publication_year,cited_by_count,type,primary_location,open_access,doi,authorships,concepts,topics,keywords`);
                         (res?.results || []).forEach(w => {
                             if (!works.has(w.id)) {
                                 const rel = scoreWork(w);
-                                // Logic maintained: Use minRel or strong signal
                                 if (rel.s >= CFG.minRel || rel.strong) works.set(w.id, { ...w, _relevance: rel.s, _why: rel.why, _tier: rel.tier });
                             }
                         });
                         cursor = res?.meta?.next_cursor;
-                        if (cursor) await sleep(50);
+                        if (cursor) await sleep(20);
                     }
-                    prog(38 + (i / Math.max(1, ids.length)) * 42, "Fetching publications...");
+                    completed++;
+                    prog(38 + (completed / batches.length) * 42, "Fetching publications...");
+                };
+
+                const parallel = 3;
+                for (let i = 0; i < batches.length; i += parallel) {
+                    await Promise.all(batches.slice(i, i + parallel).map(processBatch));
                 }
 
-                const all = [...works.values()], border = all.filter(w => w._relevance < (CFG.defMin + 1.5) && w._relevance >= CFG.minRel && !w._why?.some(x=>x.includes('agripv'))).sort((a,b)=>b._relevance-a._relevance).slice(0, CFG.cap);
+                const all = [...works.values()], border = all.filter(w => w._relevance < (CFG.defMin + 1.5) && w._relevance >= CFG.minRel && !w._why?.some(x => x.includes('agripv'))).sort((a, b) => b._relevance - a._relevance).slice(0, CFG.cap);
                 if (border.length) {
-                    let done = 0, i = 0;
+                    let done = 0, idx = 0;
                     prog(82, `Improving targeting (${border.length} scans)...`);
-                    await Promise.all(Array.from({length: CFG.conc}, async () => {
-                        while (i < border.length) {
-                            const w = border[i++];
+                    await Promise.all(Array.from({ length: CFG.conc }, async () => {
+                        while (idx < border.length) {
+                            const w = border[idx++];
                             const d = await fetchJSON(`${CFG.api}/works/${w.id.split('/').pop()}?select=abstract_inverted_index`);
-                            const abs = d?.abstract_inverted_index ? Object.entries(d.abstract_inverted_index).reduce((a,[k,v])=>(v.forEach(p=>a[p]=k),a),[]).join(' ') : "";
-                            if (abs) { 
-                                const rel = scoreWork(w, abs); 
-                                if (rel.s > w._relevance) { w._relevance = rel.s; w._tier = rel.tier; w._why = [...new Set([...(w._why||[]), ...rel.why, 'abs'])]; } 
+                            const abs = d?.abstract_inverted_index ? Object.entries(d.abstract_inverted_index).reduce((a, [k, v]) => (v.forEach(p => a[p] = k), a), []).join(' ') : "";
+                            if (abs) {
+                                const rel = scoreWork(w, abs);
+                                if (rel.s > w._relevance) { w._relevance = rel.s; w._tier = rel.tier; w._why = [...new Set([...(w._why || []), ...rel.why, 'abs'])]; }
                             }
                             prog(82 + (++done / border.length) * 10, `Improving targeting (${done}/${border.length})...`);
-                            await sleep(35);
+                            await sleep(15);
                         }
                     }));
                 }
@@ -377,8 +657,8 @@
                 app.data.pubs = rawPubs.map(p => {
                     const mems = (p.authorships || []).filter(a => rMap.has(a.author?.id)).map(a => rMap.get(a.author.id));
                     if (!mems.length) return null;
-                    const tops = (p.topics||[]).filter(t=>(t.score||0)>=0.25).map(t=>t.display_name).filter(Boolean).slice(0,7);
-                    if (!tops.length) tops.push(...(p.concepts||[]).filter(c=>(c.score||0)>0.55 && (c.level||0)>0 && !TOPIC_BLOCK.has(norm(c.display_name))).map(c=>c.display_name).slice(0,7));
+                    const tops = (p.topics || []).filter(t => (t.score || 0) >= 0.25).map(t => t.display_name).filter(Boolean).slice(0, 7);
+                    if (!tops.length) tops.push(...(p.concepts || []).filter(c => (c.score || 0) > 0.55 && (c.level || 0) > 0 && !TOPIC_BLOCK.has(norm(c.display_name))).map(c => c.display_name).slice(0, 7));
                     mems.forEach(r => { r.net_works++; r.net_cited += (p.cited_by_count || 0); tops.forEach(t => { r.topics[t] = (r.topics[t] || 0) + 1; app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1); }); });
                     return { id: p.id, title: p.title, publication_year: p.publication_year, cited_by_count: p.cited_by_count || 0, doi: p.doi, url: p.primary_location?.landing_page_url || p.doi || p.primary_location?.pdf_url, source: p.primary_location?.source?.display_name, is_oa: p.open_access?.is_oa, type: p.type, _relevance: p._relevance || 0, _why: p._why || [], _tier: p._tier || 'Weak', _topics: tops, _allAuthors: (p.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, isMember: rMap.has(a.author?.id) })), _memberAuthors: mems };
                 }).filter(Boolean);
@@ -396,14 +676,14 @@
                         deg.set(ids[i], (deg.get(ids[i]) || 0) + 1); deg.set(ids[j], (deg.get(ids[j]) || 0) + 1);
                     }
                 });
-                app.data.graph = { nodes: app.data.researchers.map(r => ({ ...r, deg: deg.get(r.id) || 0, radius: clamp(10 + Math.sqrt(r.net_works||0)*3 + Math.sqrt(deg.get(r.id)||0)*1.5, 10, 30) })), links: [...links.values()] };
+                app.data.graph = { nodes: app.data.researchers.map(r => ({ ...r, deg: deg.get(r.id) || 0, radius: clamp(10 + Math.sqrt(r.net_works || 0) * 3 + Math.sqrt(deg.get(r.id) || 0) * 1.5, 10, 30) })), links: [...links.values()] };
             },
 
-            pack: () => ({ r: app.data.researchers.map(r => ({id:r.id, n:r.display_name, i:r.inst, nw:r.net_works, nc:r.net_cited, t:r.topics, d:r.deg})), p: app.data.pubs.map(p => ({id:p.id, t:p.title, y:p.publication_year, c:p.cited_by_count, d:p.doi, u:p.url, s:p.source, oa:p.is_oa, ty:p.type, r:p._relevance, w:p._why, ti:p._tier, tp:p._topics, aa:p._allAuthors, ma:p._memberAuthors.map(m=>m.id)})), t: [...app.data.topics] }),
+            pack: () => ({ r: app.data.researchers.map(r => ({ id: r.id, n: r.display_name, i: r.inst, nw: r.net_works, nc: r.net_cited, t: r.topics, d: r.deg })), p: app.data.pubs.map(p => ({ id: p.id, t: p.title, y: p.publication_year, c: p.cited_by_count, d: p.doi, u: p.url, s: p.source, oa: p.is_oa, ty: p.type, r: p._relevance, w: p._why, ti: p._tier, tp: p._topics, aa: p._allAuthors, ma: p._memberAuthors.map(m => m.id) })), t: [...app.data.topics] }),
             restore: c => {
-                app.data.researchers = c.r.map(r => ({...r, display_name:r.n, inst:r.i, net_works:r.nw, net_cited:r.nc, topics:r.t, deg:r.d||0, color:app.col(r.i)}));
+                app.data.researchers = c.r.map(r => ({ ...r, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, topics: r.t, deg: r.d || 0, color: app.col(r.i) }));
                 const rMap = new Map(app.data.researchers.map(r => [r.id, r]));
-                app.data.pubs = c.p.map(p => ({...p, title:p.t, publication_year:p.y, cited_by_count:p.c, doi:p.d, url:p.u, source:p.s, is_oa:p.oa, type:p.ty, _relevance:p.r, _why:p.w||[], _tier:p.ti||'Weak', _topics:p.tp, _allAuthors:p.aa, _memberAuthors:p.ma.map(id=>rMap.get(id)).filter(Boolean)}));
+                app.data.pubs = c.p.map(p => ({ ...p, title: p.t, publication_year: p.y, cited_by_count: p.c, doi: p.d, url: p.u, source: p.s, is_oa: p.oa, type: p.ty, _relevance: p.r, _why: p.w || [], _tier: p.ti || 'Weak', _topics: p.tp, _allAuthors: p.aa, _memberAuthors: p.ma.map(id => rMap.get(id)).filter(Boolean) }));
                 app.data.topics = new Map(c.t);
                 app.buildGraph();
             },
@@ -416,16 +696,16 @@
                 app.state.lastFiltered = filtered;
 
                 const am = new Set(filtered.flatMap(p => p._memberAuthors.map(a => a.id)));
-                el('statsGrid').innerHTML = [['MEMBERS', am.size], ['WORKS', filtered.length], ['CITES', filtered.reduce((s,p)=>s+p.cited_by_count,0)], ['TOPICS', new Set(filtered.flatMap(p=>p._topics)).size]].map(([l, v]) => `<div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-base font-bold text-slate-700 leading-none">${typeof v==='number'&&v>=1000?(v/1000).toFixed(1)+'k':v}</span><span class="text-[8px] text-slate-400 font-bold mt-0.5">${l}</span></div>`).join('');
+                el('statsGrid').innerHTML = [['MEMBERS', am.size], ['WORKS', filtered.length], ['CITES', filtered.reduce((s, p) => s + p.cited_by_count, 0)], ['TOPICS', new Set(filtered.flatMap(p => p._topics)).size]].map(([l, v]) => `<div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-base font-bold text-slate-700 leading-none">${typeof v === 'number' && v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}</span><span class="text-[8px] text-slate-400 font-bold mt-0.5">${l}</span></div>`).join('');
                 el('filteredCount').textContent = filtered.length;
-                
+
                 // NEW: Render Timeline
                 app.renderTimeline(filtered);
 
-                filtered.sort({ cited: (a,b)=>b.cited_by_count-a.cited_by_count, relevance: (a,b)=>b._relevance-a._relevance||b.cited_by_count-a.cited_by_count, title: (a,b)=>a.title.localeCompare(b.title), recent: (a,b)=>b.publication_year-a.publication_year||b._relevance-a._relevance }[app.state.sort]);
+                filtered.sort({ cited: (a, b) => b.cited_by_count - a.cited_by_count, relevance: (a, b) => b._relevance - a._relevance || b.cited_by_count - a.cited_by_count, title: (a, b) => a.title.localeCompare(b.title), recent: (a, b) => b.publication_year - a.publication_year || b._relevance - a._relevance }[app.state.sort]);
 
                 const size = 12, pages = Math.ceil(filtered.length / size), page = app.state.page = clamp(app.state.page, 1, Math.max(1, pages)), start = (page - 1) * size;
-                
+
                 // RESTORED: Explicit Links in the cards (DOI/URL)
                 el('publicationsList').innerHTML = filtered.slice(start, start + size).map(p => `
                     <div class="pub-card p-3 bg-white mb-2 cursor-pointer" onclick="app.detail('${p.id}')">
@@ -438,7 +718,7 @@
                         </div>
                         <div class="flex flex-wrap gap-1 mb-2">${p._allAuthors.slice(0, 5).map(a => `<span class="px-1.5 py-0.5 rounded text-[9px] truncate max-w-[100px] ${a.isMember ? 'network-member font-medium' : 'external-author'}">${esc(a.name)}</span>`).join('')}${p._allAuthors.length > 5 ? `<span class="text-[9px] text-slate-400 self-center">+${p._allAuthors.length - 5}</span>` : ''}</div>
                         <div class="flex items-center gap-3 text-[9px] text-slate-500 font-medium">
-                            <span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${p.publication_year||''}</span>
+                            <span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${p.publication_year || ''}</span>
                             <span class="flex items-center gap-1"><i class="fas fa-quote-right text-slate-400"></i> ${p.cited_by_count}</span>
                             <span class="ml-auto text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 font-semibold">Score: ${p._relevance.toFixed(1)}</span>
                             <div class="flex gap-1 ml-1">
@@ -451,23 +731,23 @@
 
                 ['showingFrom', 'showingTo', 'totalPublications'].forEach((id, i) => el(id).textContent = [filtered.length ? start + 1 : 0, Math.min(start + size, filtered.length), filtered.length][i]);
                 const btns = [], addB = (p, l, a) => btns.push(`<button onclick="app.setPage(${p})" class="w-6 h-6 flex items-center justify-center rounded text-[9px] font-medium transition-colors ${a ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`);
-                if (pages > 1) { addB(Math.max(1, page - 1), '<i class="fas fa-chevron-left"></i>'); (pages <= 5 ? Array.from({length:pages},(_,i)=>i+1) : (page <= 3 ? [1,2,3,'...',pages] : (page >= pages-2 ? [1,'...',pages-2,pages-1,pages] : [1,'...',page,page+1,'...',pages]))).forEach(x => x === '...' ? btns.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : addB(x, x, x === page)); addB(Math.min(pages, page + 1), '<i class="fas fa-chevron-right"></i>'); }
+                if (pages > 1) { addB(Math.max(1, page - 1), '<i class="fas fa-chevron-left"></i>'); (pages <= 5 ? Array.from({ length: pages }, (_, i) => i + 1) : (page <= 3 ? [1, 2, 3, '...', pages] : (page >= pages - 2 ? [1, '...', pages - 2, pages - 1, pages] : [1, '...', page, page + 1, '...', pages]))).forEach(x => x === '...' ? btns.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : addB(x, x, x === page)); addB(Math.min(pages, page + 1), '<i class="fas fa-chevron-right"></i>'); }
                 el('paginationContainer').innerHTML = btns.join('');
 
                 app.renderGraph(filtered, am);
-                
-                const ic = new Map(), tc = new Map();
-                app.data.researchers.forEach(r => am.has(r.id) && ic.set(r.inst, (ic.get(r.inst)||0)+1));
-                filtered.forEach(p => p._topics.forEach(t => tc.set(t, (tc.get(t)||0)+1)));
 
-                el('institutionFilters').innerHTML = [...ic].sort((a,b)=>b[1]-a[1]).map(([i,c]) => `<label class="flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 p-1 rounded group transition-colors"><input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 focus:ring-green-500 w-3 h-3" ${insts.has(i)?'checked':''}><div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${app.col(i)}"></div><span class="text-[10px] text-slate-600 truncate flex-1 group-hover:text-slate-900">${esc(i)}</span><span class="text-[8px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span></label>`).join('');
-                el('topicFilters').innerHTML = [...tc].sort((a,b)=>b[1]-a[1]).slice(0,35).map(([t,c]) => `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] transition-all border flex items-center gap-1 ${topics.has(t)?'bg-green-100 text-green-800 border-green-200 font-semibold':'bg-slate-50 text-slate-500 border-transparent hover:bg-white hover:border-slate-200'}">${esc(t)} <span class="opacity-50 text-[8px]">${c}</span></button>`).join('');
+                const ic = new Map(), tc = new Map();
+                app.data.researchers.forEach(r => am.has(r.id) && ic.set(r.inst, (ic.get(r.inst) || 0) + 1));
+                filtered.forEach(p => p._topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1)));
+
+                el('institutionFilters').innerHTML = [...ic].sort((a, b) => b[1] - a[1]).map(([i, c]) => `<label class="flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 p-1 rounded group transition-colors"><input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 focus:ring-green-500 w-3 h-3" ${insts.has(i) ? 'checked' : ''}><div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${app.col(i)}"></div><span class="text-[10px] text-slate-600 truncate flex-1 group-hover:text-slate-900">${esc(i)}</span><span class="text-[8px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span></label>`).join('');
+                el('topicFilters').innerHTML = [...tc].sort((a, b) => b[1] - a[1]).slice(0, 35).map(([t, c]) => `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] transition-all border flex items-center gap-1 ${topics.has(t) ? 'bg-green-100 text-green-800 border-green-200 font-semibold' : 'bg-slate-50 text-slate-500 border-transparent hover:bg-white hover:border-slate-200'}">${esc(t)} <span class="opacity-50 text-[8px]">${c}</span></button>`).join('');
 
                 el('activeFiltersPanel').classList.toggle('hidden', !(topics.size + insts.size));
                 el('activeFilterCount').textContent = topics.size + insts.size;
-                const tag = (l,k,c) => `<span class="${c} px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>`;
-                el('activeFilterTags').innerHTML = [...topics].map(t=>tag(t,'topics','bg-green-50 text-green-700 border-green-200')).join('') + [...insts].map(i=>tag(i,'insts','bg-blue-50 text-blue-700 border-blue-200')).join('');
-                
+                const tag = (l, k, c) => `<span class="${c} px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>`;
+                el('activeFilterTags').innerHTML = [...topics].map(t => tag(t, 'topics', 'bg-green-50 text-green-700 border-green-200')).join('') + [...insts].map(i => tag(i, 'insts', 'bg-blue-50 text-blue-700 border-blue-200')).join('');
+
                 const actInst = new Set(app.data.researchers.filter(r => am.has(r.id)).map(r => r.inst));
                 el('legendContainer').innerHTML = [...app.instColors].filter(([i]) => actInst.has(i)).map(([i, c]) => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full shadow-sm" style="background:${c}"></span><span class="text-[9px] text-slate-600 truncate">${esc(i)}</span></div>`).join('');
             },
@@ -475,37 +755,37 @@
             // NEW: Render Timeline Function (From Script 2, adapted for Script 1 layout)
             renderTimeline: (filtered) => {
                 const svg = d3.select('#timelineChart'); svg.selectAll('*').remove();
-                const yc = new Map(); filtered.forEach(p => p.publication_year && yc.set(p.publication_year, (yc.get(p.publication_year)||0)+1));
+                const yc = new Map(); filtered.forEach(p => p.publication_year && yc.set(p.publication_year, (yc.get(p.publication_year) || 0) + 1));
                 if (!yc.size) return;
-                const yrs = [...yc.keys()].sort((a,b)=>a-b), min = yrs[0], max = yrs[yrs.length-1];
-                const all = Array.from({length: max-min+1}, (_,i)=>min+i);
-                const W = el('timelineChart').clientWidth, H = 50, m = {t:2,r:2,b:12,l:2}, iw = W-m.l-m.r, ih = H-m.t-m.b;
+                const yrs = [...yc.keys()].sort((a, b) => a - b), min = yrs[0], max = yrs[yrs.length - 1];
+                const all = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+                const W = el('timelineChart').clientWidth, H = 50, m = { t: 2, r: 2, b: 12, l: 2 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
                 svg.attr('viewBox', `0 0 ${W} ${H}`);
-                const x = d3.scaleBand().domain(all).range([m.l, m.l+iw]).padding(0.2);
-                const y = d3.scaleLinear().domain([0, d3.max([...yc.values()])||1]).range([ih+m.t, m.t]);
+                const x = d3.scaleBand().domain(all).range([m.l, m.l + iw]).padding(0.2);
+                const y = d3.scaleLinear().domain([0, d3.max([...yc.values()]) || 1]).range([ih + m.t, m.t]);
                 const { yFrom, yTo } = app.state.filters;
                 const g = svg.append('g');
-                g.selectAll('rect').data(all).enter().append('rect').attr('class', d => `timeline-bar ${(yFrom&&d>=yFrom&&(!yTo||d<=yTo))||(yTo&&d<=yTo&&(!yFrom||d>=yFrom))?'selected':''}`).attr('x', d=>x(d)).attr('y', d=>y(yc.get(d)||0)).attr('width', x.bandwidth()).attr('height', d=>ih+m.t-y(yc.get(d)||0)).attr('rx',1).on('click', (e,d) => {
-                    if(e.shiftKey && app.state.filters.yFrom) { app.state.filters.yTo = d; el('yearTo').value = d; }
-                    else if(app.state.filters.yFrom === d && !app.state.filters.yTo) { app.state.filters.yFrom=null; app.state.filters.yTo=null; el('yearFrom').value=''; el('yearTo').value=''; }
+                g.selectAll('rect').data(all).enter().append('rect').attr('class', d => `timeline-bar ${(yFrom && d >= yFrom && (!yTo || d <= yTo)) || (yTo && d <= yTo && (!yFrom || d >= yFrom)) ? 'selected' : ''}`).attr('x', d => x(d)).attr('y', d => y(yc.get(d) || 0)).attr('width', x.bandwidth()).attr('height', d => ih + m.t - y(yc.get(d) || 0)).attr('rx', 1).on('click', (e, d) => {
+                    if (e.shiftKey && app.state.filters.yFrom) { app.state.filters.yTo = d; el('yearTo').value = d; }
+                    else if (app.state.filters.yFrom === d && !app.state.filters.yTo) { app.state.filters.yFrom = null; app.state.filters.yTo = null; el('yearFrom').value = ''; el('yearTo').value = ''; }
                     else { app.state.filters.yFrom = d; app.state.filters.yTo = null; el('yearFrom').value = d; el('yearTo').value = ''; }
                     app.render();
                 });
                 const lbl = all.length > 12 ? 3 : (all.length > 6 ? 2 : 1);
-                g.selectAll('.yl').data(all.filter((_,i)=>i%lbl===0||_===max)).enter().append('text').attr('x', d=>x(d)+x.bandwidth()/2).attr('y', H-1).attr('text-anchor', 'middle').attr('font-size', 7).attr('fill', '#94a3b8').text(d=>d.toString().slice(-2));
+                g.selectAll('.yl').data(all.filter((_, i) => i % lbl === 0 || _ === max)).enter().append('text').attr('x', d => x(d) + x.bandwidth() / 2).attr('y', H - 1).attr('text-anchor', 'middle').attr('font-size', 7).attr('fill', '#94a3b8').text(d => d.toString().slice(-2));
             },
 
             setupGraph: () => {
                 const svg = d3.select('#networkGraph'), g = svg.append('g'), defs = svg.append('defs');
-                COLORS.forEach(c => defs.append('radialGradient').attr('id', 'g-'+c.slice(1)).attr('cx','30%').attr('cy','30%').call(g => { g.append('stop').attr('offset','0%').attr('stop-color', d3.color(c).brighter(1.2)); g.append('stop').attr('offset','100%').attr('stop-color',c); }));
+                COLORS.forEach(c => defs.append('radialGradient').attr('id', 'g-' + c.slice(1)).attr('cx', '30%').attr('cy', '30%').call(g => { g.append('stop').attr('offset', '0%').attr('stop-color', d3.color(c).brighter(1.2)); g.append('stop').attr('offset', '100%').attr('stop-color', c); }));
                 const zoom = d3.zoom().scaleExtent([0.1, 8]).on('zoom', e => { g.attr('transform', e.transform); app.d3.k = e.transform.k; if (app.d3.lbl) app.d3.lbl.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none'); });
-                app.d3 = { svg, g, zoom, sim: d3.forceSimulation().force('link', d3.forceLink().id(d=>d.id).distance(120).strength(0.3)).force('charge', d3.forceManyBody().strength(-320)).force('collide', d3.forceCollide().radius(d=>d.radius+4).iterations(3)), k: 1 };
+                app.d3 = { svg, g, zoom, sim: d3.forceSimulation().force('link', d3.forceLink().id(d => d.id).distance(120).strength(0.3)).force('charge', d3.forceManyBody().strength(-320)).force('collide', d3.forceCollide().radius(d => d.radius + 4).iterations(3)), k: 1 };
                 svg.call(zoom); window.onresize = app.resizeGraph; app.resizeGraph();
             },
 
             resizeGraph: () => {
                 const c = el('graphContainer'), w = c.clientWidth || 800, h = c.clientHeight || 600;
-                app.d3.svg.attr('viewBox', `0 0 ${w} ${h}`); app.d3.sim.force('center', d3.forceCenter(w/2, h/2));
+                app.d3.svg.attr('viewBox', `0 0 ${w} ${h}`); app.d3.sim.force('center', d3.forceCenter(w / 2, h / 2));
                 app.applyClusterForces(); app.d3.sim.alpha(0.3).restart();
             },
 
@@ -513,64 +793,64 @@
                 if (!app.d3.nodes) return;
                 const c = el('graphContainer'), w = c.clientWidth, h = c.clientHeight;
                 if (!app.state.graph.cluster) { app.d3.sim.force('x', null).force('y', null); return; }
-                const insts = [...new Set(app.d3.nodes.map(n => n.inst))].sort(), r = Math.min(w,h)*0.28, pos = new Map(insts.map((i, idx) => [i, { x: w/2 + Math.cos((idx/insts.length)*Math.PI*2 - Math.PI/2)*r, y: h/2 + Math.sin((idx/insts.length)*Math.PI*2 - Math.PI/2)*r }]));
+                const insts = [...new Set(app.d3.nodes.map(n => n.inst))].sort(), r = Math.min(w, h) * 0.28, pos = new Map(insts.map((i, idx) => [i, { x: w / 2 + Math.cos((idx / insts.length) * Math.PI * 2 - Math.PI / 2) * r, y: h / 2 + Math.sin((idx / insts.length) * Math.PI * 2 - Math.PI / 2) * r }]));
                 app.d3.sim.force('x', d3.forceX(d => pos.get(d.inst)?.x).strength(0.15)).force('y', d3.forceY(d => pos.get(d.inst)?.y).strength(0.15));
             },
 
             renderGraph: (pubs, vis) => {
-                const nodes = app.data.graph.nodes.filter(n => vis.has(n.id)), links = app.data.graph.links.filter(l => vis.has(l.source.id||l.source) && vis.has(l.target.id||l.target));
+                const nodes = app.data.graph.nodes.filter(n => vis.has(n.id)), links = app.data.graph.links.filter(l => vis.has(l.source.id || l.source) && vis.has(l.target.id || l.target));
                 app.d3.nodes = nodes;
-                
+
                 const { g, sim } = app.d3; g.selectAll('*').remove();
-                const adj = new Map(); links.forEach(l => { const s = l.source.id||l.source, t = l.target.id||l.target; (adj.get(s)||adj.set(s,new Set()).get(s)).add(t); (adj.get(t)||adj.set(t,new Set()).get(t)).add(s); });
+                const adj = new Map(); links.forEach(l => { const s = l.source.id || l.source, t = l.target.id || l.target; (adj.get(s) || adj.set(s, new Set()).get(s)).add(t); (adj.get(t) || adj.set(t, new Set()).get(t)).add(s); });
                 const maxW = d3.max(links, d => d.weight) || 1, wScale = d3.scaleSqrt().domain([1, maxW]).range([0.5, 3]);
 
-                const lnk = g.append('g').selectAll('line').data(links).enter().append('line').attr('stroke', '#cbd5e1').attr('stroke-opacity', d => 0.4 + 0.3 * (d.weight/maxW)).attr('stroke-width', d => wScale(d.weight));
-                const nd = g.append('g').selectAll('g').data(nodes).enter().append('g').call(d3.drag().on('start', (e,d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; }).on('drag', (e,d) => { d.fx = e.x; d.fy = e.y; }).on('end', (e,d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
-                
-                nd.append('circle').attr('r', d=>d.radius).attr('fill', d=>`url(#g-${d.color.slice(1)})`).attr('stroke', 'rgba(255,255,255,0.3)').attr('stroke-width', 1.5).style('filter', 'drop-shadow(0 4px 6px rgba(0,0,0,0.15))').style('cursor', 'pointer');
-                nd.append('text').text(d=>d.display_name.split(' ').filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()).attr('dy', '0.35em').attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', d=>Math.max(8,d.radius*0.45)).attr('font-weight', '600').style('pointer-events', 'none');
-                app.d3.lbl = nd.append('text').attr('class', 'node-label').text(d=>d.display_name.split(' ').pop().replace(/[,;]/g,'')).attr('text-anchor', 'middle').attr('y', d=>d.radius+12).attr('fill', '#334155').attr('font-size', 10).attr('font-weight', '600').style('pointer-events', 'none').style('display', app.state.graph.labels ? null : 'none');
+                const lnk = g.append('g').selectAll('line').data(links).enter().append('line').attr('stroke', '#cbd5e1').attr('stroke-opacity', d => 0.4 + 0.3 * (d.weight / maxW)).attr('stroke-width', d => wScale(d.weight));
+                const nd = g.append('g').selectAll('g').data(nodes).enter().append('g').call(d3.drag().on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; }).on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; }).on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+                nd.append('circle').attr('r', d => d.radius).attr('fill', d => `url(#g-${d.color.slice(1)})`).attr('stroke', 'rgba(255,255,255,0.3)').attr('stroke-width', 1.5).style('filter', 'drop-shadow(0 4px 6px rgba(0,0,0,0.15))').style('cursor', 'pointer');
+                nd.append('text').text(d => d.display_name.split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase()).attr('dy', '0.35em').attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', d => Math.max(8, d.radius * 0.45)).attr('font-weight', '600').style('pointer-events', 'none');
+                app.d3.lbl = nd.append('text').attr('class', 'node-label').text(d => d.display_name.split(' ').pop().replace(/[,;]/g, '')).attr('text-anchor', 'middle').attr('y', d => d.radius + 12).attr('fill', '#334155').attr('font-size', 10).attr('font-weight', '600').style('pointer-events', 'none').style('display', app.state.graph.labels ? null : 'none');
 
                 const tip = el('tooltip');
                 nd.on('mouseover', (e, d) => {
                     nd.transition().duration(200).attr('opacity', n => (n.id === d.id || adj.get(d.id)?.has(n.id)) ? 1 : 0.1);
-                    lnk.transition().duration(200).attr('stroke', l => ((l.source.id||l.source)===d.id || (l.target.id||l.target)===d.id) ? '#475569' : '#e2e8f0').attr('stroke-opacity', l => ((l.source.id||l.source)===d.id || (l.target.id||l.target)===d.id) ? 1 : 0.05);
+                    lnk.transition().duration(200).attr('stroke', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? '#475569' : '#e2e8f0').attr('stroke-opacity', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? 1 : 0.05);
                     const r = el('graphContainer').getBoundingClientRect();
-                    Object.assign(tip.style, { left: Math.min(e.clientX-r.left+15, r.width-210)+'px', top: Math.min(e.clientY-r.top+15, r.height-140)+'px' });
+                    Object.assign(tip.style, { left: Math.min(e.clientX - r.left + 15, r.width - 210) + 'px', top: Math.min(e.clientY - r.top + 15, r.height - 140) + 'px' });
                     tip.innerHTML = `<div class="font-bold text-slate-800 mb-0.5">${esc(d.display_name)}</div><div class="text-[9px] text-slate-500 mb-2 font-medium truncate">${esc(d.inst)}</div><div class="flex gap-2 text-center"><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_works}</div><div class="text-[7px] uppercase text-slate-400">Works</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_cited}</div><div class="text-[7px] uppercase text-slate-400">Cites</div></div></div>`;
                     tip.classList.remove('hidden');
                 }).on('mouseout', () => {
                     nd.transition().duration(200).attr('opacity', 1);
-                    lnk.transition().duration(200).attr('stroke', '#cbd5e1').attr('stroke-opacity', d => 0.4 + 0.3 * (d.weight/maxW));
+                    lnk.transition().duration(200).attr('stroke', '#cbd5e1').attr('stroke-opacity', d => 0.4 + 0.3 * (d.weight / maxW));
                     tip.classList.add('hidden');
-                }).on('click', (e,d) => { e.stopPropagation(); app.profile(d); });
+                }).on('click', (e, d) => { e.stopPropagation(); app.profile(d); });
 
                 app.applyClusterForces();
                 const W = el('graphContainer').clientWidth, H = el('graphContainer').clientHeight, pad = 25;
                 sim.nodes(nodes).on('tick', () => {
-                    nodes.forEach(n => { n.x = clamp(n.x, pad+n.radius, W-pad-n.radius); n.y = clamp(n.y, pad+n.radius, H-pad-n.radius); });
-                    lnk.attr('x1', d=>d.source.x).attr('y1', d=>d.source.y).attr('x2', d=>d.target.x).attr('y2', d=>d.target.y);
+                    nodes.forEach(n => { n.x = clamp(n.x, pad + n.radius, W - pad - n.radius); n.y = clamp(n.y, pad + n.radius, H - pad - n.radius); });
+                    lnk.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
                     nd.attr('transform', d => `translate(${d.x},${d.y})`);
                 });
                 sim.force('link').links(links); sim.alpha(1).restart();
             },
 
-            tog: (k,v) => { app.state.filters[k].has(v) ? app.state.filters[k].delete(v) : app.state.filters[k].add(v); app.state.page = 1; app.render(); },
+            tog: (k, v) => { app.state.filters[k].has(v) ? app.state.filters[k].delete(v) : app.state.filters[k].add(v); app.state.page = 1; app.render(); },
             clear: k => { app.state.filters[k].clear(); app.state.page = 1; app.render(); },
-            reset: () => { app.state.filters = { q: '', topics: new Set(), insts: new Set(), yFrom: null, yTo: null, minRel: CFG.defMin }; ['globalSearch','yearFrom','yearTo'].forEach(i=>el(i).value=''); el('minRelevance').value = CFG.defMin; el('valMinRel').textContent = CFG.defMin.toFixed(1); app.state.page = 1; app.render(); },
+            reset: () => { app.state.filters = { q: '', topics: new Set(), insts: new Set(), yFrom: null, yTo: null, minRel: CFG.defMin };['globalSearch', 'yearFrom', 'yearTo'].forEach(i => el(i).value = ''); el('minRelevance').value = CFG.defMin; el('valMinRel').textContent = CFG.defMin.toFixed(1); app.state.page = 1; app.render(); },
             setPage: p => { app.state.page = p; app.render(); },
             zoom: k => app.d3.svg.transition().duration(600).call(app.d3.zoom.scaleBy, k),
-            fitGraph: () => { const b = app.d3.g.node().getBBox(); if(!b.width)return; const p = 50, w = el('graphContainer').clientWidth, h = el('graphContainer').clientHeight, s = Math.min(0.9, 1/Math.max(b.width/(w-p*2), b.height/(h-p*2))); app.d3.svg.transition().duration(750).call(app.d3.zoom.transform, d3.zoomIdentity.translate(w/2 - (b.x+b.width/2)*s, h/2 - (b.y+b.height/2)*s).scale(s)); },
+            fitGraph: () => { const b = app.d3.g.node().getBBox(); if (!b.width) return; const p = 50, w = el('graphContainer').clientWidth, h = el('graphContainer').clientHeight, s = Math.min(0.9, 1 / Math.max(b.width / (w - p * 2), b.height / (h - p * 2))); app.d3.svg.transition().duration(750).call(app.d3.zoom.transform, d3.zoomIdentity.translate(w / 2 - (b.x + b.width / 2) * s, h / 2 - (b.y + b.height / 2) * s).scale(s)); },
             toggleCluster: () => { app.state.graph.cluster = !app.state.graph.cluster; app.applyClusterForces(); app.d3.sim.alpha(0.3).restart(); },
-            toggleLabels: () => { app.state.graph.labels = !app.state.graph.labels; if(app.d3.lbl) app.d3.lbl.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none'); },
+            toggleLabels: () => { app.state.graph.labels = !app.state.graph.labels; if (app.d3.lbl) app.d3.lbl.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none'); },
 
             profile: r => {
                 el('researcherModal').classList.add('active');
-                const pubs = app.data.pubs.filter(p => p._memberAuthors.some(a => a.id === r.id)).sort((a,b)=>b.publication_year-a.publication_year);
+                const pubs = app.data.pubs.filter(p => p._memberAuthors.some(a => a.id === r.id)).sort((a, b) => b.publication_year - a.publication_year);
                 el('researcherContent').innerHTML = `
-                    <div class="sticky top-0 bg-white z-10 p-5 border-b border-slate-100"><div class="flex justify-between items-start"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0,2)}</div><div><h2 class="text-lg font-bold text-slate-800 leading-tight">${esc(r.display_name)}</h2><p class="text-xs text-slate-500 font-medium">${esc(r.inst)}</p></div></div><button onclick="document.getElementById('researcherModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700"><i class="fas fa-times"></i></button></div><div class="grid grid-cols-2 gap-3 mt-4"><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${pubs.length}</span><span class="text-[9px] font-bold uppercase text-slate-400">Publications</span></div><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${pubs.reduce((s,p)=>s+p.cited_by_count,0).toLocaleString()}</span><span class="text-[9px] font-bold uppercase text-slate-400">Total Citations</span></div></div></div>
-                    <div class="p-5"><h4 class="font-bold text-[10px] uppercase text-slate-400 mb-3 tracking-wider">Latest Contributions</h4><div class="space-y-2">${pubs.slice(0,15).map(p => `<div class="p-2.5 rounded border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="document.getElementById('researcherModal').classList.remove('active');app.detail('${p.id}')"><div class="font-semibold text-xs text-slate-700 mb-1 leading-snug">${esc(p.title)}</div><div class="text-[10px] text-slate-400 flex justify-between items-center"><span>${p.publication_year} • ${p._relevance.toFixed(1)} score</span><span class="bg-slate-100 px-1.5 py-0.5 rounded">${p.cited_by_count} cites</span></div></div>`).join('')}</div></div>`;
+                    <div class="sticky top-0 bg-white z-10 p-5 border-b border-slate-100"><div class="flex justify-between items-start"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0, 2)}</div><div><h2 class="text-lg font-bold text-slate-800 leading-tight">${esc(r.display_name)}</h2><p class="text-xs text-slate-500 font-medium">${esc(r.inst)}</p></div></div><button onclick="document.getElementById('researcherModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700"><i class="fas fa-times"></i></button></div><div class="grid grid-cols-2 gap-3 mt-4"><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${pubs.length}</span><span class="text-[9px] font-bold uppercase text-slate-400">Publications</span></div><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${pubs.reduce((s, p) => s + p.cited_by_count, 0).toLocaleString()}</span><span class="text-[9px] font-bold uppercase text-slate-400">Total Citations</span></div></div></div>
+                    <div class="p-5"><h4 class="font-bold text-[10px] uppercase text-slate-400 mb-3 tracking-wider">Latest Contributions</h4><div class="space-y-2">${pubs.slice(0, 15).map(p => `<div class="p-2.5 rounded border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="document.getElementById('researcherModal').classList.remove('active');app.detail('${p.id}')"><div class="font-semibold text-xs text-slate-700 mb-1 leading-snug">${esc(p.title)}</div><div class="text-[10px] text-slate-400 flex justify-between items-center"><span>${p.publication_year} • ${p._relevance.toFixed(1)} score</span><span class="bg-slate-100 px-1.5 py-0.5 rounded">${p.cited_by_count} cites</span></div></div>`).join('')}</div></div>`;
             },
 
             detail: async id => {
@@ -579,33 +859,33 @@
                 const show = abs => {
                     el('detailContent').innerHTML = `
                         <div class="flex justify-between items-start mb-4 pb-3 border-b border-slate-100"><h2 class="text-lg font-bold text-slate-800 pr-8 leading-tight">${esc(p.title)}</h2><button onclick="document.getElementById('detailModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700 text-lg"><i class="fas fa-times"></i></button></div>
-                        <div class="flex flex-wrap gap-3 text-xs text-slate-500 mb-6 font-medium"><span class="flex items-center gap-1.5"><i class="fas fa-calendar"></i> ${p.publication_year}</span><span class="flex items-center gap-1.5"><i class="fas fa-quote-right"></i> ${p.cited_by_count} Citations</span>${p.source?`<span class="flex items-center gap-1.5"><i class="fas fa-book"></i> ${esc(p.source)}</span>`:''}<span class="flex items-center gap-1.5 text-green-600 bg-green-50 px-1.5 rounded border border-green-100">Score: ${p._relevance.toFixed(1)}</span>${p.url?`<a href="${p.url}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1.5"><i class="fas fa-external-link-alt"></i> View Source</a>`:''}</div>
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-2"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Abstract</h4>${abs?`<div class="text-slate-600 text-xs leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100 text-justify font-normal">${esc(abs)}</div>`:`<div class="text-slate-400 text-xs italic bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">Abstract not available via API.</div>`}${p._why.length?`<div class="mt-4"><h4 class="font-bold text-[9px] text-slate-400 uppercase tracking-wide mb-1.5">Relevance Factors</h4><div class="flex flex-wrap gap-1">${p._why.map(w=>`<span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] rounded border border-slate-200 font-mono">${w}</span>`).join('')}</div></div>`:''}</div>
-                        <div><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Authors</h4><div class="flex flex-col gap-1.5">${p._allAuthors.map(a=>`<div class="flex items-center gap-2 text-xs p-1.5 rounded-lg border ${a.isMember?'border-green-200 bg-green-50 cursor-pointer hover:bg-green-100':'border-transparent text-slate-500'}" ${a.isMember?`onclick="document.getElementById('detailModal').classList.remove('active');app.profile(app.data.researchers.find(r=>r.id==='${a.id}'))"`:''}>${a.isMember?'<span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>':''}<span class="${a.isMember?'font-semibold text-green-800':''} truncate">${esc(a.name)}</span></div>`).join('')}</div><div class="mt-6"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Topics</h4><div class="flex flex-wrap gap-1">${p._topics.map(t=>`<span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded border border-slate-200">${esc(t)}</span>`).join('')}</div></div></div></div>`;
+                        <div class="flex flex-wrap gap-3 text-xs text-slate-500 mb-6 font-medium"><span class="flex items-center gap-1.5"><i class="fas fa-calendar"></i> ${p.publication_year}</span><span class="flex items-center gap-1.5"><i class="fas fa-quote-right"></i> ${p.cited_by_count} Citations</span>${p.source ? `<span class="flex items-center gap-1.5"><i class="fas fa-book"></i> ${esc(p.source)}</span>` : ''}<span class="flex items-center gap-1.5 text-green-600 bg-green-50 px-1.5 rounded border border-green-100">Score: ${p._relevance.toFixed(1)}</span>${p.url ? `<a href="${p.url}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1.5"><i class="fas fa-external-link-alt"></i> View Source</a>` : ''}</div>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-2"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Abstract</h4>${abs ? `<div class="text-slate-600 text-xs leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100 text-justify font-normal">${esc(abs)}</div>` : `<div class="text-slate-400 text-xs italic bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">Abstract not available via API.</div>`}${p._why.length ? `<div class="mt-4"><h4 class="font-bold text-[9px] text-slate-400 uppercase tracking-wide mb-1.5">Relevance Factors</h4><div class="flex flex-wrap gap-1">${p._why.map(w => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] rounded border border-slate-200 font-mono">${w}</span>`).join('')}</div></div>` : ''}</div>
+                        <div><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Authors</h4><div class="flex flex-col gap-1.5">${p._allAuthors.map(a => `<div class="flex items-center gap-2 text-xs p-1.5 rounded-lg border ${a.isMember ? 'border-green-200 bg-green-50 cursor-pointer hover:bg-green-100' : 'border-transparent text-slate-500'}" ${a.isMember ? `onclick="document.getElementById('detailModal').classList.remove('active');app.profile(app.data.researchers.find(r=>r.id==='${a.id}'))"` : ''}>${a.isMember ? '<span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>' : ''}<span class="${a.isMember ? 'font-semibold text-green-800' : ''} truncate">${esc(a.name)}</span></div>`).join('')}</div><div class="mt-6"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Topics</h4><div class="flex flex-wrap gap-1">${p._topics.map(t => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded border border-slate-200">${esc(t)}</span>`).join('')}</div></div></div></div>`;
                 };
                 show(null);
-                try { const d = await fetchJSON(`${CFG.api}/works/${p.id.split('/').pop()}?select=abstract_inverted_index`); show(d?.abstract_inverted_index ? Object.entries(d.abstract_inverted_index).reduce((a,[k,v])=>(v.forEach(p=>a[p]=k),a),[]).join(' ') : null); } catch { }
+                try { const d = await fetchJSON(`${CFG.api}/works/${p.id.split('/').pop()}?select=abstract_inverted_index`); show(d?.abstract_inverted_index ? Object.entries(d.abstract_inverted_index).reduce((a, [k, v]) => (v.forEach(p => a[p] = k), a), []).join(' ') : null); } catch { }
             },
 
             cite: id => {
                 const p = app.data.pubs.find(x => x.id === id), aa = p._allAuthors.map(a => a.name);
-                el('citeAPA').textContent = `${aa.length>5?`${aa.slice(0,5).join(', ')}, et al.`:aa.join(', ')} (${p.publication_year}). ${p.title}. ${p.source||'Journal'}.`;
-                el('citeBib').textContent = `@article{${(aa[0]||'u').split(' ').pop().toLowerCase().replace(/[^a-z]/g,'')}${p.publication_year}, author={${aa.join(' and ')}}, title={${p.title}}, year={${p.publication_year}}, journal={${p.source||'Journal'}}}`;
+                el('citeAPA').textContent = `${aa.length > 5 ? `${aa.slice(0, 5).join(', ')}, et al.` : aa.join(', ')} (${p.publication_year}). ${p.title}. ${p.source || 'Journal'}.`;
+                el('citeBib').textContent = `@article{${(aa[0] || 'u').split(' ').pop().toLowerCase().replace(/[^a-z]/g, '')}${p.publication_year}, author={${aa.join(' and ')}}, title={${p.title}}, year={${p.publication_year}}, journal={${p.source || 'Journal'}}}`;
                 el('citationModal').classList.add('active');
             },
             copy: id => { navigator.clipboard.writeText(el(id).textContent); const b = event.currentTarget, o = b.innerHTML; b.innerHTML = '<i class="fas fa-check text-green-600"></i>'; setTimeout(() => b.innerHTML = o, 1500); },
-            
+
             // NEW: Export Functions (From Script 2)
             toggleExportMenu: () => { el('exportMenu').classList.toggle('hidden'); },
-            downloadFile: (content, type, ext) => { const u = URL.createObjectURL(new Blob([content], {type})); Object.assign(document.createElement('a'), { href: u, download: `agripv_network.${ext}` }).click(); URL.revokeObjectURL(u); el('exportMenu').classList.add('hidden'); },
-            exportCSV: () => app.downloadFile([['Title','Year','Score','Citations','Authors','DOI','Source'], ...app.state.lastFiltered.map(p => [`"${p.title.replace(/"/g,'""')}"`, p.publication_year, p._relevance, p.cited_by_count, `"${p._allAuthors.map(a=>a.name).join('; ')}"`, p.doi||'', `"${(p.source||'').replace(/"/g,'""')}"`])].map(r => r.join(',')).join('\n'), 'text/csv', 'csv'),
-            exportBibTeX: () => app.downloadFile(app.state.lastFiltered.map(p => `@article{${p.id.split('/').pop()}, author={${p._allAuthors.map(a=>a.name).join(' and ')}}, title={${p.title}}, year={${p.publication_year}}, journal={${p.source||''}}, doi={${p.doi||''}}}`).join('\n\n'), 'application/x-bibtex', 'bib'),
-            exportRIS: () => app.downloadFile(app.state.lastFiltered.map(p => `TY  - JOUR\nTI  - ${p.title}\nPY  - ${p.publication_year}\n${p._allAuthors.map(a=>`AU  - ${a.name}`).join('\n')}\nJO  - ${p.source||''}\nDO  - ${p.doi||''}\nER  - `).join('\n\n'), 'application/x-research-info-systems', 'ris'),
-            exportGraphSVG: () => { const s = el('networkGraph').cloneNode(true); s.setAttribute('xmlns', "http://www.w3.org/2000/svg"); s.insertBefore(Object.assign(document.createElement('style'),{textContent:`circle{stroke:#fff;stroke-width:1px}line{stroke:#94a3b8}text{font-family:sans-serif}`}), s.firstChild); app.downloadFile(new XMLSerializer().serializeToString(s), 'image/svg+xml', 'svg'); },
+            downloadFile: (content, type, ext) => { const u = URL.createObjectURL(new Blob([content], { type })); Object.assign(document.createElement('a'), { href: u, download: `agripv_network.${ext}` }).click(); URL.revokeObjectURL(u); el('exportMenu').classList.add('hidden'); },
+            exportCSV: () => app.downloadFile([['Title', 'Year', 'Score', 'Citations', 'Authors', 'DOI', 'Source'], ...app.state.lastFiltered.map(p => [`"${p.title.replace(/"/g, '""')}"`, p.publication_year, p._relevance, p.cited_by_count, `"${p._allAuthors.map(a => a.name).join('; ')}"`, p.doi || '', `"${(p.source || '').replace(/"/g, '""')}"`])].map(r => r.join(',')).join('\n'), 'text/csv', 'csv'),
+            exportBibTeX: () => app.downloadFile(app.state.lastFiltered.map(p => `@article{${p.id.split('/').pop()}, author={${p._allAuthors.map(a => a.name).join(' and ')}}, title={${p.title}}, year={${p.publication_year}}, journal={${p.source || ''}}, doi={${p.doi || ''}}}`).join('\n\n'), 'application/x-bibtex', 'bib'),
+            exportRIS: () => app.downloadFile(app.state.lastFiltered.map(p => `TY  - JOUR\nTI  - ${p.title}\nPY  - ${p.publication_year}\n${p._allAuthors.map(a => `AU  - ${a.name}`).join('\n')}\nJO  - ${p.source || ''}\nDO  - ${p.doi || ''}\nER  - `).join('\n\n'), 'application/x-research-info-systems', 'ris'),
+            exportGraphSVG: () => { const s = el('networkGraph').cloneNode(true); s.setAttribute('xmlns', "http://www.w3.org/2000/svg"); s.insertBefore(Object.assign(document.createElement('style'), { textContent: `circle{stroke:#fff;stroke-width:1px}line{stroke:#94a3b8}text{font-family:sans-serif}` }), s.firstChild); app.downloadFile(new XMLSerializer().serializeToString(s), 'image/svg+xml', 'svg'); },
             exportGraphPNG: () => {
-                const s = new XMLSerializer().serializeToString(el('networkGraph')), c = Object.assign(document.createElement('canvas'), {width: el('graphContainer').clientWidth*2, height: el('graphContainer').clientHeight*2}), ctx = c.getContext('2d'), img = new Image();
-                img.onload = () => { ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,c.width,c.height); ctx.drawImage(img,0,0,c.width,c.height); c.toBlob(b => { const u = URL.createObjectURL(b); Object.assign(document.createElement('a'), { href: u, download: 'agripv_network.png' }).click(); el('exportMenu').classList.add('hidden'); }); };
-                img.src = 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(s)));
+                const s = new XMLSerializer().serializeToString(el('networkGraph')), c = Object.assign(document.createElement('canvas'), { width: el('graphContainer').clientWidth * 2, height: el('graphContainer').clientHeight * 2 }), ctx = c.getContext('2d'), img = new Image();
+                img.onload = () => { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height); c.toBlob(b => { const u = URL.createObjectURL(b); Object.assign(document.createElement('a'), { href: u, download: 'agripv_network.png' }).click(); el('exportMenu').classList.add('hidden'); }); };
+                img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(s)));
             },
 
             setupUI: () => {
@@ -616,7 +896,7 @@
                 el('minRelevance').oninput = e => { el('valMinRel').textContent = (+e.target.value).toFixed(1); clearTimeout(tm); tm = setTimeout(() => { app.state.filters.minRel = +e.target.value; app.state.page = 1; app.render(); }, 200); };
                 el('linkDistance').oninput = e => { app.d3.sim.force('link').distance(+e.target.value); app.d3.sim.alpha(0.3).restart(); };
                 el('chargeStrength').oninput = e => { app.d3.sim.force('charge').strength(-e.target.value); app.d3.sim.alpha(0.3).restart(); };
-                
+
                 document.querySelectorAll('.view-btn').forEach(b => b.onclick = () => {
                     const v = b.dataset.view, both = v === 'both', pp = el('publicationsPanel'), np = el('networkPanel');
                     pp.style.display = (both || v === 'publications') ? 'flex' : 'none';
@@ -638,4 +918,5 @@
         document.addEventListener('DOMContentLoaded', app.init); window.app = app;
     </script>
 </body>
+
 </html>
