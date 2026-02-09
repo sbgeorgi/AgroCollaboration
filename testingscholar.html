@@ -237,7 +237,7 @@
                 <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm">
                     <div class="flex justify-between mb-1.5"><label class="text-[9px] font-semibold text-slate-500">Min
                             Score</label><span class="text-[9px] font-mono text-green-600 font-bold"
-                            id="valMinRel">3.0</span></div>
+                            id="valMinRel">4.0</span></div>
                     <input type="range" id="minRelevance" min="0" max="30" step="0.5" value="2" class="w-full block">
                     <div class="text-[9px] text-slate-400 mt-1.5 leading-snug">Strictness filter. Lower for broad,
                         Higher for core.</div>
@@ -446,22 +446,82 @@
         import { supabase } from "./auth.js";
         const sleep = ms => new Promise(r => setTimeout(r, ms)), el = id => document.getElementById(id), norm = s => (s || "").trim().toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " "), esc = s => s ? s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])) : "", jsStr = s => (s || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'"), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
         const COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4", "#ec4899", "#6366f1", "#84cc16", "#f97316", "#64748b", "#14b8a6"];
-        const CFG = { api: "https://api.openalex.org", key: "asf_network_v7", now: new Date().getFullYear(), minRel: 1.0, cap: 250, conc: 10, defMin: 3.0 };
+        const CFG = { api: "https://api.openalex.org", key: "asf_network_v7", now: new Date().getFullYear(), minRel: 1.0, cap: 250, conc: 10, defMin: 4.0 };
 
         // IMPROVED REGEX ENGINE
         const RX = {
-            // Updated to catch plurals (agrivoltaics) and hyphenated variations correctly
-            explicit: /\b(agri[\s-]?(pv|photo)?voltai[ckqs]?(s)?|agro[\s-]?(photo)?voltai[ckqs]?(s)?|agri[\s-]?pv|agro[\s-]?pv|solar[\s-]?sharing|solar[\s-]?farming|farming[\s-]?(with|under)[\s-]?(solar|pv)|photovoltaic[\s-]?greenhouse|greenhouse[\s-]?photovoltaic)\b/i,
-            // Component parts
-            solar: /\b(pv|photovoltai[ckqs]?|solar(\s*(modules?|panels?|arrays?|energy|power|cells?|installation|park|farm))?)\b/i,
-            agri: /\b(crop|yield|harvest|plant|biomass|farm(ing|er)?|agricultur|agronom|horticultur|viticultur|orchard|vineyard|greenhouse|livestock|pasture|grazing|sheep|cattle|food\s*production|arable|cultivat)\b/i,
-            // Interaction terms (The "Glue" - highly predictive of APV)
-            interaction: /\b(dual[\s-]?use|co[\s-]?locat(ion|ed)|combin(ed|ing)|integrat(ed|ion)|under|beneath|between|inter[\s-]?space|shading\s*effect|micro[\s-]?climat|land[\s-]?use[\s-]?efficien|ler\b|land[\s-]?equivalent[\s-]?ratio|photosynthetic|par\b|transmittan|light\s*distribution|water\s*saving)\b/i,
-            // Tech specific
-            tech: /\b(bifacial|spectral|stilted|elevation|tilt|ground\s*cover|vertical\s*mount|tracker|soil\s*moisture)\b/i,
-            // Exclusion list
-            neg: /\b(oncolog|cancer|tumor|biomed|patient|surgery|galaxy|telescope|quantum|nano(?!.*(grid|farm|solar))|perovskite(?!.*(greenhouse|crop))|thin[\s-]?film(?!.*(greenhouse|crop)))\b/i
+            explicit: /\b(agri[\s-]?(pv|photo)?voltai[ckqs]?(s)?|agro[\s-]?(photo)?voltai[ckqs]?(s)?|agri[\s-]?pv|agro[\s-]?pv|solar[\s-]?sharing|solar[\s-]?farm(ing|er)|farming[\s-]?(with|under)[\s-]?(solar|pv)|photovoltaic[\s-]?greenhouse|greenhouse[\s-]?photovoltaic|range[\s-]?voltaic|ecovoltaic)\b/i,
+            solar: /\b(pv|photovoltai[ckqs]?|solar\s*(module|panel|array|collector|energy|power|cell|park|installation|tracker|generator))\b/i,
+            agri: /\b(crop|harvest|biomass|agronom|horticultur|viticultur|orchard|vineyard|greenhouse|livestock|pasture|grazing|sheep|cattle|arable|cultivat|irrigation|soil\s*moisture|shade\s*tolerant|photosynthe|transpiration)\b/i,
+            interaction: /\b(dual[\s-]?use|co[\s-]?locat|land[\s-]?use[\s-]?efficien|ler\b|land[\s-]?equivalent[\s-]?ratio|shading\s*effect|beneath\s*(panels?|arrays?)|under\s*(panels?|arrays?)|inter[\s-]?row)\b/i,
+            neg: /\b(uncolog|cancer|tumor|biomed|patient|surgery|clinic|hospital|medic|therap|gene(tic|ome|s)?\b|rna|dna|protein|cell\s*(culture|line|signaling)|molecular|disease|syndrome|disorder|health|morbidity|mortality|epidemi|virus|bacteri|infection|parkinson|alzheimer|stroke|diabetes|insulin|obesity|cardio|respiratory|lewy|dementia|schizo|autism|spin\b|magnetic|galaxy|telescope|neutron|boson|nanotube|graphene|supercapacit|lithium|battery(?!.*(solar|pv|storage)))\b/i
         };
+
+        // NEGATIVE TOPICS — always excluded from sidebar and auto-filter publications that ONLY match these
+        const TOPIC_NEG = new Set([
+            "parkinson's disease mechanisms and treatments",
+            "air quality and health impacts",
+            "global health care issues",
+            "climate change and health impacts",
+            "global public health policies and epidemiology",
+            "global maternal and child health",
+            "neurological diseases and metabolism",
+            "health disparities and outcomes",
+            "genetic associations and epidemiology",
+            "nuclear receptors and signaling",
+            "covid-19 epidemiological studies",
+            "cellular transport and secretion",
+            "autism spectrum disorder research",
+            "sars-cov-2 and covid-19 research",
+            "sphingolipid metabolism and signaling",
+            "neurological disorders and treatments",
+            "advanced sensor and energy harvesting materials",
+            "dielectric materials and actuators",
+            "advanced materials and mechanics",
+            "atmospheric chemistry and aerosols",
+            "air quality monitoring and forecasting",
+            "geology and paleoclimatology research",
+            "genetics and neurodevelopmental disorders",
+            "lysosomal storage disorders research",
+            "antibiotic resistance in bacteria",
+            "genomic variations and chromosomal abnormalities",
+            "genomics and rare diseases",
+            "dementia and cognitive impairment research",
+            "sars-cov-2 detection and testing",
+            "healthcare cost, quality, practices",
+            "rna regulation and disease",
+            "liver disease diagnosis and treatment",
+            "epigenetics and dna methylation",
+            "genetic syndromes and imprinting",
+            "supercapacitor materials and fabrication",
+            "carbon nanotubes in composites",
+            "graphene research and applications",
+            "genomics and phylogenetic studies",
+            "mxene and max phase materials",
+            "child nutrition and water access",
+            "liver disease and transplantation",
+            "microbial community ecology and physiology",
+            "alzheimer's disease research and treatments",
+            "genetic neurodegenerative diseases",
+            "rna and protein synthesis mechanisms",
+            "rna research and splicing",
+            "diabetes, cardiovascular risks, and lipoproteins",
+            "health systems, economic evaluations, quality of life",
+            "cryospheric studies and observations",
+            "rna modifications and cancer",
+            "antibiotic use and resistance",
+            "nutritional studies and diet",
+            "alcohol consumption and health effects",
+            "smoking behavior and cessation",
+            "endoplasmic reticulum stress and disease",
+            "aeolian processes and effects",
+            "Energy Harvesting in Wireless Networks",
+            "health, environment, cognitive aging",
+            "healthcare systems and reforms",
+        ]);
+
+        const isNegTopic = t => TOPIC_NEG.has(norm(t));
+        const hasOnlyNegTopics = topics => topics.length > 0 && topics.every(t => isNegTopic(t));
 
         const INST_MAP = [['arizona', 'Univ. of Arizona'], ['unam', 'UNAM'], ['nacional autonoma', 'UNAM'], ['chile', 'Univ. de Chile'], ['fraunhofer', 'Fraunhofer ISE'], ['wageningen', 'Wageningen UR'], ['nrel', 'NREL'], ['davis', 'UC Davis'], ['umass', 'UMass Amherst'], ['massachusetts', 'UMass Amherst']];
         const TOPIC_BLOCK = new Set(["medicine", "physics", "materials science", "computer science", "chemistry", "biology", "mathematics", "philosophy", "art", "psychology", "geology", "sociology"]);
@@ -475,46 +535,44 @@
             const t = norm(w.title || ""), kw = norm((w.keywords || []).map(k => k.display_name || k.keyword).join(" ")), ab = norm(abs);
             const full = `${t} ${kw} ${ab}`;
 
-            // 1. EXPLICIT MATCHES (Heavily weighted to fix the "4.1" issue)
             const expT = RX.explicit.test(t);
             const expK = !expT && RX.explicit.test(kw);
             const expA = !expT && !expK && RX.explicit.test(ab);
 
-            if (expT) { s += 45; why.push('explicit-title'); } // Immediate Core status
+            if (expT) { s += 45; why.push('explicit-title'); }
             else if (expK) { s += 30; why.push('explicit-keyword'); }
             else if (expA) { s += 20; why.push('explicit-abstract'); }
 
-            // 2. COMPONENT MATCHES (Solar + Agri)
             const hasSolar = RX.solar.test(full);
             const hasAgri = RX.agri.test(full);
             const hasInt = RX.interaction.test(full);
-            
+
             if (hasSolar && hasAgri) {
-                // Proximity Check: Look for Solar near Agri in Title/Abstract
-                // This rewards "Crop yield under PV" even if "Agrivoltaics" isn't said
                 const proxRx = /\b(solar|pv|photovoltai).{0,80}(crop|farm|agri|plant|yield|soil)|(crop|farm|agri|plant|yield|soil).{0,80}(solar|pv|photovoltai)/i;
-                
+
                 if (proxRx.test(t)) { s += 20; why.push('solar+agri-prox-title'); }
                 else if (proxRx.test(ab)) { s += 12; why.push('solar+agri-prox-abs'); }
                 else { s += 5; why.push('solar+agri-dist'); }
 
                 if (hasInt) { s += 8; why.push('interaction-term'); }
             } else if (hasSolar && hasInt) {
-                // "Solar" + "Land use efficiency" implies APV
                 s += 5; why.push('solar+interaction');
             }
 
-            // 3. TECHNICAL & CONTEXT BONUSES
-            if (RX.tech.test(full)) { s += 3; why.push('tech-detail'); }
+            if (/\b(bifacial|tracking|inverter|mounting|racking|albedo|ground[\s-]?cover|gcr|row[\s-]?spacing|tilt[\s-]?angle|elevation|stilt|vertical[\s-]?pv|semi[\s-]?transparent)\b/i.test(full)) { s += 3; why.push('tech-detail'); }
             if (w.concepts?.some(c => norm(c.display_name).includes('agrivoltaic') && c.score > 0.4)) { s += 10; why.push('concept-match'); }
 
-            // 4. METADATA BOOSTS
-            s += Math.min(4, Math.log10((w.cited_by_count || 0) + 1) * 1.5); 
+            s += Math.min(4, Math.log10((w.cited_by_count || 0) + 1) * 1.5);
             if (w.publication_year >= CFG.now - 2) s += 1.5;
 
-            // 5. PENALTIES
-            if (RX.neg.test(full) && !expT && !expK) { 
-                s -= 30; why.push('neg-filter'); 
+            if (RX.neg.test(full) && !expT && !expK) {
+                s -= 30; why.push('neg-filter');
+            }
+
+            // Penalize works whose topics are ALL in TOPIC_NEG
+            const wTopics = (w.topics || []).filter(tp => (tp.score || 0) >= 0.25).map(tp => tp.display_name).filter(Boolean);
+            if (wTopics.length > 0 && wTopics.every(tp => isNegTopic(tp))) {
+                s = 0; why.push('neg-topic-only');
             }
 
             s = Math.max(0, Math.round(s * 10) / 10);
@@ -566,8 +624,12 @@
                     const m = (p.authorships || []).filter(a => rM.has(a.author?.id)).map(a => rM.get(a.author.id)); if (!m.length) return null;
                     const ts = (p.topics || []).filter(t => (t.score || 0) >= 0.25).map(t => t.display_name).filter(Boolean).slice(0, 7);
                     if (!ts.length) ts.push(...(p.concepts || []).filter(c => (c.score || 0) > 0.55 && (c.level || 0) > 0 && !TOPIC_BLOCK.has(norm(c.display_name))).map(c => c.display_name).slice(0, 7));
-                    m.forEach(r => { r.net_works++; r.net_cited += (p.cited_by_count || 0); ts.forEach(t => { r.topics[t] = (r.topics[t] || 0) + 1; app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1) }) });
-                    return { id: p.id, title: p.title, publication_year: p.publication_year, cited_by_count: p.cited_by_count || 0, doi: p.doi, url: p.primary_location?.landing_page_url || p.doi || p.primary_location?.pdf_url, source: p.primary_location?.source?.display_name, is_oa: p.open_access?.is_oa, type: p.type, _relevance: p._relevance || 0, _why: p._why || [], _tier: p._tier || 'Weak', _topics: ts, _allAuthors: (p.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, isMember: rM.has(a.author?.id) })), _memberAuthors: m }
+                    // Strip negative topics from the stored topic list
+                    const cleanTs = ts.filter(t => !isNegTopic(t));
+                    m.forEach(r => { r.net_works++; r.net_cited += (p.cited_by_count || 0); cleanTs.forEach(t => { r.topics[t] = (r.topics[t] || 0) + 1; app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1) }) });
+                    // If ALL topics were negative and score is low, skip the publication entirely
+                    if (cleanTs.length === 0 && ts.length > 0) return null;
+                    return { id: p.id, title: p.title, publication_year: p.publication_year, cited_by_count: p.cited_by_count || 0, doi: p.doi, url: p.primary_location?.landing_page_url || p.doi || p.primary_location?.pdf_url, source: p.primary_location?.source?.display_name, is_oa: p.open_access?.is_oa, type: p.type, _relevance: p._relevance || 0, _why: p._why || [], _tier: p._tier || 'Weak', _topics: cleanTs, _allAuthors: (p.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, isMember: rM.has(a.author?.id) })), _memberAuthors: m }
                 }).filter(Boolean); app.data.researchers = R.filter(r => app.data.pubs.some(p => p._memberAuthors.includes(r))); app.buildGraph();
             },
             buildGraph: () => {
@@ -580,10 +642,28 @@
             },
             restore: c => {
                 const D = c.D || { t: [], s: [] };
-                app.data.researchers = c.r.map(r => ({ id: r.id, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, topics: (r.t || []).reduce((a, i) => { if (D.t[i]) a[D.t[i]] = 1; return a }, {}), deg: r.d || 0, color: app.col(r.i) }));
+                app.data.researchers = c.r.map(r => ({ id: r.id, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, topics: (r.t || []).reduce((a, i) => { const tn = D.t[i]; if (tn && !isNegTopic(tn)) a[tn] = 1; return a }, {}), deg: r.d || 0, color: app.col(r.i) }));
                 const rM = new Map(app.data.researchers.map(r => [r.id, r]));
-                app.data.pubs = c.p.map(p => { const m = (p.ma || []).map(i => rM.get(i)).filter(Boolean); return { id: p.id, title: p.t, publication_year: p.y, cited_by_count: p.c, doi: p.d, url: p.u, source: typeof p.s === 'number' ? D.s[p.s] : p.s, is_oa: !!p.oa, type: p.ty, _relevance: p.r, _why: p.w || [], _tier: p.ti === 3 ? 'Core' : (p.ti === 2 ? 'Strong' : 'Weak'), _topics: (p.tp || []).map(i => D.t[i]), _allAuthors: (p.aa || []).map(n => { const f = m.find(z => z.display_name === n); return { name: n, id: f ? f.id : null, isMember: !!f } }), _memberAuthors: m } });
-                app.data.topics = new Map; app.data.pubs.forEach(p => p._topics.forEach(t => app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1))); app.buildGraph()
+                app.data.pubs = c.p.map(p => {
+                    const m = (p.ma || []).map(i => rM.get(i)).filter(Boolean);
+                    const rawTopics = (p.tp || []).map(i => D.t[i]).filter(Boolean);
+                    const cleanTopics = rawTopics.filter(t => !isNegTopic(t));
+                    // If ALL original topics were negative, kill the paper entirely
+                    if (cleanTopics.length === 0 && rawTopics.length > 0) return null;
+                    return {
+                        id: p.id, title: p.t, publication_year: p.y, cited_by_count: p.c,
+                        doi: p.d, url: p.u, source: typeof p.s === 'number' ? D.s[p.s] : p.s,
+                        is_oa: !!p.oa, type: p.ty, _relevance: p.r, _why: p.w || [],
+                        _tier: p.ti === 3 ? 'Core' : (p.ti === 2 ? 'Strong' : 'Weak'),
+                        _topics: cleanTopics,
+                        _allAuthors: (p.aa || []).map(n => {
+                            const f = m.find(z => z.display_name === n);
+                            return { name: n, id: f ? f.id : null, isMember: !!f }
+                        }),
+                        _memberAuthors: m
+                    }
+                }).filter(Boolean);
+                app.data.topics = new Map; app.data.pubs.forEach(p => p._topics.forEach(t => { if (!isNegTopic(t)) app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1) })); app.buildGraph()
             },
             col: i => { if (!app.instColors.has(i)) app.instColors.set(i, COLORS[app.instColors.size % COLORS.length]); return app.instColors.get(i) },
             render: () => {
@@ -600,7 +680,7 @@
                 const btns = [], addB = (p, l, a) => btns.push(`<button onclick="app.setPage(${p})" class="w-6 h-6 flex items-center justify-center rounded text-[9px] font-medium transition-colors ${a ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`);
                 if (pgs > 1) { addB(Math.max(1, pg - 1), '<i class="fas fa-chevron-left"></i>'); (pgs <= 5 ? Array.from({ length: pgs }, (_, i) => i + 1) : (pg <= 3 ? [1, 2, 3, '...', pgs] : (pg >= pgs - 2 ? [1, '...', pgs - 2, pgs - 1, pgs] : [1, '...', pg, pg + 1, '...', pgs]))).forEach(x => x === '...' ? btns.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : addB(x, x, x === pg)); addB(Math.min(pgs, pg + 1), '<i class="fas fa-chevron-right"></i>') }
                 el('paginationContainer').innerHTML = btns.join(''); app.renderGraph(F, am);
-                const ic = new Map, tc = new Map; app.data.researchers.forEach(r => am.has(r.id) && ic.set(r.inst, (ic.get(r.inst) || 0) + 1)); F.forEach(p => p._topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1)));
+                const ic = new Map, tc = new Map; app.data.researchers.forEach(r => am.has(r.id) && ic.set(r.inst, (ic.get(r.inst) || 0) + 1)); F.forEach(p => p._topics.forEach(t => { if (!isNegTopic(t)) tc.set(t, (tc.get(t) || 0) + 1) }));
                 el('institutionFilters').innerHTML = [...ic].sort((a, b) => b[1] - a[1]).map(([i, c]) => `<label class="flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 p-1 rounded group transition-colors"><input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 focus:ring-green-500 w-3 h-3" ${I.has(i) ? 'checked' : ''}><div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${app.col(i)}"></div><span class="text-[10px] text-slate-600 truncate flex-1 group-hover:text-slate-900">${esc(i)}</span><span class="text-[8px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span></label>`).join('');
                 el('topicFilters').innerHTML = [...tc].sort((a, b) => b[1] - a[1]).slice(0, 35).map(([t, c]) => `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] transition-all border flex items-center gap-1 ${T.has(t) ? 'bg-green-100 text-green-800 border-green-200 font-semibold' : 'bg-slate-50 text-slate-500 border-transparent hover:bg-white hover:border-slate-200'}">${esc(t)} <span class="opacity-50 text-[8px]">${c}</span></button>`).join('');
                 el('activeFiltersPanel').classList.toggle('hidden', !(T.size + I.size)); el('activeFilterCount').textContent = T.size + I.size;
