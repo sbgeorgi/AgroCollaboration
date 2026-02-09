@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline Diagnostic Suite</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #232733;
+    --border: #2e3347;
+    --text: #e2e8f0;
+    --text-dim: #8892a8;
+    --accent: #6366f1;
+    --accent-glow: rgba(99,102,241,0.25);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.15);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --amber: #f59e0b;
+    --amber-dim: rgba(245,158,11,0.12);
+    --cyan: #06b6d4;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+  }
+  .header h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header h1 .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .header-actions { display: flex; gap: 8px; }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { border-color: var(--accent); background: var(--accent-glow); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { background: #5558e6; }
+  .btn-copy { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+  .btn-copy:hover { background: rgba(34,197,94,0.25); }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    min-height: calc(100vh - 65px);
+  }
+  .sidebar {
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .main {
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .section-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .knob-group {
+    margin-bottom: 20px;
+  }
+  .knob {
+    margin-bottom: 12px;
+  }
+  .knob label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+  }
+  .knob label .val {
+    color: var(--cyan);
+    font-weight: 700;
+  }
+  .knob input[type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+  }
+  .knob input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 6px var(--accent-glow);
+  }
+  .knob input[type="number"], .knob input[type="text"] {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12px;
+  }
+  .knob input:focus { border-color: var(--accent); outline: none; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .card-body { padding: 16px; }
+
+  /* Funnel */
+  .funnel { display: flex; flex-direction: column; gap: 2px; }
+  .funnel-stage {
+    display: grid;
+    grid-template-columns: 140px 1fr 80px 60px;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: var(--surface2);
+    position: relative;
+  }
+  .funnel-stage .stage-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .funnel-bar-track {
+    height: 20px;
+    background: var(--bg);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .funnel-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    min-width: 2px;
+  }
+  .funnel-count {
+    font-size: 13px;
+    font-weight: 700;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .funnel-delta {
+    font-size: 10px;
+    font-weight: 700;
+    text-align: right;
+  }
+  .delta-loss { color: var(--red); }
+  .delta-ok { color: var(--green); }
+
+  /* Status */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .status-idle { background: var(--surface2); color: var(--text-dim); }
+  .status-running { background: var(--amber-dim); color: var(--amber); }
+  .status-done { background: var(--green-dim); color: var(--green); }
+  .status-error { background: var(--red-dim); color: var(--red); }
+
+  /* Log */
+  .log-container {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    max-height: 500px;
+    overflow-y: auto;
+    font-size: 11px;
+    line-height: 1.7;
+  }
+  .log-line {
+    padding: 2px 12px;
+    border-bottom: 1px solid rgba(46,51,71,0.5);
+    display: flex;
+    gap: 10px;
+    white-space: nowrap;
+  }
+  .log-line:hover { background: var(--surface2); }
+  .log-ts { color: var(--text-dim); flex-shrink: 0; width: 85px; }
+  .log-tag {
+    flex-shrink: 0;
+    width: 70px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 9px;
+    padding-top: 2px;
+  }
+  .log-msg { color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+  .log-info .log-tag { color: var(--cyan); }
+  .log-warn .log-tag { color: var(--amber); }
+  .log-error .log-tag { color: var(--red); }
+  .log-success .log-tag { color: var(--green); }
+  .log-debug .log-tag { color: #a78bfa; }
+  .log-stage .log-tag { color: var(--accent); }
+
+  /* Grid stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-card .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-card .stat-label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+  .stat-green .stat-value { color: var(--green); }
+  .stat-red .stat-value { color: var(--red); }
+  .stat-amber .stat-value { color: var(--amber); }
+  .stat-cyan .stat-value { color: var(--cyan); }
+  .stat-accent .stat-value { color: var(--accent); }
+
+  /* Sensitivity table */
+  .sens-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .sens-table th {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--border);
+    color: var(--text-dim);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .sens-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid rgba(46,51,71,0.5);
+  }
+  .sens-table tr:hover td { background: var(--surface2); }
+  .sens-table .highlight { background: var(--accent-glow); }
+
+  /* Lost users */
+  .lost-user {
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: var(--surface2);
+    border-left: 3px solid var(--red);
+    margin-bottom: 6px;
+  }
+  .lost-user .name { font-weight: 700; font-size: 12px; }
+  .lost-user .reason { font-size: 10px; color: var(--text-dim); margin-top: 3px; }
+
+  .kept-user {
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: var(--surface2);
+    border-left: 3px solid var(--green);
+    margin-bottom: 6px;
+  }
+
+  /* Progress */
+  .progress-container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: var(--bg);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--cyan));
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.3s;
+  }
+  .progress-text { font-size: 11px; color: var(--text-dim); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; margin-bottom: 16px; }
+  .tab {
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    background: var(--surface2);
+    color: var(--text-dim);
+    border: 1px solid transparent;
+    border-bottom: none;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    background: var(--surface);
+    color: var(--accent);
+    border-color: var(--border);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Score distribution */
+  .dist-bar-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 80px;
+    padding: 0 4px;
+  }
+  .dist-bar {
+    flex: 1;
+    background: var(--accent);
+    border-radius: 2px 2px 0 0;
+    min-width: 4px;
+    position: relative;
+    transition: height 0.4s;
+    cursor: pointer;
+  }
+  .dist-bar:hover { opacity: 0.8; }
+  .dist-bar.below-threshold { background: var(--red); opacity: 0.6; }
+  .dist-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-dim);
+    padding: 4px 4px 0;
+  }
+  .threshold-indicator {
+    font-size: 10px;
+    color: var(--amber);
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  /* Comparison matrix */
+  .matrix-cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    margin: 1px;
+  }
+
+  .scroll-x { overflow-x: auto; }
+
+  /* Copy output area */
+  .output-area {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    font-size: 11px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 600px;
+    overflow-y: auto;
+    color: var(--text);
+    display: none;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    background: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    z-index: 9999;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .check { color: var(--green); }
+  .cross { color: var(--red); }
+  .warn-icon { color: var(--amber); }
+
+  .collapsible-header {
+    cursor: pointer;
+    user-select: none;
+  }
+  .collapsible-header:hover { opacity: 0.8; }
+  .collapsed .collapsible-body { display: none; }
+
+  .badge-count {
+    background: var(--accent);
+    color: white;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>
+    <div class="dot" id="statusDot"></div>
+    Pipeline Diagnostic Suite
+    <span id="statusBadge" class="status-badge status-idle">Idle</span>
+  </h1>
+  <div class="header-actions">
+    <button class="btn" onclick="clearDiagnostics()" id="clearBtn">⟳ Clear</button>
+    <button class="btn btn-copy" onclick="copyOutput()" id="copyBtn" disabled>⎘ Copy Full Report</button>
+    <button class="btn btn-primary" onclick="runDiagnostics()" id="runBtn">▶ Run Diagnostics</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="section-title">Pipeline Knobs</div>
+
+    <div class="knob-group">
+      <div class="knob">
+        <label>minRel (fetch threshold) <span class="val" id="vMinRel">2.0</span></label>
+        <input type="range" id="kMinRel" min="0" max="10" step="0.5" value="2.0"
+               oninput="document.getElementById('vMinRel').textContent=this.value">
+      </div>
+      <div class="knob">
+        <label>defMin (UI display threshold) <span class="val" id="vDefMin">3.0</span></label>
+        <input type="range" id="kDefMin" min="0" max="15" step="0.5" value="3.0"
+               oninput="document.getElementById('vDefMin').textContent=this.value">
+      </div>
+      <div class="knob">
+        <label>Abstract scan cap <span class="val" id="vCap">250</span></label>
+        <input type="range" id="kCap" min="0" max="500" step="25" value="250"
+               oninput="document.getElementById('vCap').textContent=this.value">
+      </div>
+      <div class="knob">
+        <label>Concurrency <span class="val" id="vConc">10</span></label>
+        <input type="range" id="kConc" min="1" max="20" step="1" value="10"
+               oninput="document.getElementById('vConc').textContent=this.value">
+      </div>
+      <div class="knob">
+        <label>Author batch size <span class="val" id="vBatch">25</span></label>
+        <input type="range" id="kBatch" min="5" max="50" step="5" value="25"
+               oninput="document.getElementById('vBatch').textContent=this.value">
+      </div>
+      <div class="knob">
+        <label>Max pages per batch <span class="val" id="vPages">10</span></label>
+        <input type="range" id="kPages" min="1" max="25" step="1" value="10"
+               oninput="document.getElementById('vPages').textContent=this.value">
+      </div>
+      <div class="knob">
+        <label>Parallel batches <span class="val" id="vParallel">3</span></label>
+        <input type="range" id="kParallel" min="1" max="8" step="1" value="3"
+               oninput="document.getElementById('vParallel').textContent=this.value">
+      </div>
+    </div>
+
+    <div class="section-title">Scoring Weights</div>
+    <div class="knob-group">
+      <div class="knob">
+        <label>Strong title match <span class="val" id="vStrTitle">30</span></label>
+        <input type="range" id="kStrTitle" min="5" max="50" step="1" value="30"
+               oninput="document.getElementById('vStrTitle').textContent=this.value">
+      </div>
+      <div class="knob">
+        <label>Strong keyword match <span class="val" id="vStrKw">24</span></label>
+        <input type="range" id="kStrKw" min="5" max="40" step="1" value="24"
+               oninput="document.getElementById('vStrKw').textContent=this.value">
+      </div>
+      <div class="knob">
+        <label>Solar+Agri title <span class="val" id="vSolAgri">15</span></label>
+        <input type="range" id="kSolAgri" min="0" max="30" step="1" value="15"
+               oninput="document.getElementById('vSolAgri').textContent=this.value">
+      </div>
+      <div class="knob">
+        <label>Negative penalty <span class="val" id="vNeg">15</span></label>
+        <input type="range" id="kNeg" min="0" max="30" step="1" value="15"
+               oninput="document.getElementById('vNeg').textContent=this.value">
+      </div>
+      <div class="knob">
+        <label>Concept score floor <span class="val" id="vConcept">0.3</span></label>
+        <input type="range" id="kConcept" min="0" max="1" step="0.05" value="0.3"
+               oninput="document.getElementById('vConcept').textContent=this.value">
+      </div>
+      <div class="knob">
+        <label>Topic score floor <span class="val" id="vTopic">0.25</span></label>
+        <input type="range" id="kTopic" min="0" max="1" step="0.05" value="0.25"
+               oninput="document.getElementById('vTopic').textContent=this.value">
+      </div>
+    </div>
+
+    <div class="section-title">Sensitivity Sweep</div>
+    <div class="knob-group">
+      <div class="knob">
+        <label>Enable sweep <span class="val"></span></label>
+        <input type="checkbox" id="kSweep" checked>
+        <span style="font-size:10px;color:var(--text-dim)">Run minRel from 0→15 in steps</span>
+      </div>
+      <div class="knob">
+        <label>Sweep step size <span class="val" id="vStep">1.0</span></label>
+        <input type="range" id="kStep" min="0.5" max="3" step="0.5" value="1.0"
+               oninput="document.getElementById('vStep').textContent=this.value">
+      </div>
+    </div>
+
+    <div class="section-title">Actions</div>
+    <button class="btn" style="width:100%;justify-content:center;margin-bottom:8px" onclick="clearCache()">
+      🗑 Clear Pipeline Cache
+    </button>
+    <button class="btn" style="width:100%;justify-content:center" onclick="exportJSON()">
+      ↓ Export Raw Data (JSON)
+    </button>
+  </div>
+
+  <div class="main" id="mainContent">
+    <!-- Progress -->
+    <div class="card" id="progressCard" style="display:none">
+      <div class="progress-container">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="progress-text" id="progressLabel">Initializing...</span>
+          <span class="progress-text" id="progressPct">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="stats-grid" id="summaryStats" style="display:none">
+      <div class="stat-card stat-cyan"><div class="stat-value" id="statProfiles">-</div><div class="stat-label">DB Profiles</div></div>
+      <div class="stat-card stat-accent"><div class="stat-value" id="statResolved">-</div><div class="stat-label">Resolved Authors</div></div>
+      <div class="stat-card stat-amber"><div class="stat-value" id="statRawWorks">-</div><div class="stat-label">Raw Works Fetched</div></div>
+      <div class="stat-card stat-green"><div class="stat-value" id="statScoredIn">-</div><div class="stat-label">Passed Score Filter</div></div>
+      <div class="stat-card stat-red"><div class="stat-value" id="statDropped">-</div><div class="stat-label">Users Dropped</div></div>
+      <div class="stat-card"><div class="stat-value" id="statFinalUsers">-</div><div class="stat-label">Final Users</div></div>
+      <div class="stat-card"><div class="stat-value" id="statFinalPubs">-</div><div class="stat-label">Final Publications</div></div>
+      <div class="stat-card stat-red"><div class="stat-value" id="statDropRate">-</div><div class="stat-label">Drop Rate %</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div id="resultsArea" style="display:none">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('funnel')">Funnel</div>
+        <div class="tab" onclick="switchTab('sensitivity')">Sensitivity</div>
+        <div class="tab" onclick="switchTab('scores')">Score Dist.</div>
+        <div class="tab" onclick="switchTab('lost')">Lost Users</div>
+        <div class="tab" onclick="switchTab('kept')">Kept Users</div>
+        <div class="tab" onclick="switchTab('works')">Works Detail</div>
+        <div class="tab" onclick="switchTab('log')">Debug Log</div>
+        <div class="tab" onclick="switchTab('output')">Copy Output</div>
+      </div>
+
+      <!-- Funnel Tab -->
+      <div class="tab-panel active" id="panel-funnel">
+        <div class="card">
+          <div class="card-header">Pipeline Funnel Analysis</div>
+          <div class="card-body">
+            <div class="funnel" id="funnelContainer"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensitivity Tab -->
+      <div class="tab-panel" id="panel-sensitivity">
+        <div class="card">
+          <div class="card-header">
+            minRel Sensitivity Sweep
+            <span style="font-size:10px;color:var(--text-dim)">How many users/works survive at each threshold</span>
+          </div>
+          <div class="card-body scroll-x">
+            <table class="sens-table" id="sensTable">
+              <thead><tr>
+                <th>minRel</th><th>Works Pass</th><th>Users Survive</th><th>Users Lost</th><th>Drop Rate</th><th>Avg Score</th><th>Median Score</th><th>Assessment</th>
+              </tr></thead>
+              <tbody id="sensBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Score Distribution Tab -->
+      <div class="tab-panel" id="panel-scores">
+        <div class="card">
+          <div class="card-header">Work Relevance Score Distribution</div>
+          <div class="card-body">
+            <div class="dist-bar-container" id="distChart"></div>
+            <div class="dist-labels" id="distLabels"></div>
+            <div class="threshold-indicator" id="distThreshold"></div>
+            <div style="margin-top:16px;font-size:11px;color:var(--text-dim)" id="distSummary"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lost Users Tab -->
+      <div class="tab-panel" id="panel-lost">
+        <div class="card">
+          <div class="card-header">
+            Users Dropped from Pipeline
+            <span class="badge-count" id="lostCount">0</span>
+          </div>
+          <div class="card-body" id="lostContainer">
+            <div style="color:var(--text-dim);font-size:12px;text-align:center;padding:20px">
+              Run diagnostics to see dropped users
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kept Users Tab -->
+      <div class="tab-panel" id="panel-kept">
+        <div class="card">
+          <div class="card-header">
+            Users Retained in Pipeline
+            <span class="badge-count" id="keptCount">0</span>
+          </div>
+          <div class="card-body" id="keptContainer">
+            <div style="color:var(--text-dim);font-size:12px;text-align:center;padding:20px">
+              Run diagnostics to see retained users
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Works Detail Tab -->
+      <div class="tab-panel" id="panel-works">
+        <div class="card">
+          <div class="card-header">
+            Works Scoring Breakdown
+            <span class="badge-count" id="worksCount">0</span>
+          </div>
+          <div class="card-body scroll-x">
+            <table class="sens-table" id="worksTable">
+              <thead><tr>
+                <th>Title</th><th>Year</th><th>Score</th><th>Tier</th><th>Why</th><th>Members</th><th>Cited</th>
+              </tr></thead>
+              <tbody id="worksBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Debug Log Tab -->
+      <div class="tab-panel" id="panel-log">
+        <div class="card">
+          <div class="card-header">
+            Full Debug Log
+            <button class="btn" onclick="copyLog()" style="padding:4px 10px;font-size:10px">⎘ Copy Log</button>
+          </div>
+          <div class="log-container" id="logContainer"></div>
+        </div>
+      </div>
+
+      <!-- Copy Output Tab -->
+      <div class="tab-panel" id="panel-output">
+        <div class="card">
+          <div class="card-header">
+            Full Diagnostic Report
+            <button class="btn btn-copy" onclick="copyOutput()" style="padding:6px 14px">⎘ Copy to Clipboard</button>
+          </div>
+          <div class="card-body">
+            <pre class="output-area" id="outputArea" style="display:block"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Initial state -->
+    <div id="emptyState" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:16px;color:var(--text-dim)">
+      <div style="font-size:48px;opacity:0.3">⚡</div>
+      <div style="font-size:14px;font-weight:600">Configure knobs and run diagnostics</div>
+      <div style="font-size:11px;max-width:400px;text-align:center;line-height:1.6">
+        Adjust the pipeline parameters on the left, then hit <strong style="color:var(--accent)">Run Diagnostics</strong>
+        to trace every user through the pipeline and identify where they're being dropped.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied to clipboard!</div>
+
+<script type="module">
+import { supabase } from "./auth.js";
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const el = id => document.getElementById(id);
+const norm = s => (s || "").trim().toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ");
+const esc = s => s ? s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) : "";
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const API = "https://api.openalex.org";
+const NOW = new Date().getFullYear();
+
+const INST_MAP = [['arizona','Univ. of Arizona'],['unam','UNAM'],['nacional autonoma','UNAM'],['chile','Univ. de Chile'],['fraunhofer','Fraunhofer ISE'],['wageningen','Wageningen UR'],['nrel','NREL'],['davis','UC Davis'],['umass','UMass Amherst'],['massachusetts','UMass Amherst']];
+const TOPIC_BLOCK = new Set(["medicine","physics","materials science","computer science","chemistry","biology","mathematics","philosophy","art","psychology","geology","sociology"]);
+
+const RX = {
+  strong: /\b(agri[\s-]?(pv|photo)?voltai[ckqs]?|agro[\s-]?(photo)?voltai[ckqs]?|agri[\s-]?photovoltai[ks]?|agrophotovoltai[ckqs]?|solar[\s-]?sharing|solar\s*(farming|agriculture)|farming\s*with\s*(solar|pv)|dual[\s-]?use\s*(solar|pv|land)|co[\s-]?locat(ed|ion)\s*(solar|pv|energy).{0,15}(farm|agri|crop|land)|co[\s-]?develop(ed|ment)\s*(solar|pv).{0,15}(farm|agri|crop)|photovoltaic\s*greenhouse|greenhouse\s*photovoltaic|solar\s*greenhouse|(?:pv|solar)\s*(?:over|above|between)\s*crops?|integrat(?:ed|ing)\s*(?:solar|pv)\s*(?:and|with)\s*agricultur|(?:food|crop)\s*(?:and|&)\s*(?:energy|electricity)\s*(?:production|co[\s-]?production|generation)|energy[\s-]?food[\s-]?(?:water\s*)?nexus\s*(?:solar|pv)?|symbiosis\s*(?:solar|pv|energy).{0,10}(?:crop|agri|farm))\b/i,
+  fuzzy: /\bagri.{0,5}(volt|pv|photo)\b/i,
+  apv: /\bapv\b/i,
+  solar: /\b(pv|photovoltai[ckqs]?|solar(\s*(energy|power|electricity|panels?|cells?|modules?|arrays?|systems?|farms?|plants?|installations?|canop(y|ies)))?|renewable\s*energy\s*(generation|systems?))\b/i,
+  agri: /\b(agricultur(e|al)?|agronom(y|ic)|crops?|farming|farms?|farmers?|pasture|graz(e|ing)|livestock|horticultur(e|al)?|greenhouses?|orchards?|viticultur(e|al)?|viney(ard)?|food\s*production|field\s*trials?|arable|tillage|cultivat(e|ion|ed)|harvest(ing)?|plant(ing|ed)?|crop\s*(rotation|growth|yield|production)|intercropping)\b/i,
+  land: /\b(land[\s-]?use|microclimat(e|ic)|soils?\s*(moisture|health|quality|temperature)|irrigat(e|ion|ing)|water\s*(use|saving|management|efficiency)|evapotranspir(ation|e)|biodiversit(y|ies)|ecosystems?\s*(services?)?|habitats?|shade\s*(effect|impact|toleran|pattern)?|shading|albedo|pollinat(or|ion)|runoff|erosion|ground\s*cover|vegetation|ecosystem|ecology|ecological)\b/i,
+  econ: /\b(economics?|cost[\s-]?(benefit|effective|analysis)|lcoe|levelized|finance|investment|profitab|revenue|policy|regulat(ion|ory|e)|markets?|business\s*model|adoption|acceptance|stakeholders?|subsid(y|ies)|incentiv(e|ize)|tariff|feed[\s-]?in|net[\s-]?meter|social\s*acceptance|willingness\s*to\s*pay|rural\s*(develop|electrif|livelihood))\b/i,
+  techDomain: [/\bbifacial\s*(panel|module|cell|pv|solar)/i,/\bsemi[\s-]?transparent\s*(panel|module|cell|pv|solar|film)/i,/\bcrop\s*(yield|growth|production|performance)\s*(under|beneath|below)\s*(panel|pv|solar|shade)/i,/\blight\s*(management|distribution|sharing|interception|transmit|availab)/i,/\bstilted?\s*(panel|array|module|pv|solar|system|structure)/i,/\binter[\s-]?row\s*(spacing|distance|gap|area)/i,/\bpanel\s*(height|elevation|spacing|tilt|orientation|density)/i,/\bground\s*coverage\s*ratio/i,/\bpar\b.{0,20}\b(reduction|transmit|intercept|availab|loss|level)/i,/\brain[\s-]?water\s*(harvest|collect|redistrib|intercept)/i,/\bfood[\s-]?energy[\s-]?water\s*(nexus|system)/i,/\bdual[\s-]?harvest/i,/\bvertical\s*(farm|panel|bifacial|pv|array|mount)/i,/\brow\s*(spacing|orientation|direction|pitch)\s*(pv|solar|panel|module|array)/i,/\b(shade|shadow)\s*(toleran|adapt|resistan|pattern|map|model|dynamic)/i,/\b(mounting|racking)\s*(height|structure|system).{0,15}(farm|crop|agri|land)/i,/\b(crop|plant)\s*(select|choice|species|variety|suitab).{0,15}(shade|pv|solar|panel)/i,/\bphotosynthetic(ally)?\s*active\s*radiation/i,/\byield\s*(loss|reduction|penalty|gap|impact|comparison)/i,/\belectricity\s*(generation|yield|production).{0,20}(crop|farm|agri|land)/i],
+  neg: /\b(oncolog(y|ic)?|cancer|carcinoma|tumou?r|clinical\s*(trial|study|patient)|patients?\s*(with|undergo)|surgery|surgical|therap(y|eutic|ies)|astrophys(ics?)?|galax(y|ies)|cosmolog(y|ical)?|stellar|protein\s*(fold|structur|express)|genom(e|ic|ics)|dna\s*(sequenc|repair|damag)|neural\s*network|deep\s*learning|machine\s*learning\s*(?!.*(?:solar|pv|agri|crop|energy))|autonomous\s*vehicl|robot(ic)?s?\b(?!.*(?:agri|farm|crop|harvest))|crypto|blockchain|quantum\s*(comput|mechani|physic))\b/i,
+  negSolarOnly: /\b(perovskite\s*(stabil|efficien|solar\s*cell)|silicon\s*(wafer|ingot|doping)|thin[\s-]?film\s*(deposit|solar|efficien)|grid[\s-]?(connect|integrat|stabil|parity)|battery\s*(storag|charg|discharg|lithium)|inverter\s*(topology|design|efficien)|mppt\s*(algorithm|controller|track)|power\s*(electron|converter|quality))\b/i,
+};
+
+// State
+let diagLog = [];
+let diagData = null;
+let startTime = 0;
+
+function log(level, msg, data) {
+  const ts = Date.now() - startTime;
+  const entry = { ts, level, msg, data };
+  diagLog.push(entry);
+  const container = el('logContainer');
+  const div = document.createElement('div');
+  div.className = `log-line log-${level}`;
+  div.innerHTML = `<span class="log-ts">${(ts/1000).toFixed(2)}s</span><span class="log-tag">${level}</span><span class="log-msg">${esc(msg)}${data ? ' <span style="color:var(--text-dim)">' + esc(typeof data === 'object' ? JSON.stringify(data) : String(data)) + '</span>' : ''}</span>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function progress(pct, label) {
+  el('progressFill').style.width = pct + '%';
+  el('progressPct').textContent = Math.round(pct) + '%';
+  el('progressLabel').textContent = label;
+}
+
+function setStatus(status) {
+  const badge = el('statusBadge');
+  badge.className = `status-badge status-${status}`;
+  badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+  el('statusDot').style.background = { idle: '#8892a8', running: '#f59e0b', done: '#22c55e', error: '#ef4444' }[status];
+  el('statusDot').style.boxShadow = `0 0 8px ${{ idle: '#8892a8', running: '#f59e0b', done: '#22c55e', error: '#ef4444' }[status]}`;
+}
+
+async function fetchJSON(url, retries = 3) {
+  url += (url.includes('?') ? '&' : '?') + 'mailto=research-tool@agripv.org';
+  for (let i = 0; i < retries; i++) {
+    try {
+      const r = await fetch(url);
+      if (r.ok) return await r.json();
+      if (r.status === 429) await sleep((parseFloat(r.headers.get("Retry-After") || 1) * 1000) * (i + 1));
+      else if (r.status >= 500) await sleep(500 * (i + 1));
+      else return null;
+    } catch { if (i === retries - 1) return null; await sleep(250); }
+  }
+  return null;
+}
+
+function getInst(i) {
+  if (!i) return "Unknown";
+  const low = norm(i), hit = INST_MAP.find(x => low.includes(x[0]));
+  return hit ? hit[1] : i.replace(/university/gi, 'Univ.').replace(/institute/gi, 'Inst.').split(',')[0].trim().substring(0, 28);
+}
+
+function scoreWork(w, abs = "", weights = {}) {
+  const wt = {
+    strTitle: parseFloat(weights.strTitle || 30),
+    strKw: parseFloat(weights.strKw || 24),
+    strMeta: 18, strAbs: 14,
+    fzTitle: 12, fzAbs: 7,
+    solAgri: parseFloat(weights.solAgri || 15),
+    neg: parseFloat(weights.neg || 15),
+    conceptFloor: parseFloat(weights.conceptFloor || 0.3),
+    topicFloor: parseFloat(weights.topicFloor || 0.25),
+  };
+
+  const title = norm(w.title || "");
+  const kwText = norm((w.keywords || []).map(k => k.display_name || k.keyword).join(" "));
+  const topicText = norm((w.topics || []).map(t => t.display_name).join(" "));
+  const conceptText = norm((w.concepts || []).map(c => c.display_name).join(" "));
+  const absText = norm(abs);
+  const metaText = `${kwText} ${topicText} ${conceptText}`;
+  const fullText = `${title} ${metaText} ${absText}`;
+
+  let s = 0, why = [];
+
+  const stT = RX.strong.test(title);
+  const stK = !stT && RX.strong.test(kwText);
+  const stM = !stT && !stK && RX.strong.test(metaText);
+  const stA = !stT && !stK && !stM && RX.strong.test(absText);
+  const fzT = !stT && RX.fuzzy.test(title);
+  const fzA = !stT && !fzT && RX.fuzzy.test(absText);
+
+  if (stT) { s += wt.strTitle; why.push('agripv-title'); }
+  else if (stK) { s += wt.strKw; why.push('agripv-keyword'); }
+  else if (stM) { s += wt.strMeta; why.push('agripv-meta'); }
+  else if (stA) { s += wt.strAbs; why.push('agripv-abstract'); }
+  else if (fzT) { s += wt.fzTitle; why.push('agripv-fuzzy-title'); }
+  else if (fzA) { s += wt.fzAbs; why.push('agripv-fuzzy-abs'); }
+
+  const direct = stT || stK || stM || stA || fzT || fzA;
+
+  if (RX.apv.test(title) && (RX.solar.test(fullText) || RX.agri.test(fullText))) { s += direct ? 3 : 10; why.push('apv'); }
+
+  const solT = RX.solar.test(title), agT = RX.agri.test(title), lnT = RX.land.test(title);
+  const sol = RX.solar.test(fullText), ag = RX.agri.test(fullText), ln = RX.land.test(fullText);
+
+  if (solT && (agT || lnT)) { s += wt.solAgri; why.push('solar+agri-title'); }
+  else if (sol && ag && ln) { s += 8; why.push('solar+land'); }
+  else { if (sol) s += 1; if (ag || ln) s += 1; }
+
+  if (RX.econ.test(fullText) && (sol || direct)) { s += 2.5; why.push('econ'); }
+
+  const dh = RX.techDomain.filter(r => r.test(fullText)).length;
+  if (dh > 0) { s += Math.min(6, dh * 1.5); why.push(`domain(${dh})`); }
+
+  if (w.concepts?.some(c => /agrivoltaic|agrovoltaic/i.test(c.display_name) && c.score > wt.conceptFloor)) {
+    s += 6; why.push('agripv-concept');
+  }
+
+  s += Math.min(3, Math.log10((w.cited_by_count || 0) + 1));
+  if (w.publication_year >= NOW - 2) s += 0.6;
+
+  if (RX.neg.test(fullText) && !direct) { s -= wt.neg; why.push('neg'); }
+  else if (sol && !ag && !ln && !direct && RX.negSolarOnly.test(fullText)) { s -= 5; why.push('pure-solar'); }
+
+  s = Math.round(Math.max(0, s) * 10) / 10;
+  const tier = s >= 25 ? 'Core' : s >= 15 ? 'Strong' : s >= 8 ? 'Related' : 'Peripheral';
+  return { s, why, strong: direct, tier };
+}
+
+
+window.runDiagnostics = async function() {
+  const runBtn = el('runBtn');
+  runBtn.disabled = true;
+  diagLog = [];
+  diagData = null;
+  startTime = Date.now();
+  el('logContainer').innerHTML = '';
+  el('progressCard').style.display = 'block';
+  el('emptyState').style.display = 'none';
+  el('summaryStats').style.display = 'none';
+  el('resultsArea').style.display = 'none';
+  setStatus('running');
+
+  // Read knobs
+  const knobs = {
+    minRel: parseFloat(el('kMinRel').value),
+    defMin: parseFloat(el('kDefMin').value),
+    cap: parseInt(el('kCap').value),
+    conc: parseInt(el('kConc').value),
+    batchSize: parseInt(el('kBatch').value),
+    maxPages: parseInt(el('kPages').value),
+    parallel: parseInt(el('kParallel').value),
+    strTitle: parseFloat(el('kStrTitle').value),
+    strKw: parseFloat(el('kStrKw').value),
+    solAgri: parseFloat(el('kSolAgri').value),
+    neg: parseFloat(el('kNeg').value),
+    conceptFloor: parseFloat(el('kConcept').value),
+    topicFloor: parseFloat(el('kTopic').value),
+    sweep: el('kSweep').checked,
+    sweepStep: parseFloat(el('kStep').value),
+  };
+
+  log('info', 'Diagnostics started with knobs:', knobs);
+  progress(2, 'Fetching profiles from Supabase...');
+
+  try {
+    // ─── STAGE 1: Fetch profiles ───
+    log('stage', '═══ STAGE 1: Profile Fetch from Supabase ═══');
+    const { data: profiles, error: profileErr } = await supabase
+      .from("profiles")
+      .select("id,full_name,work_email,affiliation")
+      .not("full_name", "is", null);
+
+    if (profileErr) throw profileErr;
+    if (!profiles?.length) throw new Error("No profiles found in DB");
+
+    log('success', `Fetched ${profiles.length} profiles from Supabase`);
+    profiles.forEach((p, i) => log('debug', `  Profile #${i+1}: "${p.full_name}" | affil: "${p.affiliation || 'none'}" | email: "${p.work_email || 'none'}"`));
+
+    const stageData = {
+      profiles: profiles,
+      profileCount: profiles.length,
+      resolved: [],
+      resolvedCount: 0,
+      resolutionDetails: [],
+      rawWorks: [],
+      rawWorkCount: 0,
+      scoredWorks: [],
+      scoredWorkCount: 0,
+      filteredWorks: [],
+      filteredWorkCount: 0,
+      memberWorkMap: new Map(), // author id -> works
+      finalUsers: [],
+      finalUserCount: 0,
+      droppedUsers: [],
+      droppedUserCount: 0,
+      allScores: [],
+    };
+
+    progress(8, 'Resolving profiles against OpenAlex...');
+
+    // ─── STAGE 2: Resolve profiles ───
+    log('stage', '═══ STAGE 2: Author Resolution via OpenAlex ═══');
+    const chunk = 8;
+    for (let i = 0; i < profiles.length; i += chunk) {
+      const batch = profiles.slice(i, i + chunk);
+      const results = await Promise.all(batch.map(async p => {
+        const url = `${API}/authors?search=${encodeURIComponent(p.full_name)}&per_page=10&select=id,display_name,works_count,cited_by_count,last_known_institutions`;
+        const d = await fetchJSON(url);
+        const want = norm(p.full_name);
+        const aff = norm(p.affiliation || "");
+        let best = null, bestS = -1, candidates = [];
+
+        (d?.results || []).forEach(r => {
+          let sc = 0, n = norm(r.display_name || "");
+          const inst = norm(r.last_known_institutions?.[0]?.display_name || "");
+          if (n === want) sc += 10;
+          else if (n.includes(want) || want.includes(n)) sc += 4;
+          if (aff && inst && (inst.includes(aff) || aff.includes(inst) || inst.split(' ').some(x => x.length > 4 && aff.includes(x)))) sc += 4;
+          sc += Math.min(2, (r.works_count || 0) / 200);
+          candidates.push({ id: r.id, name: r.display_name, matchScore: sc, works: r.works_count, inst: r.last_known_institutions?.[0]?.display_name });
+          if (sc > bestS) { bestS = sc; best = r; }
+        });
+
+        const m = best || d?.results?.[0];
+        const resolved = m != null;
+        const inst = getInst(m?.last_known_institutions?.[0]?.display_name || p.affiliation);
+        const detail = {
+          profile: p,
+          resolved,
+          matchScore: bestS,
+          apiCandidates: candidates.length,
+          selectedCandidate: m ? { id: m.id, name: m.display_name, works: m.works_count } : null,
+          allCandidates: candidates,
+          authorId: m?.id || `local:${p.id}`,
+          inst
+        };
+
+        if (resolved) {
+          log('success', `  ✓ "${p.full_name}" → ${m.display_name} (score: ${bestS.toFixed(1)}, works: ${m.works_count}, inst: ${inst})`, { candidates: candidates.length });
+        } else {
+          log('warn', `  ✗ "${p.full_name}" → No match found (${d?.results?.length || 0} candidates)`, { affiliation: p.affiliation });
+        }
+
+        return {
+          id: m?.id || `local:${p.id}`,
+          display_name: m?.display_name || p.full_name,
+          inst,
+          net_works: 0,
+          net_cited: 0,
+          topics: {},
+          deg: 0,
+          _profile: p,
+          _resolved: resolved,
+          _matchScore: bestS,
+          _detail: detail
+        };
+      }));
+
+      stageData.resolved.push(...results);
+      stageData.resolutionDetails.push(...results.map(r => r._detail));
+      progress(8 + (Math.min(i + chunk, profiles.length) / profiles.length) * 20, `Resolving profiles (${Math.min(i + chunk, profiles.length)}/${profiles.length})...`);
+      await sleep(30);
+    }
+
+    stageData.resolvedCount = stageData.resolved.filter(r => r._resolved).length;
+    const unresolvedCount = stageData.resolved.filter(r => !r._resolved).length;
+    log('info', `Resolution complete: ${stageData.resolvedCount} resolved, ${unresolvedCount} unresolved (local fallback)`);
+
+    // ─── STAGE 3: Fetch works ───
+    log('stage', '═══ STAGE 3: Works Fetch from OpenAlex ═══');
+    progress(30, 'Fetching works...');
+
+    const authorIds = stageData.resolved.filter(a => !a.id.startsWith('local:')).map(a => a.id);
+    const localOnly = stageData.resolved.filter(a => a.id.startsWith('local:'));
+    log('info', `Fetching works for ${authorIds.length} resolved authors (${localOnly.length} local-only, will have 0 works)`);
+    localOnly.forEach(a => log('warn', `  ⚠ "${a.display_name}" is local-only — no works will be fetched`));
+
+    const allWorks = new Map();
+    const batches = [];
+    for (let i = 0; i < authorIds.length; i += knobs.batchSize) batches.push(authorIds.slice(i, i + knobs.batchSize));
+
+    let completed = 0;
+    let totalFetched = 0;
+    let pagesHit = 0;
+
+    for (let i = 0; i < batches.length; i += knobs.parallel) {
+      await Promise.all(batches.slice(i, i + knobs.parallel).map(async (batch, bIdx) => {
+        let cursor = '*', page = 0;
+        while (cursor && page++ < knobs.maxPages) {
+          const res = await fetchJSON(`${API}/works?filter=authorships.author.id:${batch.join('|')},from_publication_date:${Math.max(1990, NOW - 20)}-01-01&per_page=200&cursor=${encodeURIComponent(cursor)}&select=id,title,publication_year,cited_by_count,type,primary_location,open_access,doi,authorships,concepts,topics,keywords`);
+          const results = res?.results || [];
+          pagesHit++;
+          totalFetched += results.length;
+
+          results.forEach(w => {
+            if (!allWorks.has(w.id)) {
+              allWorks.set(w.id, w);
+            }
+          });
+
+          cursor = res?.meta?.next_cursor;
+          if (cursor) await sleep(20);
+        }
+        completed++;
+        progress(30 + (completed / batches.length) * 35, `Fetching works (batch ${completed}/${batches.length})...`);
+      }));
+    }
+
+    stageData.rawWorks = [...allWorks.values()];
+    stageData.rawWorkCount = stageData.rawWorks.length;
+    log('success', `Fetched ${stageData.rawWorkCount} unique works (${totalFetched} total records, ${pagesHit} API pages)`);
+
+    // ─── STAGE 4: Score works ───
+    log('stage', '═══ STAGE 4: Work Scoring ═══');
+    progress(68, 'Scoring works...');
+
+    const weights = { strTitle: knobs.strTitle, strKw: knobs.strKw, solAgri: knobs.solAgri, neg: knobs.neg, conceptFloor: knobs.conceptFloor, topicFloor: knobs.topicFloor };
+    const rMap = new Map(stageData.resolved.map(r => [r.id, r]));
+
+    let passCount = 0, failCount = 0, strongBypass = 0;
+    stageData.rawWorks.forEach(w => {
+      const rel = scoreWork(w, "", weights);
+      w._relevance = rel.s;
+      w._why = rel.why;
+      w._tier = rel.tier;
+      w._strong = rel.strong;
+      stageData.allScores.push(rel.s);
+
+      const members = (w.authorships || []).filter(a => rMap.has(a.author?.id)).map(a => rMap.get(a.author.id));
+      w._memberAuthors = members;
+      w._allAuthors = (w.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, isMember: rMap.has(a.author?.id) }));
+
+      if (rel.s >= knobs.minRel || rel.strong) {
+        passCount++;
+        if (rel.strong && rel.s < knobs.minRel) strongBypass++;
+        stageData.scoredWorks.push(w);
+      } else {
+        failCount++;
+      }
+    });
+
+    stageData.scoredWorkCount = passCount;
+    log('success', `Scoring complete: ${passCount} passed (minRel=${knobs.minRel}), ${failCount} filtered out, ${strongBypass} bypassed via strong match`);
+
+    // ─── STAGE 5: Apply defMin filter (UI threshold) ───
+    log('stage', '═══ STAGE 5: UI Display Filter (defMin) ═══');
+    stageData.filteredWorks = stageData.scoredWorks.filter(w => w._relevance >= knobs.defMin);
+    stageData.filteredWorkCount = stageData.filteredWorks.length;
+    const defMinDropped = stageData.scoredWorkCount - stageData.filteredWorkCount;
+    log('info', `defMin filter (${knobs.defMin}): ${stageData.filteredWorkCount} works survive, ${defMinDropped} additional works dropped between minRel and defMin`);
+
+    // ─── STAGE 6: Build member→works mapping ───
+    log('stage', '═══ STAGE 6: Member Attribution & User Survival ═══');
+    progress(80, 'Mapping members to works...');
+
+    // For each author, count how many filtered works they appear in
+    stageData.resolved.forEach(r => {
+      const myWorks = stageData.filteredWorks.filter(w => w._memberAuthors.some(a => a.id === r.id));
+      stageData.memberWorkMap.set(r.id, myWorks);
+    });
+
+    // Determine survivors vs dropped
+    stageData.resolved.forEach(r => {
+      const myWorks = stageData.memberWorkMap.get(r.id) || [];
+      const worksAtMinRel = stageData.scoredWorks.filter(w => w._memberAuthors.some(a => a.id === r.id));
+      const worksBeforeFilter = stageData.rawWorks.filter(w => (w.authorships || []).some(a => rMap.has(a.author?.id) && a.author.id === r.id));
+
+      r._worksRaw = worksBeforeFilter.length;
+      r._worksScored = worksAtMinRel.length;
+      r._worksFiltered = myWorks.length;
+
+      if (myWorks.length > 0) {
+        stageData.finalUsers.push(r);
+        log('success', `  ✓ "${r.display_name}" survives: ${myWorks.length} works (raw: ${worksBeforeFilter.length}, scored: ${worksAtMinRel.length})`);
+      } else {
+        const reason = [];
+        if (r.id.startsWith('local:')) reason.push('Never resolved in OpenAlex');
+        if (worksBeforeFilter.length === 0) reason.push('No works found at all');
+        else if (worksAtMinRel.length === 0) reason.push(`All ${worksBeforeFilter.length} works scored below minRel=${knobs.minRel}`);
+        else if (myWorks.length === 0) reason.push(`${worksAtMinRel.length} works passed minRel but all below defMin=${knobs.defMin}`);
+        if (worksBeforeFilter.length > 0) {
+          const scores = worksBeforeFilter.map(w => {
+            const rel = scoreWork(w, "", weights);
+            return rel.s;
+          });
+          const maxScore = Math.max(...scores);
+          const avgScore = scores.reduce((a,b) => a+b, 0) / scores.length;
+          reason.push(`Best score among their works: ${maxScore.toFixed(1)}, avg: ${avgScore.toFixed(1)}`);
+        }
+
+        r._dropReason = reason.join('; ');
+        stageData.droppedUsers.push(r);
+        log('error', `  ✗ "${r.display_name}" DROPPED — ${r._dropReason}`);
+      }
+    });
+
+    stageData.finalUserCount = stageData.finalUsers.length;
+    stageData.droppedUserCount = stageData.droppedUsers.length;
+
+    const dropRate = ((stageData.droppedUserCount / stageData.profileCount) * 100).toFixed(1);
+    log('info', `Final: ${stageData.finalUserCount} users survive, ${stageData.droppedUserCount} dropped (${dropRate}% drop rate)`);
+
+    // ─── STAGE 7: Sensitivity sweep ───
+    let sensitivityResults = [];
+    if (knobs.sweep) {
+      log('stage', '═══ STAGE 7: Sensitivity Sweep ═══');
+      progress(85, 'Running sensitivity sweep...');
+
+      for (let threshold = 0; threshold <= 15; threshold += knobs.sweepStep) {
+        const t = Math.round(threshold * 10) / 10;
+        const worksPass = stageData.rawWorks.filter(w => w._relevance >= t || w._strong);
+        const filteredForSweep = stageData.rawWorks.filter(w => w._relevance >= t);
+        const usersAlive = new Set();
+        filteredForSweep.forEach(w => {
+          w._memberAuthors.forEach(a => usersAlive.add(a.id));
+        });
+
+        const scores = filteredForSweep.map(w => w._relevance).sort((a,b) => a - b);
+        const avg = scores.length ? (scores.reduce((a,b)=>a+b,0) / scores.length) : 0;
+        const median = scores.length ? scores[Math.floor(scores.length/2)] : 0;
+
+        const usersLost = stageData.profileCount - usersAlive.size;
+        const dr = ((usersLost / stageData.profileCount) * 100).toFixed(1);
+
+        let assessment = '';
+        if (parseFloat(dr) === 0) assessment = '🟢 Perfect retention';
+        else if (parseFloat(dr) < 10) assessment = '🟢 Excellent';
+        else if (parseFloat(dr) < 25) assessment = '🟡 Acceptable';
+        else if (parseFloat(dr) < 50) assessment = '🟠 Concerning';
+        else assessment = '🔴 Critical loss';
+
+        if (Math.abs(t - knobs.defMin) < 0.01) assessment += ' ← CURRENT';
+
+        sensitivityResults.push({
+          threshold: t,
+          worksPass: worksPass.length,
+          usersAlive: usersAlive.size,
+          usersLost,
+          dropRate: dr,
+          avgScore: avg.toFixed(1),
+          medianScore: median.toFixed(1),
+          assessment,
+          isCurrent: Math.abs(t - knobs.defMin) < 0.01
+        });
+
+        log('debug', `  minRel=${t}: ${worksPass.length} works, ${usersAlive.size} users survive, ${dr}% drop rate`);
+      }
+    }
+
+    progress(95, 'Rendering results...');
+
+    // ─── RENDER RESULTS ───
+    diagData = { stageData, knobs, sensitivityResults, elapsed: Date.now() - startTime };
+
+    // Summary stats
+    el('summaryStats').style.display = 'grid';
+    el('statProfiles').textContent = stageData.profileCount;
+    el('statResolved').textContent = stageData.resolvedCount;
+    el('statRawWorks').textContent = stageData.rawWorkCount;
+    el('statScoredIn').textContent = stageData.scoredWorkCount;
+    el('statDropped').textContent = stageData.droppedUserCount;
+    el('statFinalUsers').textContent = stageData.finalUserCount;
+    el('statFinalPubs').textContent = stageData.filteredWorkCount;
+    el('statDropRate').textContent = dropRate + '%';
+
+    // Funnel
+    renderFunnel(stageData);
+
+    // Sensitivity
+    if (sensitivityResults.length) renderSensitivity(sensitivityResults);
+
+    // Score distribution
+    renderScoreDistribution(stageData.allScores, knobs.minRel, knobs.defMin);
+
+    // Lost users
+    renderLostUsers(stageData.droppedUsers);
+
+    // Kept users
+    renderKeptUsers(stageData.finalUsers, stageData.memberWorkMap);
+
+    // Works detail
+    renderWorksDetail(stageData.scoredWorks);
+
+    // Output
+    renderOutput(diagData);
+
+    el('resultsArea').style.display = 'block';
+    switchTab('funnel');
+
+    progress(100, 'Complete!');
+    setStatus('done');
+    log('success', `Diagnostics complete in ${((Date.now() - startTime)/1000).toFixed(1)}s`);
+
+    el('copyBtn').disabled = false;
+
+  } catch (err) {
+    log('error', 'Diagnostics failed: ' + err.message, err.stack);
+    setStatus('error');
+  }
+
+  runBtn.disabled = false;
+};
+
+function renderFunnel(data) {
+  const stages = [
+    { name: 'DB Profiles', count: data.profileCount, color: '#06b6d4' },
+    { name: 'Resolved (OpenAlex)', count: data.resolvedCount, color: '#6366f1' },
+    { name: 'Raw Works Fetched', count: data.rawWorkCount, color: '#8b5cf6', isWorks: true },
+    { name: 'Pass minRel Filter', count: data.scoredWorkCount, color: '#f59e0b', isWorks: true },
+    { name: 'Pass defMin Filter', count: data.filteredWorkCount, color: '#22c55e', isWorks: true },
+    { name: 'Final Users', count: data.finalUserCount, color: '#22c55e' },
+    { name: 'Users Dropped', count: data.droppedUserCount, color: '#ef4444' },
+  ];
+
+  const maxCount = Math.max(...stages.map(s => s.count), 1);
+
+  el('funnelContainer').innerHTML = stages.map((s, i) => {
+    const pct = (s.count / maxCount) * 100;
+    const prev = i > 0 ? stages[i-1] : null;
+    let delta = '';
+    if (prev && !s.isWorks && !prev.isWorks) {
+      const diff = s.count - prev.count;
+      if (diff < 0) delta = `<span class="delta-loss">−${Math.abs(diff)}</span>`;
+      else if (diff === 0) delta = `<span class="delta-ok">±0</span>`;
+      else delta = `<span class="delta-ok">+${diff}</span>`;
+    } else if (s.name === 'Users Dropped') {
+      delta = `<span class="delta-loss">${((s.count/data.profileCount)*100).toFixed(0)}%</span>`;
+    } else if (i > 0 && s.isWorks && stages[i-1].isWorks) {
+      const diff = s.count - stages[i-1].count;
+      if (diff < 0) delta = `<span class="delta-loss">−${Math.abs(diff)}</span>`;
+      else delta = `<span class="delta-ok">±0</span>`;
+    }
+
+    return `<div class="funnel-stage">
+      <span class="stage-name">${s.name}</span>
+      <div class="funnel-bar-track">
+        <div class="funnel-bar" style="width:${pct}%;background:${s.color}"></div>
+      </div>
+      <span class="funnel-count" style="color:${s.color}">${s.count.toLocaleString()}</span>
+      <span class="funnel-delta">${delta}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderSensitivity(results) {
+  el('sensBody').innerHTML = results.map(r => `
+    <tr class="${r.isCurrent ? 'highlight' : ''}">
+      <td style="font-weight:700${r.isCurrent ? ';color:var(--accent)' : ''}">${r.threshold.toFixed(1)}${r.isCurrent ? ' ◀' : ''}</td>
+      <td>${r.worksPass.toLocaleString()}</td>
+      <td style="font-weight:700">${r.usersAlive}</td>
+      <td style="color:${r.usersLost > 0 ? 'var(--red)' : 'var(--green)'}; font-weight:700">${r.usersLost}</td>
+      <td style="color:${parseFloat(r.dropRate) > 25 ? 'var(--red)' : parseFloat(r.dropRate) > 10 ? 'var(--amber)' : 'var(--green)'}; font-weight:700">${r.dropRate}%</td>
+      <td>${r.avgScore}</td>
+      <td>${r.medianScore}</td>
+      <td style="font-size:10px">${r.assessment}</td>
+    </tr>
+  `).join('');
+}
+
+function renderScoreDistribution(scores, minRel, defMin) {
+  if (!scores.length) return;
+
+  const bins = 30;
+  const max = Math.max(...scores);
+  const binWidth = Math.max(max / bins, 0.5);
+  const counts = new Array(bins).fill(0);
+  scores.forEach(s => {
+    const idx = Math.min(Math.floor(s / binWidth), bins - 1);
+    counts[idx]++;
+  });
+  const maxCount = Math.max(...counts, 1);
+
+  el('distChart').innerHTML = counts.map((c, i) => {
+    const threshold = i * binWidth;
+    const belowMin = threshold < minRel;
+    const belowDef = threshold < defMin && !belowMin;
+    const h = (c / maxCount) * 100;
+    const cls = belowMin ? 'below-threshold' : (belowDef ? '' : '');
+    const bg = belowMin ? 'var(--red)' : (belowDef ? 'var(--amber)' : 'var(--accent)');
+    return `<div class="dist-bar ${cls}" style="height:${Math.max(h, 1)}%;background:${bg}" title="Score ${threshold.toFixed(1)}-${(threshold+binWidth).toFixed(1)}: ${c} works"></div>`;
+  }).join('');
+
+  el('distLabels').innerHTML = `<span>0</span><span style="color:var(--red)">minRel: ${minRel}</span><span style="color:var(--amber)">defMin: ${defMin}</span><span>${max.toFixed(0)}</span>`;
+
+  const belowMinRel = scores.filter(s => s < minRel).length;
+  const betweenFilters = scores.filter(s => s >= minRel && s < defMin).length;
+  const aboveDefMin = scores.filter(s => s >= defMin).length;
+  el('distSummary').innerHTML = `
+    <span style="color:var(--red)">■</span> Below minRel (${minRel}): <strong>${belowMinRel}</strong> works discarded at fetch
+    &nbsp;&nbsp;
+    <span style="color:var(--amber)">■</span> Between minRel and defMin (${minRel}–${defMin}): <strong>${betweenFilters}</strong> works stored but hidden
+    &nbsp;&nbsp;
+    <span style="color:var(--accent)">■</span> Above defMin (${defMin}+): <strong>${aboveDefMin}</strong> works displayed
+  `;
+  el('distThreshold').innerHTML = `${belowMinRel} works (${((belowMinRel/scores.length)*100).toFixed(1)}%) permanently lost at fetch stage | ${betweenFilters} works (${((betweenFilters/scores.length)*100).toFixed(1)}%) in limbo`;
+}
+
+function renderLostUsers(users) {
+  el('lostCount').textContent = users.length;
+  if (!users.length) {
+    el('lostContainer').innerHTML = '<div style="color:var(--green);text-align:center;padding:20px;font-size:13px">🎉 No users dropped! All profiles retained.</div>';
+    return;
+  }
+
+  el('lostContainer').innerHTML = users.map(u => `
+    <div class="lost-user">
+      <div class="name">${esc(u.display_name)}</div>
+      <div class="reason">
+        <strong>Profile:</strong> ${esc(u._profile?.full_name)} | <strong>Affiliation:</strong> ${esc(u._profile?.affiliation || 'None')} | <strong>Institution:</strong> ${esc(u.inst)}<br>
+        <strong>OpenAlex ID:</strong> ${u.id}<br>
+        <strong>Raw works:</strong> ${u._worksRaw || 0} | <strong>Passed minRel:</strong> ${u._worksScored || 0} | <strong>Passed defMin:</strong> ${u._worksFiltered || 0}<br>
+        <strong>Drop reason:</strong> ${esc(u._dropReason || 'Unknown')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderKeptUsers(users, workMap) {
+  el('keptCount').textContent = users.length;
+  el('keptContainer').innerHTML = users
+    .sort((a, b) => (b._worksFiltered || 0) - (a._worksFiltered || 0))
+    .map(u => {
+      const works = workMap.get(u.id) || [];
+      const avgScore = works.length ? (works.reduce((s, w) => s + w._relevance, 0) / works.length).toFixed(1) : '0';
+      return `<div class="kept-user">
+        <div class="name">${esc(u.display_name)}</div>
+        <div class="reason" style="color:var(--text-dim)">
+          <strong>Institution:</strong> ${esc(u.inst)} |
+          <strong>Works:</strong> ${u._worksFiltered} (raw: ${u._worksRaw}, scored: ${u._worksScored}) |
+          <strong>Avg score:</strong> ${avgScore}
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function renderWorksDetail(works) {
+  const sorted = [...works].sort((a, b) => b._relevance - a._relevance);
+  el('worksCount').textContent = sorted.length;
+  el('worksBody').innerHTML = sorted.slice(0, 200).map(w => {
+    const tierColor = { Core: 'var(--green)', Strong: 'var(--cyan)', Related: 'var(--amber)', Peripheral: 'var(--text-dim)' }[w._tier] || 'var(--text-dim)';
+    return `<tr>
+      <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(w.title)}">${esc(w.title)}</td>
+      <td>${w.publication_year || ''}</td>
+      <td style="font-weight:700;color:${w._relevance >= 15 ? 'var(--green)' : w._relevance >= 8 ? 'var(--amber)' : 'var(--text-dim)'}">${w._relevance.toFixed(1)}</td>
+      <td style="color:${tierColor};font-weight:700">${w._tier}</td>
+      <td style="font-size:9px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${(w._why||[]).join(', ')}</td>
+      <td>${w._memberAuthors?.map(a => esc(a.display_name)).join(', ') || ''}</td>
+      <td>${w.cited_by_count || 0}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderOutput(data) {
+  const lines = [];
+  const hr = '═'.repeat(70);
+  const sr = '─'.repeat(70);
+
+  lines.push(hr);
+  lines.push('  PIPELINE DIAGNOSTIC REPORT');
+  lines.push(`  Generated: ${new Date().toISOString()}`);
+  lines.push(`  Elapsed: ${(data.elapsed / 1000).toFixed(1)}s`);
+  lines.push(hr);
+  lines.push('');
+
+  lines.push('┌─ KNOB CONFIGURATION ─────────────────────────────────────────────┐');
+  Object.entries(data.knobs).forEach(([k, v]) => {
+    lines.push(`│  ${k.padEnd(20)} = ${String(v).padStart(8)} │`);
+  });
+  lines.push('└──────────────────────────────────────────────────────────────────┘');
+  lines.push('');
+
+  lines.push('┌─ PIPELINE FUNNEL ────────────────────────────────────────────────┐');
+  const sd = data.stageData;
+  [
+    ['DB Profiles', sd.profileCount],
+    ['Resolved Authors', sd.resolvedCount],
+    ['Raw Works Fetched', sd.rawWorkCount],
+    ['Pass minRel Filter', sd.scoredWorkCount],
+    ['Pass defMin Filter', sd.filteredWorkCount],
+    ['Final Users', sd.finalUserCount],
+    ['Users Dropped', sd.droppedUserCount],
+  ].forEach(([name, count]) => {
+    const bar = '█'.repeat(Math.round((count / Math.max(sd.profileCount, sd.rawWorkCount, 1)) * 30));
+    lines.push(`│  ${name.padEnd(22)} ${String(count).padStart(6)}  ${bar}`);
+  });
+  lines.push(`│`);
+  lines.push(`│  DROP RATE: ${((sd.droppedUserCount / sd.profileCount) * 100).toFixed(1)}%`);
+  lines.push('└──────────────────────────────────────────────────────────────────┘');
+  lines.push('');
+
+  if (data.sensitivityResults?.length) {
+    lines.push('┌─ SENSITIVITY SWEEP ──────────────────────────────────────────────┐');
+    lines.push(`│  ${'minRel'.padEnd(8)} ${'Works'.padStart(8)} ${'Users'.padStart(8)} ${'Lost'.padStart(6)} ${'Drop%'.padStart(7)} ${'Assessment'.padStart(20)} │`);
+    lines.push(`│  ${sr.slice(0, 60)} │`);
+    data.sensitivityResults.forEach(r => {
+      const marker = r.isCurrent ? ' ◀ CURRENT' : '';
+      lines.push(`│  ${r.threshold.toFixed(1).padEnd(8)} ${String(r.worksPass).padStart(8)} ${String(r.usersAlive).padStart(8)} ${String(r.usersLost).padStart(6)} ${(r.dropRate + '%').padStart(7)} ${r.assessment.padStart(20)}${marker}`);
+    });
+    lines.push('└──────────────────────────────────────────────────────────────────┘');
+    lines.push('');
+  }
+
+  if (sd.droppedUsers.length) {
+    lines.push('┌─ DROPPED USERS ──────────────────────────────────────────────────┐');
+    sd.droppedUsers.forEach(u => {
+      lines.push(`│  ✗ ${u.display_name}`);
+      lines.push(`│    Profile: ${u._profile?.full_name} | Affil: ${u._profile?.affiliation || 'N/A'}`);
+      lines.push(`│    OpenAlex: ${u.id} | Inst: ${u.inst}`);
+      lines.push(`│    Raw works: ${u._worksRaw || 0} | Scored: ${u._worksScored || 0} | Displayed: ${u._worksFiltered || 0}`);
+      lines.push(`│    Reason: ${u._dropReason || 'Unknown'}`);
+      lines.push(`│`);
+    });
+    lines.push('└──────────────────────────────────────────────────────────────────┘');
+    lines.push('');
+  }
+
+  lines.push('┌─ RETAINED USERS ─────────────────────────────────────────────────┐');
+  sd.finalUsers.sort((a, b) => (b._worksFiltered||0) - (a._worksFiltered||0)).forEach(u => {
+    lines.push(`│  ✓ ${u.display_name.padEnd(30)} works: ${String(u._worksFiltered||0).padStart(4)} (raw: ${u._worksRaw||0}, scored: ${u._worksScored||0}) | ${u.inst}`);
+  });
+  lines.push('└──────────────────────────────────────────────────────────────────┘');
+  lines.push('');
+
+  lines.push('┌─ SCORE DISTRIBUTION ─────────────────────────────────────────────┐');
+  const allScores = sd.allScores.sort((a,b) => a - b);
+  if (allScores.length) {
+    const p = idx => allScores[Math.floor(allScores.length * idx)] || 0;
+    lines.push(`│  Count:  ${allScores.length}`);
+    lines.push(`│  Min:    ${Math.min(...allScores).toFixed(1)}`);
+    lines.push(`│  P10:    ${p(0.1).toFixed(1)}`);
+    lines.push(`│  P25:    ${p(0.25).toFixed(1)}`);
+    lines.push(`│  Median: ${p(0.5).toFixed(1)}`);
+    lines.push(`│  P75:    ${p(0.75).toFixed(1)}`);
+    lines.push(`│  P90:    ${p(0.9).toFixed(1)}`);
+    lines.push(`│  Max:    ${Math.max(...allScores).toFixed(1)}`);
+    lines.push(`│  Mean:   ${(allScores.reduce((a,b)=>a+b,0)/allScores.length).toFixed(1)}`);
+  }
+  lines.push('└──────────────────────────────────────────────────────────────────┘');
+  lines.push('');
+
+  lines.push('┌─ TOP WORKS BY SCORE ─────────────────────────────────────────────┐');
+  [...sd.scoredWorks].sort((a,b) => b._relevance - a._relevance).slice(0, 20).forEach(w => {
+    lines.push(`│  [${w._relevance.toFixed(1).padStart(5)}] ${(w.title||'').substring(0, 55).padEnd(55)} ${w._tier.padEnd(10)} ${(w._why||[]).join(',')}`);
+  });
+  lines.push('└──────────────────────────────────────────────────────────────────┘');
+  lines.push('');
+
+  lines.push('┌─ BORDERLINE WORKS (near defMin threshold) ───────────────────────┐');
+  const borderline = [...sd.scoredWorks]
+    .filter(w => Math.abs(w._relevance - data.knobs.defMin) < 2)
+    .sort((a,b) => a._relevance - b._relevance)
+    .slice(0, 20);
+  borderline.forEach(w => {
+    const status = w._relevance >= data.knobs.defMin ? '✓' : '✗';
+    lines.push(`│  ${status} [${w._relevance.toFixed(1).padStart(5)}] ${(w.title||'').substring(0, 50).padEnd(50)} by ${(w._memberAuthors||[]).map(a=>a.display_name).join(', ').substring(0, 30)}`);
+  });
+  lines.push('└──────────────────────────────────────────────────────────────────┘');
+  lines.push('');
+
+  lines.push(hr);
+  lines.push('  FULL DEBUG LOG');
+  lines.push(hr);
+  diagLog.forEach(entry => {
+    lines.push(`[${(entry.ts/1000).toFixed(2).padStart(7)}s] [${entry.level.toUpperCase().padEnd(7)}] ${entry.msg}${entry.data ? ' | ' + (typeof entry.data === 'object' ? JSON.stringify(entry.data) : entry.data) : ''}`);
+  });
+  lines.push('');
+  lines.push(hr);
+  lines.push('  END OF REPORT');
+  lines.push(hr);
+
+  el('outputArea').textContent = lines.join('\n');
+}
+
+window.switchTab = function(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.tab-panel#panel-${tab}`).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.textContent.toLowerCase().includes(tab.substring(0,4)) ||
+        (tab === 'funnel' && t.textContent === 'Funnel') ||
+        (tab === 'sensitivity' && t.textContent === 'Sensitivity') ||
+        (tab === 'scores' && t.textContent === 'Score Dist.') ||
+        (tab === 'lost' && t.textContent === 'Lost Users') ||
+        (tab === 'kept' && t.textContent === 'Kept Users') ||
+        (tab === 'works' && t.textContent === 'Works Detail') ||
+        (tab === 'log' && t.textContent === 'Debug Log') ||
+        (tab === 'output' && t.textContent === 'Copy Output')) {
+      t.classList.add('active');
+    }
+  });
+};
+
+window.copyOutput = function() {
+  const text = el('outputArea').textContent;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Full diagnostic report copied to clipboard!');
+  });
+};
+
+window.copyLog = function() {
+  const text = diagLog.map(e =>
+    `[${(e.ts/1000).toFixed(2)}s] [${e.level.toUpperCase()}] ${e.msg}${e.data ? ' | ' + JSON.stringify(e.data) : ''}`
+  ).join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Debug log copied!');
+  });
+};
+
+window.clearDiagnostics = function() {
+  diagLog = [];
+  diagData = null;
+  el('logContainer').innerHTML = '';
+  el('progressCard').style.display = 'none';
+  el('summaryStats').style.display = 'none';
+  el('resultsArea').style.display = 'none';
+  el('emptyState').style.display = 'flex';
+  el('copyBtn').disabled = true;
+  setStatus('idle');
+};
+
+window.clearCache = function() {
+  localStorage.removeItem('asf_network_v7');
+  localStorage.removeItem('asf_network_v7_hash');
+  showToast('Pipeline cache cleared!');
+};
+
+window.exportJSON = function() {
+  if (!diagData) { showToast('Run diagnostics first!'); return; }
+  const json = JSON.stringify(diagData, (key, val) => {
+    if (key === '_profile' || key === '_detail') return val;
+    if (val instanceof Map) return Object.fromEntries(val);
+    if (val instanceof Set) return [...val];
+    return val;
+  }, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  Object.assign(document.createElement('a'), { href: url, download: 'pipeline_diagnostic.json' }).click();
+  URL.revokeObjectURL(url);
+};
+
+function showToast(msg) {
+  const toast = el('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

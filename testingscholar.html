@@ -13,25 +13,25 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            overflow: hidden;
+            overflow: hidden
         }
 
         .custom-scroll::-webkit-scrollbar {
             width: 4px;
-            height: 4px;
+            height: 4px
         }
 
         .custom-scroll::-webkit-scrollbar-track {
-            background: transparent;
+            background: 0 0
         }
 
         .custom-scroll::-webkit-scrollbar-thumb {
             background: #cbd5e1;
-            border-radius: 3px;
+            border-radius: 3px
         }
 
         .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+            background: #94a3b8
         }
 
         .split-handle {
@@ -40,88 +40,88 @@
             background: #e2e8f0;
             position: relative;
             z-index: 20;
-            transition: background 0.2s;
+            transition: background .2s
         }
 
         .split-handle::after {
             content: '';
             position: absolute;
             inset: 0 -2px;
-            z-index: 10;
+            z-index: 10
         }
 
-        .split-handle:hover,
-        .split-handle:active {
+        .split-handle:active,
+        .split-handle:hover {
             background: #16a34a;
-            width: 2px;
+            width: 2px
         }
 
         .pub-card {
-            transition: all 0.2s ease;
-            border-bottom: 1px solid #f1f5f9;
+            transition: all .2s ease;
+            border-bottom: 1px solid #f1f5f9
         }
 
         .pub-card:hover {
             background: #f8fafc;
             border-color: #cbd5e1;
             transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px #0000000d;
             z-index: 10;
-            border-radius: 6px;
+            border-radius: 6px
         }
 
         .network-member {
             background-color: #dcfce7;
             color: #15803d;
-            border: 1px solid #86efac;
+            border: 1px solid #86efac
         }
 
         .external-author {
             background-color: #f1f5f9;
             color: #64748b;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #e2e8f0
         }
 
         .d3-tooltip {
             pointer-events: none;
             position: absolute;
-            background: rgba(255, 255, 255, 0.95);
+            background: #fffffff2;
             backdrop-filter: blur(4px);
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             padding: 10px;
             z-index: 50;
-            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px -3px #0000001a;
             min-width: 200px;
-            font-size: 11px;
+            font-size: 11px
         }
 
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.4);
+            background: #00000066;
             backdrop-filter: blur(2px);
             z-index: 60;
             opacity: 0;
             pointer-events: none;
-            transition: 0.2s;
+            transition: .2s;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: center
         }
 
         .modal-overlay.active {
             opacity: 1;
-            pointer-events: auto;
+            pointer-events: auto
         }
 
         .profile-modal {
-            transform: scale(0.95);
-            transition: 0.2s;
+            transform: scale(.95);
+            transition: .2s
         }
 
         .modal-overlay.active .profile-modal {
-            transform: scale(1);
+            transform: scale(1)
         }
 
         .spinner {
@@ -130,35 +130,35 @@
             border-radius: 50%;
             width: 24px;
             height: 24px;
-            animation: spin 0.8s linear infinite;
+            animation: spin .8s linear infinite
         }
 
         @keyframes spin {
             to {
-                transform: rotate(360deg);
+                transform: rotate(360deg)
             }
         }
 
         #graphContainer {
-            background: radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.15) 1px, transparent 1px) -8px -8px / 24px 24px;
+            background: radial-gradient(circle at 1px 1px, #94a3b826 1px, transparent 1px) -8px -8px / 24px 24px
         }
 
         #graphContainer:active {
-            cursor: grabbing;
+            cursor: grabbing
         }
 
         .node-label {
             paint-order: stroke;
-            stroke: rgba(255, 255, 255, 0.8);
+            stroke: #ffffffcc;
             stroke-width: 3px;
             stroke-linejoin: round;
             font-family: 'Inter', sans-serif;
-            letter-spacing: -0.01em;
+            letter-spacing: -.01em
         }
 
         input[type=range] {
             -webkit-appearance: none;
-            background: transparent;
+            background: 0 0
         }
 
         input[type=range]::-webkit-slider-thumb {
@@ -169,7 +169,7 @@
             background: #16a34a;
             cursor: pointer;
             margin-top: -5px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 2px #0003
         }
 
         input[type=range]::-webkit-slider-runnable-track {
@@ -177,30 +177,28 @@
             height: 2px;
             cursor: pointer;
             background: #e2e8f0;
-            border-radius: 1px;
+            border-radius: 1px
         }
 
-        /* New Histogram Styles */
         .timeline-bar {
             fill: #16a34a;
-            opacity: 0.4;
+            opacity: .4;
             cursor: pointer;
-            transition: opacity 0.15s;
+            transition: opacity .15s
         }
 
         .timeline-bar:hover {
-            opacity: 0.8;
+            opacity: .8
         }
 
         .timeline-bar.selected {
             opacity: 1;
-            fill: #15803d;
+            fill: #15803d
         }
     </style>
 </head>
 
 <body class="bg-white text-slate-700 h-screen w-screen flex overflow-hidden">
-
     <aside
         class="w-[320px] flex flex-col border-r border-slate-200 bg-slate-50/80 shrink-0 h-full z-30 backdrop-blur-sm">
         <div class="p-4 border-b border-slate-200 bg-white">
@@ -221,32 +219,28 @@
                     class="fas fa-search text-slate-400 absolute left-3 top-2.5 text-xs group-focus-within:text-green-600"></i>
             </div>
         </div>
-
         <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-5">
             <div>
                 <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Network Stats</h3>
                 <div class="grid grid-cols-2 gap-2" id="statsGrid"></div>
             </div>
-
-            <!-- NEW: Histogram -->
             <div>
                 <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Publication Timeline</h3>
                 <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-2">
                     <svg id="timelineChart" width="100%" height="50"></svg>
-                    <div class="text-[8px] text-slate-400 mt-1 leading-snug text-center">Click bars to filter.
-                        Shift+click for range.</div>
+                    <div class="text-[8px] text-slate-400 mt-1 leading-snug text-center">Click to filter. Shift+click
+                        for range.</div>
                 </div>
             </div>
-
             <div>
                 <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Relevance Threshold</h3>
                 <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm">
                     <div class="flex justify-between mb-1.5"><label class="text-[9px] font-semibold text-slate-500">Min
                             Score</label><span class="text-[9px] font-mono text-green-600 font-bold"
                             id="valMinRel">3.0</span></div>
-                    <input type="range" id="minRelevance" min="0" max="30" step="0.5" value="3" class="w-full block">
-                    <div class="text-[9px] text-slate-400 mt-1.5 leading-snug">Strictness filter. Lower includes broad
-                        matches; Higher restricts to core AgriPV.</div>
+                    <input type="range" id="minRelevance" min="0" max="30" step="0.5" value="2" class="w-full block">
+                    <div class="text-[9px] text-slate-400 mt-1.5 leading-snug">Strictness filter. Lower for broad,
+                        Higher for core.</div>
                 </div>
             </div>
             <div>
@@ -276,7 +270,6 @@
                 <div id="topicFilters" class="flex flex-wrap gap-1 pb-2"></div>
             </div>
         </div>
-
         <div id="activeFiltersPanel" class="px-4 py-3 bg-white border-t border-slate-200 hidden shrink-0">
             <div class="flex justify-between items-center mb-2"><span
                     class="text-[10px] font-semibold text-slate-500"><span id="activeFilterCount">0</span> filters
@@ -285,7 +278,6 @@
             <div id="activeFilterTags" class="flex flex-wrap gap-1 max-h-14 overflow-y-auto custom-scroll"></div>
         </div>
     </aside>
-
     <main class="flex-1 flex flex-col h-full overflow-hidden bg-white relative">
         <header class="h-12 border-b border-slate-200 flex items-center justify-between px-4 bg-white shrink-0 z-20">
             <div class="flex gap-0.5 p-0.5 bg-slate-100 rounded-md border border-slate-200">
@@ -310,8 +302,6 @@
                     <option value="cited">Most Cited</option>
                     <option value="title">A-Z Title</option>
                 </select>
-
-                <!-- IMPROVED: Export Menu -->
                 <div class="relative" id="exportDropdown">
                     <button
                         class="px-2.5 py-1 bg-slate-900 text-white text-[11px] font-semibold rounded hover:bg-slate-800 shadow-sm transition-colors flex items-center gap-1.5"
@@ -339,7 +329,6 @@
                 </div>
             </div>
         </header>
-
         <div id="contentArea" class="flex-1 flex overflow-hidden relative">
             <div id="publicationsPanel" class="flex flex-col min-w-0 w-1/2 bg-white h-full border-r border-slate-100">
                 <div id="publicationsList" class="flex-1 overflow-y-auto p-2 custom-scroll bg-white"></div>
@@ -350,32 +339,30 @@
                     <div id="paginationContainer" class="flex justify-center gap-1"></div>
                 </div>
             </div>
-
             <div id="splitHandle" class="split-handle" title="Drag to resize"></div>
-
             <div id="networkPanel" class="flex flex-col min-w-0 w-1/2 bg-slate-50 relative h-full">
                 <div class="absolute top-3 left-3 z-10 flex flex-col gap-2">
                     <div
                         class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
                         <button
-                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors"
+                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
                             onclick="app.zoom(1.3)" title="Zoom In"><i class="fas fa-plus text-[10px]"></i></button>
                         <button
-                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors"
+                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
                             onclick="app.zoom(0.7)" title="Zoom Out"><i class="fas fa-minus text-[10px]"></i></button>
                         <button
-                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors"
+                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
                             onclick="app.fitGraph()" title="Fit to Screen"><i
                                 class="fas fa-compress-arrows-alt text-[10px]"></i></button>
                     </div>
                     <div
                         class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
                         <button
-                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors"
+                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
                             onclick="app.toggleCluster()" title="Toggle Grouping"><i
                                 class="fas fa-layer-group text-[10px]"></i></button>
                         <button
-                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors"
+                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
                             onclick="app.toggleLabels()" title="Toggle Labels"><i
                                 class="fas fa-tag text-[10px]"></i></button>
                     </div>
@@ -408,7 +395,6 @@
             </div>
         </div>
     </main>
-
     <div id="loadingOverlay" class="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
         <div class="spinner mb-4 border-slate-200 border-t-green-600"></div>
         <h3 class="text-base font-bold text-slate-800 tracking-tight">Initializing Explorer</h3>
@@ -417,7 +403,6 @@
             <div id="loadingProgress" class="h-full bg-green-500 w-0 transition-all duration-300"></div>
         </div>
     </div>
-
     <div id="citationModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
         <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 p-5">
             <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -445,7 +430,6 @@
             </div>
         </div>
     </div>
-
     <div id="detailModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
         <div
             class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
@@ -458,463 +442,208 @@
             <div id="researcherContent" class="overflow-y-auto custom-scroll p-0"></div>
         </div>
     </div>
-
     <script type="module">
         import { supabase } from "./auth.js";
-
-        const sleep = ms => new Promise(r => setTimeout(r, ms));
-        const el = id => document.getElementById(id);
-        const norm = s => (s || "").trim().toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ");
-        const esc = s => s ? s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])) : "";
-        const jsStr = s => (s || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-        const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-
-        // IMPROVEMENT: Adjusted minRel to 2.0 and cap to 250 to ensure we don't filter members out too aggressively (Restored from concern)
-        const CFG = { api: "https://api.openalex.org", key: "asf_network_v7", now: new Date().getFullYear(), minRel: 2.0, cap: 250, conc: 10, defMin: 3.0 }; const COLORS = ['#16a34a', '#059669', '#0d9488', '#0891b2', '#0284c7', '#2563eb', '#4f46e5', '#7c3aed', '#9333ea', '#c026d3', '#db2777', '#e11d48', '#ea580c', '#d97706'];
-
-        // IMPROVED SCORING REGEX (From Script 2)
-        const RX = {
-            strong: /\b(agri[\s-]?(pv|photo)?voltai[ckqs]?|agro[\s-]?(photo)?voltai[ckqs]?|agri[\s-]?photovoltai[ks]?|agrophotovoltai[ckqs]?|solar[\s-]?sharing|solar\s*(farming|agriculture)|farming\s*with\s*(solar|pv)|dual[\s-]?use\s*(solar|pv|land)|co[\s-]?locat(ed|ion)\s*(solar|pv|energy).{0,15}(farm|agri|crop|land)|co[\s-]?develop(ed|ment)\s*(solar|pv).{0,15}(farm|agri|crop)|photovoltaic\s*greenhouse|greenhouse\s*photovoltaic|solar\s*greenhouse|(?:pv|solar)\s*(?:over|above|between)\s*crops?|integrat(?:ed|ing)\s*(?:solar|pv)\s*(?:and|with)\s*agricultur|(?:food|crop)\s*(?:and|&)\s*(?:energy|electricity)\s*(?:production|co[\s-]?production|generation)|energy[\s-]?food[\s-]?(?:water\s*)?nexus\s*(?:solar|pv)?|symbiosis\s*(?:solar|pv|energy).{0,10}(?:crop|agri|farm))\b/i,
-            fuzzy: /\bagri.{0,5}(volt|pv|photo)\b/i,
-            apv: /\bapv\b/i,
-            solar: /\b(pv|photovoltai[ckqs]?|solar(\s*(energy|power|electricity|panels?|cells?|modules?|arrays?|systems?|farms?|plants?|installations?|canop(y|ies)))?|renewable\s*energy\s*(generation|systems?))\b/i,
-            agri: /\b(agricultur(e|al)?|agronom(y|ic)|crops?|farming|farms?|farmers?|pasture|graz(e|ing)|livestock|horticultur(e|al)?|greenhouses?|orchards?|viticultur(e|al)?|viney(ard)?|food\s*production|field\s*trials?|arable|tillage|cultivat(e|ion|ed)|harvest(ing)?|plant(ing|ed)?|crop\s*(rotation|growth|yield|production)|intercropping)\b/i,
-            land: /\b(land[\s-]?use|microclimat(e|ic)|soils?\s*(moisture|health|quality|temperature)|irrigat(e|ion|ing)|water\s*(use|saving|management|efficiency)|evapotranspir(ation|e)|biodiversit(y|ies)|ecosystems?\s*(services?)?|habitats?|shade\s*(effect|impact|toleran|pattern)?|shading|albedo|pollinat(or|ion)|runoff|erosion|ground\s*cover|vegetation|ecosystem|ecology|ecological)\b/i,
-            econ: /\b(economics?|cost[\s-]?(benefit|effective|analysis)|lcoe|levelized|finance|investment|profitab|revenue|policy|regulat(ion|ory|e)|markets?|business\s*model|adoption|acceptance|stakeholders?|subsid(y|ies)|incentiv(e|ize)|tariff|feed[\s-]?in|net[\s-]?meter|social\s*acceptance|willingness\s*to\s*pay|rural\s*(develop|electrif|livelihood))\b/i,
-            techDomain: [/\bbifacial\s*(panel|module|cell|pv|solar)/i, /\bsemi[\s-]?transparent\s*(panel|module|cell|pv|solar|film)/i, /\bcrop\s*(yield|growth|production|performance)\s*(under|beneath|below)\s*(panel|pv|solar|shade)/i, /\blight\s*(management|distribution|sharing|interception|transmit|availab)/i, /\bstilted?\s*(panel|array|module|pv|solar|system|structure)/i, /\binter[\s-]?row\s*(spacing|distance|gap|area)/i, /\bpanel\s*(height|elevation|spacing|tilt|orientation|density)/i, /\bground\s*coverage\s*ratio/i, /\bpar\b.{0,20}\b(reduction|transmit|intercept|availab|loss|level)/i, /\brain[\s-]?water\s*(harvest|collect|redistrib|intercept)/i, /\bfood[\s-]?energy[\s-]?water\s*(nexus|system)/i, /\bdual[\s-]?harvest/i, /\bvertical\s*(farm|panel|bifacial|pv|array|mount)/i, /\brow\s*(spacing|orientation|direction|pitch)\s*(pv|solar|panel|module|array)/i, /\b(shade|shadow)\s*(toleran|adapt|resistan|pattern|map|model|dynamic)/i, /\b(mounting|racking)\s*(height|structure|system).{0,15}(farm|crop|agri|land)/i, /\b(crop|plant)\s*(select|choice|species|variety|suitab).{0,15}(shade|pv|solar|panel)/i, /\bphotosynthetic(ally)?\s*active\s*radiation/i, /\byield\s*(loss|reduction|penalty|gap|impact|comparison)/i, /\belectricity\s*(generation|yield|production).{0,20}(crop|farm|agri|land)/i],
-            venues: [/\bapplied energy\b/i, /\bsolar energy\b/i, /\brenewable.*sustainable.*energy\s*review/i, /\brenewable energy\b/i, /\benergies\b/i, /\bjournal of cleaner production\b/i, /\bagricultural.*forest.*meteorol/i, /\bfield crops research\b/i, /\bland use policy\b/i, /\bagronomy\b/i, /\bagronomy for sustainable development\b/i, /\beuropean journal of agronomy\b/i, /\badvances in agronomy\b/i, /\benergy policy\b/i, /\benergy conversion and management\b/i, /\bprogress in photovoltaics\b/i],
-            neg: /\b(oncolog(y|ic)?|cancer|carcinoma|tumou?r|clinical\s*(trial|study|patient)|patients?\s*(with|undergo)|surgery|surgical|therap(y|eutic|ies)|astrophys(ics?)?|galax(y|ies)|cosmolog(y|ical)?|stellar|protein\s*(fold|structur|express)|genom(e|ic|ics)|dna\s*(sequenc|repair|damag)|neural\s*network|deep\s*learning|machine\s*learning\s*(?!.*(?:solar|pv|agri|crop|energy))|autonomous\s*vehicl|robot(ic)?s?\b(?!.*(?:agri|farm|crop|harvest))|crypto|blockchain|quantum\s*(comput|mechani|physic))\b/i,
-            negSolarOnly: /\b(perovskite\s*(stabil|efficien|solar\s*cell)|silicon\s*(wafer|ingot|doping)|thin[\s-]?film\s*(deposit|solar|efficien)|grid[\s-]?(connect|integrat|stabil|parity)|battery\s*(storag|charg|discharg|lithium)|inverter\s*(topology|design|efficien)|mppt\s*(algorithm|controller|track)|power\s*(electron|converter|quality))\b/i,
-        };
+        const sleep = ms => new Promise(r => setTimeout(r, ms)), el = id => document.getElementById(id), norm = s => (s || "").trim().toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " "), esc = s => s ? s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])) : "", jsStr = s => (s || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'"), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+        const COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4", "#ec4899", "#6366f1", "#84cc16", "#f97316", "#64748b", "#14b8a6"];
+        const CFG = { api: "https://api.openalex.org", key: "asf_network_v7", now: new Date().getFullYear(), minRel: 1.0, cap: 250, conc: 10, defMin: 3.0 };
+        const RX = { strong: /\b(agri[\s-]?(pv|photo)?voltai[ckqs]?|agro[\s-]?(photo)?voltai[ckqs]?|agri[\s-]?photovoltai[ks]?|agrophotovoltai[ckqs]?|solar[\s-]?sharing|solar\s*(farming|agriculture)|farming\s*with\s*(solar|pv)|dual[\s-]?use\s*(solar|pv|land)|co[\s-]?locat(ed|ion)\s*(solar|pv|energy).{0,15}(farm|agri|crop|land)|co[\s-]?develop(ed|ment)\s*(solar|pv).{0,15}(farm|agri|crop)|photovoltaic\s*greenhouse|greenhouse\s*photovoltaic|solar\s*greenhouse|(?:pv|solar)\s*(?:over|above|between)\s*crops?|integrat(?:ed|ing)\s*(?:solar|pv)\s*(?:and|with)\s*agricultur|(?:food|crop)\s*(?:and|&)\s*(?:energy|electricity)\s*(?:production|co[\s-]?production|generation)|energy[\s-]?food[\s-]?(?:water\s*)?nexus\s*(?:solar|pv)?|symbiosis\s*(?:solar|pv|energy).{0,10}(?:crop|agri|farm))\b/i, fuzzy: /\bagri.{0,5}(volt|pv|photo)\b/i, apv: /\bapv\b/i, solar: /\b(pv|photovoltai[ckqs]?|solar(\s*(energy|power|electricity|panels?|cells?|modules?|arrays?|systems?|farms?|plants?|installations?|canop(y|ies)))?|renewable\s*energy\s*(generation|systems?))\b/i, agri: /\b(agricultur(e|al)?|agronom(y|ic)|crops?|farming|farms?|farmers?|pasture|graz(e|ing)|livestock|horticultur(e|al)?|greenhouses?|orchards?|viticultur(e|al)?|viney(ard)?|food\s*production|field\s*trials?|arable|tillage|cultivat(e|ion|ed)|harvest(ing)?|plant(ing|ed)?|crop\s*(rotation|growth|yield|production)|intercropping)\b/i, land: /\b(land[\s-]?use|microclimat(e|ic)|soils?\s*(moisture|health|quality|temperature)|irrigat(e|ion|ing)|water\s*(use|saving|management|efficiency)|evapotranspir(ation|e)|biodiversit(y|ies)|ecosystems?\s*(services?)?|habitats?|shade\s*(effect|impact|toleran|pattern)?|shading|albedo|pollinat(or|ion)|runoff|erosion|ground\s*cover|vegetation|ecosystem|ecology|ecological)\b/i, econ: /\b(economics?|cost[\s-]?(benefit|effective|analysis)|lcoe|levelized|finance|investment|profitab|revenue|policy|regulat(ion|ory|e)|markets?|business\s*model|adoption|acceptance|stakeholders?|subsid(y|ies)|incentiv(e|ize)|tariff|feed[\s-]?in|net[\s-]?meter|social\s*acceptance|willingness\s*to\s*pay|rural\s*(develop|electrif|livelihood))\b/i, techDomain: [/\bbifacial\s*(panel|module|cell|pv|solar)/i, /\bsemi[\s-]?transparent\s*(panel|module|cell|pv|solar|film)/i, /\bcrop\s*(yield|growth|production|performance)\s*(under|beneath|below)\s*(panel|pv|solar|shade)/i, /\blight\s*(management|distribution|sharing|interception|transmit|availab)/i, /\bstilted?\s*(panel|array|module|pv|solar|system|structure)/i, /\binter[\s-]?row\s*(spacing|distance|gap|area)/i, /\bpanel\s*(height|elevation|spacing|tilt|orientation|density)/i, /\bground\s*coverage\s*ratio/i, /\bpar\b.{0,20}\b(reduction|transmit|intercept|availab|loss|level)/i, /\brain[\s-]?water\s*(harvest|collect|redistrib|intercept)/i, /\bfood[\s-]?energy[\s-]?water\s*(nexus|system)/i, /\bdual[\s-]?harvest/i, /\bvertical\s*(farm|panel|bifacial|pv|array|mount)/i, /\brow\s*(spacing|orientation|direction|pitch)\s*(pv|solar|panel|module|array)/i, /\b(shade|shadow)\s*(toleran|adapt|resistan|pattern|map|model|dynamic)/i, /\b(mounting|racking)\s*(height|structure|system).{0,15}(farm|crop|agri|land)/i, /\b(crop|plant)\s*(select|choice|species|variety|suitab).{0,15}(shade|pv|solar|panel)/i, /\bphotosynthetic(ally)?\s*active\s*radiation/i, /\byield\s*(loss|reduction|penalty|gap|impact|comparison)/i, /\belectricity\s*(generation|yield|production).{0,20}(crop|farm|agri|land)/i], venues: [/\bapplied energy\b/i, /\bsolar energy\b/i, /\brenewable.*sustainable.*energy\s*review/i, /\brenewable energy\b/i, /\benergies\b/i, /\bjournal of cleaner production\b/i, /\bagricultural.*forest.*meteorol/i, /\bfield crops research\b/i, /\bland use policy\b/i, /\bagronomy\b/i, /\bagronomy for sustainable development\b/i, /\beuropean journal of agronomy\b/i, /\badvances in agronomy\b/i, /\benergy policy\b/i, /\benergy conversion and management\b/i, /\bprogress in photovoltaics\b/i], neg: /\b(oncolog(y|ic)?|cancer|carcinoma|tumou?r|clinical\s*(trial|study|patient)|patients?\s*(with|undergo)|surgery|surgical|therap(y|eutic|ies)|astrophys(ics?)?|galax(y|ies)|cosmolog(y|ical)?|stellar|protein\s*(fold|structur|express)|genom(e|ic|ics)|dna\s*(sequenc|repair|damag)|neural\s*network|deep\s*learning|machine\s*learning\s*(?!.*(?:solar|pv|agri|crop|energy))|autonomous\s*vehicl|robot(ic)?s?\b(?!.*(?:agri|farm|crop|harvest))|crypto|blockchain|quantum\s*(comput|mechani|physic))\b/i, negSolarOnly: /\b(perovskite\s*(stabil|efficien|solar\s*cell)|silicon\s*(wafer|ingot|doping)|thin[\s-]?film\s*(deposit|solar|efficien)|grid[\s-]?(connect|integrat|stabil|parity)|battery\s*(storag|charg|discharg|lithium)|inverter\s*(topology|design|efficien)|mppt\s*(algorithm|controller|track)|power\s*(electron|converter|quality))\b/i };
         const INST_MAP = [['arizona', 'Univ. of Arizona'], ['unam', 'UNAM'], ['nacional autonoma', 'UNAM'], ['chile', 'Univ. de Chile'], ['fraunhofer', 'Fraunhofer ISE'], ['wageningen', 'Wageningen UR'], ['nrel', 'NREL'], ['davis', 'UC Davis'], ['umass', 'UMass Amherst'], ['massachusetts', 'UMass Amherst']];
         const TOPIC_BLOCK = new Set(["medicine", "physics", "materials science", "computer science", "chemistry", "biology", "mathematics", "philosophy", "art", "psychology", "geology", "sociology"]);
-
-        const Storage = {
-            get: k => { try { const i = JSON.parse(localStorage.getItem(k)); return i && i.e > Date.now() ? i.v : null; } catch { return null; } },
-            set: (k, v) => localStorage.setItem(k, JSON.stringify({ v, e: Date.now() + 2592e6 }))
-        };
-
-        const fetchJSON = async (url, retries = 3) => {
-            url += (url.includes('?') ? '&' : '?') + 'mailto=research-tool@agripv.org';
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const r = await fetch(url);
-                    if (r.ok) return await r.json();
-                    if (r.status === 429) await sleep((parseFloat(r.headers.get("Retry-After") || 1) * 1000) * (i + 1));
-                    else if (r.status >= 500) await sleep(500 * (i + 1));
-                    else return null;
-                } catch { if (i === retries - 1) return null; await sleep(250); }
-            }
-        };
-
-        const getInst = i => {
-            if (!i) return "Unknown";
-            const low = norm(i), hit = INST_MAP.find(x => low.includes(x[0]));
-            return hit ? hit[1] : i.replace(/university/gi, 'Univ.').replace(/institute/gi, 'Inst.').split(',')[0].trim().substring(0, 28);
-        };
-
-        // IMPROVED SCORING LOGIC (From Script 2, robust matching)
+        const Storage = { get: k => { try { const i = JSON.parse(localStorage.getItem(k)); return i && i.e > Date.now() ? i.v : null } catch { return null } }, set: (k, v) => { try { localStorage.removeItem(k); localStorage.setItem(k, JSON.stringify({ v, e: Date.now() + 2592e6 })) } catch (e) { try { localStorage.clear(); localStorage.setItem(k, JSON.stringify({ v, e: Date.now() + 2592e6 })) } catch { } } } };
+        const fetchJSON = async (url, r = 3) => { url += (url.includes('?') ? '&' : '?') + 'mailto=research-tool@agripv.org'; for (let i = 0; i < r; i++) { try { const d = await fetch(url); if (d.ok) return await d.json(); if (d.status === 429) await sleep((parseFloat(d.headers.get("Retry-After") || 1) * 1000) * (i + 1)); else if (d.status >= 500) await sleep(500 * (i + 1)); else return null } catch { if (i === r - 1) return null; await sleep(250) } } };
+        const getInst = i => { if (!i) return "Unknown"; const l = norm(i), h = INST_MAP.find(x => l.includes(x[0])); return h ? h[1] : i.replace(/university/gi, 'Univ.').replace(/institute/gi, 'Inst.').split(',')[0].trim().substring(0, 28) };
         const scoreWork = (w, abs = "") => {
-            const title = norm(w.title || ""), kwText = norm((w.keywords || []).map(k => k.display_name || k.keyword).join(" ")), topicText = norm((w.topics || []).map(t => t.display_name).join(" ")), conceptText = norm((w.concepts || []).map(c => c.display_name).join(" ")), absText = norm(abs), metaText = `${kwText} ${topicText} ${conceptText}`, fullText = `${title} ${metaText} ${absText}`;
-            let s = 0, why = [];
-
-            const stT = RX.strong.test(title), stK = !stT && RX.strong.test(kwText), stM = !stT && !stK && RX.strong.test(metaText), stA = !stT && !stK && !stM && RX.strong.test(absText), fzT = !stT && RX.fuzzy.test(title), fzA = !stT && !fzT && RX.fuzzy.test(absText);
-            if (stT) { s += 30; why.push('agripv-title'); } else if (stK) { s += 24; why.push('agripv-keyword'); } else if (stM) { s += 18; why.push('agripv-meta'); } else if (stA) { s += 14; why.push('agripv-abstract'); } else if (fzT) { s += 12; why.push('agripv-fuzzy-title'); } else if (fzA) { s += 7; why.push('agripv-fuzzy-abs'); }
-            const direct = stT || stK || stM || stA || fzT || fzA;
-
-            if (RX.apv.test(title) && (RX.solar.test(fullText) || RX.agri.test(fullText))) { s += direct ? 3 : 10; why.push('apv'); }
-
-            const solT = RX.solar.test(title), agT = RX.agri.test(title), lnT = RX.land.test(title), sol = RX.solar.test(fullText), ag = RX.agri.test(fullText), ln = RX.land.test(fullText);
-            if (solT && (agT || lnT)) { s += 15; why.push('solar+agri-title'); }
-            else if (sol && ag && ln) { s += 8; why.push('solar+land'); }
-            else { if (sol) s += 1; if (ag || ln) s += 1; }
-
-            if (RX.econ.test(fullText) && (sol || direct)) { s += 2.5; why.push('econ'); }
-            const dh = RX.techDomain.filter(r => r.test(fullText)).length;
-            if (dh > 0) { s += Math.min(6, dh * 1.5); why.push(`domain(${dh})`); }
-
-            if (w.concepts?.some(c => /agrivoltaic|agrovoltaic/i.test(c.display_name) && c.score > 0.3)) { s += 6; why.push('agripv-concept'); }
-
-            s += Math.min(3, Math.log10((w.cited_by_count || 0) + 1));
-            if (w.publication_year >= CFG.now - 2) s += 0.6;
-
-            if (RX.neg.test(fullText) && !direct) { s -= 15; why.push('neg'); }
-            else if (sol && !ag && !ln && !direct && RX.negSolarOnly.test(fullText)) { s -= 5; why.push('pure-solar'); }
-
-            s = Math.round(Math.max(0, s) * 10) / 10;
-            const tier = s >= 25 ? 'Core' : s >= 15 ? 'Strong' : s >= 8 ? 'Related' : 'Peripheral';
-            return { s, why, strong: direct, tier };
+            const t = norm(w.title || ""), kw = norm((w.keywords || []).map(k => k.display_name || k.keyword).join(" ")), meta = `${kw} ${norm((w.topics || []).map(t => t.display_name).join(" "))} ${norm((w.concepts || []).map(c => c.display_name).join(" "))}`, ab = norm(abs), full = `${t} ${meta} ${ab}`;
+            let s = 0, why = [], stT = RX.strong.test(t), stK = !stT && RX.strong.test(kw), stM = !stT && !stK && RX.strong.test(meta), stA = !stT && !stK && !stM && RX.strong.test(ab), fzT = !stT && RX.fuzzy.test(t), fzA = !stT && !fzT && RX.fuzzy.test(ab), dir = stT || stK || stM || stA || fzT || fzA;
+            if (stT) { s += 30; why.push('agripv-title') } else if (stK) { s += 24; why.push('agripv-keyword') } else if (stM) { s += 18; why.push('agripv-meta') } else if (stA) { s += 14; why.push('agripv-abstract') } else if (fzT) { s += 12; why.push('agripv-fuzzy-title') } else if (fzA) { s += 7; why.push('agripv-fuzzy-abs') }
+            if (RX.apv.test(t) && (RX.solar.test(full) || RX.agri.test(full))) { s += dir ? 3 : 10; why.push('apv') }
+            const sT = RX.solar.test(t), aT = RX.agri.test(t), lT = RX.land.test(t), so = RX.solar.test(full), ag = RX.agri.test(full), ln = RX.land.test(full);
+            if (sT && (aT || lT)) { s += 15; why.push('solar+agri-title') } else if (so && ag && ln) { s += 8; why.push('solar+land') } else { if (so) s += 1; if (ag || ln) s += 1 }
+            if (RX.econ.test(full) && (so || dir)) { s += 2.5; why.push('econ') }
+            const dh = RX.techDomain.filter(r => r.test(full)).length; if (dh > 0) { s += Math.min(6, dh * 1.5); why.push(`domain(${dh})`) }
+            if (w.concepts?.some(c => /agrivoltaic|agrovoltaic/i.test(c.display_name) && c.score > 0.3)) { s += 6; why.push('agripv-concept') }
+            s += Math.min(3, Math.log10((w.cited_by_count || 0) + 1)); if (w.publication_year >= CFG.now - 2) s += 0.6;
+            if (RX.neg.test(full) && !dir) { s -= 25; why.push('neg') } else if (so && !ag && !ln && !dir && RX.negSolarOnly.test(full)) { s -= 5; why.push('pure-solar') }
+            s = Math.round(Math.max(0, s) * 10) / 10; return { s, why, strong: dir, tier: s >= 25 ? 'Core' : s >= 15 ? 'Strong' : s >= 8 ? 'Related' : 'Peripheral' };
         };
 
         const app = {
-            data: { researchers: [], pubs: [], topics: new Map(), graph: { nodes: [], links: [] } },
-            state: { filters: { q: '', topics: new Set(), insts: new Set(), yFrom: null, yTo: null, minRel: CFG.defMin }, page: 1, sort: 'recent', graph: { cluster: true, labels: true }, lastFiltered: [] },
-            d3: {}, instColors: new Map(),
-
+            data: { researchers: [], pubs: [], topics: new Map, graph: { nodes: [], links: [] } },
+            state: { filters: { q: '', topics: new Set, insts: new Set, yFrom: null, yTo: null, minRel: CFG.defMin }, page: 1, sort: 'recent', graph: { cluster: true, labels: true }, lastFiltered: [] },
+            d3: {}, instColors: new Map,
             init: async () => {
-                app.setupUI(); app.setupGraph();
-                const prog = (p, t) => { el('loadingProgress').style.width = p + '%'; el('loadingStatus').textContent = t; };
-
+                app.setupUI(); app.setupGraph(); const pg = (p, t) => { el('loadingProgress').style.width = p + '%'; el('loadingStatus').textContent = t };
                 try {
-                    prog(8, "Fetching network members...");
-                    const { data: profiles } = await supabase.from("profiles").select("id,full_name,work_email,affiliation").not("full_name", "is", null);
-                    if (!profiles?.length) throw "No members found";
-
-                    const hx = profiles.map(p => p.id).sort().join('|'), cached = Storage.get(CFG.key);
-                    if (Storage.get(CFG.key + "_hash") === hx && cached) {
-                        prog(85, "Loading from cache...");
-                        app.restore(cached);
-                    } else {
-                        prog(18, "Resolving profiles...");
-                        const researchers = await app.resolve(profiles, prog);
-                        prog(38, "Fetching publications...");
-                        // This uses the improved logic to ensure we don't drop members
-                        const pubs = await app.fetchWorks(researchers, prog);
-                        app.build(researchers, pubs);
-                        Storage.set(CFG.key + "_hash", hx);
-                        Storage.set(CFG.key, app.pack());
+                    pg(8, "Fetching network members..."); const { data: P } = await supabase.from("profiles").select("id,full_name,work_email,affiliation").not("full_name", "is", null);
+                    if (!P?.length) throw "No members"; const hx = P.map(p => p.id).sort().join('|'), c = Storage.get(CFG.key);
+                    if (Storage.get(CFG.key + "_hash") === hx && c) { pg(85, "Loading from cache..."); app.restore(c) } else {
+                        pg(18, "Resolving profiles..."); const R = await app.resolve(P, pg);
+                        pg(38, "Fetching publications..."); const W = await app.fetchWorks(R, pg); app.build(R, W); Storage.set(CFG.key + "_hash", hx); Storage.set(CFG.key, app.pack())
                     }
-                    prog(100, "Done");
-                    setTimeout(() => { el('loadingOverlay').classList.add('hidden'); app.render(); setTimeout(app.fitGraph, 400); }, 450);
-                } catch (e) { console.error(e); alert("Failed to load data."); }
+                    pg(100, "Done"); setTimeout(() => { el('loadingOverlay').classList.add('hidden'); app.render(); setTimeout(app.fitGraph, 400) }, 450);
+                } catch (e) { console.error(e); alert("Failed to load data.") }
             },
-
-            resolve: async (profiles, prog) => {
-                const out = [], chunk = 12;
-                for (let i = 0; i < profiles.length; i += chunk) {
-                    const batch = profiles.slice(i, i + chunk);
-                    out.push(...await Promise.all(batch.map(async p => {
-                        const d = await fetchJSON(`${CFG.api}/authors?search=${encodeURIComponent(p.full_name)}&per_page=10&select=id,display_name,works_count,cited_by_count,last_known_institutions`);
-                        const want = norm(p.full_name), aff = norm(p.affiliation || "");
-                        let best = null, bestS = -1;
-                        (d?.results || []).forEach(r => {
-                            let sc = 0, n = norm(r.display_name || ""), inst = norm(r.last_known_institutions?.[0]?.display_name || "");
-                            if (n === want) sc += 10; else if (n.includes(want) || want.includes(n)) sc += 4;
-                            if (aff && inst && (inst.includes(aff) || aff.includes(inst) || inst.split(' ').some(x => x.length > 4 && aff.includes(x)))) sc += 4;
-                            sc += Math.min(2, (r.works_count || 0) / 200);
-                            if (sc > bestS) { bestS = sc; best = r; }
-                        });
+            resolve: async (P, pg) => {
+                const out = [], chk = 12; for (let i = 0; i < P.length; i += chk) {
+                    out.push(...await Promise.all(P.slice(i, i + chk).map(async p => {
+                        let qn = p.full_name; if (/[\._\d]/.test(qn)) qn = qn.replace(/[\._]/g, ' ').replace(/\d+/g, '').trim();
+                        const d = await fetchJSON(`${CFG.api}/authors?search=${encodeURIComponent(qn)}&per_page=10&select=id,display_name,works_count,cited_by_count,last_known_institutions`), w = norm(qn), af = norm(p.affiliation || "");
+                        let best = null, bS = -1; (d?.results || []).forEach(r => { let sc = 0, n = norm(r.display_name || ""), in_ = norm(r.last_known_institutions?.[0]?.display_name || ""); if (n === w) sc += 10; else if (n.includes(w) || w.includes(n)) sc += 4; if (af && in_ && (in_.includes(af) || af.includes(in_) || in_.split(' ').some(x => x.length > 4 && af.includes(x)))) sc += 4; sc += Math.min(2, (r.works_count || 0) / 200); if (sc > bS) { bS = sc; best = r } });
                         const m = best || d?.results?.[0], inst = getInst(m?.last_known_institutions?.[0]?.display_name || p.affiliation);
-                        return { id: m?.id || `local:${p.id}`, display_name: m?.display_name || p.full_name, inst, color: app.col(inst), net_works: 0, net_cited: 0, topics: {}, deg: 0 };
-                    })));
-                    prog(18 + (Math.min(i + chunk, profiles.length) / profiles.length) * 18, "Resolving profiles...");
-                    await sleep(30);
-                }
-                return out;
+                        return { id: m?.id || `local:${p.id}`, display_name: m?.display_name || p.full_name, inst, color: app.col(inst), net_works: 0, net_cited: 0, topics: {}, deg: 0 }
+                    }))); pg(18 + (Math.min(i + chk, P.length) / P.length) * 18, "Resolving profiles..."); await sleep(30);
+                } return out;
             },
-
-            fetchWorks: async (authors, prog) => {
-                const ids = authors.filter(a => !a.id.startsWith('local:')).map(a => a.id), works = new Map();
-                const batchSize = 25, batches = [];
-                for (let i = 0; i < ids.length; i += batchSize) batches.push(ids.slice(i, i + batchSize));
-
-                let completed = 0;
-                const processBatch = async (batch) => {
-                    let cursor = '*', page = 0;
-                    while (cursor && page++ < 10) {
-                        const res = await fetchJSON(`${CFG.api}/works?filter=authorships.author.id:${batch.join('|')},from_publication_date:${Math.max(1990, CFG.now - 20)}-01-01&per_page=200&cursor=${encodeURIComponent(cursor)}&select=id,title,publication_year,cited_by_count,type,primary_location,open_access,doi,authorships,concepts,topics,keywords`);
-                        (res?.results || []).forEach(w => {
-                            if (!works.has(w.id)) {
-                                const rel = scoreWork(w);
-                                if (rel.s >= CFG.minRel || rel.strong) works.set(w.id, { ...w, _relevance: rel.s, _why: rel.why, _tier: rel.tier });
-                            }
-                        });
-                        cursor = res?.meta?.next_cursor;
-                        if (cursor) await sleep(20);
-                    }
-                    completed++;
-                    prog(38 + (completed / batches.length) * 42, "Fetching publications...");
-                };
-
-                const parallel = 3;
-                for (let i = 0; i < batches.length; i += parallel) {
-                    await Promise.all(batches.slice(i, i + parallel).map(processBatch));
-                }
-
-                const all = [...works.values()], border = all.filter(w => w._relevance < (CFG.defMin + 1.5) && w._relevance >= CFG.minRel && !w._why?.some(x => x.includes('agripv'))).sort((a, b) => b._relevance - a._relevance).slice(0, CFG.cap);
-                if (border.length) {
-                    let done = 0, idx = 0;
-                    prog(82, `Improving targeting (${border.length} scans)...`);
-                    await Promise.all(Array.from({ length: CFG.conc }, async () => {
-                        while (idx < border.length) {
-                            const w = border[idx++];
-                            const d = await fetchJSON(`${CFG.api}/works/${w.id.split('/').pop()}?select=abstract_inverted_index`);
-                            const abs = d?.abstract_inverted_index ? Object.entries(d.abstract_inverted_index).reduce((a, [k, v]) => (v.forEach(p => a[p] = k), a), []).join(' ') : "";
-                            if (abs) {
-                                const rel = scoreWork(w, abs);
-                                if (rel.s > w._relevance) { w._relevance = rel.s; w._tier = rel.tier; w._why = [...new Set([...(w._why || []), ...rel.why, 'abs'])]; }
-                            }
-                            prog(82 + (++done / border.length) * 10, `Improving targeting (${done}/${border.length})...`);
-                            await sleep(15);
-                        }
-                    }));
-                }
-                return [...works.values()];
+            fetchWorks: async (A, pg) => {
+                const ids = A.filter(a => !a.id.startsWith('local:')).map(a => a.id), W = new Map, batches = [];
+                for (let i = 0; i < ids.length; i += 25)batches.push(ids.slice(i, i + 25));
+                let done = 0; for (let i = 0; i < batches.length; i += 3)await Promise.all(batches.slice(i, i + 3).map(async b => {
+                    let cur = '*', p = 0; while (cur && p++ < 10) {
+                        const r = await fetchJSON(`${CFG.api}/works?filter=authorships.author.id:${b.join('|')},from_publication_date:${Math.max(1990, CFG.now - 20)}-01-01&per_page=200&cursor=${encodeURIComponent(cur)}&select=id,title,publication_year,cited_by_count,type,primary_location,open_access,doi,authorships,concepts,topics,keywords`);
+                        (r?.results || []).forEach(w => { if (!W.has(w.id)) { const rl = scoreWork(w); if (rl.s >= CFG.minRel || rl.strong) W.set(w.id, { ...w, _relevance: rl.s, _why: rl.why, _tier: rl.tier }) } }); cur = r?.meta?.next_cursor; if (cur) await sleep(20);
+                    } done++; pg(38 + (done / batches.length) * 42, "Fetching publications...");
+                }));
+                const brd = [...W.values()].filter(w => w._relevance < (CFG.defMin + 1.5) && w._relevance >= CFG.minRel && !w._why?.some(x => x.includes('agripv'))).sort((a, b) => b._relevance - a._relevance).slice(0, CFG.cap);
+                if (brd.length) { let k = 0; pg(82, `Improving targeting (${brd.length})...`); await Promise.all(Array.from({ length: CFG.conc }, async () => { while (k < brd.length) { const w = brd[k++], d = await fetchJSON(`${CFG.api}/works/${w.id.split('/').pop()}?select=abstract_inverted_index`), ab = d?.abstract_inverted_index ? Object.entries(d.abstract_inverted_index).reduce((a, [x, y]) => (y.forEach(p => a[p] = x), a), []).join(' ') : ""; if (ab) { const rl = scoreWork(w, ab); if (rl.s > w._relevance) { w._relevance = rl.s; w._tier = rl.tier; w._why = [...new Set([...(w._why || []), ...rl.why, 'abs'])] } } pg(82 + (k / brd.length) * 10, `Improving targeting...`); await sleep(15) } })) }
+                return [...W.values()]
             },
-
-            build: (researchers, rawPubs) => {
-                const rMap = new Map(researchers.map(r => [r.id, r]));
-                app.data.pubs = rawPubs.map(p => {
-                    const mems = (p.authorships || []).filter(a => rMap.has(a.author?.id)).map(a => rMap.get(a.author.id));
-                    if (!mems.length) return null;
-                    const tops = (p.topics || []).filter(t => (t.score || 0) >= 0.25).map(t => t.display_name).filter(Boolean).slice(0, 7);
-                    if (!tops.length) tops.push(...(p.concepts || []).filter(c => (c.score || 0) > 0.55 && (c.level || 0) > 0 && !TOPIC_BLOCK.has(norm(c.display_name))).map(c => c.display_name).slice(0, 7));
-                    mems.forEach(r => { r.net_works++; r.net_cited += (p.cited_by_count || 0); tops.forEach(t => { r.topics[t] = (r.topics[t] || 0) + 1; app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1); }); });
-                    return { id: p.id, title: p.title, publication_year: p.publication_year, cited_by_count: p.cited_by_count || 0, doi: p.doi, url: p.primary_location?.landing_page_url || p.doi || p.primary_location?.pdf_url, source: p.primary_location?.source?.display_name, is_oa: p.open_access?.is_oa, type: p.type, _relevance: p._relevance || 0, _why: p._why || [], _tier: p._tier || 'Weak', _topics: tops, _allAuthors: (p.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, isMember: rMap.has(a.author?.id) })), _memberAuthors: mems };
-                }).filter(Boolean);
-                app.data.researchers = researchers.filter(r => app.data.pubs.some(p => p._memberAuthors.includes(r)));
-                app.buildGraph();
+            build: (R, P) => {
+                const rM = new Map(R.map(r => [r.id, r])); app.data.pubs = P.map(p => {
+                    const m = (p.authorships || []).filter(a => rM.has(a.author?.id)).map(a => rM.get(a.author.id)); if (!m.length) return null;
+                    const ts = (p.topics || []).filter(t => (t.score || 0) >= 0.25).map(t => t.display_name).filter(Boolean).slice(0, 7);
+                    if (!ts.length) ts.push(...(p.concepts || []).filter(c => (c.score || 0) > 0.55 && (c.level || 0) > 0 && !TOPIC_BLOCK.has(norm(c.display_name))).map(c => c.display_name).slice(0, 7));
+                    m.forEach(r => { r.net_works++; r.net_cited += (p.cited_by_count || 0); ts.forEach(t => { r.topics[t] = (r.topics[t] || 0) + 1; app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1) }) });
+                    return { id: p.id, title: p.title, publication_year: p.publication_year, cited_by_count: p.cited_by_count || 0, doi: p.doi, url: p.primary_location?.landing_page_url || p.doi || p.primary_location?.pdf_url, source: p.primary_location?.source?.display_name, is_oa: p.open_access?.is_oa, type: p.type, _relevance: p._relevance || 0, _why: p._why || [], _tier: p._tier || 'Weak', _topics: ts, _allAuthors: (p.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, isMember: rM.has(a.author?.id) })), _memberAuthors: m }
+                }).filter(Boolean); app.data.researchers = R.filter(r => app.data.pubs.some(p => p._memberAuthors.includes(r))); app.buildGraph();
             },
-
             buildGraph: () => {
-                const links = new Map(), deg = new Map();
-                app.data.pubs.forEach(p => {
-                    const ids = p._memberAuthors.map(a => a.id);
-                    for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
-                        const k = [ids[i], ids[j]].sort().join('|'), l = links.get(k) || { source: ids[i], target: ids[j], weight: 0 };
-                        l.weight++; links.set(k, l);
-                        deg.set(ids[i], (deg.get(ids[i]) || 0) + 1); deg.set(ids[j], (deg.get(ids[j]) || 0) + 1);
-                    }
-                });
-                app.data.graph = { nodes: app.data.researchers.map(r => ({ ...r, deg: deg.get(r.id) || 0, radius: clamp(10 + Math.sqrt(r.net_works || 0) * 3 + Math.sqrt(deg.get(r.id) || 0) * 1.5, 10, 30) })), links: [...links.values()] };
+                const L = new Map, D = new Map; app.data.pubs.forEach(p => { const i = p._memberAuthors.map(a => a.id); for (let x = 0; x < i.length; x++)for (let y = x + 1; y < i.length; y++) { const k = [i[x], i[y]].sort().join('|'), l = L.get(k) || { source: i[x], target: i[y], weight: 0 }; l.weight++; L.set(k, l); D.set(i[x], (D.get(i[x]) || 0) + 1); D.set(i[y], (D.get(i[y]) || 0) + 1) } });
+                app.data.graph = { nodes: app.data.researchers.map(r => ({ ...r, deg: D.get(r.id) || 0, radius: clamp(10 + Math.sqrt(r.net_works || 0) * 3 + Math.sqrt(D.get(r.id) || 0) * 1.5, 10, 30) })), links: [...L.values()] }
             },
-
-            pack: () => ({ r: app.data.researchers.map(r => ({ id: r.id, n: r.display_name, i: r.inst, nw: r.net_works, nc: r.net_cited, t: r.topics, d: r.deg })), p: app.data.pubs.map(p => ({ id: p.id, t: p.title, y: p.publication_year, c: p.cited_by_count, d: p.doi, u: p.url, s: p.source, oa: p.is_oa, ty: p.type, r: p._relevance, w: p._why, ti: p._tier, tp: p._topics, aa: p._allAuthors, ma: p._memberAuthors.map(m => m.id) })), t: [...app.data.topics] }),
+            pack: () => {
+                const D = { t: [], s: [] }, gx = (a, v) => { if (!v) return -1; let i = a.indexOf(v); return i === -1 ? (a.push(v), a.length - 1) : i };
+                return { r: app.data.researchers.map(r => ({ id: r.id, n: r.display_name, i: r.inst, nw: r.net_works, nc: r.net_cited, t: Object.keys(r.topics).map(t => gx(D.t, t)), d: r.deg })), p: app.data.pubs.map(p => ({ id: p.id, t: p.title, y: p.publication_year, c: p.cited_by_count, d: p.doi, u: p.url, s: gx(D.s, p.source), oa: p.is_oa ? 1 : 0, r: p._relevance, w: p._why, ti: p._tier === 'Core' ? 3 : (p._tier === 'Strong' ? 2 : 1), tp: p._topics.map(t => gx(D.t, t)), aa: p._allAuthors.slice(0, 10).map(a => a.name), ma: p._memberAuthors.map(m => m.id) })), D }
+            },
             restore: c => {
-                app.data.researchers = c.r.map(r => ({ ...r, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, topics: r.t, deg: r.d || 0, color: app.col(r.i) }));
-                const rMap = new Map(app.data.researchers.map(r => [r.id, r]));
-                app.data.pubs = c.p.map(p => ({ ...p, title: p.t, publication_year: p.y, cited_by_count: p.c, doi: p.d, url: p.u, source: p.s, is_oa: p.oa, type: p.ty, _relevance: p.r, _why: p.w || [], _tier: p.ti || 'Weak', _topics: p.tp, _allAuthors: p.aa, _memberAuthors: p.ma.map(id => rMap.get(id)).filter(Boolean) }));
-                app.data.topics = new Map(c.t);
-                app.buildGraph();
+                const D = c.D || { t: [], s: [] };
+                app.data.researchers = c.r.map(r => ({ id: r.id, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, topics: (r.t || []).reduce((a, i) => { if (D.t[i]) a[D.t[i]] = 1; return a }, {}), deg: r.d || 0, color: app.col(r.i) }));
+                const rM = new Map(app.data.researchers.map(r => [r.id, r]));
+                app.data.pubs = c.p.map(p => { const m = (p.ma || []).map(i => rM.get(i)).filter(Boolean); return { id: p.id, title: p.t, publication_year: p.y, cited_by_count: p.c, doi: p.d, url: p.u, source: typeof p.s === 'number' ? D.s[p.s] : p.s, is_oa: !!p.oa, type: p.ty, _relevance: p.r, _why: p.w || [], _tier: p.ti === 3 ? 'Core' : (p.ti === 2 ? 'Strong' : 'Weak'), _topics: (p.tp || []).map(i => D.t[i]), _allAuthors: (p.aa || []).map(n => { const f = m.find(z => z.display_name === n); return { name: n, id: f ? f.id : null, isMember: !!f } }), _memberAuthors: m } });
+                app.data.topics = new Map; app.data.pubs.forEach(p => p._topics.forEach(t => app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1))); app.buildGraph()
             },
-
-            col: i => { if (!app.instColors.has(i)) app.instColors.set(i, COLORS[app.instColors.size % COLORS.length]); return app.instColors.get(i); },
-
+            col: i => { if (!app.instColors.has(i)) app.instColors.set(i, COLORS[app.instColors.size % COLORS.length]); return app.instColors.get(i) },
             render: () => {
-                const { q, topics, insts, yFrom, yTo, minRel } = app.state.filters, ql = norm(q);
-                const filtered = app.data.pubs.filter(p => p._relevance >= minRel && (!yFrom || p.publication_year >= yFrom) && (!yTo || p.publication_year <= yTo) && (!insts.size || p._memberAuthors.some(a => insts.has(a.inst))) && (!topics.size || p._topics.some(t => topics.has(t))) && (!ql || norm(p.title).includes(ql) || p._allAuthors.some(a => norm(a.name).includes(ql)) || p._topics.some(t => norm(t).includes(ql))));
-                app.state.lastFiltered = filtered;
-
-                const am = new Set(filtered.flatMap(p => p._memberAuthors.map(a => a.id)));
-                el('statsGrid').innerHTML = [['MEMBERS', am.size], ['WORKS', filtered.length], ['CITES', filtered.reduce((s, p) => s + p.cited_by_count, 0)], ['TOPICS', new Set(filtered.flatMap(p => p._topics)).size]].map(([l, v]) => `<div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-base font-bold text-slate-700 leading-none">${typeof v === 'number' && v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}</span><span class="text-[8px] text-slate-400 font-bold mt-0.5">${l}</span></div>`).join('');
-                el('filteredCount').textContent = filtered.length;
-
-                // NEW: Render Timeline
-                app.renderTimeline(filtered);
-
-                filtered.sort({ cited: (a, b) => b.cited_by_count - a.cited_by_count, relevance: (a, b) => b._relevance - a._relevance || b.cited_by_count - a.cited_by_count, title: (a, b) => a.title.localeCompare(b.title), recent: (a, b) => b.publication_year - a.publication_year || b._relevance - a._relevance }[app.state.sort]);
-
-                const size = 12, pages = Math.ceil(filtered.length / size), page = app.state.page = clamp(app.state.page, 1, Math.max(1, pages)), start = (page - 1) * size;
-
-                // RESTORED: Explicit Links in the cards (DOI/URL)
-                el('publicationsList').innerHTML = filtered.slice(start, start + size).map(p => `
-                    <div class="pub-card p-3 bg-white mb-2 cursor-pointer" onclick="app.detail('${p.id}')">
-                        <div class="flex items-start justify-between gap-2 mb-1.5">
-                            <h4 class="font-bold text-slate-800 text-xs leading-snug flex-1">${esc(p.title)}</h4>
-                            <div class="shrink-0 flex items-center gap-1">
-                                ${p.is_oa ? '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[8px] font-bold rounded border border-amber-100 uppercase">OA</span>' : ''}
-                                ${p._tier === 'Core' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-green-100 text-green-800 border border-green-200">Core</span>' : (p._tier === 'Strong' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">Strong</span>' : '')}
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap gap-1 mb-2">${p._allAuthors.slice(0, 5).map(a => `<span class="px-1.5 py-0.5 rounded text-[9px] truncate max-w-[100px] ${a.isMember ? 'network-member font-medium' : 'external-author'}">${esc(a.name)}</span>`).join('')}${p._allAuthors.length > 5 ? `<span class="text-[9px] text-slate-400 self-center">+${p._allAuthors.length - 5}</span>` : ''}</div>
-                        <div class="flex items-center gap-3 text-[9px] text-slate-500 font-medium">
-                            <span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${p.publication_year || ''}</span>
-                            <span class="flex items-center gap-1"><i class="fas fa-quote-right text-slate-400"></i> ${p.cited_by_count}</span>
-                            <span class="ml-auto text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 font-semibold">Score: ${p._relevance.toFixed(1)}</span>
-                            <div class="flex gap-1 ml-1">
-                                <button class="hover:text-brand p-1" onclick="event.stopPropagation();app.cite('${p.id}')" title="Cite"><i class="fas fa-quote-left"></i></button>
-                                ${p.url ? `<a href="${p.url}" target="_blank" onclick="event.stopPropagation()" class="hover:text-blue-600 p-1" title="Open DOI/Source"><i class="fas fa-external-link-alt"></i></a>` : ''}
-                            </div>
-                        </div>
-                    </div>`).join('') || '<div class="text-center py-20 text-slate-400 text-xs">No results found matching your criteria.</div>';
-                el('publicationsList').scrollTop = 0;
-
-                ['showingFrom', 'showingTo', 'totalPublications'].forEach((id, i) => el(id).textContent = [filtered.length ? start + 1 : 0, Math.min(start + size, filtered.length), filtered.length][i]);
+                const { q, topics: T, insts: I, yFrom: yf, yTo: yt, minRel: mr } = app.state.filters, ql = norm(q);
+                const F = app.data.pubs.filter(p => p._relevance >= mr && (!yf || p.publication_year >= yf) && (!yt || p.publication_year <= yt) && (!I.size || p._memberAuthors.some(a => I.has(a.inst))) && (!T.size || p._topics.some(t => T.has(t))) && (!ql || norm(p.title).includes(ql) || p._allAuthors.some(a => norm(a.name).includes(ql)) || p._topics.some(t => norm(t).includes(ql))));
+                app.state.lastFiltered = F;
+                const am = new Set(F.flatMap(p => p._memberAuthors.map(a => a.id)));
+                el('statsGrid').innerHTML = [['MEMBERS', am.size], ['WORKS', F.length], ['CITES', F.reduce((s, p) => s + p.cited_by_count, 0)], ['TOPICS', new Set(F.flatMap(p => p._topics)).size]].map(([l, v]) => `<div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-base font-bold text-slate-700 leading-none">${typeof v === 'number' && v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}</span><span class="text-[8px] text-slate-400 font-bold mt-0.5">${l}</span></div>`).join('');
+                el('filteredCount').textContent = F.length; app.renderTimeline(F);
+                F.sort({ cited: (a, b) => b.cited_by_count - a.cited_by_count, relevance: (a, b) => b._relevance - a._relevance || b.cited_by_count - a.cited_by_count, title: (a, b) => a.title.localeCompare(b.title), recent: (a, b) => b.publication_year - a.publication_year || b._relevance - a._relevance }[app.state.sort]);
+                const sz = 12, pgs = Math.ceil(F.length / sz), pg = app.state.page = clamp(app.state.page, 1, Math.max(1, pgs)), st = (pg - 1) * sz;
+                el('publicationsList').innerHTML = F.slice(st, st + sz).map(p => `<div class="pub-card p-3 bg-white mb-2 cursor-pointer" onclick="app.detail('${p.id}')"><div class="flex items-start justify-between gap-2 mb-1.5"><h4 class="font-bold text-slate-800 text-xs leading-snug flex-1">${esc(p.title)}</h4><div class="shrink-0 flex items-center gap-1">${p.is_oa ? '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[8px] font-bold rounded border border-amber-100 uppercase">OA</span>' : ''} ${p._tier === 'Core' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-green-100 text-green-800 border border-green-200">Core</span>' : (p._tier === 'Strong' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">Strong</span>' : '')}</div></div><div class="flex flex-wrap gap-1 mb-2">${p._allAuthors.slice(0, 5).map(a => `<span class="px-1.5 py-0.5 rounded text-[9px] truncate max-w-[100px] ${a.isMember ? 'network-member font-medium' : 'external-author'}">${esc(a.name)}</span>`).join('')}${p._allAuthors.length > 5 ? `<span class="text-[9px] text-slate-400 self-center">+${p._allAuthors.length - 5}</span>` : ''}</div><div class="flex items-center gap-3 text-[9px] text-slate-500 font-medium"><span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${p.publication_year || ''}</span><span class="flex items-center gap-1"><i class="fas fa-quote-right text-slate-400"></i> ${p.cited_by_count}</span><span class="ml-auto text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 font-semibold">Score: ${p._relevance.toFixed(1)}</span><div class="flex gap-1 ml-1"><button class="hover:text-brand p-1" onclick="event.stopPropagation();app.cite('${p.id}')" title="Cite"><i class="fas fa-quote-left"></i></button>${p.url ? `<a href="${p.url}" target="_blank" onclick="event.stopPropagation()" class="hover:text-blue-600 p-1" title="Open Source"><i class="fas fa-external-link-alt"></i></a>` : ''}</div></div></div>`).join('') || '<div class="text-center py-20 text-slate-400 text-xs">No results found matching your criteria.</div>';
+                el('publicationsList').scrollTop = 0;['showingFrom', 'showingTo', 'totalPublications'].forEach((id, i) => el(id).textContent = [F.length ? st + 1 : 0, Math.min(st + sz, F.length), F.length][i]);
                 const btns = [], addB = (p, l, a) => btns.push(`<button onclick="app.setPage(${p})" class="w-6 h-6 flex items-center justify-center rounded text-[9px] font-medium transition-colors ${a ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`);
-                if (pages > 1) { addB(Math.max(1, page - 1), '<i class="fas fa-chevron-left"></i>'); (pages <= 5 ? Array.from({ length: pages }, (_, i) => i + 1) : (page <= 3 ? [1, 2, 3, '...', pages] : (page >= pages - 2 ? [1, '...', pages - 2, pages - 1, pages] : [1, '...', page, page + 1, '...', pages]))).forEach(x => x === '...' ? btns.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : addB(x, x, x === page)); addB(Math.min(pages, page + 1), '<i class="fas fa-chevron-right"></i>'); }
-                el('paginationContainer').innerHTML = btns.join('');
-
-                app.renderGraph(filtered, am);
-
-                const ic = new Map(), tc = new Map();
-                app.data.researchers.forEach(r => am.has(r.id) && ic.set(r.inst, (ic.get(r.inst) || 0) + 1));
-                filtered.forEach(p => p._topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1)));
-
-                el('institutionFilters').innerHTML = [...ic].sort((a, b) => b[1] - a[1]).map(([i, c]) => `<label class="flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 p-1 rounded group transition-colors"><input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 focus:ring-green-500 w-3 h-3" ${insts.has(i) ? 'checked' : ''}><div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${app.col(i)}"></div><span class="text-[10px] text-slate-600 truncate flex-1 group-hover:text-slate-900">${esc(i)}</span><span class="text-[8px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span></label>`).join('');
-                el('topicFilters').innerHTML = [...tc].sort((a, b) => b[1] - a[1]).slice(0, 35).map(([t, c]) => `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] transition-all border flex items-center gap-1 ${topics.has(t) ? 'bg-green-100 text-green-800 border-green-200 font-semibold' : 'bg-slate-50 text-slate-500 border-transparent hover:bg-white hover:border-slate-200'}">${esc(t)} <span class="opacity-50 text-[8px]">${c}</span></button>`).join('');
-
-                el('activeFiltersPanel').classList.toggle('hidden', !(topics.size + insts.size));
-                el('activeFilterCount').textContent = topics.size + insts.size;
+                if (pgs > 1) { addB(Math.max(1, pg - 1), '<i class="fas fa-chevron-left"></i>'); (pgs <= 5 ? Array.from({ length: pgs }, (_, i) => i + 1) : (pg <= 3 ? [1, 2, 3, '...', pgs] : (pg >= pgs - 2 ? [1, '...', pgs - 2, pgs - 1, pgs] : [1, '...', pg, pg + 1, '...', pgs]))).forEach(x => x === '...' ? btns.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : addB(x, x, x === pg)); addB(Math.min(pgs, pg + 1), '<i class="fas fa-chevron-right"></i>') }
+                el('paginationContainer').innerHTML = btns.join(''); app.renderGraph(F, am);
+                const ic = new Map, tc = new Map; app.data.researchers.forEach(r => am.has(r.id) && ic.set(r.inst, (ic.get(r.inst) || 0) + 1)); F.forEach(p => p._topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1)));
+                el('institutionFilters').innerHTML = [...ic].sort((a, b) => b[1] - a[1]).map(([i, c]) => `<label class="flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 p-1 rounded group transition-colors"><input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 focus:ring-green-500 w-3 h-3" ${I.has(i) ? 'checked' : ''}><div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${app.col(i)}"></div><span class="text-[10px] text-slate-600 truncate flex-1 group-hover:text-slate-900">${esc(i)}</span><span class="text-[8px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span></label>`).join('');
+                el('topicFilters').innerHTML = [...tc].sort((a, b) => b[1] - a[1]).slice(0, 35).map(([t, c]) => `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] transition-all border flex items-center gap-1 ${T.has(t) ? 'bg-green-100 text-green-800 border-green-200 font-semibold' : 'bg-slate-50 text-slate-500 border-transparent hover:bg-white hover:border-slate-200'}">${esc(t)} <span class="opacity-50 text-[8px]">${c}</span></button>`).join('');
+                el('activeFiltersPanel').classList.toggle('hidden', !(T.size + I.size)); el('activeFilterCount').textContent = T.size + I.size;
                 const tag = (l, k, c) => `<span class="${c} px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>`;
-                el('activeFilterTags').innerHTML = [...topics].map(t => tag(t, 'topics', 'bg-green-50 text-green-700 border-green-200')).join('') + [...insts].map(i => tag(i, 'insts', 'bg-blue-50 text-blue-700 border-blue-200')).join('');
-
+                el('activeFilterTags').innerHTML = [...T].map(t => tag(t, 'topics', 'bg-green-50 text-green-700 border-green-200')).join('') + [...I].map(i => tag(i, 'insts', 'bg-blue-50 text-blue-700 border-blue-200')).join('');
                 const actInst = new Set(app.data.researchers.filter(r => am.has(r.id)).map(r => r.inst));
                 el('legendContainer').innerHTML = [...app.instColors].filter(([i]) => actInst.has(i)).map(([i, c]) => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full shadow-sm" style="background:${c}"></span><span class="text-[9px] text-slate-600 truncate">${esc(i)}</span></div>`).join('');
             },
-
-            // NEW: Render Timeline Function (From Script 2, adapted for Script 1 layout)
-            renderTimeline: (filtered) => {
+            renderTimeline: F => {
                 const svg = d3.select('#timelineChart'); svg.selectAll('*').remove();
-                const yc = new Map(); filtered.forEach(p => p.publication_year && yc.set(p.publication_year, (yc.get(p.publication_year) || 0) + 1));
-                if (!yc.size) return;
-                const yrs = [...yc.keys()].sort((a, b) => a - b), min = yrs[0], max = yrs[yrs.length - 1];
-                const all = Array.from({ length: max - min + 1 }, (_, i) => min + i);
-                const W = el('timelineChart').clientWidth, H = 50, m = { t: 2, r: 2, b: 12, l: 2 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
-                svg.attr('viewBox', `0 0 ${W} ${H}`);
-                const x = d3.scaleBand().domain(all).range([m.l, m.l + iw]).padding(0.2);
-                const y = d3.scaleLinear().domain([0, d3.max([...yc.values()]) || 1]).range([ih + m.t, m.t]);
-                const { yFrom, yTo } = app.state.filters;
-                const g = svg.append('g');
-                g.selectAll('rect').data(all).enter().append('rect').attr('class', d => `timeline-bar ${(yFrom && d >= yFrom && (!yTo || d <= yTo)) || (yTo && d <= yTo && (!yFrom || d >= yFrom)) ? 'selected' : ''}`).attr('x', d => x(d)).attr('y', d => y(yc.get(d) || 0)).attr('width', x.bandwidth()).attr('height', d => ih + m.t - y(yc.get(d) || 0)).attr('rx', 1).on('click', (e, d) => {
-                    if (e.shiftKey && app.state.filters.yFrom) { app.state.filters.yTo = d; el('yearTo').value = d; }
-                    else if (app.state.filters.yFrom === d && !app.state.filters.yTo) { app.state.filters.yFrom = null; app.state.filters.yTo = null; el('yearFrom').value = ''; el('yearTo').value = ''; }
-                    else { app.state.filters.yFrom = d; app.state.filters.yTo = null; el('yearFrom').value = d; el('yearTo').value = ''; }
-                    app.render();
-                });
-                const lbl = all.length > 12 ? 3 : (all.length > 6 ? 2 : 1);
-                g.selectAll('.yl').data(all.filter((_, i) => i % lbl === 0 || _ === max)).enter().append('text').attr('x', d => x(d) + x.bandwidth() / 2).attr('y', H - 1).attr('text-anchor', 'middle').attr('font-size', 7).attr('fill', '#94a3b8').text(d => d.toString().slice(-2));
+                const yc = new Map; F.forEach(p => p.publication_year && yc.set(p.publication_year, (yc.get(p.publication_year) || 0) + 1)); if (!yc.size) return;
+                const yrs = [...yc.keys()].sort((a, b) => a - b), min = yrs[0], max = yrs[yrs.length - 1], all = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+                const W = el('timelineChart').clientWidth, H = 50, m = { t: 2, r: 2, b: 12, l: 2 }, x = d3.scaleBand().domain(all).range([m.l, W - m.r]).padding(0.2), y = d3.scaleLinear().domain([0, d3.max([...yc.values()]) || 1]).range([H - m.b, m.t]);
+                const g = svg.append('g'), { yFrom: yf, yTo: yt } = app.state.filters;
+                g.selectAll('rect').data(all).enter().append('rect').attr('class', d => `timeline-bar ${(yf && d >= yf && (!yt || d <= yt)) || (yt && d <= yt && (!yf || d >= yf)) ? 'selected' : ''}`).attr('x', d => x(d)).attr('y', d => y(yc.get(d) || 0)).attr('width', x.bandwidth()).attr('height', d => H - m.b - y(yc.get(d) || 0)).attr('rx', 1).on('click', (e, d) => { if (e.shiftKey && app.state.filters.yFrom) { app.state.filters.yTo = d; el('yearTo').value = d } else if (app.state.filters.yFrom === d && !app.state.filters.yTo) { app.state.filters.yFrom = null; app.state.filters.yTo = null; el('yearFrom').value = ''; el('yearTo').value = '' } else { app.state.filters.yFrom = d; app.state.filters.yTo = null; el('yearFrom').value = d; el('yearTo').value = '' } app.render() });
+                const lbl = all.length > 12 ? 3 : (all.length > 6 ? 2 : 1); g.selectAll('.yl').data(all.filter((_, i) => i % lbl === 0 || _ === max)).enter().append('text').attr('x', d => x(d) + x.bandwidth() / 2).attr('y', H - 1).attr('text-anchor', 'middle').attr('font-size', 7).attr('fill', '#94a3b8').text(d => d.toString().slice(-2));
             },
-
             setupGraph: () => {
                 const svg = d3.select('#networkGraph'), g = svg.append('g'), defs = svg.append('defs');
-                COLORS.forEach(c => defs.append('radialGradient').attr('id', 'g-' + c.slice(1)).attr('cx', '30%').attr('cy', '30%').call(g => { g.append('stop').attr('offset', '0%').attr('stop-color', d3.color(c).brighter(1.2)); g.append('stop').attr('offset', '100%').attr('stop-color', c); }));
-                const zoom = d3.zoom().scaleExtent([0.1, 8]).on('zoom', e => { g.attr('transform', e.transform); app.d3.k = e.transform.k; if (app.d3.lbl) app.d3.lbl.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none'); });
-                app.d3 = { svg, g, zoom, sim: d3.forceSimulation().force('link', d3.forceLink().id(d => d.id).distance(120).strength(0.3)).force('charge', d3.forceManyBody().strength(-320)).force('collide', d3.forceCollide().radius(d => d.radius + 4).iterations(3)), k: 1 };
+                COLORS.forEach(c => defs.append('radialGradient').attr('id', 'g-' + c.slice(1)).attr('cx', '30%').attr('cy', '30%').call(g => { g.append('stop').attr('offset', '0%').attr('stop-color', d3.color(c).brighter(1.2)); g.append('stop').attr('offset', '100%').attr('stop-color', c) }));
+                const zoom = d3.zoom().scaleExtent([.1, 8]).on('zoom', e => { g.attr('transform', e.transform); app.d3.k = e.transform.k; if (app.d3.lbl) app.d3.lbl.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none') });
+                app.d3 = { svg, g, zoom, sim: d3.forceSimulation().force('link', d3.forceLink().id(d => d.id).distance(120).strength(.3)).force('charge', d3.forceManyBody().strength(-320)).force('collide', d3.forceCollide().radius(d => d.radius + 4).iterations(3)), k: 1 };
                 svg.call(zoom); window.onresize = app.resizeGraph; app.resizeGraph();
             },
-
             resizeGraph: () => {
-                const c = el('graphContainer'), w = c.clientWidth || 800, h = c.clientHeight || 600;
-                app.d3.svg.attr('viewBox', `0 0 ${w} ${h}`); app.d3.sim.force('center', d3.forceCenter(w / 2, h / 2));
-                app.applyClusterForces(); app.d3.sim.alpha(0.3).restart();
+                const c = el('graphContainer'), w = c.clientWidth || 800, h = c.clientHeight || 600; app.d3.svg.attr('viewBox', `0 0 ${w} ${h}`); app.d3.sim.force('center', d3.forceCenter(w / 2, h / 2));
+                app.applyClusterForces(); app.d3.sim.alpha(.3).restart();
             },
-
             applyClusterForces: () => {
                 if (!app.d3.nodes) return;
-                const c = el('graphContainer'), w = c.clientWidth, h = c.clientHeight;
-                if (!app.state.graph.cluster) { app.d3.sim.force('x', null).force('y', null); return; }
-                const insts = [...new Set(app.d3.nodes.map(n => n.inst))].sort(), r = Math.min(w, h) * 0.28, pos = new Map(insts.map((i, idx) => [i, { x: w / 2 + Math.cos((idx / insts.length) * Math.PI * 2 - Math.PI / 2) * r, y: h / 2 + Math.sin((idx / insts.length) * Math.PI * 2 - Math.PI / 2) * r }]));
-                app.d3.sim.force('x', d3.forceX(d => pos.get(d.inst)?.x).strength(0.15)).force('y', d3.forceY(d => pos.get(d.inst)?.y).strength(0.15));
+                if (!app.state.graph.cluster) { app.d3.sim.force('x', null).force('y', null); return }
+                const c = el('graphContainer'), w = c.clientWidth || 800, h = c.clientHeight || 600, insts = [...new Set(app.d3.nodes.map(n => n.inst))].sort(), r = Math.min(w, h) * 0.28, pos = new Map(insts.map((i, x) => [i, { x: w / 2 + Math.cos((x / insts.length) * Math.PI * 2 - Math.PI / 2) * r, y: h / 2 + Math.sin((x / insts.length) * Math.PI * 2 - Math.PI / 2) * r }]));
+                app.d3.sim.force('x', d3.forceX(d => pos.get(d.inst)?.x).strength(.15)).force('y', d3.forceY(d => pos.get(d.inst)?.y).strength(.15));
             },
-
-            renderGraph: (pubs, vis) => {
+            renderGraph: (P, vis) => {
                 const nodes = app.data.graph.nodes.filter(n => vis.has(n.id)), links = app.data.graph.links.filter(l => vis.has(l.source.id || l.source) && vis.has(l.target.id || l.target));
-                app.d3.nodes = nodes;
-
-                const { g, sim } = app.d3; g.selectAll('*').remove();
-                const adj = new Map(); links.forEach(l => { const s = l.source.id || l.source, t = l.target.id || l.target; (adj.get(s) || adj.set(s, new Set()).get(s)).add(t); (adj.get(t) || adj.set(t, new Set()).get(t)).add(s); });
-                const maxW = d3.max(links, d => d.weight) || 1, wScale = d3.scaleSqrt().domain([1, maxW]).range([0.5, 3]);
-
-                const lnk = g.append('g').selectAll('line').data(links).enter().append('line').attr('stroke', '#cbd5e1').attr('stroke-opacity', d => 0.4 + 0.3 * (d.weight / maxW)).attr('stroke-width', d => wScale(d.weight));
-                const nd = g.append('g').selectAll('g').data(nodes).enter().append('g').call(d3.drag().on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; }).on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; }).on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
-
+                app.d3.nodes = nodes; const { g, sim } = app.d3; g.selectAll('*').remove();
+                const adj = new Map; links.forEach(l => { const s = l.source.id || l.source, t = l.target.id || l.target; (adj.get(s) || adj.set(s, new Set).get(s)).add(t); (adj.get(t) || adj.set(t, new Set).get(t)).add(s) });
+                const maxW = d3.max(links, d => d.weight) || 1, wS = d3.scaleSqrt().domain([1, maxW]).range([.5, 3]);
+                const lnk = g.append('g').selectAll('line').data(links).enter().append('line').attr('stroke', '#cbd5e1').attr('stroke-opacity', d => .4 + .3 * (d.weight / maxW)).attr('stroke-width', d => wS(d.weight));
+                const nd = g.append('g').selectAll('g').data(nodes).enter().append('g').call(d3.drag().on('start', (e, d) => { if (!e.active) sim.alphaTarget(.3).restart(); d.fx = d.x; d.fy = d.y }).on('drag', (e, d) => { d.fx = e.x; d.fy = e.y }).on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null }));
                 nd.append('circle').attr('r', d => d.radius).attr('fill', d => `url(#g-${d.color.slice(1)})`).attr('stroke', 'rgba(255,255,255,0.3)').attr('stroke-width', 1.5).style('filter', 'drop-shadow(0 4px 6px rgba(0,0,0,0.15))').style('cursor', 'pointer');
-                nd.append('text').text(d => d.display_name.split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase()).attr('dy', '0.35em').attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', d => Math.max(8, d.radius * 0.45)).attr('font-weight', '600').style('pointer-events', 'none');
+                nd.append('text').text(d => d.display_name.split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase()).attr('dy', '0.35em').attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', d => Math.max(8, d.radius * .45)).attr('font-weight', '600').style('pointer-events', 'none');
                 app.d3.lbl = nd.append('text').attr('class', 'node-label').text(d => d.display_name.split(' ').pop().replace(/[,;]/g, '')).attr('text-anchor', 'middle').attr('y', d => d.radius + 12).attr('fill', '#334155').attr('font-size', 10).attr('font-weight', '600').style('pointer-events', 'none').style('display', app.state.graph.labels ? null : 'none');
-
-                const tip = el('tooltip');
-                nd.on('mouseover', (e, d) => {
-                    nd.transition().duration(200).attr('opacity', n => (n.id === d.id || adj.get(d.id)?.has(n.id)) ? 1 : 0.1);
-                    lnk.transition().duration(200).attr('stroke', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? '#475569' : '#e2e8f0').attr('stroke-opacity', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? 1 : 0.05);
-                    const r = el('graphContainer').getBoundingClientRect();
-                    Object.assign(tip.style, { left: Math.min(e.clientX - r.left + 15, r.width - 210) + 'px', top: Math.min(e.clientY - r.top + 15, r.height - 140) + 'px' });
-                    tip.innerHTML = `<div class="font-bold text-slate-800 mb-0.5">${esc(d.display_name)}</div><div class="text-[9px] text-slate-500 mb-2 font-medium truncate">${esc(d.inst)}</div><div class="flex gap-2 text-center"><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_works}</div><div class="text-[7px] uppercase text-slate-400">Works</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_cited}</div><div class="text-[7px] uppercase text-slate-400">Cites</div></div></div>`;
-                    tip.classList.remove('hidden');
-                }).on('mouseout', () => {
-                    nd.transition().duration(200).attr('opacity', 1);
-                    lnk.transition().duration(200).attr('stroke', '#cbd5e1').attr('stroke-opacity', d => 0.4 + 0.3 * (d.weight / maxW));
-                    tip.classList.add('hidden');
-                }).on('click', (e, d) => { e.stopPropagation(); app.profile(d); });
-
-                app.applyClusterForces();
-                const W = el('graphContainer').clientWidth, H = el('graphContainer').clientHeight, pad = 25;
-                sim.nodes(nodes).on('tick', () => {
-                    nodes.forEach(n => { n.x = clamp(n.x, pad + n.radius, W - pad - n.radius); n.y = clamp(n.y, pad + n.radius, H - pad - n.radius); });
-                    lnk.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
-                    nd.attr('transform', d => `translate(${d.x},${d.y})`);
-                });
-                sim.force('link').links(links); sim.alpha(1).restart();
+                const tip = el('tooltip'); nd.on('mouseover', (e, d) => { nd.transition().duration(200).attr('opacity', n => (n.id === d.id || adj.get(d.id)?.has(n.id)) ? 1 : .1); lnk.transition().duration(200).attr('stroke', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? '#475569' : '#e2e8f0').attr('stroke-opacity', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? 1 : .05); const r = el('graphContainer').getBoundingClientRect(); Object.assign(tip.style, { left: Math.min(e.clientX - r.left + 15, r.width - 210) + 'px', top: Math.min(e.clientY - r.top + 15, r.height - 140) + 'px' }); tip.innerHTML = `<div class="font-bold text-slate-800 mb-0.5">${esc(d.display_name)}</div><div class="text-[9px] text-slate-500 mb-2 font-medium truncate">${esc(d.inst)}</div><div class="flex gap-2 text-center"><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_works}</div><div class="text-[7px] uppercase text-slate-400">Works</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_cited}</div><div class="text-[7px] uppercase text-slate-400">Cites</div></div></div>`; tip.classList.remove('hidden') }).on('mouseout', () => { nd.transition().duration(200).attr('opacity', 1); lnk.transition().duration(200).attr('stroke', '#cbd5e1').attr('stroke-opacity', d => .4 + .3 * (d.weight / maxW)); tip.classList.add('hidden') }).on('click', (e, d) => { e.stopPropagation(); app.profile(d) });
+                app.applyClusterForces(); const pad = 25; sim.nodes(nodes).on('tick', () => { const W = el('graphContainer').clientWidth || 800, H = el('graphContainer').clientHeight || 600; nodes.forEach(n => { n.x = clamp(n.x, pad + n.radius, W - pad - n.radius); n.y = clamp(n.y, pad + n.radius, H - pad - n.radius) }); lnk.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y); nd.attr('transform', d => `translate(${d.x},${d.y})`) }); sim.force('link').links(links); sim.alpha(1).restart();
             },
-
-            tog: (k, v) => { app.state.filters[k].has(v) ? app.state.filters[k].delete(v) : app.state.filters[k].add(v); app.state.page = 1; app.render(); },
-            clear: k => { app.state.filters[k].clear(); app.state.page = 1; app.render(); },
-            reset: () => { app.state.filters = { q: '', topics: new Set(), insts: new Set(), yFrom: null, yTo: null, minRel: CFG.defMin };['globalSearch', 'yearFrom', 'yearTo'].forEach(i => el(i).value = ''); el('minRelevance').value = CFG.defMin; el('valMinRel').textContent = CFG.defMin.toFixed(1); app.state.page = 1; app.render(); },
-            setPage: p => { app.state.page = p; app.render(); },
-            zoom: k => app.d3.svg.transition().duration(600).call(app.d3.zoom.scaleBy, k),
-            fitGraph: () => { const b = app.d3.g.node().getBBox(); if (!b.width) return; const p = 50, w = el('graphContainer').clientWidth, h = el('graphContainer').clientHeight, s = Math.min(0.9, 1 / Math.max(b.width / (w - p * 2), b.height / (h - p * 2))); app.d3.svg.transition().duration(750).call(app.d3.zoom.transform, d3.zoomIdentity.translate(w / 2 - (b.x + b.width / 2) * s, h / 2 - (b.y + b.height / 2) * s).scale(s)); },
-            toggleCluster: () => { app.state.graph.cluster = !app.state.graph.cluster; app.applyClusterForces(); app.d3.sim.alpha(0.3).restart(); },
-            toggleLabels: () => { app.state.graph.labels = !app.state.graph.labels; if (app.d3.lbl) app.d3.lbl.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none'); },
-
+            tog: (k, v) => { app.state.filters[k].has(v) ? app.state.filters[k].delete(v) : app.state.filters[k].add(v); app.state.page = 1; app.render() },
+            clear: k => { app.state.filters[k].clear(); app.state.page = 1; app.render() },
+            reset: () => { app.state.filters = { q: '', topics: new Set, insts: new Set, yFrom: null, yTo: null, minRel: CFG.defMin };['globalSearch', 'yearFrom', 'yearTo'].forEach(i => el(i).value = ''); el('minRelevance').value = CFG.defMin; el('valMinRel').textContent = CFG.defMin.toFixed(1); app.state.page = 1; app.render() },
+            setPage: p => { app.state.page = p; app.render() }, zoom: k => app.d3.svg.transition().duration(600).call(app.d3.zoom.scaleBy, k),
+            fitGraph: () => { const b = app.d3.g.node().getBBox(); if (!b.width) return; const p = 50, w = el('graphContainer').clientWidth, h = el('graphContainer').clientHeight, s = Math.min(0.9, 1 / Math.max(b.width / (w - p * 2), b.height / (h - p * 2))); app.d3.svg.transition().duration(750).call(app.d3.zoom.transform, d3.zoomIdentity.translate(w / 2 - (b.x + b.width / 2) * s, h / 2 - (b.y + b.height / 2) * s).scale(s)) },
+            toggleCluster: () => { app.state.graph.cluster = !app.state.graph.cluster; app.applyClusterForces(); app.d3.sim.alpha(.3).restart() },
+            toggleLabels: () => { app.state.graph.labels = !app.state.graph.labels; if (app.d3.lbl) app.d3.lbl.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none') },
             profile: r => {
-                el('researcherModal').classList.add('active');
-                const pubs = app.data.pubs.filter(p => p._memberAuthors.some(a => a.id === r.id)).sort((a, b) => b.publication_year - a.publication_year);
-                el('researcherContent').innerHTML = `
-                    <div class="sticky top-0 bg-white z-10 p-5 border-b border-slate-100"><div class="flex justify-between items-start"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0, 2)}</div><div><h2 class="text-lg font-bold text-slate-800 leading-tight">${esc(r.display_name)}</h2><p class="text-xs text-slate-500 font-medium">${esc(r.inst)}</p></div></div><button onclick="document.getElementById('researcherModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700"><i class="fas fa-times"></i></button></div><div class="grid grid-cols-2 gap-3 mt-4"><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${pubs.length}</span><span class="text-[9px] font-bold uppercase text-slate-400">Publications</span></div><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${pubs.reduce((s, p) => s + p.cited_by_count, 0).toLocaleString()}</span><span class="text-[9px] font-bold uppercase text-slate-400">Total Citations</span></div></div></div>
-                    <div class="p-5"><h4 class="font-bold text-[10px] uppercase text-slate-400 mb-3 tracking-wider">Latest Contributions</h4><div class="space-y-2">${pubs.slice(0, 15).map(p => `<div class="p-2.5 rounded border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="document.getElementById('researcherModal').classList.remove('active');app.detail('${p.id}')"><div class="font-semibold text-xs text-slate-700 mb-1 leading-snug">${esc(p.title)}</div><div class="text-[10px] text-slate-400 flex justify-between items-center"><span>${p.publication_year} • ${p._relevance.toFixed(1)} score</span><span class="bg-slate-100 px-1.5 py-0.5 rounded">${p.cited_by_count} cites</span></div></div>`).join('')}</div></div>`;
+                el('researcherModal').classList.add('active'); const P = app.data.pubs.filter(p => p._memberAuthors.some(a => a.id === r.id)).sort((a, b) => b.publication_year - a.publication_year);
+                el('researcherContent').innerHTML = `<div class="sticky top-0 bg-white z-10 p-5 border-b border-slate-100"><div class="flex justify-between items-start"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0, 2)}</div><div><h2 class="text-lg font-bold text-slate-800 leading-tight">${esc(r.display_name)}</h2><p class="text-xs text-slate-500 font-medium">${esc(r.inst)}</p></div></div><button onclick="document.getElementById('researcherModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700"><i class="fas fa-times"></i></button></div><div class="grid grid-cols-2 gap-3 mt-4"><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${P.length}</span><span class="text-[9px] font-bold uppercase text-slate-400">Publications</span></div><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${P.reduce((s, p) => s + p.cited_by_count, 0).toLocaleString()}</span><span class="text-[9px] font-bold uppercase text-slate-400">Total Citations</span></div></div></div><div class="p-5"><h4 class="font-bold text-[10px] uppercase text-slate-400 mb-3 tracking-wider">Latest Contributions</h4><div class="space-y-2">${P.slice(0, 15).map(p => `<div class="p-2.5 rounded border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="document.getElementById('researcherModal').classList.remove('active');app.detail('${p.id}')"><div class="font-semibold text-xs text-slate-700 mb-1 leading-snug">${esc(p.title)}</div><div class="text-[10px] text-slate-400 flex justify-between items-center"><span>${p.publication_year} • ${p._relevance.toFixed(1)} score</span><span class="bg-slate-100 px-1.5 py-0.5 rounded">${p.cited_by_count} cites</span></div></div>`).join('')}</div></div>`;
             },
-
             detail: async id => {
-                const p = app.data.pubs.find(x => x.id === id); if (!p) return;
-                el('detailModal').classList.add('active');
-                const show = abs => {
-                    el('detailContent').innerHTML = `
-                        <div class="flex justify-between items-start mb-4 pb-3 border-b border-slate-100"><h2 class="text-lg font-bold text-slate-800 pr-8 leading-tight">${esc(p.title)}</h2><button onclick="document.getElementById('detailModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700 text-lg"><i class="fas fa-times"></i></button></div>
-                        <div class="flex flex-wrap gap-3 text-xs text-slate-500 mb-6 font-medium"><span class="flex items-center gap-1.5"><i class="fas fa-calendar"></i> ${p.publication_year}</span><span class="flex items-center gap-1.5"><i class="fas fa-quote-right"></i> ${p.cited_by_count} Citations</span>${p.source ? `<span class="flex items-center gap-1.5"><i class="fas fa-book"></i> ${esc(p.source)}</span>` : ''}<span class="flex items-center gap-1.5 text-green-600 bg-green-50 px-1.5 rounded border border-green-100">Score: ${p._relevance.toFixed(1)}</span>${p.url ? `<a href="${p.url}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1.5"><i class="fas fa-external-link-alt"></i> View Source</a>` : ''}</div>
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-2"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Abstract</h4>${abs ? `<div class="text-slate-600 text-xs leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100 text-justify font-normal">${esc(abs)}</div>` : `<div class="text-slate-400 text-xs italic bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">Abstract not available via API.</div>`}${p._why.length ? `<div class="mt-4"><h4 class="font-bold text-[9px] text-slate-400 uppercase tracking-wide mb-1.5">Relevance Factors</h4><div class="flex flex-wrap gap-1">${p._why.map(w => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] rounded border border-slate-200 font-mono">${w}</span>`).join('')}</div></div>` : ''}</div>
-                        <div><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Authors</h4><div class="flex flex-col gap-1.5">${p._allAuthors.map(a => `<div class="flex items-center gap-2 text-xs p-1.5 rounded-lg border ${a.isMember ? 'border-green-200 bg-green-50 cursor-pointer hover:bg-green-100' : 'border-transparent text-slate-500'}" ${a.isMember ? `onclick="document.getElementById('detailModal').classList.remove('active');app.profile(app.data.researchers.find(r=>r.id==='${a.id}'))"` : ''}>${a.isMember ? '<span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>' : ''}<span class="${a.isMember ? 'font-semibold text-green-800' : ''} truncate">${esc(a.name)}</span></div>`).join('')}</div><div class="mt-6"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Topics</h4><div class="flex flex-wrap gap-1">${p._topics.map(t => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded border border-slate-200">${esc(t)}</span>`).join('')}</div></div></div></div>`;
+                const p = app.data.pubs.find(x => x.id === id); if (!p) return; el('detailModal').classList.add('active');
+                const sh = ab => {
+                    el('detailContent').innerHTML = `<div class="flex justify-between items-start mb-4 pb-3 border-b border-slate-100"><h2 class="text-lg font-bold text-slate-800 pr-8 leading-tight">${esc(p.title)}</h2><button onclick="document.getElementById('detailModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700 text-lg"><i class="fas fa-times"></i></button></div><div class="flex flex-wrap gap-3 text-xs text-slate-500 mb-6 font-medium"><span class="flex items-center gap-1.5"><i class="fas fa-calendar"></i> ${p.publication_year}</span><span class="flex items-center gap-1.5"><i class="fas fa-quote-right"></i> ${p.cited_by_count} Citations</span>${p.source ? `<span class="flex items-center gap-1.5"><i class="fas fa-book"></i> ${esc(p.source)}</span>` : ''}<span class="flex items-center gap-1.5 text-green-600 bg-green-50 px-1.5 rounded border border-green-100">Score: ${p._relevance.toFixed(1)}</span>${p.url ? `<a href="${p.url}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1.5"><i class="fas fa-external-link-alt"></i> View Source</a>` : ''}</div><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-2"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Abstract</h4>${ab ? `<div class="text-slate-600 text-xs leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100 text-justify font-normal">${esc(ab)}</div>` : `<div class="text-slate-400 text-xs italic bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">Abstract not available via API.</div>`}${p._why.length ? `<div class="mt-4"><h4 class="font-bold text-[9px] text-slate-400 uppercase tracking-wide mb-1.5">Relevance Factors</h4><div class="flex flex-wrap gap-1">${p._why.map(w => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] rounded border border-slate-200 font-mono">${w}</span>`).join('')}</div></div>` : ''}</div><div><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Authors</h4><div class="flex flex-col gap-1.5">${p._allAuthors.map(a => `<div class="flex items-center gap-2 text-xs p-1.5 rounded-lg border ${a.isMember ? 'border-green-200 bg-green-50 cursor-pointer hover:bg-green-100' : 'border-transparent text-slate-500'}" ${a.isMember ? `onclick="document.getElementById('detailModal').classList.remove('active');app.profile(app.data.researchers.find(r=>r.id==='${a.id}'))"` : ''}>${a.isMember ? '<span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>' : ''}<span class="${a.isMember ? 'font-semibold text-green-800' : ''} truncate">${esc(a.name)}</span></div>`).join('')}</div><div class="mt-6"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Topics</h4><div class="flex flex-wrap gap-1">${p._topics.map(t => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded border border-slate-200">${esc(t)}</span>`).join('')}</div></div></div></div>`;
                 };
-                show(null);
-                try { const d = await fetchJSON(`${CFG.api}/works/${p.id.split('/').pop()}?select=abstract_inverted_index`); show(d?.abstract_inverted_index ? Object.entries(d.abstract_inverted_index).reduce((a, [k, v]) => (v.forEach(p => a[p] = k), a), []).join(' ') : null); } catch { }
+                sh(null); try { const d = await fetchJSON(`${CFG.api}/works/${p.id.split('/').pop()}?select=abstract_inverted_index`); sh(d?.abstract_inverted_index ? Object.entries(d.abstract_inverted_index).reduce((a, [k, v]) => (v.forEach(p => a[p] = k), a), []).join(' ') : null) } catch { }
             },
-
             cite: id => {
-                const p = app.data.pubs.find(x => x.id === id), aa = p._allAuthors.map(a => a.name);
-                el('citeAPA').textContent = `${aa.length > 5 ? `${aa.slice(0, 5).join(', ')}, et al.` : aa.join(', ')} (${p.publication_year}). ${p.title}. ${p.source || 'Journal'}.`;
-                el('citeBib').textContent = `@article{${(aa[0] || 'u').split(' ').pop().toLowerCase().replace(/[^a-z]/g, '')}${p.publication_year}, author={${aa.join(' and ')}}, title={${p.title}}, year={${p.publication_year}}, journal={${p.source || 'Journal'}}}`;
-                el('citationModal').classList.add('active');
+                const p = app.data.pubs.find(x => x.id === id), aa = p._allAuthors.map(a => a.name); el('citeAPA').textContent = `${aa.length > 5 ? `${aa.slice(0, 5).join(', ')}, et al.` : aa.join(', ')} (${p.publication_year}). ${p.title}. ${p.source || 'Journal'}.`; el('citeBib').textContent = `@article{${(aa[0] || 'u').split(' ').pop().toLowerCase().replace(/[^a-z]/g, '')}${p.publication_year}, author={${aa.join(' and ')}}, title={${p.title}}, year={${p.publication_year}}, journal={${p.source || 'Journal'}}}`; el('citationModal').classList.add('active');
             },
-            copy: id => { navigator.clipboard.writeText(el(id).textContent); const b = event.currentTarget, o = b.innerHTML; b.innerHTML = '<i class="fas fa-check text-green-600"></i>'; setTimeout(() => b.innerHTML = o, 1500); },
-
-            // NEW: Export Functions (From Script 2)
-            toggleExportMenu: () => { el('exportMenu').classList.toggle('hidden'); },
-            downloadFile: (content, type, ext) => { const u = URL.createObjectURL(new Blob([content], { type })); Object.assign(document.createElement('a'), { href: u, download: `agripv_network.${ext}` }).click(); URL.revokeObjectURL(u); el('exportMenu').classList.add('hidden'); },
+            copy: id => { navigator.clipboard.writeText(el(id).textContent); const b = event.currentTarget, o = b.innerHTML; b.innerHTML = '<i class="fas fa-check text-green-600"></i>'; setTimeout(() => b.innerHTML = o, 1500) },
+            toggleExportMenu: () => { el('exportMenu').classList.toggle('hidden') },
+            downloadFile: (c, t, e) => { const u = URL.createObjectURL(new Blob([c], { type: t })); Object.assign(document.createElement('a'), { href: u, download: `agripv_network.${e}` }).click(); URL.revokeObjectURL(u); el('exportMenu').classList.add('hidden') },
             exportCSV: () => app.downloadFile([['Title', 'Year', 'Score', 'Citations', 'Authors', 'DOI', 'Source'], ...app.state.lastFiltered.map(p => [`"${p.title.replace(/"/g, '""')}"`, p.publication_year, p._relevance, p.cited_by_count, `"${p._allAuthors.map(a => a.name).join('; ')}"`, p.doi || '', `"${(p.source || '').replace(/"/g, '""')}"`])].map(r => r.join(',')).join('\n'), 'text/csv', 'csv'),
             exportBibTeX: () => app.downloadFile(app.state.lastFiltered.map(p => `@article{${p.id.split('/').pop()}, author={${p._allAuthors.map(a => a.name).join(' and ')}}, title={${p.title}}, year={${p.publication_year}}, journal={${p.source || ''}}, doi={${p.doi || ''}}}`).join('\n\n'), 'application/x-bibtex', 'bib'),
             exportRIS: () => app.downloadFile(app.state.lastFiltered.map(p => `TY  - JOUR\nTI  - ${p.title}\nPY  - ${p.publication_year}\n${p._allAuthors.map(a => `AU  - ${a.name}`).join('\n')}\nJO  - ${p.source || ''}\nDO  - ${p.doi || ''}\nER  - `).join('\n\n'), 'application/x-research-info-systems', 'ris'),
-            exportGraphSVG: () => { const s = el('networkGraph').cloneNode(true); s.setAttribute('xmlns', "http://www.w3.org/2000/svg"); s.insertBefore(Object.assign(document.createElement('style'), { textContent: `circle{stroke:#fff;stroke-width:1px}line{stroke:#94a3b8}text{font-family:sans-serif}` }), s.firstChild); app.downloadFile(new XMLSerializer().serializeToString(s), 'image/svg+xml', 'svg'); },
-            exportGraphPNG: () => {
-                const s = new XMLSerializer().serializeToString(el('networkGraph')), c = Object.assign(document.createElement('canvas'), { width: el('graphContainer').clientWidth * 2, height: el('graphContainer').clientHeight * 2 }), ctx = c.getContext('2d'), img = new Image();
-                img.onload = () => { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height); c.toBlob(b => { const u = URL.createObjectURL(b); Object.assign(document.createElement('a'), { href: u, download: 'agripv_network.png' }).click(); el('exportMenu').classList.add('hidden'); }); };
-                img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(s)));
-            },
-
+            exportGraphSVG: () => { const s = el('networkGraph').cloneNode(true); s.setAttribute('xmlns', "http://www.w3.org/2000/svg"); s.insertBefore(Object.assign(document.createElement('style'), { textContent: `circle{stroke:#fff;stroke-width:1px}line{stroke:#94a3b8}text{font-family:sans-serif}` }), s.firstChild); app.downloadFile(new XMLSerializer().serializeToString(s), 'image/svg+xml', 'svg') },
+            exportGraphPNG: () => { const s = new XMLSerializer().serializeToString(el('networkGraph')), c = Object.assign(document.createElement('canvas'), { width: el('graphContainer').clientWidth * 2, height: el('graphContainer').clientHeight * 2 }), ctx = c.getContext('2d'), img = new Image(); img.onload = () => { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height); c.toBlob(b => { const u = URL.createObjectURL(b); Object.assign(document.createElement('a'), { href: u, download: 'agripv_network.png' }).click(); el('exportMenu').classList.add('hidden') }) }; img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(s))) },
             setupUI: () => {
-                let tm, drag;
-                el('globalSearch').oninput = e => { clearTimeout(tm); tm = setTimeout(() => { app.state.filters.q = e.target.value; app.state.page = 1; app.render(); }, 300); };
-                el('sortSelect').onchange = e => { app.state.sort = e.target.value; app.state.page = 1; app.render(); };
-                ['yearFrom', 'yearTo'].forEach(id => el(id).onchange = e => { app.state.filters[id === 'yearFrom' ? 'yFrom' : 'yTo'] = e.target.value ? clamp(+e.target.value, 2000, 2026) : null; app.render(); });
-                el('minRelevance').oninput = e => { el('valMinRel').textContent = (+e.target.value).toFixed(1); clearTimeout(tm); tm = setTimeout(() => { app.state.filters.minRel = +e.target.value; app.state.page = 1; app.render(); }, 200); };
-                el('linkDistance').oninput = e => { app.d3.sim.force('link').distance(+e.target.value); app.d3.sim.alpha(0.3).restart(); };
-                el('chargeStrength').oninput = e => { app.d3.sim.force('charge').strength(-e.target.value); app.d3.sim.alpha(0.3).restart(); };
-
+                let tm, drag; el('globalSearch').oninput = e => { clearTimeout(tm); tm = setTimeout(() => { app.state.filters.q = e.target.value; app.state.page = 1; app.render() }, 300) };
+                el('sortSelect').onchange = e => { app.state.sort = e.target.value; app.state.page = 1; app.render() };
+                ['yearFrom', 'yearTo'].forEach(id => el(id).onchange = e => { app.state.filters[id === 'yearFrom' ? 'yFrom' : 'yTo'] = e.target.value ? clamp(+e.target.value, 2000, 2026) : null; app.render() });
+                el('minRelevance').oninput = e => { const v = +e.target.value; el('valMinRel').textContent = v.toFixed(1); clearTimeout(tm); tm = setTimeout(() => { app.state.filters.minRel = v; app.state.page = 1; app.render() }, 200) };
+                el('linkDistance').oninput = e => { app.d3.sim.force('link').distance(+e.target.value); app.d3.sim.alpha(.3).restart() };
+                el('chargeStrength').oninput = e => { app.d3.sim.force('charge').strength(-e.target.value); app.d3.sim.alpha(.3).restart() };
                 document.querySelectorAll('.view-btn').forEach(b => b.onclick = () => {
                     const v = b.dataset.view, both = v === 'both', pp = el('publicationsPanel'), np = el('networkPanel');
-                    pp.style.display = (both || v === 'publications') ? 'flex' : 'none';
-                    pp.style.width = both ? '50%' : (v === 'publications' ? '100%' : '0%');
-                    np.style.display = (both || v === 'network') ? 'flex' : 'none';
-                    np.style.width = both ? '50%' : (v === 'network' ? '100%' : '0%');
+                    pp.style.display = (both || v === 'publications') ? 'flex' : 'none'; pp.style.width = both ? '50%' : (v === 'publications' ? '100%' : '0%');
+                    np.style.display = (both || v === 'network') ? 'flex' : 'none'; np.style.width = both ? '50%' : (v === 'network' ? '100%' : '0%');
                     el('splitHandle').style.display = both ? 'block' : 'none';
                     document.querySelectorAll('.view-btn').forEach(x => x.className = `view-btn px-2.5 py-1 text-[11px] font-semibold rounded transition-all ${x === b ? 'bg-white shadow-sm text-slate-800 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'}`);
-                    setTimeout(app.resizeGraph, 50);
+                    if (v === 'network' || both) setTimeout(() => { app.resizeGraph(); app.d3.sim.alpha(1).restart(); app.fitGraph() }, 150)
                 });
-
-                el('splitHandle').onmousedown = () => { drag = true; document.body.style.cursor = 'col-resize'; };
-                document.onmouseup = () => { if (drag) app.resizeGraph(); drag = false; document.body.style.cursor = 'default'; };
-                document.onmousemove = e => { if (drag) { const p = (e.clientX - 320) / (document.body.clientWidth - 320) * 100; if (p > 15 && p < 85) { el('publicationsPanel').style.width = p + '%'; el('networkPanel').style.width = (100 - p) + '%'; app.resizeGraph(); } } };
-                document.addEventListener('click', e => { if (!el('exportDropdown').contains(e.target)) el('exportMenu').classList.add('hidden'); });
+                el('splitHandle').onmousedown = () => { drag = true; document.body.style.cursor = 'col-resize' }; document.onmouseup = () => { if (drag) app.resizeGraph(); drag = false; document.body.style.cursor = 'default' };
+                document.onmousemove = e => { if (drag) { const p = (e.clientX - 320) / (document.body.clientWidth - 320) * 100; if (p > 15 && p < 85) { el('publicationsPanel').style.width = p + '%'; el('networkPanel').style.width = (100 - p) + '%'; app.resizeGraph() } } };
+                document.addEventListener('click', e => { if (!el('exportDropdown').contains(e.target)) el('exportMenu').classList.add('hidden') });
             }
         };
-
         document.addEventListener('DOMContentLoaded', app.init); window.app = app;
     </script>
 </body>
