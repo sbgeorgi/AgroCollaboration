@@ -447,25 +447,78 @@
         const sleep = ms => new Promise(r => setTimeout(r, ms)), el = id => document.getElementById(id), norm = s => (s || "").trim().toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " "), esc = s => s ? s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])) : "", jsStr = s => (s || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'"), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
         const COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4", "#ec4899", "#6366f1", "#84cc16", "#f97316", "#64748b", "#14b8a6"];
         const CFG = { api: "https://api.openalex.org", key: "asf_network_v7", now: new Date().getFullYear(), minRel: 1.0, cap: 250, conc: 10, defMin: 3.0 };
-        const RX = { strong: /\b(agri[\s-]?(pv|photo)?voltai[ckqs]?|agro[\s-]?(photo)?voltai[ckqs]?|agri[\s-]?photovoltai[ks]?|agrophotovoltai[ckqs]?|solar[\s-]?sharing|solar\s*(farming|agriculture)|farming\s*with\s*(solar|pv)|dual[\s-]?use\s*(solar|pv|land)|co[\s-]?locat(ed|ion)\s*(solar|pv|energy).{0,15}(farm|agri|crop|land)|co[\s-]?develop(ed|ment)\s*(solar|pv).{0,15}(farm|agri|crop)|photovoltaic\s*greenhouse|greenhouse\s*photovoltaic|solar\s*greenhouse|(?:pv|solar)\s*(?:over|above|between)\s*crops?|integrat(?:ed|ing)\s*(?:solar|pv)\s*(?:and|with)\s*agricultur|(?:food|crop)\s*(?:and|&)\s*(?:energy|electricity)\s*(?:production|co[\s-]?production|generation)|energy[\s-]?food[\s-]?(?:water\s*)?nexus\s*(?:solar|pv)?|symbiosis\s*(?:solar|pv|energy).{0,10}(?:crop|agri|farm))\b/i, fuzzy: /\bagri.{0,5}(volt|pv|photo)\b/i, apv: /\bapv\b/i, solar: /\b(pv|photovoltai[ckqs]?|solar(\s*(energy|power|electricity|panels?|cells?|modules?|arrays?|systems?|farms?|plants?|installations?|canop(y|ies)))?|renewable\s*energy\s*(generation|systems?))\b/i, agri: /\b(agricultur(e|al)?|agronom(y|ic)|crops?|farming|farms?|farmers?|pasture|graz(e|ing)|livestock|horticultur(e|al)?|greenhouses?|orchards?|viticultur(e|al)?|viney(ard)?|food\s*production|field\s*trials?|arable|tillage|cultivat(e|ion|ed)|harvest(ing)?|plant(ing|ed)?|crop\s*(rotation|growth|yield|production)|intercropping)\b/i, land: /\b(land[\s-]?use|microclimat(e|ic)|soils?\s*(moisture|health|quality|temperature)|irrigat(e|ion|ing)|water\s*(use|saving|management|efficiency)|evapotranspir(ation|e)|biodiversit(y|ies)|ecosystems?\s*(services?)?|habitats?|shade\s*(effect|impact|toleran|pattern)?|shading|albedo|pollinat(or|ion)|runoff|erosion|ground\s*cover|vegetation|ecosystem|ecology|ecological)\b/i, econ: /\b(economics?|cost[\s-]?(benefit|effective|analysis)|lcoe|levelized|finance|investment|profitab|revenue|policy|regulat(ion|ory|e)|markets?|business\s*model|adoption|acceptance|stakeholders?|subsid(y|ies)|incentiv(e|ize)|tariff|feed[\s-]?in|net[\s-]?meter|social\s*acceptance|willingness\s*to\s*pay|rural\s*(develop|electrif|livelihood))\b/i, techDomain: [/\bbifacial\s*(panel|module|cell|pv|solar)/i, /\bsemi[\s-]?transparent\s*(panel|module|cell|pv|solar|film)/i, /\bcrop\s*(yield|growth|production|performance)\s*(under|beneath|below)\s*(panel|pv|solar|shade)/i, /\blight\s*(management|distribution|sharing|interception|transmit|availab)/i, /\bstilted?\s*(panel|array|module|pv|solar|system|structure)/i, /\binter[\s-]?row\s*(spacing|distance|gap|area)/i, /\bpanel\s*(height|elevation|spacing|tilt|orientation|density)/i, /\bground\s*coverage\s*ratio/i, /\bpar\b.{0,20}\b(reduction|transmit|intercept|availab|loss|level)/i, /\brain[\s-]?water\s*(harvest|collect|redistrib|intercept)/i, /\bfood[\s-]?energy[\s-]?water\s*(nexus|system)/i, /\bdual[\s-]?harvest/i, /\bvertical\s*(farm|panel|bifacial|pv|array|mount)/i, /\brow\s*(spacing|orientation|direction|pitch)\s*(pv|solar|panel|module|array)/i, /\b(shade|shadow)\s*(toleran|adapt|resistan|pattern|map|model|dynamic)/i, /\b(mounting|racking)\s*(height|structure|system).{0,15}(farm|crop|agri|land)/i, /\b(crop|plant)\s*(select|choice|species|variety|suitab).{0,15}(shade|pv|solar|panel)/i, /\bphotosynthetic(ally)?\s*active\s*radiation/i, /\byield\s*(loss|reduction|penalty|gap|impact|comparison)/i, /\belectricity\s*(generation|yield|production).{0,20}(crop|farm|agri|land)/i], venues: [/\bapplied energy\b/i, /\bsolar energy\b/i, /\brenewable.*sustainable.*energy\s*review/i, /\brenewable energy\b/i, /\benergies\b/i, /\bjournal of cleaner production\b/i, /\bagricultural.*forest.*meteorol/i, /\bfield crops research\b/i, /\bland use policy\b/i, /\bagronomy\b/i, /\bagronomy for sustainable development\b/i, /\beuropean journal of agronomy\b/i, /\badvances in agronomy\b/i, /\benergy policy\b/i, /\benergy conversion and management\b/i, /\bprogress in photovoltaics\b/i], neg: /\b(oncolog(y|ic)?|cancer|carcinoma|tumou?r|clinical\s*(trial|study|patient)|patients?\s*(with|undergo)|surgery|surgical|therap(y|eutic|ies)|astrophys(ics?)?|galax(y|ies)|cosmolog(y|ical)?|stellar|protein\s*(fold|structur|express)|genom(e|ic|ics)|dna\s*(sequenc|repair|damag)|neural\s*network|deep\s*learning|machine\s*learning\s*(?!.*(?:solar|pv|agri|crop|energy))|autonomous\s*vehicl|robot(ic)?s?\b(?!.*(?:agri|farm|crop|harvest))|crypto|blockchain|quantum\s*(comput|mechani|physic))\b/i, negSolarOnly: /\b(perovskite\s*(stabil|efficien|solar\s*cell)|silicon\s*(wafer|ingot|doping)|thin[\s-]?film\s*(deposit|solar|efficien)|grid[\s-]?(connect|integrat|stabil|parity)|battery\s*(storag|charg|discharg|lithium)|inverter\s*(topology|design|efficien)|mppt\s*(algorithm|controller|track)|power\s*(electron|converter|quality))\b/i };
+
+        // IMPROVED REGEX ENGINE
+        const RX = {
+            // Updated to catch plurals (agrivoltaics) and hyphenated variations correctly
+            explicit: /\b(agri[\s-]?(pv|photo)?voltai[ckqs]?(s)?|agro[\s-]?(photo)?voltai[ckqs]?(s)?|agri[\s-]?pv|agro[\s-]?pv|solar[\s-]?sharing|solar[\s-]?farming|farming[\s-]?(with|under)[\s-]?(solar|pv)|photovoltaic[\s-]?greenhouse|greenhouse[\s-]?photovoltaic)\b/i,
+            // Component parts
+            solar: /\b(pv|photovoltai[ckqs]?|solar(\s*(modules?|panels?|arrays?|energy|power|cells?|installation|park|farm))?)\b/i,
+            agri: /\b(crop|yield|harvest|plant|biomass|farm(ing|er)?|agricultur|agronom|horticultur|viticultur|orchard|vineyard|greenhouse|livestock|pasture|grazing|sheep|cattle|food\s*production|arable|cultivat)\b/i,
+            // Interaction terms (The "Glue" - highly predictive of APV)
+            interaction: /\b(dual[\s-]?use|co[\s-]?locat(ion|ed)|combin(ed|ing)|integrat(ed|ion)|under|beneath|between|inter[\s-]?space|shading\s*effect|micro[\s-]?climat|land[\s-]?use[\s-]?efficien|ler\b|land[\s-]?equivalent[\s-]?ratio|photosynthetic|par\b|transmittan|light\s*distribution|water\s*saving)\b/i,
+            // Tech specific
+            tech: /\b(bifacial|spectral|stilted|elevation|tilt|ground\s*cover|vertical\s*mount|tracker|soil\s*moisture)\b/i,
+            // Exclusion list
+            neg: /\b(oncolog|cancer|tumor|biomed|patient|surgery|galaxy|telescope|quantum|nano(?!.*(grid|farm|solar))|perovskite(?!.*(greenhouse|crop))|thin[\s-]?film(?!.*(greenhouse|crop)))\b/i
+        };
+
         const INST_MAP = [['arizona', 'Univ. of Arizona'], ['unam', 'UNAM'], ['nacional autonoma', 'UNAM'], ['chile', 'Univ. de Chile'], ['fraunhofer', 'Fraunhofer ISE'], ['wageningen', 'Wageningen UR'], ['nrel', 'NREL'], ['davis', 'UC Davis'], ['umass', 'UMass Amherst'], ['massachusetts', 'UMass Amherst']];
         const TOPIC_BLOCK = new Set(["medicine", "physics", "materials science", "computer science", "chemistry", "biology", "mathematics", "philosophy", "art", "psychology", "geology", "sociology"]);
         const Storage = { get: k => { try { const i = JSON.parse(localStorage.getItem(k)); return i && i.e > Date.now() ? i.v : null } catch { return null } }, set: (k, v) => { try { localStorage.removeItem(k); localStorage.setItem(k, JSON.stringify({ v, e: Date.now() + 2592e6 })) } catch (e) { try { localStorage.clear(); localStorage.setItem(k, JSON.stringify({ v, e: Date.now() + 2592e6 })) } catch { } } } };
         const fetchJSON = async (url, r = 3) => { url += (url.includes('?') ? '&' : '?') + 'mailto=research-tool@agripv.org'; for (let i = 0; i < r; i++) { try { const d = await fetch(url); if (d.ok) return await d.json(); if (d.status === 429) await sleep((parseFloat(d.headers.get("Retry-After") || 1) * 1000) * (i + 1)); else if (d.status >= 500) await sleep(500 * (i + 1)); else return null } catch { if (i === r - 1) return null; await sleep(250) } } };
         const getInst = i => { if (!i) return "Unknown"; const l = norm(i), h = INST_MAP.find(x => l.includes(x[0])); return h ? h[1] : i.replace(/university/gi, 'Univ.').replace(/institute/gi, 'Inst.').split(',')[0].trim().substring(0, 28) };
+
+        // UPDATED SCORING FUNCTION
         const scoreWork = (w, abs = "") => {
-            const t = norm(w.title || ""), kw = norm((w.keywords || []).map(k => k.display_name || k.keyword).join(" ")), meta = `${kw} ${norm((w.topics || []).map(t => t.display_name).join(" "))} ${norm((w.concepts || []).map(c => c.display_name).join(" "))}`, ab = norm(abs), full = `${t} ${meta} ${ab}`;
-            let s = 0, why = [], stT = RX.strong.test(t), stK = !stT && RX.strong.test(kw), stM = !stT && !stK && RX.strong.test(meta), stA = !stT && !stK && !stM && RX.strong.test(ab), fzT = !stT && RX.fuzzy.test(t), fzA = !stT && !fzT && RX.fuzzy.test(ab), dir = stT || stK || stM || stA || fzT || fzA;
-            if (stT) { s += 30; why.push('agripv-title') } else if (stK) { s += 24; why.push('agripv-keyword') } else if (stM) { s += 18; why.push('agripv-meta') } else if (stA) { s += 14; why.push('agripv-abstract') } else if (fzT) { s += 12; why.push('agripv-fuzzy-title') } else if (fzA) { s += 7; why.push('agripv-fuzzy-abs') }
-            if (RX.apv.test(t) && (RX.solar.test(full) || RX.agri.test(full))) { s += dir ? 3 : 10; why.push('apv') }
-            const sT = RX.solar.test(t), aT = RX.agri.test(t), lT = RX.land.test(t), so = RX.solar.test(full), ag = RX.agri.test(full), ln = RX.land.test(full);
-            if (sT && (aT || lT)) { s += 15; why.push('solar+agri-title') } else if (so && ag && ln) { s += 8; why.push('solar+land') } else { if (so) s += 1; if (ag || ln) s += 1 }
-            if (RX.econ.test(full) && (so || dir)) { s += 2.5; why.push('econ') }
-            const dh = RX.techDomain.filter(r => r.test(full)).length; if (dh > 0) { s += Math.min(6, dh * 1.5); why.push(`domain(${dh})`) }
-            if (w.concepts?.some(c => /agrivoltaic|agrovoltaic/i.test(c.display_name) && c.score > 0.3)) { s += 6; why.push('agripv-concept') }
-            s += Math.min(3, Math.log10((w.cited_by_count || 0) + 1)); if (w.publication_year >= CFG.now - 2) s += 0.6;
-            if (RX.neg.test(full) && !dir) { s -= 25; why.push('neg') } else if (so && !ag && !ln && !dir && RX.negSolarOnly.test(full)) { s -= 5; why.push('pure-solar') }
-            s = Math.round(Math.max(0, s) * 10) / 10; return { s, why, strong: dir, tier: s >= 25 ? 'Core' : s >= 15 ? 'Strong' : s >= 8 ? 'Related' : 'Peripheral' };
+            let s = 0, why = [];
+            const t = norm(w.title || ""), kw = norm((w.keywords || []).map(k => k.display_name || k.keyword).join(" ")), ab = norm(abs);
+            const full = `${t} ${kw} ${ab}`;
+
+            // 1. EXPLICIT MATCHES (Heavily weighted to fix the "4.1" issue)
+            const expT = RX.explicit.test(t);
+            const expK = !expT && RX.explicit.test(kw);
+            const expA = !expT && !expK && RX.explicit.test(ab);
+
+            if (expT) { s += 45; why.push('explicit-title'); } // Immediate Core status
+            else if (expK) { s += 30; why.push('explicit-keyword'); }
+            else if (expA) { s += 20; why.push('explicit-abstract'); }
+
+            // 2. COMPONENT MATCHES (Solar + Agri)
+            const hasSolar = RX.solar.test(full);
+            const hasAgri = RX.agri.test(full);
+            const hasInt = RX.interaction.test(full);
+            
+            if (hasSolar && hasAgri) {
+                // Proximity Check: Look for Solar near Agri in Title/Abstract
+                // This rewards "Crop yield under PV" even if "Agrivoltaics" isn't said
+                const proxRx = /\b(solar|pv|photovoltai).{0,80}(crop|farm|agri|plant|yield|soil)|(crop|farm|agri|plant|yield|soil).{0,80}(solar|pv|photovoltai)/i;
+                
+                if (proxRx.test(t)) { s += 20; why.push('solar+agri-prox-title'); }
+                else if (proxRx.test(ab)) { s += 12; why.push('solar+agri-prox-abs'); }
+                else { s += 5; why.push('solar+agri-dist'); }
+
+                if (hasInt) { s += 8; why.push('interaction-term'); }
+            } else if (hasSolar && hasInt) {
+                // "Solar" + "Land use efficiency" implies APV
+                s += 5; why.push('solar+interaction');
+            }
+
+            // 3. TECHNICAL & CONTEXT BONUSES
+            if (RX.tech.test(full)) { s += 3; why.push('tech-detail'); }
+            if (w.concepts?.some(c => norm(c.display_name).includes('agrivoltaic') && c.score > 0.4)) { s += 10; why.push('concept-match'); }
+
+            // 4. METADATA BOOSTS
+            s += Math.min(4, Math.log10((w.cited_by_count || 0) + 1) * 1.5); 
+            if (w.publication_year >= CFG.now - 2) s += 1.5;
+
+            // 5. PENALTIES
+            if (RX.neg.test(full) && !expT && !expK) { 
+                s -= 30; why.push('neg-filter'); 
+            }
+
+            s = Math.max(0, Math.round(s * 10) / 10);
+            return { s, why, strong: s >= 15, tier: s >= 35 ? 'Core' : s >= 15 ? 'Strong' : s >= 8 ? 'Related' : 'Peripheral' };
         };
 
         const app = {
@@ -504,7 +557,7 @@
                         (r?.results || []).forEach(w => { if (!W.has(w.id)) { const rl = scoreWork(w); if (rl.s >= CFG.minRel || rl.strong) W.set(w.id, { ...w, _relevance: rl.s, _why: rl.why, _tier: rl.tier }) } }); cur = r?.meta?.next_cursor; if (cur) await sleep(20);
                     } done++; pg(38 + (done / batches.length) * 42, "Fetching publications...");
                 }));
-                const brd = [...W.values()].filter(w => w._relevance < (CFG.defMin + 1.5) && w._relevance >= CFG.minRel && !w._why?.some(x => x.includes('agripv'))).sort((a, b) => b._relevance - a._relevance).slice(0, CFG.cap);
+                const brd = [...W.values()].filter(w => w._relevance < (CFG.defMin + 1.5) && w._relevance >= CFG.minRel && !w._why?.some(x => x.includes('explicit'))).sort((a, b) => b._relevance - a._relevance).slice(0, CFG.cap);
                 if (brd.length) { let k = 0; pg(82, `Improving targeting (${brd.length})...`); await Promise.all(Array.from({ length: CFG.conc }, async () => { while (k < brd.length) { const w = brd[k++], d = await fetchJSON(`${CFG.api}/works/${w.id.split('/').pop()}?select=abstract_inverted_index`), ab = d?.abstract_inverted_index ? Object.entries(d.abstract_inverted_index).reduce((a, [x, y]) => (y.forEach(p => a[p] = x), a), []).join(' ') : ""; if (ab) { const rl = scoreWork(w, ab); if (rl.s > w._relevance) { w._relevance = rl.s; w._tier = rl.tier; w._why = [...new Set([...(w._why || []), ...rl.why, 'abs'])] } } pg(82 + (k / brd.length) * 10, `Improving targeting...`); await sleep(15) } })) }
                 return [...W.values()]
             },
