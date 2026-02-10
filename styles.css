@@ -77,15 +77,18 @@ body {
   margin: 0;
   padding: 0;
   background-color: var(--bg-main);
-  /* Modern dot pattern background */
-  background-image: radial-gradient(var(--bg-dots) 1px, transparent 1px);
-  background-size: 24px 24px;
   color: var(--text-primary);
   color-scheme: light;
   font-family: "Inter", "Lato", system-ui, -apple-system, sans-serif;
   font-size: 15px;
   line-height: 1.6;
   text-rendering: optimizeLegibility;
+}
+
+/* CRITICAL FIX: Only apply the dot pattern if NOT in the Scholar App (cleaner background for graph) */
+body:not(:has(#scholarApp)) {
+  background-image: radial-gradient(var(--bg-dots) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 html {
@@ -119,10 +122,17 @@ a {
   border-bottom: 1px solid transparent;
 }
 
-a:hover {
+/* CRITICAL FIX: Prevent hover underlines on links inside the Scholar App (fixes icon buttons) */
+body:not(:has(#scholarApp)) a:hover {
   color: var(--color-brand-dark);
   border-bottom-color: currentColor;
   text-decoration: none;
+}
+
+/* Fallback for Scholar app links: color change only, no border */
+body:has(#scholarApp) a:hover {
+  color: var(--color-brand-dark);
+  border-bottom-color: transparent;
 }
 
 .container {
@@ -133,10 +143,6 @@ a:hover {
 }
 
 /* ========== SHARED APP LAYOUT ========== */
-/* 
-   We use a grid layout on the body to allow the main area 
-   to take remaining height cleanly without flex-grow issues on some browsers.
-*/
 body {
   display: flex;
   flex-direction: column;
@@ -153,7 +159,6 @@ main.container {
   margin: 0;
   padding: var(--space-3);
   padding-bottom: var(--space-3);
-  /* The layout creates an app-like feel */
   height: calc(100vh - var(--header-h));
   overflow: hidden; 
 }
@@ -549,16 +554,15 @@ main.container > .card {
   transform: translateY(-1px);
 }
 
-/* Inputs generic styling */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="search"],
-input[type="date"],
-textarea,
-select {
+/* CRITICAL FIX: Scope heavy input styling to exclude Scholar App so Tailwind utilities work */
+body:not(:has(#scholarApp)) input[type="text"],
+body:not(:has(#scholarApp)) input[type="email"],
+body:not(:has(#scholarApp)) input[type="password"],
+body:not(:has(#scholarApp)) input[type="search"],
+body:not(:has(#scholarApp)) input[type="date"],
+body:not(:has(#scholarApp)) textarea,
+body:not(:has(#scholarApp)) select {
   width: 100%;
-  /* Changed padding to 10px vertical to match buttons better */
   padding: 10px 36px; 
   border-radius: var(--radius-md);
   border: 1px solid transparent;
@@ -570,12 +574,16 @@ select {
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
 }
 
-input:hover, textarea:hover, select:hover {
+body:not(:has(#scholarApp)) input:hover, 
+body:not(:has(#scholarApp)) textarea:hover, 
+body:not(:has(#scholarApp)) select:hover {
   background: rgba(241, 245, 249, 1);
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
 }
 
-input:focus-visible, textarea:focus-visible, select:focus-visible {
+body:not(:has(#scholarApp)) input:focus-visible, 
+body:not(:has(#scholarApp)) textarea:focus-visible, 
+body:not(:has(#scholarApp)) select:focus-visible {
   outline: none;
   background: var(--bg-input-focus);
   border-color: var(--color-brand);
@@ -745,7 +753,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   gap: 12px;
 }
 
-.search-bar input {
+/* Only apply icon to non-scholar inputs */
+body:not(:has(#scholarApp)) .search-bar input {
   width: clamp(240px, 30vw, 320px);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' /%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -1280,15 +1289,16 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 }
 
 /* ========== SCROLLBARS ========== */
-*::-webkit-scrollbar { width: 8px; height: 8px; }
-*::-webkit-scrollbar-track { background: transparent; }
-*::-webkit-scrollbar-thumb {
+/* CRITICAL FIX: Do not override custom scrollbars in the Scholar App */
+body:not(:has(#scholarApp)) *::-webkit-scrollbar { width: 8px; height: 8px; }
+body:not(:has(#scholarApp)) *::-webkit-scrollbar-track { background: transparent; }
+body:not(:has(#scholarApp)) *::-webkit-scrollbar-thumb {
   background-color: var(--border-strong);
   border-radius: 99px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
-*::-webkit-scrollbar-thumb:hover { background-color: var(--text-tertiary); }
+body:not(:has(#scholarApp)) *::-webkit-scrollbar-thumb:hover { background-color: var(--text-tertiary); }
 
 /* ========== NETWORK & PAGE SPECIFIC ========== */
 /* This section respects the specific grid layout requested while applying the new skin */
@@ -1419,8 +1429,8 @@ td {
 }
 tbody tr:hover { background: #f8fafc; }
 
-/* Modal */
-.modal-overlay {
+/* Modal - CRITICAL FIX: Scoped to NOT exist in Scholar App */
+body:not(:has(#scholarApp)) .modal-overlay {
   position: fixed; inset: 0;
   background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(8px);
@@ -1428,9 +1438,9 @@ tbody tr:hover { background: #f8fafc; }
   opacity: 0; pointer-events: none;
   transition: opacity 0.3s;
 }
-.modal-overlay.active { opacity: 1; pointer-events: all; }
+body:not(:has(#scholarApp)) .modal-overlay.active { opacity: 1; pointer-events: all; }
 
-.profile-modal {
+body:not(:has(#scholarApp)) .profile-modal {
   position: fixed; top: 50%; left: 50%;
   transform: translate(-50%, -50%) scale(0.95);
   width: 90%; max-width: 600px;
@@ -1442,7 +1452,7 @@ tbody tr:hover { background: #f8fafc; }
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow: hidden;
 }
-.profile-modal.active { opacity: 1; pointer-events: all; transform: translate(-50%, -50%) scale(1); }
+body:not(:has(#scholarApp)) .profile-modal.active { opacity: 1; pointer-events: all; transform: translate(-50%, -50%) scale(1); }
 
 /* --- About & Leaflet --- */
 #map {
@@ -1479,7 +1489,10 @@ tbody tr:hover { background: #f8fafc; }
 /* Helpers */
 .hidden { display: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
-.spinner { animation: spin 1s linear infinite; width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--color-brand); border-radius: 50%; }
+
+/* FIX: Scope spinner to avoid conflict with Scholar's specific spinner style */
+body:not(:has(#scholarApp)) .spinner { animation: spin 1s linear infinite; width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--color-brand); border-radius: 50%; }
+
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* Stats Grid */
@@ -1501,4 +1514,11 @@ tbody tr:hover { background: #f8fafc; }
   .panel { height: auto; overflow: visible; }
   main.container { height: auto; overflow: visible; }
   .site-header { position: sticky; top: 0; }
+}
+
+.group > .invisible {
+  pointer-events: none !important;
+}
+.group:hover > .invisible.group-hover\:visible {
+  pointer-events: auto !important;
 }

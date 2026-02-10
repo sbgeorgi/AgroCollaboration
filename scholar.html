@@ -1,116 +1,215 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50 antialiased">
+<html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AgriPV Research Network | Publications & Collaboration Graph</title>
-  <meta name="description" content="Explore the AgriPV research network, publications, and collaborations.">
-
-  <!-- Critical pre-render script -->
-  <script src="auth-preloader.js"></script>
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
-    rel="stylesheet">
-  
-  <!-- Font Awesome for Tool Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Lucide Icons for Platform -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <!-- Libraries -->
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  
-  <!-- Tailwind Configuration (Must be before script) -->
-  <script>
-    tailwind = {
-      config: {
-        theme: {
-          extend: {
-            fontFamily: {
-              'inter': ['Inter', 'sans-serif'],
-              'sans': ['Inter', 'sans-serif'] // Override default sans for tool consistency
-            },
-            colors: {
-              'brand': '#16a34a',
-              'brand-light': '#dcfce7'
-            }
-          }
-        }
-      }
-    };
-  </script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <link rel="stylesheet" href="styles.css">
-  <script src="theme.js"></script>
-
-  <style>
-    /* Platform Utilities */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriPV Research Network | Publications & Collaboration Graph</title>
     
-    /* Tool Specific Styles */
-    .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
-    .custom-scroll::-webkit-scrollbar-track { background: 0 0; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    <!-- Auth Preloader to prevent flash of unauthenticated content -->
+    <script src="auth-preloader.js"></script>
 
-    .split-handle { cursor: col-resize; width: 1px; background: #e2e8f0; position: relative; z-index: 20; transition: background .2s; }
-    .split-handle::after { content: ''; position: absolute; inset: 0 -2px; z-index: 10; }
-    .split-handle:active, .split-handle:hover { background: #16a34a; width: 2px; }
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
 
-    .pub-card { transition: all .2s ease; border-bottom: 1px solid #f1f5f9; }
-    .pub-card:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); box-shadow: 0 4px 6px -1px #0000000d; z-index: 10; border-radius: 6px; }
+    <script>tailwind.config = { theme: { extend: { fontFamily: { 'inter': ['Inter', 'sans-serif'] }, colors: { 'brand': '#16a34a', 'brand-light': '#dcfce7' } } } }; </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden
+        }
 
-    .network-member { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-    .external-author { background-color: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+            height: 4px
+        }
 
-    .d3-tooltip { pointer-events: none; position: absolute; background: #fffffff2; backdrop-filter: blur(4px); border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; z-index: 50; box-shadow: 0 4px 15px -3px #0000001a; min-width: 200px; font-size: 11px; }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: 0 0
+        }
 
-    .modal-overlay { position: fixed; inset: 0; background: #00000066; backdrop-filter: blur(2px); z-index: 60; opacity: 0; pointer-events: none; transition: .2s; display: flex; align-items: center; justify-content: center; }
-    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px
+        }
 
-    .profile-modal { transform: scale(.95); transition: .2s; }
-    .modal-overlay.active .profile-modal { transform: scale(1); }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8
+        }
 
-    .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #16a34a; border-radius: 50%; width: 24px; height: 24px; animation: spin .8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+        .split-handle {
+            cursor: col-resize;
+            width: 1px;
+            background: #e2e8f0;
+            position: relative;
+            z-index: 20;
+            transition: background .2s
+        }
 
-    #graphContainer { background: radial-gradient(circle at 1px 1px, #94a3b826 1px, transparent 1px) -8px -8px / 24px 24px; }
-    #graphContainer:active { cursor: grabbing; }
+        .split-handle::after {
+            content: '';
+            position: absolute;
+            inset: 0 -2px;
+            z-index: 10
+        }
 
-    .node-label { paint-order: stroke; stroke: #ffffffcc; stroke-width: 3px; stroke-linejoin: round; font-family: 'Inter', sans-serif; letter-spacing: -.01em; }
+        .split-handle:active,
+        .split-handle:hover {
+            background: #16a34a;
+            width: 2px
+        }
 
-    input[type=range] { -webkit-appearance: none; background: 0 0; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #16a34a; cursor: pointer; margin-top: -5px; box-shadow: 0 1px 2px #0003; }
-    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: #e2e8f0; border-radius: 1px; }
+        .pub-card {
+            transition: all .2s ease;
+            border-bottom: 1px solid #f1f5f9
+        }
 
-    .timeline-bar { fill: #16a34a; opacity: .4; cursor: pointer; transition: opacity .15s; }
-    .timeline-bar:hover { opacity: .8; }
-    .timeline-bar.selected { opacity: 1; fill: #15803d; }
-  </style>
+        .pub-card:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px #0000000d;
+            z-index: 10;
+            border-radius: 6px
+        }
+
+        .network-member {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac
+        }
+
+        .external-author {
+            background-color: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0
+        }
+
+        .d3-tooltip {
+            pointer-events: none;
+            position: absolute;
+            background: #fffffff2;
+            backdrop-filter: blur(4px);
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            z-index: 50;
+            box-shadow: 0 4px 15px -3px #0000001a;
+            min-width: 200px;
+            font-size: 11px
+        }
+
+        /* Scoped modal styles are now in styles.css via :not(:has(#scholarApp)) logic, 
+           but we keep these basics here for the internal scholar structure */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: #00000066;
+            backdrop-filter: blur(2px);
+            z-index: 60;
+            opacity: 0;
+            pointer-events: none;
+            transition: .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto
+        }
+
+        .profile-modal {
+            transform: scale(.95);
+            transition: .2s
+        }
+
+        .modal-overlay.active .profile-modal {
+            transform: scale(1)
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #16a34a;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin .8s linear infinite
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        #graphContainer {
+            background: radial-gradient(circle at 1px 1px, #94a3b826 1px, transparent 1px) -8px -8px / 24px 24px
+        }
+
+        #graphContainer:active {
+            cursor: grabbing
+        }
+
+        .node-label {
+            paint-order: stroke;
+            stroke: #ffffffcc;
+            stroke-width: 3px;
+            stroke-linejoin: round;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -.01em
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            background: 0 0
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+            background: #16a34a;
+            cursor: pointer;
+            margin-top: -5px;
+            box-shadow: 0 1px 2px #0003
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 2px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 1px
+        }
+
+        .timeline-bar {
+            fill: #16a34a;
+            opacity: .4;
+            cursor: pointer;
+            transition: opacity .15s
+        }
+
+        .timeline-bar:hover {
+            opacity: .8
+        }
+
+        .timeline-bar.selected {
+            opacity: 1;
+            fill: #15803d
+        }
+    </style>
 </head>
 
-<body class="text-slate-800 flex flex-col h-full overflow-hidden font-sans bg-slate-50">
+<body class="bg-white text-slate-700 h-screen w-screen flex flex-col overflow-hidden">
 
-  <!-- Note: Global Header/Nav injected by layout.js -->
+    <div id="scholarApp" class="flex flex-1 overflow-hidden min-h-0 w-full">
 
-  <!-- ================= MAIN CONTENT CONTAINER ================= -->
-  <!-- 
-    Structure adapted for Full Screen Tool:
-    - flex-1: Takes remaining height after Header
-    - min-h-0: Critical for nested scrolling to work within flex container
-    - flex-row: Sidebar + Main Content layout
-  -->
-  <div class="flex-1 flex flex-row min-h-0 overflow-hidden relative w-full h-full bg-white">
-    
-    <!-- TOOL SIDEBAR -->
     <aside
         class="w-[320px] flex flex-col border-r border-slate-200 bg-slate-50/80 shrink-0 h-full z-30 backdrop-blur-sm">
         <div class="p-4 border-b border-slate-200 bg-white">
@@ -134,7 +233,7 @@
         <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-5">
             <div>
                 <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Network Stats</h3>
-                <div class="grid grid-cols-2 gap-2" id="statsGrid"></div>
+<div class="grid grid-cols-4 gap-1.5" id="statsGrid"></div>
             </div>
             <div>
                 <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Publication Timeline</h3>
@@ -191,8 +290,7 @@
         </div>
     </aside>
 
-    <!-- TOOL MAIN AREA -->
-    <main class="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-white relative">
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-white relative">
         <header class="h-12 border-b border-slate-200 flex items-center justify-between px-4 bg-white shrink-0 z-20">
             <div class="flex gap-0.5 p-0.5 bg-slate-100 rounded-md border border-slate-200">
                 <button data-view="both"
@@ -310,80 +408,78 @@
         </div>
     </main>
 
-  </div>
+    </div>
 
-  <!-- MODALS -->
-  <div id="loadingOverlay" class="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
-      <div class="spinner mb-4 border-slate-200 border-t-green-600"></div>
-      <h3 class="text-base font-bold text-slate-800 tracking-tight">Initializing Explorer</h3>
-      <p id="loadingStatus" class="text-xs text-slate-400 mt-1 font-medium">Connecting to network...</p>
-      <div class="w-48 bg-slate-100 rounded-full h-1 mt-6 overflow-hidden">
-          <div id="loadingProgress" class="h-full bg-green-500 w-0 transition-all duration-300"></div>
-      </div>
-  </div>
-  <div id="citationModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-      <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 p-5">
-          <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
-              <h3 class="font-bold text-sm text-slate-800">Cite Publication</h3><button
-                  onclick="document.getElementById('citationModal').classList.remove('active')"
-                  class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-          </div>
-          <div class="space-y-3">
-              <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">APA</label>
-                  <div
-                      class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed">
-                      <span id="citeAPA"></span><button
-                          class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
-                          onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button>
-                  </div>
-              </div>
-              <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">BibTeX</label>
-                  <div
-                      class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
-                      <span id="citeBib"></span><button
-                          class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
-                          onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </div>
-  <div id="detailModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-      <div
-          class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
-          <div id="detailContent" class="overflow-y-auto p-8 custom-scroll"></div>
-      </div>
-  </div>
-  <div id="researcherModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-      <div
-          class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]">
-          <div id="researcherContent" class="overflow-y-auto custom-scroll p-0"></div>
-      </div>
-  </div>
+    <div id="loadingOverlay" class="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
+        <div class="spinner mb-4 border-slate-200 border-t-green-600"></div>
+        <h3 class="text-base font-bold text-slate-800 tracking-tight">Initializing Explorer</h3>
+        <p id="loadingStatus" class="text-xs text-slate-400 mt-1 font-medium">Connecting to network...</p>
+        <div class="w-48 bg-slate-100 rounded-full h-1 mt-6 overflow-hidden">
+            <div id="loadingProgress" class="h-full bg-green-500 w-0 transition-all duration-300"></div>
+        </div>
+    </div>
+    <div id="citationModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+        <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 p-5">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+                <h3 class="font-bold text-sm text-slate-800">Cite Publication</h3><button
+                    onclick="document.getElementById('citationModal').classList.remove('active')"
+                    class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">APA</label>
+                    <div
+                        class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed">
+                        <span id="citeAPA"></span><button
+                            class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
+                            onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">BibTeX</label>
+                    <div
+                        class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
+                        <span id="citeBib"></span><button
+                            class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
+                            onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="detailModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+        <div
+            class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+            <div id="detailContent" class="overflow-y-auto p-8 custom-scroll"></div>
+        </div>
+    </div>
+    <div id="researcherModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+        <div
+            class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]">
+            <div id="researcherContent" class="overflow-y-auto custom-scroll p-0"></div>
+        </div>
+    </div>
 
-  <!-- ================= JAVASCRIPT LOGIC ================= -->
-  <script type="module">
+
+<script type="module">
+        // IMPORT EVERYTHING NEEDED FOR AUTH AND UI
+        import { supabase, authState, initAuth, signOut } from "./auth.js";
         import { renderLayout } from './layout.js';
-        import { authState, initAuth, signOut, supabase } from './auth.js';
-        import { initSharedUI, renderHeader, applyI18n, tr, $$, show, hide, getAvatarUrl, $ } from './ui.js';
+        import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide } from './ui.js';
 
-        // Initialize Platform Layout
-        renderLayout('network');
-
-        const state = { language: localStorage.getItem("lang") || "en" };
-
+        renderLayout('scholar');
+        
+        // Minimal translations needed for the Header to render correctly
         const t = {
             en: {
-                nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
+                nav: { schedule: "Schedule", archive: "Archive", scholar: "Scholar", network: "Network", map: "Map", about: "About", admin: "Admin" },
                 auth: { signin: "Sign in", signout: "Sign out" }
             },
             es: {
-                nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
+                nav: { schedule: "Programa", archive: "Archivo", scholar: "Académico", network: "Red", map: "Mapa", about: "Acerca de", admin: "Admin" },
                 auth: { signin: "Ingresar", signout: "Salir" }
             }
         };
+        const currentLang = localStorage.getItem('lang') || 'en';
 
-        // Tool Utility Functions
         const sleep = ms => new Promise(r => setTimeout(r, ms)),
             el = id => document.getElementById(id),
             norm = s => (s || "").trim().toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " "),
@@ -629,7 +725,7 @@
                     }, 450);
                 } catch (e) {
                     console.error(e);
-                    // alert("Failed to load data.");
+                    alert("Failed to load data.");
                 }
             },
 
@@ -1077,11 +1173,11 @@
                 const am = new Set(F.flatMap(p => p._memberAuthors.map(a => a.id)));
 
                 el('statsGrid').innerHTML = [
-                    ['MEMBERS', am.size],
-                    ['WORKS', F.length],
-                    ['CITES', F.reduce((s, p) => s + p.cited_by_count, 0)],
-                    ['TOPICS', new Set(F.flatMap(p => p._topics)).size]
-                ].map(([l, v]) => `<div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center"><span class="text-base font-bold text-slate-700 leading-none">${typeof v === 'number' && v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}</span><span class="text-[8px] text-slate-400 font-bold mt-0.5">${l}</span></div>`).join('');
+    ['MEMBERS', am.size],
+    ['WORKS', F.length],
+    ['CITES', F.reduce((s, p) => s + p.cited_by_count, 0)],
+    ['TOPICS', new Set(F.flatMap(p => p._topics)).size]
+].map(([l, v]) => `<div class="bg-white py-1.5 px-0.5 rounded border border-slate-200 shadow-sm flex flex-col items-center justify-center hover:border-green-300 transition-colors"><span class="text-xs font-bold text-slate-700 leading-none">${typeof v === 'number' && v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}</span><span class="text-[7px] text-slate-400 font-bold mt-0.5">${l}</span></div>`).join('');
 
                 el('filteredCount').textContent = F.length;
                 app.renderTimeline(F);
@@ -1562,26 +1658,12 @@
             }
         };
 
-        function applyPageI18n() {
-            applyI18n(t, state.language);
-            const s = document.querySelector('#langSwitchDesktop div:last-child');
-            if (s) {
-                s.style.transform = state.language === 'es' ? 'translateX(100%)' : 'translateX(0)';
-                s.innerText = state.language.toUpperCase();
-            }
-            // Tool is mostly English-data driven, but we could localize static labels here if needed
-        }
-
-        function handleLangSwitch() {
-            state.language = state.language === 'en' ? 'es' : 'en';
-            localStorage.setItem("lang", state.language);
-            applyPageI18n();
-        }
-
-        (async function main() {
-            initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
-            lucide.createIcons();
-
+        // Initialize Authentication and Shared UI before the specific app logic
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Initialize UI Helpers (mobile menu, redirects)
+            initSharedUI({ onSignOut: signOut });
+            
+            // Redirect to profile on click
             document.addEventListener('click', e => {
                 if (e.target.closest('#btnProfile') || e.target.closest('#userName') ||
                     e.target.closest('#mobileProfileBtn') || e.target.closest('#mobileUserName')) {
@@ -1589,24 +1671,32 @@
                 }
             });
 
-            await initAuth({
+            // 2. Initialize Auth
+            initAuth({
                 onAuthReady: () => {
-                    renderHeader(authState, t, state.language);
+                    // Update Header State
+                    renderHeader(authState, t, currentLang);
+                    
+                    // Fetch Avatar if available
                     if (authState.profile?.avatar_url) {
                         getAvatarUrl(authState.profile.avatar_url).then(url => {
                             const img = $('#userAvatar');
-                            if (url && img) { img.src = url; show(img); hide($('#userInitial')); }
+                            if (url && img) { 
+                                img.src = url; 
+                                show(img); 
+                                hide($('#userInitial')); 
+                            }
                         });
                     }
-                    // Initialize the Tool once Auth is ready (for profile loading)
-                    app.init();
                 },
-                onAuthChange: () => renderHeader(authState, t, state.language)
+                onAuthChange: () => renderHeader(authState, t, currentLang)
             });
 
-            applyPageI18n();
-            window.app = app;
-        })();
+            // 3. Start Scholar App
+            app.init();
+        });
+
+        window.app = app;
     </script>
 </body>
 

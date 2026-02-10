@@ -60,7 +60,7 @@ export function renderLayout(activePage) {
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:rotate-180 ml-1"><path d="m6 9 6 6 6-6"/></svg>
           </button>
           
-          <div class="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 ease-out origin-top-left" style="top: 100%;">
+          <div class="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 ease-out origin-top-left pointer-events-none group-hover:pointer-events-auto" style="top: 100%;">
             <div class="py-1">
               ${dropdownItems}
             </div>
