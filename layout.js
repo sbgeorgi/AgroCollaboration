@@ -4,13 +4,14 @@ import { $ } from './ui.js';
 export function renderLayout(activePage) {
   const app = document.querySelector('body');
   
-  // 1. Navigation Data - SOURCE OF TRUTH FOR BOTH MENUS
+  // 1. Navigation Data - Added Scholar with beta flag
   const navLinks = [
     { key: 'schedule', href: 'index.html', label: 'nav.schedule', text: 'Schedule' },
     { key: 'archive',  href: 'archive.html', label: 'nav.archive', text: 'Archive' },
+    // NEW SCHOLAR LINK WITH BETA FLAG
+    { key: 'scholar',  href: 'scholar.html', label: 'nav.scholar', text: 'Scholar', beta: true }, 
     { key: 'network',  href: 'network.html', label: 'nav.network', text: 'Network' },
     { key: 'map',      href: 'map.html',     label: 'nav.map', text: 'Map' },
-    // About Group (Moved to the end)
     { 
       key: 'about_group', 
       label: 'nav.about', 
@@ -23,20 +24,22 @@ export function renderLayout(activePage) {
     },
   ];
 
+  // Helper for Beta Badge
+  const getBadge = (isBeta) => isBeta 
+    ? `<span style="font-size: 0.55rem; padding: 2px 5px; border-radius: 99px; background: #dbeafe; color: #1e40af; margin-left: 6px; vertical-align: middle; font-weight: 800; letter-spacing: 0.05em; transform: translateY(-1px); display: inline-block;">BETA</span>` 
+    : '';
+
   // 2. DESKTOP NAV HTML
   const navItemsHtml = navLinks.map(link => {
     const isParentActive = link.children?.some(child => child.key === activePage);
     const isActive = link.key === activePage || isParentActive;
     
-    // Using .link class from styles.css
     const baseClass = "link"; 
     const activeClass = isActive ? " active" : "";
 
     if (link.children) {
-      // Desktop Dropdown
       const dropdownItems = link.children.map(child => {
         const isChildActive = child.key === activePage;
-        // Inline styles for dropdown internals as styles.css doesn't define specific dropdown classes
         const childStyle = isChildActive 
           ? "background: var(--color-brand-light); color: var(--color-brand-dark); font-weight: 600;" 
           : "color: var(--text-secondary);";
@@ -57,7 +60,6 @@ export function renderLayout(activePage) {
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:rotate-180 ml-1"><path d="m6 9 6 6 6-6"/></svg>
           </button>
           
-          <!-- Dropdown Panel -->
           <div class="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 ease-out origin-top-left" style="top: 100%;">
             <div class="py-1">
               ${dropdownItems}
@@ -66,34 +68,36 @@ export function renderLayout(activePage) {
         </div>
       `;
     } else {
-      return `<a href="${link.href}" class="${baseClass}${activeClass}" data-i18n="${link.label}">${link.text}</a>`;
+      // ADDED: Badge injection
+      return `<a href="${link.href}" class="${baseClass}${activeClass}" style="display:flex; align-items:center;">
+        <span data-i18n="${link.label}">${link.text}</span>
+        ${getBadge(link.beta)}
+      </a>`;
     }
   }).join('');
 
   // 3. MOBILE NAV LINKS HTML
-  // Uses the same navLinks array, so the order is automatically updated here as well
   const mobileNavHtml = navLinks.map(link => {
     
-    // Helper for mobile links
-    const createMobileLink = (key, href, label, text, isSubItem = false) => {
+    const createMobileLink = (key, href, label, text, isSubItem = false, isBeta = false) => {
       const isActive = key === activePage;
       const activeClass = isActive ? " active" : "";
       
-      // Indentation for sub-items
       const subItemStyle = isSubItem 
         ? "font-size: 1rem; padding-left: 32px; opacity: 0.9; background: transparent;" 
         : "";
       
+      // ADDED: Badge injection for mobile
       return `
         <a href="${href}" 
            class="link${activeClass}" 
-           style="${subItemStyle}"
+           style="${subItemStyle}; display:flex; align-items:center;"
            data-i18n="${label}">
-          ${text}
+          <span>${text}</span>
+          ${getBadge(isBeta)}
         </a>`;
     };
 
-    // Render Group Headers for nested items
     if (link.children && Array.isArray(link.children)) {
       const groupLabel = `
         <div style="width: 100%; text-align: left; padding: 16px 16px 8px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-tertiary); font-weight: 700;">
@@ -106,10 +110,10 @@ export function renderLayout(activePage) {
       return groupLabel + childrenHtml;
     }
     
-    return createMobileLink(link.key, link.href, link.label, link.text);
+    return createMobileLink(link.key, link.href, link.label, link.text, false, link.beta);
   }).join('');
 
-  // 4. HEADER TEMPLATE
+  // 4. HEADER TEMPLATE (unchanged context, just variables)
   const headerHTML = `
   <header class="site-header">
     <div class="container header-grid">
@@ -129,23 +133,15 @@ export function renderLayout(activePage) {
         ${navItemsHtml}
         
         <div class="divider"></div>
-        
         <a href="admin.html" id="btnAdmin" class="link" style="color: var(--color-danger); display: none;" data-i18n="nav.admin">Admin</a>
+        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en"><span>EN</span><span>ES</span></div>
         
-        <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en">
-          <span>EN</span>
-          <span>ES</span>
-        </div>
-        
-        <!-- DESKTOP AUTH AREA -->
         <div class="auth-area">
           <button id="btnProfile" class="profile-button" style="display: none" aria-label="Profile">
             <span id="userInitial"></span>
             <img id="userAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="Avatar" />
           </button>
-          
           <span id="userName" style="display: none; font-weight: 600; font-size: 0.9rem; cursor: pointer;"></span>
-          
           <a href="signin.html" id="btnSignIn" class="btn-primary" style="text-decoration: none; padding: 8px 16px; font-size: 0.9rem;" data-i18n="auth.signin">Sign in</a>
           <button id="btnSignOut" class="btn-ghost" style="display: none" data-i18n="auth.signout">Sign out</button>
         </div>
@@ -153,60 +149,30 @@ export function renderLayout(activePage) {
     </div>
   </header>
   
-  <!-- MOBILE OVERLAY -->
   <div id="mobileNavOverlay" class="mobile-nav-overlay">
     <div id="mobileNavPanel" class="mobile-nav-content">
-      
       <button id="mobileMenuClose" class="mobile-nav-close-btn" aria-label="Close menu">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
-
       <div style="flex: 1; overflow-y: auto; width: 100%; padding-top: 60px;">
-        <nav>
-          ${mobileNavHtml}
-        </nav>
+        <nav>${mobileNavHtml}</nav>
       </div>
-      
-      <!-- MOBILE FOOTER (Auth + Lang) -->
       <div style="padding: 24px; border-top: 1px solid var(--border); background: rgba(255,255,255,0.5); display: flex; flex-direction: column; gap: 16px;">
-        
-        <a href="admin.html" id="btnAdminMobile" class="link" style="color: var(--color-danger); display: none; text-align: center; justify-content: center;" data-i18n="nav.admin">
-          Admin
-        </a>
-        
-        <div style="display: flex; justify-content: center;">
-          <div id="langSwitchMobile" class="lang-switch-slider" data-lang="en">
-            <span>EN</span>
-            <span>ES</span>
-          </div>
-        </div>
-        
-        <!-- MOBILE AUTH CONTAINER -->
+        <a href="admin.html" id="btnAdminMobile" class="link" style="color: var(--color-danger); display: none; text-align: center; justify-content: center;" data-i18n="nav.admin">Admin</a>
+        <div style="display: flex; justify-content: center;"><div id="langSwitchMobile" class="lang-switch-slider" data-lang="en"><span>EN</span><span>ES</span></div></div>
         <div id="mobileAuthContainer" class="auth-area" style="flex-direction: column; gap: 12px; width: 100%;">
-          
-          <!-- Profile Info (Synced from Desktop) -->
           <div id="mobileProfileContainer" style="display: none; flex-direction: column; align-items: center; gap: 8px;">
-            <button id="mobileProfileBtn" class="profile-button">
-              <span id="mobileUserInitial"></span>
-              <img id="mobileUserAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
-            </button>
+            <button id="mobileProfileBtn" class="profile-button"><span id="mobileUserInitial"></span><img id="mobileUserAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" /></button>
             <span id="mobileUserName" style="font-weight: 700; color: var(--text-primary); cursor: pointer;"></span>
           </div>
-
           <a href="signin.html" id="mobileSignIn" class="btn btn-primary" style="width: 100%; text-decoration: none;" data-i18n="auth.signin">Sign in</a>
           <button id="mobileSignOut" class="btn btn-secondary" style="width: 100%; display: none;" data-i18n="auth.signout">Sign out</button>
         </div>
-
       </div>
-      
     </div>
-  </div>
-  `;
+  </div>`;
 
-  // 5. FOOTER TEMPLATE
+  // 5. FOOTER TEMPLATE (Unchanged)
   const footerHTML = `
   <footer class="site-footer" style="padding: 12px 0; border-top: 1px solid var(--border); margin-top: auto;">
     <div class="container" style="display: flex; align-items: center; justify-content: space-between;">
@@ -221,132 +187,49 @@ export function renderLayout(activePage) {
           <a href="https://redagvmx.com" target="_blank" style="display: flex; align-items: center;"><img src="static/rame.png" alt="RAME" style="height: 24px; width: auto; display: block;"></a>
       </div>
     </div>
-  </footer>
-  `;
+  </footer>`;
 
   app.insertAdjacentHTML('afterbegin', headerHTML);
   app.insertAdjacentHTML('beforeend', footerHTML);
   initMobileMenu();
 }
 
-/**
- * Initialize mobile menu toggle & Auth Sync
- */
 function initMobileMenu() {
   const mobileMenuBtn = $('#mobileMenuBtn');
   const mobileMenuClose = $('#mobileMenuClose');
   const mobileNavOverlay = $('#mobileNavOverlay');
-  
   if (!mobileMenuBtn || !mobileNavOverlay) return;
-
-  const openMenu = () => {
-    mobileNavOverlay.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-  };
-
-  const closeMenu = () => {
-    mobileNavOverlay.classList.remove('is-open');
-    document.body.style.overflow = '';
-  };
-
+  const openMenu = () => { mobileNavOverlay.classList.add('is-open'); document.body.style.overflow = 'hidden'; };
+  const closeMenu = () => { mobileNavOverlay.classList.remove('is-open'); document.body.style.overflow = ''; };
   mobileMenuBtn.addEventListener('click', openMenu);
   if (mobileMenuClose) mobileMenuClose.addEventListener('click', closeMenu);
-
-  mobileNavOverlay.addEventListener('click', (e) => {
-    if (e.target === mobileNavOverlay) closeMenu();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && mobileNavOverlay.classList.contains('is-open')) closeMenu();
-  });
-
-  // --- LANGUAGE SWITCH ---
+  mobileNavOverlay.addEventListener('click', (e) => { if (e.target === mobileNavOverlay) closeMenu(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && mobileNavOverlay.classList.contains('is-open')) closeMenu(); });
   const langSwitchMobile = $('#langSwitchMobile');
   const langSwitchDesktop = $('#langSwitchDesktop');
-  
   if (langSwitchMobile && langSwitchDesktop) {
-    langSwitchMobile.addEventListener('click', () => {
-      langSwitchDesktop.click(); // Trigger desktop logic
-      // Visual sync
-      const isES = langSwitchDesktop.getAttribute('data-lang') === 'es';
-      langSwitchMobile.setAttribute('data-lang', isES ? 'en' : 'es'); // toggle
-    });
-    
-    // Observer to keep them physically in sync if desktop changes programmatically
-    const langObserver = new MutationObserver(() => {
-        langSwitchMobile.setAttribute('data-lang', langSwitchDesktop.getAttribute('data-lang'));
-    });
+    langSwitchMobile.addEventListener('click', () => { langSwitchDesktop.click(); const isES = langSwitchDesktop.getAttribute('data-lang') === 'es'; langSwitchMobile.setAttribute('data-lang', isES ? 'en' : 'es'); });
+    const langObserver = new MutationObserver(() => { langSwitchMobile.setAttribute('data-lang', langSwitchDesktop.getAttribute('data-lang')); });
     langObserver.observe(langSwitchDesktop, { attributes: true, attributeFilter: ['data-lang'] });
   }
-
-  // --- AUTH SYNC LOGIC ---
   const syncMobileAuth = () => {
-    const dSignIn = $('#btnSignIn');
-    const dSignOut = $('#btnSignOut');
-    const dProfileBtn = $('#btnProfile');
-    const dAvatar = $('#userAvatar');
-    const dInitial = $('#userInitial');
-    const dName = $('#userName');
-    const dAdmin = $('#btnAdmin');
-
-    const mSignIn = $('#mobileSignIn');
-    const mSignOut = $('#mobileSignOut');
-    const mProfileContainer = $('#mobileProfileContainer');
-    const mAvatar = $('#mobileUserAvatar');
-    const mInitial = $('#mobileUserInitial');
-    const mName = $('#mobileUserName');
-    const mAdmin = $('#btnAdminMobile');
-
+    const dSignIn = $('#btnSignIn'), dSignOut = $('#btnSignOut'), dProfileBtn = $('#btnProfile'), dAvatar = $('#userAvatar'), dInitial = $('#userInitial'), dName = $('#userName'), dAdmin = $('#btnAdmin');
+    const mSignIn = $('#mobileSignIn'), mSignOut = $('#mobileSignOut'), mProfileContainer = $('#mobileProfileContainer'), mAvatar = $('#mobileUserAvatar'), mInitial = $('#mobileUserInitial'), mName = $('#mobileUserName'), mAdmin = $('#btnAdminMobile');
     if (dSignIn && mSignIn) mSignIn.style.display = dSignIn.style.display;
     if (dSignOut && mSignOut) mSignOut.style.display = dSignOut.style.display;
-    
     const isProfileVisible = dProfileBtn && dProfileBtn.style.display !== 'none';
-    if (mProfileContainer) {
-      mProfileContainer.style.display = isProfileVisible ? 'flex' : 'none';
-    }
-
+    if (mProfileContainer) mProfileContainer.style.display = isProfileVisible ? 'flex' : 'none';
     if (isProfileVisible) {
-      if (dAvatar && mAvatar) {
-        mAvatar.src = dAvatar.src;
-        mAvatar.style.display = dAvatar.style.display;
-      }
-      if (dInitial && mInitial) {
-        mInitial.textContent = dInitial.textContent;
-      }
-      if (dName && mName) {
-        mName.textContent = dName.textContent;
-      }
+      if (dAvatar && mAvatar) { mAvatar.src = dAvatar.src; mAvatar.style.display = dAvatar.style.display; }
+      if (dInitial && mInitial) { mInitial.textContent = dInitial.textContent; }
+      if (dName && mName) { mName.textContent = dName.textContent; }
     }
-
-    if (dAdmin && mAdmin) {
-      const isAdminVisible = dAdmin.style.display !== 'none';
-      mAdmin.style.display = isAdminVisible ? 'flex' : 'none';
-    }
+    if (dAdmin && mAdmin) { const isAdminVisible = dAdmin.style.display !== 'none'; mAdmin.style.display = isAdminVisible ? 'flex' : 'none'; }
   };
-
-  const mSignOut = $('#mobileSignOut');
-  const dSignOut = $('#btnSignOut');
-  if (mSignOut && dSignOut) {
-    mSignOut.addEventListener('click', () => {
-      dSignOut.click();
-      closeMenu();
-    });
-  }
-
+  const mSignOut = $('#mobileSignOut'), dSignOut = $('#btnSignOut');
+  if (mSignOut && dSignOut) mSignOut.addEventListener('click', () => { dSignOut.click(); closeMenu(); });
   const observer = new MutationObserver(syncMobileAuth);
-  
-  const observeTarget = (id) => {
-    const el = document.getElementById(id);
-    if (el) observer.observe(el, { attributes: true, childList: true, subtree: true, characterData: true });
-  };
-
-  observeTarget('btnSignIn');
-  observeTarget('btnSignOut');
-  observeTarget('btnProfile');
-  observeTarget('userAvatar');
-  observeTarget('userInitial');
-  observeTarget('userName');
-  observeTarget('btnAdmin');
-
+  const observeTarget = (id) => { const el = document.getElementById(id); if (el) observer.observe(el, { attributes: true, childList: true, subtree: true, characterData: true }); };
+  ['btnSignIn', 'btnSignOut', 'btnProfile', 'userAvatar', 'userInitial', 'userName', 'btnAdmin'].forEach(observeTarget);
   setTimeout(syncMobileAuth, 50);
 }

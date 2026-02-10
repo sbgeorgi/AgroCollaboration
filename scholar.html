@@ -1,204 +1,116 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-slate-50 antialiased">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriPV Research Network | Publications & Collaboration Graph</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>tailwind.config = { theme: { extend: { fontFamily: { 'inter': ['Inter', 'sans-serif'] }, colors: { 'brand': '#16a34a', 'brand-light': '#dcfce7' } } } }; </script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            overflow: hidden
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AgriPV Research Network | Publications & Collaboration Graph</title>
+  <meta name="description" content="Explore the AgriPV research network, publications, and collaborations.">
 
-        .custom-scroll::-webkit-scrollbar {
-            width: 4px;
-            height: 4px
-        }
+  <!-- Critical pre-render script -->
+  <script src="auth-preloader.js"></script>
 
-        .custom-scroll::-webkit-scrollbar-track {
-            background: 0 0
-        }
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+  
+  <!-- Font Awesome for Tool Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Lucide Icons for Platform -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px
-        }
-
-        .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8
-        }
-
-        .split-handle {
-            cursor: col-resize;
-            width: 1px;
-            background: #e2e8f0;
-            position: relative;
-            z-index: 20;
-            transition: background .2s
-        }
-
-        .split-handle::after {
-            content: '';
-            position: absolute;
-            inset: 0 -2px;
-            z-index: 10
-        }
-
-        .split-handle:active,
-        .split-handle:hover {
-            background: #16a34a;
-            width: 2px
-        }
-
-        .pub-card {
-            transition: all .2s ease;
-            border-bottom: 1px solid #f1f5f9
-        }
-
-        .pub-card:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px #0000000d;
-            z-index: 10;
-            border-radius: 6px
-        }
-
-        .network-member {
-            background-color: #dcfce7;
-            color: #15803d;
-            border: 1px solid #86efac
-        }
-
-        .external-author {
-            background-color: #f1f5f9;
-            color: #64748b;
-            border: 1px solid #e2e8f0
-        }
-
-        .d3-tooltip {
-            pointer-events: none;
-            position: absolute;
-            background: #fffffff2;
-            backdrop-filter: blur(4px);
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 10px;
-            z-index: 50;
-            box-shadow: 0 4px 15px -3px #0000001a;
-            min-width: 200px;
-            font-size: 11px
-        }
-
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: #00000066;
-            backdrop-filter: blur(2px);
-            z-index: 60;
-            opacity: 0;
-            pointer-events: none;
-            transition: .2s;
-            display: flex;
-            align-items: center;
-            justify-content: center
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto
-        }
-
-        .profile-modal {
-            transform: scale(.95);
-            transition: .2s
-        }
-
-        .modal-overlay.active .profile-modal {
-            transform: scale(1)
-        }
-
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #16a34a;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin .8s linear infinite
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg)
+  <!-- Libraries -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  
+  <!-- Tailwind Configuration (Must be before script) -->
+  <script>
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            fontFamily: {
+              'inter': ['Inter', 'sans-serif'],
+              'sans': ['Inter', 'sans-serif'] // Override default sans for tool consistency
+            },
+            colors: {
+              'brand': '#16a34a',
+              'brand-light': '#dcfce7'
             }
+          }
         }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link rel="stylesheet" href="styles.css">
+  <script src="theme.js"></script>
 
-        #graphContainer {
-            background: radial-gradient(circle at 1px 1px, #94a3b826 1px, transparent 1px) -8px -8px / 24px 24px
-        }
+  <style>
+    /* Platform Utilities */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Tool Specific Styles */
+    .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+    .custom-scroll::-webkit-scrollbar-track { background: 0 0; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        #graphContainer:active {
-            cursor: grabbing
-        }
+    .split-handle { cursor: col-resize; width: 1px; background: #e2e8f0; position: relative; z-index: 20; transition: background .2s; }
+    .split-handle::after { content: ''; position: absolute; inset: 0 -2px; z-index: 10; }
+    .split-handle:active, .split-handle:hover { background: #16a34a; width: 2px; }
 
-        .node-label {
-            paint-order: stroke;
-            stroke: #ffffffcc;
-            stroke-width: 3px;
-            stroke-linejoin: round;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: -.01em
-        }
+    .pub-card { transition: all .2s ease; border-bottom: 1px solid #f1f5f9; }
+    .pub-card:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); box-shadow: 0 4px 6px -1px #0000000d; z-index: 10; border-radius: 6px; }
 
-        input[type=range] {
-            -webkit-appearance: none;
-            background: 0 0
-        }
+    .network-member { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .external-author { background-color: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
 
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 12px;
-            width: 12px;
-            border-radius: 50%;
-            background: #16a34a;
-            cursor: pointer;
-            margin-top: -5px;
-            box-shadow: 0 1px 2px #0003
-        }
+    .d3-tooltip { pointer-events: none; position: absolute; background: #fffffff2; backdrop-filter: blur(4px); border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; z-index: 50; box-shadow: 0 4px 15px -3px #0000001a; min-width: 200px; font-size: 11px; }
 
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 2px;
-            cursor: pointer;
-            background: #e2e8f0;
-            border-radius: 1px
-        }
+    .modal-overlay { position: fixed; inset: 0; background: #00000066; backdrop-filter: blur(2px); z-index: 60; opacity: 0; pointer-events: none; transition: .2s; display: flex; align-items: center; justify-content: center; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
 
-        .timeline-bar {
-            fill: #16a34a;
-            opacity: .4;
-            cursor: pointer;
-            transition: opacity .15s
-        }
+    .profile-modal { transform: scale(.95); transition: .2s; }
+    .modal-overlay.active .profile-modal { transform: scale(1); }
 
-        .timeline-bar:hover {
-            opacity: .8
-        }
+    .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #16a34a; border-radius: 50%; width: 24px; height: 24px; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-        .timeline-bar.selected {
-            opacity: 1;
-            fill: #15803d
-        }
-    </style>
+    #graphContainer { background: radial-gradient(circle at 1px 1px, #94a3b826 1px, transparent 1px) -8px -8px / 24px 24px; }
+    #graphContainer:active { cursor: grabbing; }
+
+    .node-label { paint-order: stroke; stroke: #ffffffcc; stroke-width: 3px; stroke-linejoin: round; font-family: 'Inter', sans-serif; letter-spacing: -.01em; }
+
+    input[type=range] { -webkit-appearance: none; background: 0 0; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #16a34a; cursor: pointer; margin-top: -5px; box-shadow: 0 1px 2px #0003; }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: #e2e8f0; border-radius: 1px; }
+
+    .timeline-bar { fill: #16a34a; opacity: .4; cursor: pointer; transition: opacity .15s; }
+    .timeline-bar:hover { opacity: .8; }
+    .timeline-bar.selected { opacity: 1; fill: #15803d; }
+  </style>
 </head>
 
-<body class="bg-white text-slate-700 h-screen w-screen flex overflow-hidden">
+<body class="text-slate-800 flex flex-col h-full overflow-hidden font-sans bg-slate-50">
+
+  <!-- Note: Global Header/Nav injected by layout.js -->
+
+  <!-- ================= MAIN CONTENT CONTAINER ================= -->
+  <!-- 
+    Structure adapted for Full Screen Tool:
+    - flex-1: Takes remaining height after Header
+    - min-h-0: Critical for nested scrolling to work within flex container
+    - flex-row: Sidebar + Main Content layout
+  -->
+  <div class="flex-1 flex flex-row min-h-0 overflow-hidden relative w-full h-full bg-white">
+    
+    <!-- TOOL SIDEBAR -->
     <aside
         class="w-[320px] flex flex-col border-r border-slate-200 bg-slate-50/80 shrink-0 h-full z-30 backdrop-blur-sm">
         <div class="p-4 border-b border-slate-200 bg-white">
@@ -278,7 +190,9 @@
             <div id="activeFilterTags" class="flex flex-wrap gap-1 max-h-14 overflow-y-auto custom-scroll"></div>
         </div>
     </aside>
-    <main class="flex-1 flex flex-col h-full overflow-hidden bg-white relative">
+
+    <!-- TOOL MAIN AREA -->
+    <main class="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-white relative">
         <header class="h-12 border-b border-slate-200 flex items-center justify-between px-4 bg-white shrink-0 z-20">
             <div class="flex gap-0.5 p-0.5 bg-slate-100 rounded-md border border-slate-200">
                 <button data-view="both"
@@ -395,55 +309,81 @@
             </div>
         </div>
     </main>
-    <div id="loadingOverlay" class="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
-        <div class="spinner mb-4 border-slate-200 border-t-green-600"></div>
-        <h3 class="text-base font-bold text-slate-800 tracking-tight">Initializing Explorer</h3>
-        <p id="loadingStatus" class="text-xs text-slate-400 mt-1 font-medium">Connecting to network...</p>
-        <div class="w-48 bg-slate-100 rounded-full h-1 mt-6 overflow-hidden">
-            <div id="loadingProgress" class="h-full bg-green-500 w-0 transition-all duration-300"></div>
-        </div>
-    </div>
-    <div id="citationModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-        <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 p-5">
-            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
-                <h3 class="font-bold text-sm text-slate-800">Cite Publication</h3><button
-                    onclick="document.getElementById('citationModal').classList.remove('active')"
-                    class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="space-y-3">
-                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">APA</label>
-                    <div
-                        class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed">
-                        <span id="citeAPA"></span><button
-                            class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
-                            onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button>
-                    </div>
-                </div>
-                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">BibTeX</label>
-                    <div
-                        class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
-                        <span id="citeBib"></span><button
-                            class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
-                            onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="detailModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-        <div
-            class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
-            <div id="detailContent" class="overflow-y-auto p-8 custom-scroll"></div>
-        </div>
-    </div>
-    <div id="researcherModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-        <div
-            class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]">
-            <div id="researcherContent" class="overflow-y-auto custom-scroll p-0"></div>
-        </div>
-    </div>
-    <script type="module">
-        import { supabase } from "./auth.js";
+
+  </div>
+
+  <!-- MODALS -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
+      <div class="spinner mb-4 border-slate-200 border-t-green-600"></div>
+      <h3 class="text-base font-bold text-slate-800 tracking-tight">Initializing Explorer</h3>
+      <p id="loadingStatus" class="text-xs text-slate-400 mt-1 font-medium">Connecting to network...</p>
+      <div class="w-48 bg-slate-100 rounded-full h-1 mt-6 overflow-hidden">
+          <div id="loadingProgress" class="h-full bg-green-500 w-0 transition-all duration-300"></div>
+      </div>
+  </div>
+  <div id="citationModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+      <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 p-5">
+          <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+              <h3 class="font-bold text-sm text-slate-800">Cite Publication</h3><button
+                  onclick="document.getElementById('citationModal').classList.remove('active')"
+                  class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="space-y-3">
+              <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">APA</label>
+                  <div
+                      class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed">
+                      <span id="citeAPA"></span><button
+                          class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
+                          onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button>
+                  </div>
+              </div>
+              <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">BibTeX</label>
+                  <div
+                      class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
+                      <span id="citeBib"></span><button
+                          class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
+                          onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+  <div id="detailModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+      <div
+          class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+          <div id="detailContent" class="overflow-y-auto p-8 custom-scroll"></div>
+      </div>
+  </div>
+  <div id="researcherModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+      <div
+          class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]">
+          <div id="researcherContent" class="overflow-y-auto custom-scroll p-0"></div>
+      </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script type="module">
+        import { renderLayout } from './layout.js';
+        import { authState, initAuth, signOut, supabase } from './auth.js';
+        import { initSharedUI, renderHeader, applyI18n, tr, $$, show, hide, getAvatarUrl, $ } from './ui.js';
+
+        // Initialize Platform Layout
+        renderLayout('network');
+
+        const state = { language: localStorage.getItem("lang") || "en" };
+
+        const t = {
+            en: {
+                nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
+                auth: { signin: "Sign in", signout: "Sign out" }
+            },
+            es: {
+                nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
+                auth: { signin: "Ingresar", signout: "Salir" }
+            }
+        };
+
+        // Tool Utility Functions
         const sleep = ms => new Promise(r => setTimeout(r, ms)),
             el = id => document.getElementById(id),
             norm = s => (s || "").trim().toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " "),
@@ -455,14 +395,12 @@
 
         const CFG = {
             api: "https://api.openalex.org",
-            key: "asf_network_v14",
+            key: "asf_network_v15",
             now: new Date().getFullYear(),
             minRel: 1.0,
             cap: 50,
             conc: 8,
-            defMin: 4.0,
-            enrichConc: 10,       // concurrent author enrichment streams
-            maxWorksPerAuthor: 500 // safety cap per author
+            defMin: 4.0
         };
 
         const RX = {
@@ -630,53 +568,16 @@
         };
 
         const AGRI_SEARCHES = [
-            // === CORE TERMS (explicit agrivoltaic) ===
-            'agrivoltaic|agrivoltaics|agrophotovoltaic|agrophotovoltaics',
-            '"agri-PV"|"agro-PV"|"agri-photovoltaic"|"agro-photovoltaic"',
-            '"solar sharing" agriculture|crop|farming',
-
-            // === DUAL USE / CO-LOCATION ===
-            '"dual use" solar agriculture|crop|farm|land',
-            '"dual-use" solar|photovoltaic land|agriculture',
-            '"co-location" solar|photovoltaic farm|agriculture|crop',
-            '"co-locate" solar|photovoltaic agriculture|farm',
-
-            // === SOLAR + AGRICULTURE COMBINATIONS ===
-            'photovoltaic agriculture|crop|greenhouse|farming',
-            '"solar farm" crop|agriculture|"land use"|vegetation|grazing',
-            '"solar panel" crop|agriculture|shade|yield|plant',
-            '"solar array" crop|farm|agriculture|grazing',
-            '"solar canopy" agriculture|crop|farm|greenhouse',
-
-            // === TECHNOLOGY SPECIFIC ===
-            'bifacial agriculture|crop|farming|albedo|grazing',
-            '"stilt mounted" solar|photovoltaic',
-            '"vertical PV" agriculture|crop|farm',
-            '"semi-transparent" solar agriculture|greenhouse|crop',
-            '"ground-mounted" solar|photovoltaic vegetation|crop|agriculture',
-
-            // === GRAZING / LIVESTOCK ===
-            'solar|photovoltaic grazing|sheep|cattle|livestock|pasture',
-            '"solar grazing" sheep|vegetation|livestock',
-
-            // === FOOD-ENERGY-WATER NEXUS ===
-            '"food-energy-water" solar|photovoltaic|renewable',
-            '"water-energy-food" solar|photovoltaic',
-            '"food energy" nexus solar|photovoltaic',
-
-            // === SCIENCE / MICROCLIMATE ===
-            '"land equivalent ratio" solar|photovoltaic|energy',
-            'photovoltaic "shade tolerance"|"crop yield"|"soil moisture"',
-            'photovoltaic|solar microclimate crop|plant|soil|agriculture',
-            '"photosynthetically active radiation" solar|photovoltaic|panel',
-
-            // === AQUAVOLTAICS ===
+            'agrivoltaic|agrivoltaics|agrophotovoltaic|agrophotovoltaics|"agri-PV"|"agro-PV"|"agri-photovoltaic"|"agro-photovoltaic"|"solar sharing"',
+            '"dual use"|"dual-use"|"co-location"|"co-locate" solar|photovoltaic agriculture|crop|farm|land',
+            'photovoltaic|"solar panel"|"solar array"|"solar farm"|"solar canopy"|"solar park" agriculture|crop|greenhouse|farming|grazing|vegetation|yield',
+            'bifacial|"stilt mounted"|"vertical PV"|"semi-transparent"|"ground-mounted" solar|photovoltaic agriculture|crop|farm|grazing|albedo',
+            'solar|photovoltaic grazing|sheep|cattle|livestock|pasture|"solar grazing"',
+            '"food-energy-water"|"water-energy-food"|"food energy" nexus solar|photovoltaic|renewable',
+            '"land equivalent ratio"|"shade tolerance"|microclimate|"photosynthetically active radiation" solar|photovoltaic crop|agriculture|plant|soil',
             'aquavoltaic|aquavoltaics|"floating solar" aquaculture|fish|pond',
-
-            // === ENERGY + FOOD PRODUCTION ===
-            '"food production"|"food security" solar|photovoltaic',
-            '"solar energy" "crop production"|"crop yield"|"food production"',
-
+            '"food production"|"food security"|"crop production"|"crop yield" solar|photovoltaic|"solar energy"',
+            '"photovoltaic greenhouse"|"greenhouse photovoltaic"|rangevoltaic|ecovoltaic',
         ];
 
         const batchAuthorIds = (ids, maxPerBatch = 40) => {
@@ -713,11 +614,8 @@
                         pg(10, "Resolving profiles...");
                         const R = await app.resolve(P, pg);
 
-                        pg(25, "Phase 1: Seed discovery...");
-                        const { works: seedWorks, relevantAuthorIds } = await app.phase1SeedDiscovery(R, pg);
-
-                        pg(55, "Phase 2: Full enrichment of relevant authors...");
-                        const allWorks = await app.phase2FullEnrichment(R, relevantAuthorIds, seedWorks, pg);
+                        pg(30, "Discovering agrivoltaic publications...");
+                        const allWorks = await app.discoverWorks(R, pg);
 
                         app.build(R, allWorks);
                         Storage.set(CFG.key + "_hash", hx);
@@ -731,7 +629,7 @@
                     }, 450);
                 } catch (e) {
                     console.error(e);
-                    alert("Failed to load data.");
+                    // alert("Failed to load data.");
                 }
             },
 
@@ -766,33 +664,26 @@
                             _worksCount: m?.works_count || 0
                         };
                     })));
-                    pg(10 + (Math.min(i + chk, P.length) / P.length) * 14, "Resolving profiles...");
+                    pg(10 + (Math.min(i + chk, P.length) / P.length) * 18, "Resolving profiles...");
                     await sleep(30);
                 }
                 return out;
             },
 
-            // ═══════════════════════════════════════════════════════════
-            // PHASE 1: Seed Discovery
-            //   - Run agrivoltaic search queries filtered by member authors
-            //   - Identify which authors have ≥1 relevant work
-            //   - Return seed works + set of relevant author IDs
-            // ═══════════════════════════════════════════════════════════
-            phase1SeedDiscovery: async (allAuthors, pg) => {
+            discoverWorks: async (allAuthors, pg) => {
                 const W = new Map();
                 const realAuthors = allAuthors.filter(a => !a.id.startsWith('local:'));
                 const authorIds = realAuthors.map(a => a.id);
+                const memberIdSet = new Set(authorIds);
                 const authorIdBatches = batchAuthorIds(authorIds, 40);
-                const authorRelevanceScore = new Map(); // author.id -> cumulative score
 
                 let totalRequests = 0;
                 const totalCombinations = AGRI_SEARCHES.length * authorIdBatches.length;
                 let completed = 0;
                 const CONCURRENCY = 6;
 
-                pg(26, `Phase 1: ${AGRI_SEARCHES.length} searches × ${authorIdBatches.length} batches...`);
+                pg(30, `Searching: ${AGRI_SEARCHES.length} queries × ${authorIdBatches.length} batches...`);
 
-                // Search-based seed discovery
                 for (let searchIdx = 0; searchIdx < AGRI_SEARCHES.length; searchIdx += CONCURRENCY) {
                     const searchBatch = AGRI_SEARCHES.slice(searchIdx, searchIdx + CONCURRENCY);
 
@@ -825,13 +716,6 @@
                                             _why: rl.why,
                                             _tier: rl.tier
                                         });
-                                        // Track author relevance
-                                        for (const auth of (w.authorships || [])) {
-                                            const aid = auth.author?.id;
-                                            if (aid) {
-                                                authorRelevanceScore.set(aid, (authorRelevanceScore.get(aid) || 0) + rl.s);
-                                            }
-                                        }
                                     }
                                 }
 
@@ -842,8 +726,8 @@
 
                             completed++;
                             pg(
-                                26 + (completed / totalCombinations) * 20,
-                                `Phase 1: ${completed}/${totalCombinations} (${W.size} seeds, ${totalRequests} reqs)...`
+                                30 + (completed / totalCombinations) * 35,
+                                `Searching: ${completed}/${totalCombinations} (${W.size} works, ${totalRequests} reqs)...`
                             );
                         }
                     }));
@@ -851,8 +735,7 @@
                     await sleep(20);
                 }
 
-                // Concept-based sweep
-                pg(47, 'Phase 1: Concept sweep...');
+                pg(66, 'Concept sweep...');
 
                 const conceptFilters = [
                     'concepts.wikidata:Q109680063',
@@ -882,12 +765,6 @@
                                         _why: rl.why,
                                         _tier: rl.tier
                                     });
-                                    for (const auth of (w.authorships || [])) {
-                                        const aid = auth.author?.id;
-                                        if (aid) {
-                                            authorRelevanceScore.set(aid, (authorRelevanceScore.get(aid) || 0) + rl.s);
-                                        }
-                                    }
                                 }
                             }
 
@@ -898,101 +775,90 @@
                     }
                 }
 
-                // Determine relevant authors: any member author with cumulative score ≥ threshold
-                // OR who authored at least 1 strong work
-                const memberIdSet = new Set(authorIds);
-                const relevantAuthorIds = new Set();
+                pg(72, `Found ${W.size} works. Targeted enrichment of top authors...`);
 
-                for (const [aid, cumScore] of authorRelevanceScore) {
-                    if (memberIdSet.has(aid) && cumScore >= 5) {
-                        relevantAuthorIds.add(aid);
-                    }
-                }
-
-                // Also include any member who has at least 1 Core/Strong seed work
+                const authorRelevanceScore = new Map();
                 for (const w of W.values()) {
-                    if (w._relevance >= 15) {
-                        for (const auth of (w.authorships || [])) {
-                            if (memberIdSet.has(auth.author?.id)) {
-                                relevantAuthorIds.add(auth.author.id);
-                            }
+                    for (const auth of (w.authorships || [])) {
+                        const aid = auth.author?.id;
+                        if (aid && memberIdSet.has(aid)) {
+                            authorRelevanceScore.set(aid, (authorRelevanceScore.get(aid) || 0) + w._relevance);
                         }
                     }
                 }
 
-                console.log(`Phase 1 complete: ${W.size} seed works, ${relevantAuthorIds.size} relevant authors out of ${authorIds.length} total, ${totalRequests} requests`);
-                pg(52, `Phase 1 done: ${W.size} seeds, ${relevantAuthorIds.size} relevant authors`);
+                const highValueAuthors = [...authorRelevanceScore.entries()]
+                    .filter(([aid, score]) => {
+                        const coreCount = [...W.values()].filter(w =>
+                            w._relevance >= 15 &&
+                            w.authorships?.some(a => a.author?.id === aid)
+                        ).length;
+                        return score >= 30 || coreCount >= 2;
+                    })
+                    .map(([aid]) => aid);
 
-                return { works: W, relevantAuthorIds };
-            },
+                if (highValueAuthors.length > 0) {
+                    pg(73, `Targeted enrichment: ${highValueAuthors.length} high-value authors...`);
 
-            // ═══════════════════════════════════════════════════════════
-            // PHASE 2: Full Enrichment
-            //   - For each relevant author, fetch ALL their works
-            //   - Score each work → keep relevant ones
-            //   - High throughput with concurrent streams
-            // ═══════════════════════════════════════════════════════════
-            phase2FullEnrichment: async (allAuthors, relevantAuthorIds, seedWorks, pg) => {
-                const W = new Map(seedWorks); // start with seed works
-                const authorQueue = [...relevantAuthorIds];
-                let totalRequests = 0;
-                let completedAuthors = 0;
-                const totalAuthors = authorQueue.length;
-                let authorIdx = 0;
+                    let hvCompleted = 0;
+                    const hvTotal = highValueAuthors.length;
+                    let hvIdx = 0;
+                    const HV_CONCURRENCY = Math.min(8, hvTotal);
 
-                pg(55, `Phase 2: Enriching ${totalAuthors} relevant authors...`);
+                    const targetedSearches = [
+                        'solar|photovoltaic|renewable|energy crop|agriculture|farm|food|land|vegetation|grazing',
+                        'agrivoltaic|agrophotovoltaic|"solar sharing"|"dual use"|"co-location"',
+                    ];
 
-                // Process authors concurrently
-                await Promise.all(Array.from({ length: Math.min(CFG.enrichConc, totalAuthors) }, async () => {
-                    while (true) {
-                        const idx = authorIdx++;
-                        if (idx >= authorQueue.length) break;
-                        const authorId = authorQueue[idx];
-                        const shortId = authorId.split('/').pop();
+                    await Promise.all(Array.from({ length: HV_CONCURRENCY }, async () => {
+                        while (true) {
+                            const idx = hvIdx++;
+                            if (idx >= highValueAuthors.length) break;
+                            const authorId = highValueAuthors[idx];
+                            const shortId = authorId.split('/').pop();
 
-                        let cursor = '*';
-                        let pageNum = 0;
-                        let authorWorksScanned = 0;
+                            for (const searchTerm of targetedSearches) {
+                                let cursor = '*';
+                                let pageNum = 0;
 
-                        while (cursor && pageNum++ < 20 && authorWorksScanned < CFG.maxWorksPerAuthor) {
-                            const url = `${CFG.api}/works?filter=authorships.author.id:${shortId},from_publication_date:${Math.max(1990, CFG.now - 25)}-01-01&per_page=200&cursor=${encodeURIComponent(cursor)}&select=id,title,publication_year,cited_by_count,type,primary_location,open_access,doi,authorships,concepts,topics,keywords`;
+                                while (cursor && pageNum++ < 10) {
+                                    const url = `${CFG.api}/works?filter=authorships.author.id:${shortId},default.search:${searchTerm},from_publication_date:${Math.max(1990, CFG.now - 25)}-01-01&per_page=200&cursor=${encodeURIComponent(cursor)}&select=id,title,publication_year,cited_by_count,type,primary_location,open_access,doi,authorships,concepts,topics,keywords`;
 
-                            const r = await fetchJSON(url);
-                            totalRequests++;
+                                    const r = await fetchJSON(url);
+                                    totalRequests++;
 
-                            if (!r?.results?.length) break;
+                                    if (!r?.results?.length) break;
 
-                            for (const w of r.results) {
-                                authorWorksScanned++;
-                                if (W.has(w.id)) continue;
+                                    for (const w of r.results) {
+                                        if (W.has(w.id)) continue;
+                                        const rl = scoreWork(w);
+                                        if (rl.s >= CFG.minRel || rl.strong) {
+                                            W.set(w.id, {
+                                                ...w,
+                                                _relevance: rl.s,
+                                                _why: rl.why,
+                                                _tier: rl.tier
+                                            });
+                                        }
+                                    }
 
-                                const rl = scoreWork(w);
-                                if (rl.s >= CFG.minRel || rl.strong) {
-                                    W.set(w.id, {
-                                        ...w,
-                                        _relevance: rl.s,
-                                        _why: rl.why,
-                                        _tier: rl.tier
-                                    });
+                                    cursor = r?.meta?.next_cursor;
+                                    if (!cursor || r.results.length < 200) break;
+                                    await sleep(12);
                                 }
                             }
 
-                            cursor = r?.meta?.next_cursor;
-                            if (!cursor || r.results.length < 200) break;
-                            await sleep(12);
+                            hvCompleted++;
+                            if (hvCompleted % 3 === 0 || hvCompleted === hvTotal) {
+                                pg(
+                                    73 + (hvCompleted / hvTotal) * 12,
+                                    `Targeted enrichment: ${hvCompleted}/${hvTotal} (${W.size} works, ${totalRequests} reqs)...`
+                                );
+                            }
                         }
+                    }));
+                }
 
-                        completedAuthors++;
-                        if (completedAuthors % 3 === 0 || completedAuthors === totalAuthors) {
-                            pg(
-                                55 + (completedAuthors / totalAuthors) * 30,
-                                `Phase 2: ${completedAuthors}/${totalAuthors} authors (${W.size} works, ${totalRequests} reqs)...`
-                            );
-                        }
-                    }
-                }));
-
-                // Borderline enrichment with abstracts
                 const borderline = [...W.values()]
                     .filter(w =>
                         w._relevance >= (CFG.minRel - 0.5) &&
@@ -1030,15 +896,14 @@
                     }));
                 }
 
-                // Final cleanup: remove sub-threshold works
                 for (const [id, w] of W) {
                     if (w._relevance < CFG.minRel && !w._why?.some(x => x.includes('explicit'))) {
                         W.delete(id);
                     }
                 }
 
-                pg(97, `Complete: ${W.size} works from ${totalAuthors} authors in ${totalRequests} API requests`);
-                console.log(`Phase 2 complete: ${W.size} total works, ${totalRequests} requests`);
+                pg(97, `Complete: ${W.size} works in ${totalRequests} API requests`);
+                console.log(`Discovery complete: ${W.size} total works, ${totalRequests} requests, ${highValueAuthors?.length || 0} high-value authors enriched`);
                 return [...W.values()];
             },
 
@@ -1697,8 +1562,51 @@
             }
         };
 
-        document.addEventListener('DOMContentLoaded', app.init);
-        window.app = app;
+        function applyPageI18n() {
+            applyI18n(t, state.language);
+            const s = document.querySelector('#langSwitchDesktop div:last-child');
+            if (s) {
+                s.style.transform = state.language === 'es' ? 'translateX(100%)' : 'translateX(0)';
+                s.innerText = state.language.toUpperCase();
+            }
+            // Tool is mostly English-data driven, but we could localize static labels here if needed
+        }
+
+        function handleLangSwitch() {
+            state.language = state.language === 'en' ? 'es' : 'en';
+            localStorage.setItem("lang", state.language);
+            applyPageI18n();
+        }
+
+        (async function main() {
+            initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
+            lucide.createIcons();
+
+            document.addEventListener('click', e => {
+                if (e.target.closest('#btnProfile') || e.target.closest('#userName') ||
+                    e.target.closest('#mobileProfileBtn') || e.target.closest('#mobileUserName')) {
+                    window.location.href = 'profile.html';
+                }
+            });
+
+            await initAuth({
+                onAuthReady: () => {
+                    renderHeader(authState, t, state.language);
+                    if (authState.profile?.avatar_url) {
+                        getAvatarUrl(authState.profile.avatar_url).then(url => {
+                            const img = $('#userAvatar');
+                            if (url && img) { img.src = url; show(img); hide($('#userInitial')); }
+                        });
+                    }
+                    // Initialize the Tool once Auth is ready (for profile loading)
+                    app.init();
+                },
+                onAuthChange: () => renderHeader(authState, t, state.language)
+            });
+
+            applyPageI18n();
+            window.app = app;
+        })();
     </script>
 </body>
 
