@@ -53,6 +53,10 @@ export function renderLayout(activePage) {
           </a>`;
       }).join('');
 
+      // HOTFIX APPLIED BELOW:
+      // 1. Changed 'mt-2' to 'pt-2' on the outer div (Creates invisible bridge)
+      // 2. Removed visual classes (bg-white, shadow, border, etc) from outer div
+      // 3. Added a new inner div to hold those visual classes
       return `
         <div class="relative group z-50" style="display:flex; align-items:center;">
           <button class="${baseClass}${activeClass} flex items-center gap-1 cursor-pointer" style="background:none; border:none; padding:4px 0; font-family:inherit;" aria-expanded="false">
@@ -60,9 +64,11 @@ export function renderLayout(activePage) {
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:rotate-180 ml-1"><path d="m6 9 6 6 6-6"/></svg>
           </button>
           
-          <div class="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 ease-out origin-top-left pointer-events-none group-hover:pointer-events-auto" style="top: 100%;">
-            <div class="py-1">
-              ${dropdownItems}
+          <div class="absolute left-0 pt-2 w-48 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 ease-out origin-top-left pointer-events-none group-hover:pointer-events-auto" style="top: 100%;">
+            <div class="bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden">
+              <div class="py-1">
+                ${dropdownItems}
+              </div>
             </div>
           </div>
         </div>
