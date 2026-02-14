@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgriPV Research Network | Publications & Collaboration Graph</title>
-    
+
     <!-- Auth Preloader to prevent flash of unauthenticated content -->
     <script src="auth-preloader.js"></script>
 
@@ -19,7 +19,86 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            overflow: hidden
+            overflow: hidden;
+            transition: background-color .3s, color .3s;
+        }
+
+        body.dark-mode {
+            background-color: #0f172a;
+            color: #cbd5e1;
+        }
+
+        body.dark-mode .bg-white,
+        body.dark-mode .bg-slate-50,
+        body.dark-mode .bg-slate-50\/80 {
+            background-color: #1e293b !important;
+        }
+
+        body.dark-mode .bg-slate-100 {
+            background-color: #334155 !important;
+        }
+
+        body.dark-mode .border-slate-200,
+        body.dark-mode .border-slate-100,
+        body.dark-mode .border-b {
+            border-color: #334155 !important;
+        }
+
+        body.dark-mode .text-slate-800,
+        body.dark-mode .text-slate-700,
+        body.dark-mode .text-slate-900 {
+            color: #e2e8f0 !important;
+        }
+
+        body.dark-mode .text-slate-600,
+        body.dark-mode .text-slate-500 {
+            color: #94a3b8 !important;
+        }
+
+        body.dark-mode .text-slate-400 {
+            color: #64748b !important;
+        }
+
+        body.dark-mode .pub-card:hover {
+            background: #334155;
+        }
+
+        body.dark-mode #graphContainer {
+            background: radial-gradient(circle at 1px 1px, #94a3b810 1px, transparent 1px) -8px -8px / 24px 24px;
+        }
+
+        body.dark-mode .d3-tooltip {
+            background: #1e293bf2;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .modal-overlay {
+            background: #000000aa;
+        }
+
+        body.dark-mode .profile-modal,
+        body.dark-mode .profile-modal > div {
+            background: #1e293b !important;
+            color: #e2e8f0;
+        }
+
+        body.dark-mode input,
+        body.dark-mode select {
+            background-color: #334155 !important;
+            color: #e2e8f0 !important;
+            border-color: #475569 !important;
+        }
+
+        body.dark-mode .node-label {
+            stroke: #1e293bcc;
+            fill: #e2e8f0;
+        }
+
+        body.dark-mode .external-author {
+            background-color: #334155;
+            color: #94a3b8;
+            border-color: #475569;
         }
 
         .custom-scroll::-webkit-scrollbar {
@@ -64,7 +143,8 @@
 
         .pub-card {
             transition: all .2s ease;
-            border-bottom: 1px solid #f1f5f9
+            border-bottom: 1px solid #f1f5f9;
+            position: relative;
         }
 
         .pub-card:hover {
@@ -102,8 +182,27 @@
             font-size: 11px
         }
 
-        /* Scoped modal styles are now in styles.css via :not(:has(#scholarApp)) logic, 
-           but we keep these basics here for the internal scholar structure */
+        .edge-tooltip {
+            pointer-events: none;
+            position: absolute;
+            background: #fffffff2;
+            backdrop-filter: blur(4px);
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 10px;
+            z-index: 51;
+            box-shadow: 0 4px 15px -3px #0000001a;
+            min-width: 180px;
+            max-width: 280px;
+            font-size: 10px;
+        }
+
+        body.dark-mode .edge-tooltip {
+            background: #1e293bf2;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -145,6 +244,15 @@
             to {
                 transform: rotate(360deg)
             }
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        .pulse-highlight {
+            animation: pulse-ring 1.2s ease-out infinite;
         }
 
         #graphContainer {
@@ -203,6 +311,82 @@
             opacity: 1;
             fill: #15803d
         }
+
+        .bookmark-btn {
+            transition: all .15s ease;
+        }
+
+        .bookmark-btn.active {
+            color: #f59e0b !important;
+        }
+
+        .bookmark-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .pub-checkbox {
+            accent-color: #16a34a;
+            width: 13px;
+            height: 13px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .batch-bar {
+            transition: all .3s ease;
+            transform: translateY(100%);
+        }
+
+        .batch-bar.visible {
+            transform: translateY(0);
+        }
+
+        .sparkline-container {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .graph-search-input {
+            transition: width .3s ease, opacity .3s ease;
+        }
+
+        .scroll-mode-infinite #paginationContainer {
+            display: none !important;
+        }
+
+        .heatmap-cell {
+            cursor: pointer;
+            transition: opacity .15s;
+        }
+
+        .heatmap-cell:hover {
+            opacity: 0.9;
+        }
+        
+        .filter-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 12px;
+        }
+        
+        body.dark-mode .filter-section {
+            border-color: #334155;
+        }
+        
+        .filter-header {
+            font-size: 10px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -210,82 +394,89 @@
 
     <div id="scholarApp" class="flex flex-1 overflow-hidden min-h-0 w-full">
 
-    <aside
-        class="w-[320px] flex flex-col border-r border-slate-200 bg-slate-50/80 shrink-0 h-full z-30 backdrop-blur-sm">
+    <aside class="w-[320px] flex flex-col border-r border-slate-200 bg-slate-50/80 shrink-0 h-full z-30 backdrop-blur-sm">
         <div class="p-4 border-b border-slate-200 bg-white">
             <div class="flex items-center gap-2.5 mb-3">
-                <div
-                    class="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center shadow-md shadow-green-200/50">
+                <div class="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center shadow-md shadow-green-200/50">
                     <i class="fas fa-leaf text-sm"></i>
                 </div>
-                <div>
-                    <h1 class="font-bold text-slate-800 text-sm leading-tight">AgriPV Network</h1>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-bold text-slate-800 text-sm leading-tight">AgriPV Network</h1>
+                        <button id="bookmarkFilterBtn" onclick="app.toggleBookmarkFilter()" class="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold border transition-all bg-slate-50 text-slate-500 border-slate-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200">
+                            <i class="fas fa-bookmark"></i> <span id="bookmarkCount">0</span>
+                        </button>
+                    </div>
                     <p class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Research Explorer</p>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button id="darkModeToggle" title="Toggle Dark Mode" class="w-7 h-7 flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                        <i class="fas fa-moon text-xs" id="darkModeIcon"></i>
+                    </button>
                 </div>
             </div>
             <div class="relative group">
-                <input type="text" id="globalSearch" placeholder="Search title, author, topic..."
+                <input type="text" id="globalSearch" placeholder="Search title, author, topic, abstract..."
                     class="w-full bg-slate-100 border-none rounded-md py-2 pl-9 pr-3 text-xs font-medium focus:ring-1 focus:ring-green-500 focus:bg-white transition-all placeholder:text-slate-400">
-                <i
-                    class="fas fa-search text-slate-400 absolute left-3 top-2.5 text-xs group-focus-within:text-green-600"></i>
+                <i class="fas fa-search text-slate-400 absolute left-3 top-2.5 text-xs group-focus-within:text-green-600"></i>
             </div>
         </div>
-        <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-5">
-            <div>
-                <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Network Stats</h3>
-<div class="grid grid-cols-4 gap-1.5" id="statsGrid"></div>
+        
+        <div class="flex-1 overflow-y-auto custom-scroll p-4">
+            
+            <div class="filter-section">
+                <div class="filter-header">Network Stats</div>
+                <div class="grid grid-cols-4 gap-1.5" id="statsGrid"></div>
             </div>
-            <div>
-                <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Publication Timeline</h3>
+
+            <div class="filter-section">
+                <div class="filter-header">Publication Timeline</div>
                 <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-2">
                     <svg id="timelineChart" width="100%" height="50"></svg>
-                    <div class="text-[8px] text-slate-400 mt-1 leading-snug text-center">Click to filter. Shift+click
-                        for range.</div>
+                    <div class="text-[8px] text-slate-400 mt-1 leading-snug text-center">Click to filter. Shift+click for range.</div>
                 </div>
             </div>
-            <div>
-                <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Relevance Threshold</h3>
-                <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm">
-                    <div class="flex justify-between mb-1.5"><label class="text-[9px] font-semibold text-slate-500">Min
-                            Score</label><span class="text-[9px] font-mono text-green-600 font-bold"
-                            id="valMinRel">4.0</span></div>
-                    <input type="range" id="minRelevance" min="0" max="30" step="0.5" value="2" class="w-full block">
-                    <div class="text-[9px] text-slate-400 mt-1.5 leading-snug">Strictness filter. Lower for broad,
-                        Higher for core.</div>
+
+            <div class="filter-section">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col">
+                        <div class="filter-header">Pub Year</div>
+                        <div class="flex items-center gap-1 bg-white px-1 rounded-lg border border-slate-200 shadow-sm h-8">
+                            <input type="number" id="yearFrom" min="2000" max="2026" placeholder="2000" class="w-full border-none bg-transparent text-center text-[10px] font-medium focus:ring-0 p-1 text-slate-600 placeholder:text-slate-300">
+                            <span class="text-slate-300 text-[8px] font-bold">-</span>
+                            <input type="number" id="yearTo" min="2000" max="2026" placeholder="2025" class="w-full border-none bg-transparent text-center text-[10px] font-medium focus:ring-0 p-1 text-slate-600 placeholder:text-slate-300">
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <div class="filter-header">Min Score: <span class="text-green-600 font-mono" id="valMinRel">4.0</span></div>
+                        <div class="bg-white px-2 rounded-lg border border-slate-200 shadow-sm flex items-center h-8">
+                            <input type="range" id="minRelevance" min="0" max="30" step="0.5" value="2" class="w-full block">
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div>
-                <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Publication Year</h3>
-                <div class="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
-                    <input type="number" id="yearFrom" min="2000" max="2026" placeholder="2000"
-                        class="w-full border-none bg-transparent text-center text-xs font-medium focus:ring-0 p-1 text-slate-600">
-                    <span class="text-slate-300 text-[10px] uppercase font-bold">to</span>
-                    <input type="number" id="yearTo" min="2000" max="2026" placeholder="2025"
-                        class="w-full border-none bg-transparent text-center text-xs font-medium focus:ring-0 p-1 text-slate-600">
-                </div>
+
+            <div class="filter-section h-48">
+                <div class="filter-header">Institutions <button class="text-green-600 hover:underline" onclick="app.clear('insts')">Reset</button></div>
+                <div id="institutionFilters" class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-0.5 max-h-40"></div>
             </div>
-            <div class="flex flex-col h-40">
-                <div class="flex justify-between items-center mb-1.5">
-                    <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Institutions</h3><button
-                        class="text-[9px] text-green-600 font-semibold hover:underline"
-                        onclick="app.clear('insts')">Reset</button>
-                </div>
-                <div id="institutionFilters" class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-0.5"></div>
+
+            <div class="filter-section">
+                <div class="filter-header">Topics <button class="text-green-600 hover:underline" onclick="app.clear('topics')">Reset</button></div>
+                <div id="topicFilters" class="flex flex-wrap gap-1 max-h-40 overflow-y-auto custom-scroll"></div>
             </div>
-            <div class="flex flex-col h-40">
-                <div class="flex justify-between items-center mb-1.5">
-                    <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Topics</h3><button
-                        class="text-[9px] text-green-600 font-semibold hover:underline"
-                        onclick="app.clear('topics')">Reset</button>
+
+            <div class="mt-2">
+                <div class="filter-header">Topic Co-occurrence</div>
+                <div id="heatmapContainer" class="bg-white rounded-lg border border-slate-200 shadow-sm p-2 mt-2 relative overflow-hidden">
+                    <svg id="heatmapChart" width="100%" height="200"></svg>
+                    <div class="text-[8px] text-slate-400 mt-1 leading-snug text-center">Select cell to filter interactions</div>
                 </div>
-                <div id="topicFilters" class="flex flex-wrap gap-1 pb-2"></div>
             </div>
         </div>
+
         <div id="activeFiltersPanel" class="px-4 py-3 bg-white border-t border-slate-200 hidden shrink-0">
-            <div class="flex justify-between items-center mb-2"><span
-                    class="text-[10px] font-semibold text-slate-500"><span id="activeFilterCount">0</span> filters
-                    active</span><button class="text-[9px] text-red-500 font-semibold hover:text-red-700"
-                    onclick="app.reset()">Clear All</button></div>
+            <div class="flex justify-between items-center mb-2"><span class="text-[10px] font-semibold text-slate-500"><span id="activeFilterCount">0</span> filters active</span><button class="text-[9px] text-red-500 font-semibold hover:text-red-700" onclick="app.reset()">Clear All</button></div>
             <div id="activeFilterTags" class="flex flex-wrap gap-1 max-h-14 overflow-y-auto custom-scroll"></div>
         </div>
     </aside>
@@ -293,117 +484,96 @@
     <main class="flex-1 flex flex-col h-full overflow-hidden bg-white relative">
         <header class="h-12 border-b border-slate-200 flex items-center justify-between px-4 bg-white shrink-0 z-20">
             <div class="flex gap-0.5 p-0.5 bg-slate-100 rounded-md border border-slate-200">
-                <button data-view="both"
-                    class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded bg-white shadow-sm text-slate-800"><i
-                        class="fas fa-columns mr-1.5"></i>Split</button>
-                <button data-view="publications"
-                    class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i
-                        class="fas fa-list mr-1.5"></i>List</button>
-                <button data-view="network"
-                    class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i
-                        class="fas fa-project-diagram mr-1.5"></i>Graph</button>
+                <button data-view="both" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded bg-white shadow-sm text-slate-800"><i class="fas fa-columns mr-1.5"></i>Split</button>
+                <button data-view="publications" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i class="fas fa-list mr-1.5"></i>List</button>
+                <button data-view="network" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i class="fas fa-project-diagram mr-1.5"></i>Graph</button>
             </div>
             <div class="flex items-center gap-4">
-                <div class="text-[11px] text-slate-500 font-medium">Found <span id="filteredCount"
-                        class="text-slate-900 font-bold">0</span> results</div>
+                <div class="text-[11px] text-slate-500 font-medium">Found <span id="filteredCount" class="text-slate-900 font-bold">0</span> results</div>
                 <div class="h-3 w-px bg-slate-300"></div>
-                <select id="sortSelect"
-                    class="text-[11px] font-medium bg-transparent border-none outline-none text-slate-600 cursor-pointer hover:text-slate-900 focus:ring-0 py-0 pl-0 pr-6">
+                <button id="scrollModeBtn" onclick="app.toggleScrollMode()" class="text-[10px] text-slate-500 hover:text-slate-700 font-medium flex items-center gap-1" title="Toggle between paginated and infinite scroll">
+                    <i class="fas fa-stream text-[9px]"></i> <span id="scrollModeLabel">Pages</span>
+                </button>
+                <div class="h-3 w-px bg-slate-300"></div>
+                <select id="sortSelect" class="text-[11px] font-medium bg-transparent border-none outline-none text-slate-600 cursor-pointer hover:text-slate-900 focus:ring-0 py-0 pl-0 pr-6">
                     <option value="recent">Newest First</option>
+                    <option value="oldest">Oldest First</option>
                     <option value="relevance">Relevance Score</option>
                     <option value="cited">Most Cited</option>
                     <option value="title">A-Z Title</option>
+                    <option value="bookmarked">Bookmarked First</option>
                 </select>
                 <div class="relative" id="exportDropdown">
-                    <button
-                        class="px-2.5 py-1 bg-slate-900 text-white text-[11px] font-semibold rounded hover:bg-slate-800 shadow-sm transition-colors flex items-center gap-1.5"
-                        onclick="app.toggleExportMenu()"><i class="fas fa-download"></i>Export <i
-                            class="fas fa-chevron-down text-[8px] opacity-60"></i></button>
-                    <div id="exportMenu"
-                        class="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-lg shadow-lg py-1 hidden z-50">
-                        <button onclick="app.exportCSV()"
-                            class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
-                                class="fas fa-file-csv w-4 text-green-600"></i>CSV Spreadsheet</button>
-                        <button onclick="app.exportBibTeX()"
-                            class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
-                                class="fas fa-code w-4 text-purple-600"></i>BibTeX (.bib)</button>
-                        <button onclick="app.exportRIS()"
-                            class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
-                                class="fas fa-file-import w-4 text-blue-600"></i>RIS (Zotero)</button>
+                    <button class="px-2.5 py-1 bg-slate-900 text-white text-[11px] font-semibold rounded hover:bg-slate-800 shadow-sm transition-colors flex items-center gap-1.5" onclick="app.toggleExportMenu()"><i class="fas fa-download"></i>Export <i class="fas fa-chevron-down text-[8px] opacity-60"></i></button>
+                    <div id="exportMenu" class="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-lg shadow-lg py-1 hidden z-50">
+                        <button onclick="app.exportCSV()" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-file-csv w-4 text-green-600"></i>CSV Spreadsheet</button>
+                        <button onclick="app.exportBibTeX()" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-code w-4 text-purple-600"></i>BibTeX (.bib)</button>
+                        <button onclick="app.exportRIS()" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-file-import w-4 text-blue-600"></i>RIS (Zotero)</button>
                         <div class="border-t border-slate-100 my-1"></div>
-                        <button onclick="app.exportGraphSVG()"
-                            class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
-                                class="fas fa-image w-4 text-rose-600"></i>Graph as SVG</button>
-                        <button onclick="app.exportGraphPNG()"
-                            class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
-                                class="fas fa-file-image w-4 text-orange-600"></i>Graph as PNG</button>
+                        <button onclick="app.exportSelectedCSV()" id="exportSelectedBtn" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2 hidden"><i class="fas fa-check-square w-4 text-green-600"></i>Selected as CSV</button>
+                        <button onclick="app.exportSelectedBibTeX()" id="exportSelectedBibBtn" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2 hidden"><i class="fas fa-check-square w-4 text-purple-600"></i>Selected as BibTeX</button>
+                        <div id="exportSelectedDivider" class="border-t border-slate-100 my-1 hidden"></div>
+                        <button onclick="app.exportGraphSVG()" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-image w-4 text-rose-600"></i>Graph as SVG</button>
+                        <button onclick="app.exportGraphPNG()" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-file-image w-4 text-orange-600"></i>Graph as PNG</button>
                     </div>
                 </div>
             </div>
         </header>
         <div id="contentArea" class="flex-1 flex overflow-hidden relative">
             <div id="publicationsPanel" class="flex flex-col min-w-0 w-1/2 bg-white h-full border-r border-slate-100">
+                <div class="flex items-center justify-between px-3 py-1.5 border-b border-slate-100 shrink-0 bg-slate-50/50 min-h-[28px]">
+                    <div id="batchActions" class="flex items-center gap-1 hidden">
+                        <span class="text-[9px] text-slate-500 font-medium"><span id="selectedCount">0</span> selected</span>
+                        <button onclick="app.batchCite()" class="px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 hover:text-green-600 bg-slate-100 rounded border border-slate-200" title="Cite Selected"><i class="fas fa-quote-left"></i></button>
+                        <button onclick="app.batchBookmark()" class="px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 hover:text-amber-500 bg-slate-100 rounded border border-slate-200" title="Bookmark Selected"><i class="fas fa-bookmark"></i></button>
+                        <button onclick="app.clearSelection()" class="px-1.5 py-0.5 text-[9px] font-semibold text-red-400 hover:text-red-600 bg-slate-100 rounded border border-slate-200" title="Clear Selection"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
                 <div id="publicationsList" class="flex-1 overflow-y-auto p-2 custom-scroll bg-white"></div>
                 <div class="p-2 border-t border-slate-200 bg-white shrink-0 flex flex-col gap-2">
-                    <div class="flex justify-between items-center text-[10px] text-slate-400 px-1"><span><span
-                                id="showingFrom">0</span>-<span id="showingTo">0</span> of <span
-                                id="totalPublications">0</span></span></div>
+                    <div class="flex justify-between items-center text-[10px] text-slate-400 px-1"><span><span id="showingFrom">0</span>-<span id="showingTo">0</span> of <span id="totalPublications">0</span></span></div>
                     <div id="paginationContainer" class="flex justify-center gap-1"></div>
                 </div>
             </div>
             <div id="splitHandle" class="split-handle" title="Drag to resize"></div>
             <div id="networkPanel" class="flex flex-col min-w-0 w-1/2 bg-slate-50 relative h-full">
                 <div class="absolute top-3 left-3 z-10 flex flex-col gap-2">
-                    <div
-                        class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
-                        <button
-                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
-                            onclick="app.zoom(1.3)" title="Zoom In"><i class="fas fa-plus text-[10px]"></i></button>
-                        <button
-                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
-                            onclick="app.zoom(0.7)" title="Zoom Out"><i class="fas fa-minus text-[10px]"></i></button>
-                        <button
-                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
-                            onclick="app.fitGraph()" title="Fit to Screen"><i
-                                class="fas fa-compress-arrows-alt text-[10px]"></i></button>
+                    <div class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
+                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.zoom(1.3)" title="Zoom In"><i class="fas fa-plus text-[10px]"></i></button>
+                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.zoom(0.7)" title="Zoom Out"><i class="fas fa-minus text-[10px]"></i></button>
+                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.fitGraph()" title="Fit to Screen"><i class="fas fa-compress-arrows-alt text-[10px]"></i></button>
                     </div>
-                    <div
-                        class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
-                        <button
-                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
-                            onclick="app.toggleCluster()" title="Toggle Grouping"><i
-                                class="fas fa-layer-group text-[10px]"></i></button>
-                        <button
-                            class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
-                            onclick="app.toggleLabels()" title="Toggle Labels"><i
-                                class="fas fa-tag text-[10px]"></i></button>
+                    <div class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
+                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.toggleCluster()" title="Toggle Grouping"><i class="fas fa-layer-group text-[10px]"></i></button>
+                        <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.toggleLabels()" title="Toggle Labels"><i class="fas fa-tag text-[10px]"></i></button>
                     </div>
                 </div>
-                <div class="absolute top-3 right-3 z-10">
-                    <div
-                        class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 w-32 space-y-2">
+                <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
+                    <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 w-32 space-y-2">
                         <div>
-                            <div class="flex justify-between mb-0.5"><label
-                                    class="text-[8px] font-bold text-slate-400 uppercase">Link Dist</label></div><input
-                                type="range" id="linkDistance" min="50" max="320" value="120" class="w-full block">
+                            <div class="flex justify-between mb-0.5"><label class="text-[8px] font-bold text-slate-400 uppercase">Link Dist</label></div><input type="range" id="linkDistance" min="50" max="320" value="120" class="w-full block">
                         </div>
                         <div>
-                            <div class="flex justify-between mb-0.5"><label
-                                    class="text-[8px] font-bold text-slate-400 uppercase">Gravity</label></div><input
-                                type="range" id="chargeStrength" min="100" max="900" value="320" class="w-full block">
+                            <div class="flex justify-between mb-0.5"><label class="text-[8px] font-bold text-slate-400 uppercase">Gravity</label></div><input type="range" id="chargeStrength" min="100" max="900" value="320" class="w-full block">
                         </div>
+                    </div>
+                    <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-1.5 w-32">
+                        <div class="flex items-center gap-1 mb-1">
+                            <i class="fas fa-search text-[8px] text-slate-400"></i>
+                            <label class="text-[8px] font-bold text-slate-400 uppercase">Find Node</label>
+                        </div>
+                        <input type="text" id="graphSearchInput" placeholder="Researcher..." class="graph-search-input w-full bg-slate-50 border border-slate-200 rounded py-1 px-1.5 text-[10px] focus:ring-1 focus:ring-green-500 focus:bg-white placeholder:text-slate-300">
                     </div>
                 </div>
                 <div class="absolute bottom-3 left-3 z-10 pointer-events-none">
-                    <div
-                        class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 max-h-32 overflow-y-auto custom-scroll w-40 pointer-events-auto">
+                    <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 max-h-32 overflow-y-auto custom-scroll w-40 pointer-events-auto">
                         <div class="text-[8px] font-bold text-slate-400 uppercase mb-1">Affiliations</div>
                         <div id="legendContainer" class="space-y-0.5"></div>
                     </div>
                 </div>
-                <div id="graphContainer" class="flex-1 w-full h-full cursor-grab overflow-hidden"><svg id="networkGraph"
-                        width="100%" height="100%"></svg></div>
+                <div id="graphContainer" class="flex-1 w-full h-full cursor-grab overflow-hidden"><svg id="networkGraph" width="100%" height="100%"></svg></div>
                 <div id="tooltip" class="d3-tooltip hidden"></div>
+                <div id="edgeTooltip" class="edge-tooltip hidden"></div>
             </div>
         </div>
     </main>
@@ -421,53 +591,60 @@
     <div id="citationModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
         <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 p-5">
             <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
-                <h3 class="font-bold text-sm text-slate-800">Cite Publication</h3><button
-                    onclick="document.getElementById('citationModal').classList.remove('active')"
-                    class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                <h3 class="font-bold text-sm text-slate-800">Cite Publication</h3><button onclick="document.getElementById('citationModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
             </div>
             <div class="space-y-3">
                 <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">APA</label>
-                    <div
-                        class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed">
-                        <span id="citeAPA"></span><button
-                            class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
-                            onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button>
+                    <div class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed">
+                        <span id="citeAPA"></span><button class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]" onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
                 <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">BibTeX</label>
-                    <div
-                        class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
-                        <span id="citeBib"></span><button
-                            class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
-                            onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button>
+                    <div class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
+                        <span id="citeBib"></span><button class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]" onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">RIS</label>
+                    <div class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
+                        <span id="citeRIS"></span><button class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]" onclick="app.copy('citeRIS')"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div id="detailModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-        <div
-            class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+        <div class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
             <div id="detailContent" class="overflow-y-auto p-8 custom-scroll"></div>
         </div>
     </div>
     <div id="researcherModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-        <div
-            class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]">
+        <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]">
             <div id="researcherContent" class="overflow-y-auto custom-scroll p-0"></div>
+        </div>
+    </div>
+    <div id="compareModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+        <div class="profile-modal w-full max-w-3xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+            <div id="compareContent" class="overflow-y-auto p-6 custom-scroll"></div>
+        </div>
+    </div>
+    <div id="batchCiteModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+        <div class="profile-modal w-full max-w-2xl max-h-[85vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100">
+                <h3 class="font-bold text-sm text-slate-800">Batch Citations</h3>
+                <button onclick="document.getElementById('batchCiteModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="batchCiteContent" class="overflow-y-auto p-5 custom-scroll space-y-3"></div>
         </div>
     </div>
 
 
 <script type="module">
-        // IMPORT EVERYTHING NEEDED FOR AUTH AND UI
         import { supabase, authState, initAuth, signOut } from "./auth.js";
         import { renderLayout } from './layout.js';
         import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide } from './ui.js';
 
         renderLayout('scholar');
-        
-        // Minimal translations needed for the Header to render correctly
+
         const t = {
             en: {
                 nav: { schedule: "Schedule", archive: "Archive", scholar: "Scholar", network: "Network", map: "Map", about: "About", admin: "Admin" },
@@ -684,15 +861,44 @@
             return batches;
         };
 
+        // Bookmarks persistence
+        const BOOKMARKS_KEY = 'agripv_bookmarks';
+        const loadBookmarks = () => {
+            try { return new Set(JSON.parse(localStorage.getItem(BOOKMARKS_KEY) || '[]')); }
+            catch { return new Set(); }
+        };
+        const saveBookmarks = (bm) => {
+            try { localStorage.setItem(BOOKMARKS_KEY, JSON.stringify([...bm])); }
+            catch { }
+        };
+
+        // Abstract cache for search
+        const abstractCache = new Map();
+
         const app = {
             data: { researchers: [], pubs: [], topics: new Map, graph: { nodes: [], links: [] } },
-            state: { filters: { q: '', topics: new Set, insts: new Set, yFrom: null, yTo: null, minRel: CFG.defMin }, page: 1, sort: 'recent', graph: { cluster: true, labels: true }, lastFiltered: [] },
+            state: {
+                filters: { q: '', topics: new Set, insts: new Set, yFrom: null, yTo: null, minRel: CFG.defMin, bookmarksOnly: false, cooccurrence: null },
+                page: 1,
+                sort: 'recent',
+                graph: { cluster: true, labels: true },
+                lastFiltered: [],
+                selected: new Set(),
+                compareNodes: [],
+                scrollMode: 'paginated',
+                darkMode: localStorage.getItem('agripv_dark') === '1',
+                heatmapVisible: true
+            },
             d3: {},
             instColors: new Map,
+            bookmarks: loadBookmarks(),
+            session: { bookmarked: 0 },
 
             init: async () => {
                 app.setupUI();
                 app.setupGraph();
+                app.applyDarkMode();
+                app.updateBookmarkCount();
                 const pg = (p, t) => {
                     el('loadingProgress').style.width = p + '%';
                     el('loadingStatus').textContent = t;
@@ -984,6 +1190,7 @@
                                     w._tier = rl.tier;
                                     w._why = [...new Set([...(w._why || []), ...rl.why, 'abs'])];
                                 }
+                                abstractCache.set(w.id, ab);
                             }
 
                             pg(87 + (k / borderline.length) * 8, `Enriching ${k}/${borderline.length}...`);
@@ -1053,8 +1260,9 @@
                     for (let x = 0; x < i.length; x++)
                         for (let y = x + 1; y < i.length; y++) {
                             const k = [i[x], i[y]].sort().join('|');
-                            const l = L.get(k) || { source: i[x], target: i[y], weight: 0 };
+                            const l = L.get(k) || { source: i[x], target: i[y], weight: 0, pubIds: [] };
                             l.weight++;
+                            l.pubIds.push(p.id);
                             L.set(k, l);
                             D.set(i[x], (D.get(i[x]) || 0) + 1);
                             D.set(i[y], (D.get(i[y]) || 0) + 1);
@@ -1158,50 +1366,91 @@
                 return app.instColors.get(i);
             },
 
+            // Generate sparkline SVG for a data array
+            sparkline: (data, w = 48, h = 16) => {
+                if (!data || data.length < 2) return '';
+                const max = Math.max(...data, 1);
+                const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - (v / max) * (h - 2) - 1}`).join(' ');
+                return `<svg class="sparkline-container" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="${pts}"/></svg>`;
+            },
+
             render: () => {
-                const { q, topics: T, insts: I, yFrom: yf, yTo: yt, minRel: mr } = app.state.filters;
+                const { q, topics: T, insts: I, yFrom: yf, yTo: yt, minRel: mr, bookmarksOnly: bo, cooccurrence: co } = app.state.filters;
                 const ql = norm(q);
-                const F = app.data.pubs.filter(p =>
+                let F = app.data.pubs.filter(p =>
                     p._relevance >= mr &&
                     (!yf || p.publication_year >= yf) &&
                     (!yt || p.publication_year <= yt) &&
                     (!I.size || p._memberAuthors.some(a => I.has(a.inst))) &&
                     (!T.size || p._topics.some(t => T.has(t))) &&
-                    (!ql || norm(p.title).includes(ql) || p._allAuthors.some(a => norm(a.name).includes(ql)) || p._topics.some(t => norm(t).includes(ql)))
+                    (!bo || app.bookmarks.has(p.id)) &&
+                    (!ql || norm(p.title).includes(ql) || p._allAuthors.some(a => norm(a.name).includes(ql)) || p._topics.some(t => norm(t).includes(ql)) || (abstractCache.has(p.id) && norm(abstractCache.get(p.id)).includes(ql)))
                 );
+
+                if (co) {
+                    F = F.filter(p => p._topics.includes(co.t1) && p._topics.includes(co.t2));
+                }
+
                 app.state.lastFiltered = F;
                 const am = new Set(F.flatMap(p => p._memberAuthors.map(a => a.id)));
 
+                // Compute sparkline data for publications per year
+                const yearCounts = new Map();
+                F.forEach(p => p.publication_year && yearCounts.set(p.publication_year, (yearCounts.get(p.publication_year) || 0) + 1));
+                const sparkYears = [...yearCounts.keys()].sort((a, b) => a - b);
+                const sparkData = sparkYears.map(y => yearCounts.get(y) || 0);
+
+                // Citation sparkline
+                const citByYear = new Map();
+                F.forEach(p => p.publication_year && citByYear.set(p.publication_year, (citByYear.get(p.publication_year) || 0) + p.cited_by_count));
+                const citSparkData = sparkYears.map(y => citByYear.get(y) || 0);
+
+                const totalCites = F.reduce((s, p) => s + p.cited_by_count, 0);
+                const topicCount = new Set(F.flatMap(p => p._topics)).size;
+
                 el('statsGrid').innerHTML = [
-    ['MEMBERS', am.size],
-    ['WORKS', F.length],
-    ['CITES', F.reduce((s, p) => s + p.cited_by_count, 0)],
-    ['TOPICS', new Set(F.flatMap(p => p._topics)).size]
-].map(([l, v]) => `<div class="bg-white py-1.5 px-0.5 rounded border border-slate-200 shadow-sm flex flex-col items-center justify-center hover:border-green-300 transition-colors"><span class="text-xs font-bold text-slate-700 leading-none">${typeof v === 'number' && v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}</span><span class="text-[7px] text-slate-400 font-bold mt-0.5">${l}</span></div>`).join('');
+                    ['MEMBERS', am.size, null],
+                    ['WORKS', F.length, sparkData],
+                    ['CITES', totalCites, citSparkData],
+                    ['TOPICS', topicCount, null]
+                ].map(([l, v, sp]) => `<div class="bg-white py-1.5 px-0.5 rounded border border-slate-200 shadow-sm flex flex-col items-center justify-center hover:border-green-300 transition-colors"><span class="text-xs font-bold text-slate-700 leading-none">${typeof v === 'number' && v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}</span>${sp ? `<div class="mt-0.5">${app.sparkline(sp, 36, 12)}</div>` : ''}<span class="text-[7px] text-slate-400 font-bold mt-0.5">${l}</span></div>`).join('');
 
                 el('filteredCount').textContent = F.length;
                 app.renderTimeline(F);
 
-                F.sort({
+                const sortFns = {
                     cited: (a, b) => b.cited_by_count - a.cited_by_count,
                     relevance: (a, b) => b._relevance - a._relevance || b.cited_by_count - a.cited_by_count,
                     title: (a, b) => a.title.localeCompare(b.title),
-                    recent: (a, b) => b.publication_year - a.publication_year || b._relevance - a._relevance
-                }[app.state.sort]);
+                    recent: (a, b) => b.publication_year - a.publication_year || b._relevance - a._relevance,
+                    oldest: (a, b) => a.publication_year - b.publication_year || b._relevance - a._relevance,
+                    bookmarked: (a, b) => {
+                        const ab = app.bookmarks.has(a.id) ? 1 : 0;
+                        const bb = app.bookmarks.has(b.id) ? 1 : 0;
+                        return bb - ab || b._relevance - a._relevance;
+                    }
+                };
+                F.sort(sortFns[app.state.sort] || sortFns.recent);
 
-                const sz = 12;
-                const pgs = Math.ceil(F.length / sz);
+                const isInfinite = app.state.scrollMode === 'infinite';
+                const sz = isInfinite ? F.length : 12;
+                const pgs = isInfinite ? 1 : Math.ceil(F.length / sz);
                 const pg = app.state.page = clamp(app.state.page, 1, Math.max(1, pgs));
-                const st = (pg - 1) * sz;
+                const st = isInfinite ? 0 : (pg - 1) * sz;
+                const visiblePubs = F.slice(st, st + sz);
 
-                el('publicationsList').innerHTML = F.slice(st, st + sz).map(p => `<div class="pub-card p-3 bg-white mb-2 cursor-pointer" onclick="app.detail('${p.id}')"><div class="flex items-start justify-between gap-2 mb-1.5"><h4 class="font-bold text-slate-800 text-xs leading-snug flex-1">${esc(p.title)}</h4><div class="shrink-0 flex items-center gap-1">${p.is_oa ? '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[8px] font-bold rounded border border-amber-100 uppercase">OA</span>' : ''} ${p._tier === 'Core' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-green-100 text-green-800 border border-green-200">Core</span>' : (p._tier === 'Strong' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">Strong</span>' : '')}</div></div><div class="flex flex-wrap gap-1 mb-2">${p._allAuthors.slice(0, 5).map(a => `<span class="px-1.5 py-0.5 rounded text-[9px] truncate max-w-[100px] ${a.isMember ? 'network-member font-medium' : 'external-author'}">${esc(a.name)}</span>`).join('')}${p._allAuthors.length > 5 ? `<span class="text-[9px] text-slate-400 self-center">+${p._allAuthors.length - 5}</span>` : ''}</div><div class="flex items-center gap-3 text-[9px] text-slate-500 font-medium"><span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${p.publication_year || ''}</span><span class="flex items-center gap-1"><i class="fas fa-quote-right text-slate-400"></i> ${p.cited_by_count}</span><span class="ml-auto text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 font-semibold">Score: ${p._relevance.toFixed(1)}</span><div class="flex gap-1 ml-1"><button class="hover:text-brand p-1" onclick="event.stopPropagation();app.cite('${p.id}')" title="Cite"><i class="fas fa-quote-left"></i></button>${p.url ? `<a href="${p.url}" target="_blank" onclick="event.stopPropagation()" class="hover:text-blue-600 p-1" title="Open Source"><i class="fas fa-external-link-alt"></i></a>` : ''}</div></div></div>`).join('') || '<div class="text-center py-20 text-slate-400 text-xs">No results found matching your criteria.</div>';
+                el('publicationsList').innerHTML = visiblePubs.map(p => {
+                    const isBookmarked = app.bookmarks.has(p.id);
+                    const isSelected = app.state.selected.has(p.id);
+                    return `<div class="pub-card p-3 bg-white mb-2 cursor-pointer" onclick="app.detail('${p.id}')"><div class="flex items-start gap-2"><input type="checkbox" class="pub-checkbox mt-1" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation();app.toggleSelect('${p.id}')"><div class="flex-1 min-w-0"><div class="flex items-start justify-between gap-2 mb-1.5"><h4 class="font-bold text-slate-800 text-xs leading-snug flex-1">${esc(p.title)}</h4><div class="shrink-0 flex items-center gap-1"><button class="bookmark-btn ${isBookmarked ? 'active text-amber-500' : 'text-slate-300 hover:text-amber-400'} p-1 text-xs" onclick="event.stopPropagation();app.toggleBookmark('${p.id}')" title="${isBookmarked ? 'Remove bookmark' : 'Bookmark'}"><i class="fas fa-bookmark"></i></button>${p.is_oa ? '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[8px] font-bold rounded border border-amber-100 uppercase">OA</span>' : ''} ${p._tier === 'Core' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-green-100 text-green-800 border border-green-200">Core</span>' : (p._tier === 'Strong' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">Strong</span>' : '')}</div></div><div class="flex flex-wrap gap-1 mb-2">${p._allAuthors.slice(0, 5).map(a => `<span class="px-1.5 py-0.5 rounded text-[9px] truncate max-w-[100px] ${a.isMember ? 'network-member font-medium' : 'external-author'}">${esc(a.name)}</span>`).join('')}${p._allAuthors.length > 5 ? `<span class="text-[9px] text-slate-400 self-center">+${p._allAuthors.length - 5}</span>` : ''}</div><div class="flex items-center gap-3 text-[9px] text-slate-500 font-medium"><span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${p.publication_year || ''}</span><span class="flex items-center gap-1"><i class="fas fa-quote-right text-slate-400"></i> ${p.cited_by_count}</span><span class="ml-auto text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 font-semibold">Score: ${p._relevance.toFixed(1)}</span><div class="flex gap-1 ml-1"><button class="hover:text-brand p-1" onclick="event.stopPropagation();app.cite('${p.id}')" title="Cite"><i class="fas fa-quote-left"></i></button>${p.doi ? `<button class="hover:text-blue-600 p-1" onclick="event.stopPropagation();app.copyDOI('${jsStr(p.doi)}')" title="Copy DOI"><i class="fas fa-link"></i></button>` : ''}${p.url ? `<a href="${p.url}" target="_blank" onclick="event.stopPropagation()" class="hover:text-blue-600 p-1" title="Open Source"><i class="fas fa-external-link-alt"></i></a>` : ''}</div></div></div></div></div>`;
+                }).join('') || '<div class="text-center py-20 text-slate-400 text-xs">No results found matching your criteria.</div>';
 
-                el('publicationsList').scrollTop = 0;
+                if (!isInfinite) el('publicationsList').scrollTop = 0;
                 ['showingFrom', 'showingTo', 'totalPublications'].forEach((id, i) => el(id).textContent = [F.length ? st + 1 : 0, Math.min(st + sz, F.length), F.length][i]);
 
                 const btns = [];
                 const addB = (p, l, a) => btns.push(`<button onclick="app.setPage(${p})" class="w-6 h-6 flex items-center justify-center rounded text-[9px] font-medium transition-colors ${a ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`);
-                if (pgs > 1) {
+                if (!isInfinite && pgs > 1) {
                     addB(Math.max(1, pg - 1), '<i class="fas fa-chevron-left"></i>');
                     (pgs <= 5 ? Array.from({ length: pgs }, (_, i) => i + 1) : (pg <= 3 ? [1, 2, 3, '...', pgs] : (pg >= pgs - 2 ? [1, '...', pgs - 2, pgs - 1, pgs] : [1, '...', pg, pg + 1, '...', pgs]))).forEach(x => x === '...' ? btns.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : addB(x, x, x === pg));
                     addB(Math.min(pgs, pg + 1), '<i class="fas fa-chevron-right"></i>');
@@ -1219,13 +1468,26 @@
 
                 el('topicFilters').innerHTML = [...tc].sort((a, b) => b[1] - a[1]).slice(0, 35).map(([t, c]) => `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] transition-all border flex items-center gap-1 ${T.has(t) ? 'bg-green-100 text-green-800 border-green-200 font-semibold' : 'bg-slate-50 text-slate-500 border-transparent hover:bg-white hover:border-slate-200'}">${esc(t)} <span class="opacity-50 text-[8px]">${c}</span></button>`).join('');
 
-                el('activeFiltersPanel').classList.toggle('hidden', !(T.size + I.size));
-                el('activeFilterCount').textContent = T.size + I.size;
+                const filterCount = T.size + I.size + (bo ? 1 : 0) + (co ? 1 : 0);
+                el('activeFiltersPanel').classList.toggle('hidden', !filterCount);
+                el('activeFilterCount').textContent = filterCount;
                 const tag = (l, k, c) => `<span class="${c} px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>`;
-                el('activeFilterTags').innerHTML = [...T].map(t => tag(t, 'topics', 'bg-green-50 text-green-700 border-green-200')).join('') + [...I].map(i => tag(i, 'insts', 'bg-blue-50 text-blue-700 border-blue-200')).join('');
+                el('activeFilterTags').innerHTML =
+                    (bo ? '<span class="bg-amber-50 text-amber-700 border-amber-200 px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">Bookmarked<button onclick="app.toggleBookmarkFilter()" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>' : '') +
+                    (co ? `<span class="bg-purple-50 text-purple-700 border-purple-200 px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">Interaction: ${co.t1.substring(0,8)}... & ${co.t2.substring(0,8)}...<button onclick="app.clearCooccurrence()" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>` : '') +
+                    [...T].map(t => tag(t, 'topics', 'bg-green-50 text-green-700 border-green-200')).join('') +
+                    [...I].map(i => tag(i, 'insts', 'bg-blue-50 text-blue-700 border-blue-200')).join('');
 
                 const actInst = new Set(app.data.researchers.filter(r => am.has(r.id)).map(r => r.inst));
                 el('legendContainer').innerHTML = [...app.instColors].filter(([i]) => actInst.has(i)).map(([i, c]) => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full shadow-sm" style="background:${c}"></span><span class="text-[9px] text-slate-600 truncate">${esc(i)}</span></div>`).join('');
+
+                app.updateSelectionUI();
+                app.updateBookmarkCount();
+
+                // Render heatmap if visible
+                if (app.state.heatmapVisible) {
+                    app.renderHeatmap(app.state.lastFiltered); // Use filtered set for context, but maybe we want global context? Usually co-occurrence is based on current set.
+                }
             },
 
             renderTimeline: F => {
@@ -1275,6 +1537,115 @@
                     .attr('font-size', 7)
                     .attr('fill', '#94a3b8')
                     .text(d => d.toString().slice(-2));
+            },
+
+            renderHeatmap: (F) => {
+                const svg = d3.select('#heatmapChart');
+                svg.selectAll('*').remove();
+
+                // Build topic co-occurrence based on current filtered set F
+                const topicPairs = new Map();
+                const topicCounts = new Map();
+                F.forEach(p => {
+                    const ts = p._topics.slice(0, 5);
+                    ts.forEach(t => topicCounts.set(t, (topicCounts.get(t) || 0) + 1));
+                    for (let i = 0; i < ts.length; i++) {
+                        for (let j = i + 1; j < ts.length; j++) {
+                            const k = [ts[i], ts[j]].sort().join('|||');
+                            topicPairs.set(k, (topicPairs.get(k) || 0) + 1);
+                        }
+                    }
+                });
+
+                const topTopics = [...topicCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([t]) => t);
+                if (topTopics.length < 2) return;
+
+                const W = el('heatmapChart').clientWidth;
+                const H = 200;
+                const margin = { top: 60, right: 10, bottom: 10, left: 60 };
+                const cellW = (W - margin.left - margin.right) / topTopics.length;
+                const cellH = (H - margin.top - margin.bottom) / topTopics.length;
+
+                const maxVal = Math.max(...[...topicPairs.values()], 1);
+                const colorScale = d3.scaleSequential(d3.interpolateGreens).domain([0, maxVal]);
+
+                const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+                // Labels
+                topTopics.forEach((t, i) => {
+                    g.append('text')
+                        .attr('x', i * cellW + cellW / 2)
+                        .attr('y', -6)
+                        .attr('text-anchor', 'start')
+                        .attr('transform', `rotate(-45, ${i * cellW + cellW / 2}, -6)`)
+                        .attr('font-size', 8)
+                        .attr('fill', '#64748b')
+                        .text(t.length > 12 ? t.substring(0, 12) + '…' : t);
+
+                    g.append('text')
+                        .attr('x', -6)
+                        .attr('y', i * cellH + cellH / 2 + 3)
+                        .attr('text-anchor', 'end')
+                        .attr('font-size', 8)
+                        .attr('fill', '#64748b')
+                        .text(t.length > 12 ? t.substring(0, 12) + '…' : t);
+                });
+
+                // Cells
+                for (let i = 0; i < topTopics.length; i++) {
+                    for (let j = 0; j < topTopics.length; j++) {
+                        const k = [topTopics[i], topTopics[j]].sort().join('|||');
+                        const val = i === j ? (topicCounts.get(topTopics[i]) || 0) : (topicPairs.get(k) || 0);
+                        
+                        // Check if selected
+                        const isSelected = app.state.filters.cooccurrence && (
+                            (app.state.filters.cooccurrence.t1 === topTopics[i] && app.state.filters.cooccurrence.t2 === topTopics[j]) ||
+                            (app.state.filters.cooccurrence.t1 === topTopics[j] && app.state.filters.cooccurrence.t2 === topTopics[i])
+                        );
+
+                        const rect = g.append('rect')
+                            .attr('class', 'heatmap-cell')
+                            .attr('x', j * cellW)
+                            .attr('y', i * cellH)
+                            .attr('width', cellW - 1)
+                            .attr('height', cellH - 1)
+                            .attr('rx', 2)
+                            .attr('fill', val > 0 ? colorScale(val) : '#f8fafc')
+                            .attr('stroke', isSelected ? '#16a34a' : 'none')
+                            .attr('stroke-width', isSelected ? 2 : 0);
+                            
+                        rect.append('title')
+                            .text(`${topTopics[i]} × ${topTopics[j]}: ${val}`);
+
+                        if (val > 0) {
+                            rect.on('click', () => {
+                                if (isSelected) {
+                                    app.state.filters.cooccurrence = null;
+                                } else {
+                                    app.state.filters.cooccurrence = { t1: topTopics[i], t2: topTopics[j] };
+                                }
+                                app.render();
+                            });
+                        }
+
+                        if (val > 0 && cellW > 15) {
+                            g.append('text')
+                                .attr('x', j * cellW + cellW / 2)
+                                .attr('y', i * cellH + cellH / 2 + 3)
+                                .attr('text-anchor', 'middle')
+                                .attr('font-size', 7)
+                                .attr('font-weight', '600')
+                                .attr('pointer-events', 'none')
+                                .attr('fill', val > maxVal * 0.6 ? '#fff' : '#334155')
+                                .text(val);
+                        }
+                    }
+                }
+            },
+
+            clearCooccurrence: () => {
+                app.state.filters.cooccurrence = null;
+                app.render();
             },
 
             setupGraph: () => {
@@ -1354,10 +1725,32 @@
                 const maxW = d3.max(links, d => d.weight) || 1;
                 const wS = d3.scaleSqrt().domain([1, maxW]).range([.5, 3]);
 
+                const edgeTip = el('edgeTooltip');
+
                 const lnk = g.append('g').selectAll('line').data(links).enter().append('line')
                     .attr('stroke', '#cbd5e1')
                     .attr('stroke-opacity', d => .4 + .3 * (d.weight / maxW))
-                    .attr('stroke-width', d => wS(d.weight));
+                    .attr('stroke-width', d => wS(d.weight))
+                    .style('cursor', 'pointer')
+                    .on('mouseover', (e, d) => {
+                        const sNode = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source);
+                        const tNode = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target);
+                        const pubTitles = (d.pubIds || []).map(pid => {
+                            const pub = app.data.pubs.find(p => p.id === pid);
+                            return pub ? pub.title : '';
+                        }).filter(Boolean).slice(0, 5);
+
+                        const r = el('graphContainer').getBoundingClientRect();
+                        Object.assign(edgeTip.style, {
+                            left: Math.min(e.clientX - r.left + 10, r.width - 200) + 'px',
+                            top: Math.min(e.clientY - r.top + 10, r.height - 100) + 'px'
+                        });
+                        edgeTip.innerHTML = `<div class="font-bold text-slate-700 mb-1" style="font-size:10px">${esc(sNode?.display_name || '')} ↔ ${esc(tNode?.display_name || '')}</div><div class="text-[9px] text-green-700 font-semibold mb-1">${d.weight} co-authored paper${d.weight > 1 ? 's' : ''}</div>${pubTitles.length ? `<div class="space-y-0.5">${pubTitles.map(t => `<div class="text-[8px] text-slate-500 leading-tight truncate">• ${esc(t)}</div>`).join('')}${(d.pubIds || []).length > 5 ? `<div class="text-[8px] text-slate-400 italic">+${(d.pubIds || []).length - 5} more</div>` : ''}</div>` : ''}`;
+                        edgeTip.classList.remove('hidden');
+                    })
+                    .on('mouseout', () => {
+                        edgeTip.classList.add('hidden');
+                    });
 
                 const nd = g.append('g').selectAll('g').data(nodes).enter().append('g')
                     .call(d3.drag()
@@ -1365,6 +1758,15 @@
                         .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
                         .on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
                     );
+
+                // Highlight ring for search
+                nd.append('circle')
+                    .attr('class', 'search-highlight-ring')
+                    .attr('r', d => d.radius + 6)
+                    .attr('fill', 'none')
+                    .attr('stroke', '#16a34a')
+                    .attr('stroke-width', 2)
+                    .attr('opacity', 0);
 
                 nd.append('circle')
                     .attr('r', d => d.radius)
@@ -1394,6 +1796,10 @@
                     .style('pointer-events', 'none')
                     .style('display', app.state.graph.labels ? null : 'none');
 
+                app.d3.nd = nd;
+                app.d3.lnk = lnk;
+                app.d3.maxW = maxW;
+
                 const tip = el('tooltip');
                 nd.on('mouseover', (e, d) => {
                     nd.transition().duration(200).attr('opacity', n => (n.id === d.id || adj.get(d.id)?.has(n.id)) ? 1 : .1);
@@ -1405,7 +1811,7 @@
                         left: Math.min(e.clientX - r.left + 15, r.width - 210) + 'px',
                         top: Math.min(e.clientY - r.top + 15, r.height - 140) + 'px'
                     });
-                    tip.innerHTML = `<div class="font-bold text-slate-800 mb-0.5">${esc(d.display_name)}</div><div class="text-[9px] text-slate-500 mb-2 font-medium truncate">${esc(d.inst)}</div><div class="flex gap-2 text-center"><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_works}</div><div class="text-[7px] uppercase text-slate-400">Works</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_cited}</div><div class="text-[7px] uppercase text-slate-400">Cites</div></div></div>`;
+                    tip.innerHTML = `<div class="font-bold text-slate-800 mb-0.5">${esc(d.display_name)}</div><div class="text-[9px] text-slate-500 mb-2 font-medium truncate">${esc(d.inst)}</div><div class="flex gap-2 text-center"><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_works}</div><div class="text-[7px] uppercase text-slate-400">Works</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_cited}</div><div class="text-[7px] uppercase text-slate-400">Cites</div></div></div><div class="text-[8px] text-slate-400 mt-2 text-center italic">Click: profile · Shift+click: compare</div>`;
                     tip.classList.remove('hidden');
                 }).on('mouseout', () => {
                     nd.transition().duration(200).attr('opacity', 1);
@@ -1415,7 +1821,11 @@
                     tip.classList.add('hidden');
                 }).on('click', (e, d) => {
                     e.stopPropagation();
-                    app.profile(d);
+                    if (e.shiftKey) {
+                        app.addCompareNode(d);
+                    } else {
+                        app.profile(d);
+                    }
                 });
 
                 app.applyClusterForces();
@@ -1432,6 +1842,96 @@
                 });
                 sim.force('link').links(links);
                 sim.alpha(1).restart();
+
+                // Re-apply graph search highlight if active
+                app.applyGraphSearch();
+            },
+
+            // Graph search highlight
+            applyGraphSearch: () => {
+                const q = norm(el('graphSearchInput')?.value || '');
+                if (!app.d3.nd) return;
+                app.d3.nd.select('.search-highlight-ring')
+                    .attr('opacity', d => q && norm(d.display_name).includes(q) ? 1 : 0)
+                    .attr('stroke-dasharray', d => q && norm(d.display_name).includes(q) ? '4,3' : 'none');
+
+                // Pulse animation via CSS class
+                app.d3.nd.select('.search-highlight-ring').each(function(d) {
+                    const match = q && norm(d.display_name).includes(q);
+                    d3.select(this).classed('pulse-highlight', match);
+                });
+            },
+
+            // Researcher comparison
+            addCompareNode: (d) => {
+                const existing = app.state.compareNodes.findIndex(n => n.id === d.id);
+                if (existing >= 0) {
+                    app.state.compareNodes.splice(existing, 1);
+                    return;
+                }
+                app.state.compareNodes.push(d);
+                if (app.state.compareNodes.length >= 2) {
+                    app.showComparison(app.state.compareNodes[0], app.state.compareNodes[1]);
+                    app.state.compareNodes = [];
+                }
+            },
+
+            showComparison: (a, b) => {
+                el('compareModal').classList.add('active');
+
+                const aPubs = app.data.pubs.filter(p => p._memberAuthors.some(m => m.id === a.id));
+                const bPubs = app.data.pubs.filter(p => p._memberAuthors.some(m => m.id === b.id));
+                const shared = aPubs.filter(p => p._memberAuthors.some(m => m.id === b.id));
+                const aTopics = new Set(aPubs.flatMap(p => p._topics));
+                const bTopics = new Set(bPubs.flatMap(p => p._topics));
+                const sharedTopics = [...aTopics].filter(t => bTopics.has(t));
+                const aOnly = [...aTopics].filter(t => !bTopics.has(t));
+                const bOnly = [...bTopics].filter(t => !aTopics.has(t));
+                const aCites = aPubs.reduce((s, p) => s + p.cited_by_count, 0);
+                const bCites = bPubs.reduce((s, p) => s + p.cited_by_count, 0);
+
+                el('compareContent').innerHTML = `
+                    <div class="flex justify-between items-start mb-6">
+                        <h2 class="text-lg font-bold text-slate-800">Researcher Comparison</h2>
+                        <button onclick="document.getElementById('compareModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700"><i class="fas fa-times text-lg"></i></button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white font-bold text-xl shadow-lg mb-2" style="background:${a.color}">${a.display_name.substring(0, 2)}</div>
+                            <h3 class="font-bold text-slate-800 text-sm">${esc(a.display_name)}</h3>
+                            <p class="text-[10px] text-slate-500">${esc(a.inst)}</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white font-bold text-xl shadow-lg mb-2" style="background:${b.color}">${b.display_name.substring(0, 2)}</div>
+                            <h3 class="font-bold text-slate-800 text-sm">${esc(b.display_name)}</h3>
+                            <p class="text-[10px] text-slate-500">${esc(b.inst)}</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 mb-6 text-center">
+                        <div class="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div><span class="block font-bold text-lg text-blue-700">${aPubs.length}</span><span class="text-[8px] text-blue-500 uppercase font-bold">Works</span></div>
+                                <div><span class="block font-bold text-lg text-blue-700">${bPubs.length}</span><span class="text-[8px] text-blue-500 uppercase font-bold">Works</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-green-50 rounded-lg p-3 border border-green-100">
+                            <span class="block font-bold text-lg text-green-700">${shared.length}</span>
+                            <span class="text-[8px] text-green-500 uppercase font-bold">Shared Pubs</span>
+                        </div>
+                        <div class="bg-purple-50 rounded-lg p-3 border border-purple-100">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div><span class="block font-bold text-lg text-purple-700">${aCites.toLocaleString()}</span><span class="text-[8px] text-purple-500 uppercase font-bold">Cites</span></div>
+                                <div><span class="block font-bold text-lg text-purple-700">${bCites.toLocaleString()}</span><span class="text-[8px] text-purple-500 uppercase font-bold">Cites</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    ${sharedTopics.length ? `<div class="mb-4"><h4 class="font-bold text-[10px] text-slate-400 uppercase tracking-wide mb-2">Shared Topics (${sharedTopics.length})</h4><div class="flex flex-wrap gap-1">${sharedTopics.map(t => `<span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-[9px] rounded border border-green-200">${esc(t)}</span>`).join('')}</div></div>` : ''}
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        ${aOnly.length ? `<div><h4 class="font-bold text-[10px] text-slate-400 uppercase tracking-wide mb-1">Unique to ${esc(a.display_name.split(' ').pop())}</h4><div class="flex flex-wrap gap-1">${aOnly.slice(0, 10).map(t => `<span class="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[9px] rounded border border-blue-100">${esc(t)}</span>`).join('')}</div></div>` : '<div></div>'}
+                        ${bOnly.length ? `<div><h4 class="font-bold text-[10px] text-slate-400 uppercase tracking-wide mb-1">Unique to ${esc(b.display_name.split(' ').pop())}</h4><div class="flex flex-wrap gap-1">${bOnly.slice(0, 10).map(t => `<span class="px-1.5 py-0.5 bg-purple-50 text-purple-600 text-[9px] rounded border border-purple-100">${esc(t)}</span>`).join('')}</div></div>` : '<div></div>'}
+                    </div>
+                    ${shared.length ? `<div><h4 class="font-bold text-[10px] text-slate-400 uppercase tracking-wide mb-2">Shared Publications</h4><div class="space-y-1.5">${shared.slice(0, 10).map(p => `<div class="p-2 rounded border border-slate-100 hover:bg-slate-50 cursor-pointer text-xs" onclick="document.getElementById('compareModal').classList.remove('active');app.detail('${p.id}')"><div class="font-semibold text-slate-700 leading-snug mb-0.5">${esc(p.title)}</div><div class="text-[9px] text-slate-400">${p.publication_year} · ${p.cited_by_count} cites · Score ${p._relevance.toFixed(1)}</div></div>`).join('')}</div></div>` : ''}
+                `;
             },
 
             tog: (k, v) => {
@@ -1447,11 +1947,12 @@
             },
 
             reset: () => {
-                app.state.filters = { q: '', topics: new Set, insts: new Set, yFrom: null, yTo: null, minRel: CFG.defMin };
+                app.state.filters = { q: '', topics: new Set, insts: new Set, yFrom: null, yTo: null, minRel: CFG.defMin, bookmarksOnly: false, cooccurrence: null };
                 ['globalSearch', 'yearFrom', 'yearTo'].forEach(i => el(i).value = '');
                 el('minRelevance').value = CFG.defMin;
                 el('valMinRel').textContent = CFG.defMin.toFixed(1);
                 app.state.page = 1;
+                app.updateBookmarkFilterBtn();
                 app.render();
             },
 
@@ -1484,23 +1985,169 @@
                 if (app.d3.lbl) app.d3.lbl.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none');
             },
 
+            // Bookmarks
+            toggleBookmark: (id) => {
+                if (app.bookmarks.has(id)) {
+                    app.bookmarks.delete(id);
+                } else {
+                    app.bookmarks.add(id);
+                    app.session.bookmarked++;
+                }
+                saveBookmarks(app.bookmarks);
+                app.updateBookmarkCount();
+                app.render();
+            },
+
+            updateBookmarkCount: () => {
+                el('bookmarkCount').textContent = app.bookmarks.size;
+            },
+
+            toggleBookmarkFilter: () => {
+                app.state.filters.bookmarksOnly = !app.state.filters.bookmarksOnly;
+                app.state.page = 1;
+                app.updateBookmarkFilterBtn();
+                app.render();
+            },
+
+            updateBookmarkFilterBtn: () => {
+                const btn = el('bookmarkFilterBtn');
+                if (app.state.filters.bookmarksOnly) {
+                    btn.classList.remove('bg-slate-50', 'text-slate-500', 'border-slate-200');
+                    btn.classList.add('bg-amber-100', 'text-amber-700', 'border-amber-300');
+                } else {
+                    btn.classList.remove('bg-amber-100', 'text-amber-700', 'border-amber-300');
+                    btn.classList.add('bg-slate-50', 'text-slate-500', 'border-slate-200');
+                }
+            },
+
+            // Selection
+            toggleSelect: (id) => {
+                if (app.state.selected.has(id)) {
+                    app.state.selected.delete(id);
+                } else {
+                    app.state.selected.add(id);
+                }
+                app.updateSelectionUI();
+            },
+
+            clearSelection: () => {
+                app.state.selected.clear();
+                app.render();
+            },
+
+            updateSelectionUI: () => {
+                const count = app.state.selected.size;
+                el('selectedCount').textContent = count;
+                const batchEl = el('batchActions');
+                batchEl.classList.toggle('hidden', count === 0);
+                el('exportSelectedBtn').classList.toggle('hidden', count === 0);
+                el('exportSelectedBibBtn').classList.toggle('hidden', count === 0);
+                el('exportSelectedDivider').classList.toggle('hidden', count === 0);
+            },
+
+            batchBookmark: () => {
+                app.state.selected.forEach(id => {
+                    app.bookmarks.add(id);
+                });
+                saveBookmarks(app.bookmarks);
+                app.updateBookmarkCount();
+                app.clearSelection();
+                app.render();
+            },
+
+            batchCite: () => {
+                const pubs = app.data.pubs.filter(p => app.state.selected.has(p.id));
+                if (!pubs.length) return;
+
+                el('batchCiteModal').classList.add('active');
+                el('batchCiteContent').innerHTML = pubs.map(p => {
+                    const aa = p._allAuthors.map(a => a.name);
+                    const apa = `${aa.length > 5 ? `${aa.slice(0, 5).join(', ')}, et al.` : aa.join(', ')} (${p.publication_year}). ${p.title}. ${p.source || 'Journal'}.`;
+                    return `<div class="bg-slate-50 p-2.5 rounded border border-slate-200 text-xs text-slate-600 font-mono leading-relaxed relative group"><span>${esc(apa)}</span><button class="absolute top-1 right-1 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent);this.innerHTML='<i class=\\'fas fa-check text-green-600\\'></i>';setTimeout(()=>this.innerHTML='<i class=\\'fas fa-copy\\'></i>',1500)"><i class="fas fa-copy"></i></button></div>`;
+                }).join('');
+            },
+
+            // Scroll mode
+            toggleScrollMode: () => {
+                app.state.scrollMode = app.state.scrollMode === 'paginated' ? 'infinite' : 'paginated';
+                el('scrollModeLabel').textContent = app.state.scrollMode === 'paginated' ? 'Pages' : 'Scroll';
+                el('publicationsPanel').classList.toggle('scroll-mode-infinite', app.state.scrollMode === 'infinite');
+                app.state.page = 1;
+                app.render();
+            },
+
+            // Dark mode
+            applyDarkMode: () => {
+                document.body.classList.toggle('dark-mode', app.state.darkMode);
+                const icon = el('darkModeIcon');
+                if (icon) {
+                    icon.className = app.state.darkMode ? 'fas fa-sun text-xs' : 'fas fa-moon text-xs';
+                }
+            },
+
+            toggleDarkMode: () => {
+                app.state.darkMode = !app.state.darkMode;
+                localStorage.setItem('agripv_dark', app.state.darkMode ? '1' : '0');
+                app.applyDarkMode();
+            },
+
+            // Copy DOI
+            copyDOI: (doi) => {
+                navigator.clipboard.writeText(doi);
+                // Brief visual feedback via a temporary notification
+                const notif = document.createElement('div');
+                notif.className = 'fixed bottom-4 right-4 bg-green-600 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-lg z-[200] transition-opacity';
+                notif.textContent = 'DOI copied to clipboard';
+                document.body.appendChild(notif);
+                setTimeout(() => { notif.style.opacity = '0'; setTimeout(() => notif.remove(), 300); }, 1500);
+            },
+
             profile: r => {
                 el('researcherModal').classList.add('active');
                 const P = app.data.pubs.filter(p => p._memberAuthors.some(a => a.id === r.id)).sort((a, b) => b.publication_year - a.publication_year);
-                el('researcherContent').innerHTML = `<div class="sticky top-0 bg-white z-10 p-5 border-b border-slate-100"><div class="flex justify-between items-start"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0, 2)}</div><div><h2 class="text-lg font-bold text-slate-800 leading-tight">${esc(r.display_name)}</h2><p class="text-xs text-slate-500 font-medium">${esc(r.inst)}</p></div></div><button onclick="document.getElementById('researcherModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700"><i class="fas fa-times"></i></button></div><div class="grid grid-cols-2 gap-3 mt-4"><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${P.length}</span><span class="text-[9px] font-bold uppercase text-slate-400">Publications</span></div><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${P.reduce((s, p) => s + p.cited_by_count, 0).toLocaleString()}</span><span class="text-[9px] font-bold uppercase text-slate-400">Total Citations</span></div></div></div><div class="p-5"><h4 class="font-bold text-[10px] uppercase text-slate-400 mb-3 tracking-wider">Latest Contributions</h4><div class="space-y-2">${P.slice(0, 15).map(p => `<div class="p-2.5 rounded border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="document.getElementById('researcherModal').classList.remove('active');app.detail('${p.id}')"><div class="font-semibold text-xs text-slate-700 mb-1 leading-snug">${esc(p.title)}</div><div class="text-[10px] text-slate-400 flex justify-between items-center"><span>${p.publication_year} • ${p._relevance.toFixed(1)} score</span><span class="bg-slate-100 px-1.5 py-0.5 rounded">${p.cited_by_count} cites</span></div></div>`).join('')}</div></div>`;
+
+                // Citation trend
+                const yearlyPubs = new Map();
+                P.forEach(p => p.publication_year && yearlyPubs.set(p.publication_year, (yearlyPubs.get(p.publication_year) || 0) + 1));
+                const trendYears = [...yearlyPubs.keys()].sort((a, b) => a - b);
+                const trendData = trendYears.map(y => yearlyPubs.get(y) || 0);
+                const trendSvg = app.sparkline(trendData, 80, 20);
+
+                // Top topics
+                const topTopics = Object.entries(r.topics).sort((a, b) => b[1] - a[1]).slice(0, 8);
+
+                el('researcherContent').innerHTML = `<div class="sticky top-0 bg-white z-10 p-5 border-b border-slate-100"><div class="flex justify-between items-start"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0, 2)}</div><div><h2 class="text-lg font-bold text-slate-800 leading-tight">${esc(r.display_name)}</h2><p class="text-xs text-slate-500 font-medium">${esc(r.inst)}</p></div></div><button onclick="document.getElementById('researcherModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700"><i class="fas fa-times"></i></button></div><div class="grid grid-cols-3 gap-3 mt-4"><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${P.length}</span><span class="text-[9px] font-bold uppercase text-slate-400">Publications</span></div><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center"><span class="block font-bold text-xl text-slate-700">${P.reduce((s, p) => s + p.cited_by_count, 0).toLocaleString()}</span><span class="text-[9px] font-bold uppercase text-slate-400">Total Citations</span></div><div class="bg-slate-50 p-2 rounded border border-slate-100 text-center flex flex-col items-center justify-center">${trendSvg}<span class="text-[9px] font-bold uppercase text-slate-400 mt-1">Pub Trend</span></div></div>${topTopics.length ? `<div class="mt-3"><div class="text-[9px] font-bold text-slate-400 uppercase mb-1">Top Topics</div><div class="flex flex-wrap gap-1">${topTopics.map(([t, c]) => `<span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[9px] rounded border border-green-100">${esc(t)} <span class="opacity-50">${c}</span></span>`).join('')}</div></div>` : ''}</div><div class="p-5"><h4 class="font-bold text-[10px] uppercase text-slate-400 mb-3 tracking-wider">Latest Contributions</h4><div class="space-y-2">${P.slice(0, 15).map(p => `<div class="p-2.5 rounded border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="document.getElementById('researcherModal').classList.remove('active');app.detail('${p.id}')"><div class="font-semibold text-xs text-slate-700 mb-1 leading-snug">${esc(p.title)}</div><div class="text-[10px] text-slate-400 flex justify-between items-center"><span>${p.publication_year} • ${p._relevance.toFixed(1)} score</span><span class="bg-slate-100 px-1.5 py-0.5 rounded">${p.cited_by_count} cites</span></div></div>`).join('')}</div></div>`;
             },
 
             detail: async id => {
                 const p = app.data.pubs.find(x => x.id === id);
                 if (!p) return;
+
                 el('detailModal').classList.add('active');
+
+                // Find related publications
+                const related = app.data.pubs.filter(rp => rp.id !== p.id && (
+                    rp._memberAuthors.some(a => p._memberAuthors.some(pa => pa.id === a.id)) ||
+                    rp._topics.some(t => p._topics.includes(t))
+                )).sort((a, b) => {
+                    const aOverlap = a._topics.filter(t => p._topics.includes(t)).length + a._memberAuthors.filter(m => p._memberAuthors.some(pm => pm.id === m.id)).length * 2;
+                    const bOverlap = b._topics.filter(t => p._topics.includes(t)).length + b._memberAuthors.filter(m => p._memberAuthors.some(pm => pm.id === m.id)).length * 2;
+                    return bOverlap - aOverlap;
+                }).slice(0, 5);
+
                 const sh = ab => {
-                    el('detailContent').innerHTML = `<div class="flex justify-between items-start mb-4 pb-3 border-b border-slate-100"><h2 class="text-lg font-bold text-slate-800 pr-8 leading-tight">${esc(p.title)}</h2><button onclick="document.getElementById('detailModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700 text-lg"><i class="fas fa-times"></i></button></div><div class="flex flex-wrap gap-3 text-xs text-slate-500 mb-6 font-medium"><span class="flex items-center gap-1.5"><i class="fas fa-calendar"></i> ${p.publication_year}</span><span class="flex items-center gap-1.5"><i class="fas fa-quote-right"></i> ${p.cited_by_count} Citations</span>${p.source ? `<span class="flex items-center gap-1.5"><i class="fas fa-book"></i> ${esc(p.source)}</span>` : ''}<span class="flex items-center gap-1.5 text-green-600 bg-green-50 px-1.5 rounded border border-green-100">Score: ${p._relevance.toFixed(1)}</span>${p.url ? `<a href="${p.url}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1.5"><i class="fas fa-external-link-alt"></i> View Source</a>` : ''}</div><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-2"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Abstract</h4>${ab ? `<div class="text-slate-600 text-xs leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100 text-justify font-normal">${esc(ab)}</div>` : `<div class="text-slate-400 text-xs italic bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">Abstract not available via API.</div>`}${p._why.length ? `<div class="mt-4"><h4 class="font-bold text-[9px] text-slate-400 uppercase tracking-wide mb-1.5">Relevance Factors</h4><div class="flex flex-wrap gap-1">${p._why.map(w => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] rounded border border-slate-200 font-mono">${w}</span>`).join('')}</div></div>` : ''}</div><div><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Authors</h4><div class="flex flex-col gap-1.5">${p._allAuthors.map(a => `<div class="flex items-center gap-2 text-xs p-1.5 rounded-lg border ${a.isMember ? 'border-green-200 bg-green-50 cursor-pointer hover:bg-green-100' : 'border-transparent text-slate-500'}" ${a.isMember ? `onclick="document.getElementById('detailModal').classList.remove('active');app.profile(app.data.researchers.find(r=>r.id==='${a.id}'))"` : ''}>${a.isMember ? '<span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>' : ''}<span class="${a.isMember ? 'font-semibold text-green-800' : ''} truncate">${esc(a.name)}</span></div>`).join('')}</div><div class="mt-6"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Topics</h4><div class="flex flex-wrap gap-1">${p._topics.map(t => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded border border-slate-200">${esc(t)}</span>`).join('')}</div></div></div></div>`;
+                    if (ab) abstractCache.set(p.id, ab);
+                    const isBookmarked = app.bookmarks.has(p.id);
+
+                    el('detailContent').innerHTML = `<div class="flex justify-between items-start mb-4 pb-3 border-b border-slate-100"><div class="flex-1"><h2 class="text-lg font-bold text-slate-800 pr-8 leading-tight">${esc(p.title)}</h2></div><div class="flex items-center gap-2 shrink-0"><button onclick="app.toggleBookmark('${p.id}');app.detail('${p.id}')" class="bookmark-btn ${isBookmarked ? 'active text-amber-500' : 'text-slate-300 hover:text-amber-400'} text-lg p-1" title="${isBookmarked ? 'Remove bookmark' : 'Bookmark'}"><i class="fas fa-bookmark"></i></button><button onclick="document.getElementById('detailModal').classList.remove('active')" class="text-slate-400 hover:text-slate-700 text-lg"><i class="fas fa-times"></i></button></div></div><div class="flex flex-wrap gap-3 text-xs text-slate-500 mb-6 font-medium"><span class="flex items-center gap-1.5"><i class="fas fa-calendar"></i> ${p.publication_year}</span><span class="flex items-center gap-1.5"><i class="fas fa-quote-right"></i> ${p.cited_by_count} Citations</span>${p.source ? `<span class="flex items-center gap-1.5"><i class="fas fa-book"></i> ${esc(p.source)}</span>` : ''}<span class="flex items-center gap-1.5 text-green-600 bg-green-50 px-1.5 rounded border border-green-100">Score: ${p._relevance.toFixed(1)}</span>${p.doi ? `<button onclick="app.copyDOI('${jsStr(p.doi)}')" class="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 bg-blue-50 px-1.5 rounded border border-blue-100 cursor-pointer"><i class="fas fa-link"></i> Copy DOI</button>` : ''}${p.url ? `<a href="${p.url}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1.5"><i class="fas fa-external-link-alt"></i> View Source</a>` : ''}</div><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-2"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Abstract</h4>${ab ? `<div class="text-slate-600 text-xs leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100 text-justify font-normal">${esc(ab)}</div>` : `<div class="text-slate-400 text-xs italic bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">Abstract not available via API.</div>`}${p._why.length ? `<div class="mt-4"><h4 class="font-bold text-[9px] text-slate-400 uppercase tracking-wide mb-1.5">Relevance Factors</h4><div class="flex flex-wrap gap-1">${p._why.map(w => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] rounded border border-slate-200 font-mono">${w}</span>`).join('')}</div></div>` : ''}${related.length ? `<div class="mt-6"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Related Publications</h4><div class="space-y-1.5">${related.map(rp => `<div class="p-2 rounded border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="app.detail('${rp.id}')"><div class="font-semibold text-[11px] text-slate-700 leading-snug">${esc(rp.title)}</div><div class="text-[9px] text-slate-400 mt-0.5">${rp.publication_year} · ${rp.cited_by_count} cites · Score ${rp._relevance.toFixed(1)}</div></div>`).join('')}</div></div>` : ''}</div><div><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Authors</h4><div class="flex flex-col gap-1.5">${p._allAuthors.map(a => `<div class="flex items-center gap-2 text-xs p-1.5 rounded-lg border ${a.isMember ? 'border-green-200 bg-green-50 cursor-pointer hover:bg-green-100' : 'border-transparent text-slate-500'}" ${a.isMember ? `onclick="document.getElementById('detailModal').classList.remove('active');app.profile(app.data.researchers.find(r=>r.id==='${a.id}'))"` : ''}>${a.isMember ? '<span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>' : ''}<span class="${a.isMember ? 'font-semibold text-green-800' : ''} truncate">${esc(a.name)}</span></div>`).join('')}</div><div class="mt-6"><h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide mb-2">Topics</h4><div class="flex flex-wrap gap-1">${p._topics.map(t => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded border border-slate-200">${esc(t)}</span>`).join('')}</div></div></div></div>`;
                 };
-                sh(null);
+                sh(abstractCache.get(p.id) || null);
                 try {
-                    const d = await fetchJSON(`${CFG.api}/works/${p.id.split('/').pop()}?select=abstract_inverted_index`);
-                    sh(d?.abstract_inverted_index ? invertedIndexToText(d.abstract_inverted_index) : null);
+                    if (!abstractCache.has(p.id)) {
+                        const d = await fetchJSON(`${CFG.api}/works/${p.id.split('/').pop()}?select=abstract_inverted_index`);
+                        const abText = d?.abstract_inverted_index ? invertedIndexToText(d.abstract_inverted_index) : null;
+                        sh(abText);
+                    }
                 } catch { }
             },
 
@@ -1509,6 +2156,7 @@
                 const aa = p._allAuthors.map(a => a.name);
                 el('citeAPA').textContent = `${aa.length > 5 ? `${aa.slice(0, 5).join(', ')}, et al.` : aa.join(', ')} (${p.publication_year}). ${p.title}. ${p.source || 'Journal'}.`;
                 el('citeBib').textContent = `@article{${(aa[0] || 'u').split(' ').pop().toLowerCase().replace(/[^a-z]/g, '')}${p.publication_year}, author={${aa.join(' and ')}}, title={${p.title}}, year={${p.publication_year}}, journal={${p.source || 'Journal'}}}`;
+                el('citeRIS').textContent = `TY  - JOUR\nTI  - ${p.title}\nPY  - ${p.publication_year}\n${aa.map(a => `AU  - ${a}`).join('\n')}\nJO  - ${p.source || ''}\nDO  - ${p.doi || ''}\nER  -`;
                 el('citationModal').classList.add('active');
             },
 
@@ -1529,18 +2177,38 @@
             },
 
             exportCSV: () => app.downloadFile(
-                [['Title', 'Year', 'Score', 'Citations', 'Authors', 'DOI', 'Source'],
+                [['Title', 'Year', 'Score', 'Tier', 'Citations', 'Authors', 'DOI', 'Source', 'Bookmarked'],
                 ...app.state.lastFiltered.map(p => [
                     `"${p.title.replace(/"/g, '""')}"`,
                     p.publication_year,
                     p._relevance,
+                    p._tier,
                     p.cited_by_count,
                     `"${p._allAuthors.map(a => a.name).join('; ')}"`,
                     p.doi || '',
-                    `"${(p.source || '').replace(/"/g, '""')}"`
+                    `"${(p.source || '').replace(/"/g, '""')}"`,
+                    app.bookmarks.has(p.id) ? 'Yes' : 'No'
                 ])].map(r => r.join(',')).join('\n'),
                 'text/csv', 'csv'
             ),
+
+            exportSelectedCSV: () => {
+                const sel = app.data.pubs.filter(p => app.state.selected.has(p.id));
+                app.downloadFile(
+                    [['Title', 'Year', 'Score', 'Tier', 'Citations', 'Authors', 'DOI', 'Source'],
+                    ...sel.map(p => [
+                        `"${p.title.replace(/"/g, '""')}"`,
+                        p.publication_year,
+                        p._relevance,
+                        p._tier,
+                        p.cited_by_count,
+                        `"${p._allAuthors.map(a => a.name).join('; ')}"`,
+                        p.doi || '',
+                        `"${(p.source || '').replace(/"/g, '""')}"`
+                    ])].map(r => r.join(',')).join('\n'),
+                    'text/csv', 'csv'
+                );
+            },
 
             exportBibTeX: () => app.downloadFile(
                 app.state.lastFiltered.map(p =>
@@ -1548,6 +2216,16 @@
                 ).join('\n\n'),
                 'application/x-bibtex', 'bib'
             ),
+
+            exportSelectedBibTeX: () => {
+                const sel = app.data.pubs.filter(p => app.state.selected.has(p.id));
+                app.downloadFile(
+                    sel.map(p =>
+                        `@article{${p.id.split('/').pop()}, author={${p._allAuthors.map(a => a.name).join(' and ')}}, title={${p.title}}, year={${p.publication_year}}, journal={${p.source || ''}}, doi={${p.doi || ''}}}`
+                    ).join('\n\n'),
+                    'application/x-bibtex', 'bib'
+                );
+            },
 
             exportRIS: () => app.downloadFile(
                 app.state.lastFiltered.map(p =>
@@ -1566,10 +2244,13 @@
             },
 
             exportGraphPNG: () => {
-                const s = new XMLSerializer().serializeToString(el('networkGraph'));
+                const svgEl = el('networkGraph');
+                const s = new XMLSerializer().serializeToString(svgEl);
+                const containerW = el('graphContainer').clientWidth;
+                const containerH = el('graphContainer').clientHeight;
                 const c = Object.assign(document.createElement('canvas'), {
-                    width: el('graphContainer').clientWidth * 2,
-                    height: el('graphContainer').clientHeight * 2
+                    width: containerW * 2,
+                    height: containerH * 2
                 });
                 const ctx = c.getContext('2d');
                 const img = new Image();
@@ -1577,6 +2258,44 @@
                     ctx.fillStyle = '#ffffff';
                     ctx.fillRect(0, 0, c.width, c.height);
                     ctx.drawImage(img, 0, 0, c.width, c.height);
+
+                    // Watermark with timestamp and filter summary
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '16px Inter, sans-serif';
+                    const now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                    ctx.fillText(`AgriPV Research Network — ${now}`, 20, c.height - 50);
+
+                    const { q, topics: T, insts: I } = app.state.filters;
+                    const filterSummary = [
+                        q ? `Search: "${q}"` : '',
+                        T.size ? `Topics: ${[...T].slice(0, 3).join(', ')}${T.size > 3 ? '...' : ''}` : '',
+                        I.size ? `Inst: ${[...I].slice(0, 3).join(', ')}${I.size > 3 ? '...' : ''}` : '',
+                    ].filter(Boolean).join(' | ');
+                    if (filterSummary) {
+                        ctx.font = '12px Inter, sans-serif';
+                        ctx.fillText(filterSummary, 20, c.height - 28);
+                    }
+
+                    // Legend
+                    const actInst = [...app.instColors].filter(([i]) => {
+                        return app.d3.nodes?.some(n => n.inst === i);
+                    });
+                    let legendY = 30;
+                    ctx.font = 'bold 14px Inter, sans-serif';
+                    ctx.fillStyle = '#334155';
+                    ctx.fillText('Affiliations', c.width - 260, legendY);
+                    legendY += 22;
+                    ctx.font = '12px Inter, sans-serif';
+                    actInst.slice(0, 10).forEach(([inst, color]) => {
+                        ctx.fillStyle = color;
+                        ctx.beginPath();
+                        ctx.arc(c.width - 252, legendY - 4, 5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#475569';
+                        ctx.fillText(inst, c.width - 240, legendY);
+                        legendY += 18;
+                    });
+
                     c.toBlob(b => {
                         const u = URL.createObjectURL(b);
                         Object.assign(document.createElement('a'), { href: u, download: 'agripv_network.png' }).click();
@@ -1655,15 +2374,53 @@
                 document.addEventListener('click', e => {
                     if (!el('exportDropdown').contains(e.target)) el('exportMenu').classList.add('hidden');
                 });
+
+                // Dark mode toggle
+                el('darkModeToggle').onclick = () => app.toggleDarkMode();
+
+                // Graph search
+                let graphSearchTm;
+                el('graphSearchInput').oninput = () => {
+                    clearTimeout(graphSearchTm);
+                    graphSearchTm = setTimeout(() => app.applyGraphSearch(), 200);
+                };
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', e => {
+                    // Ctrl/Cmd+K: Focus search
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                        e.preventDefault();
+                        el('globalSearch').focus();
+                        el('globalSearch').select();
+                    }
+                    // Escape: Close modals
+                    if (e.key === 'Escape') {
+                        ['citationModal', 'detailModal', 'researcherModal', 'compareModal', 'batchCiteModal'].forEach(id => {
+                            el(id).classList.remove('active');
+                        });
+                        el('exportMenu').classList.add('hidden');
+                    }
+                    // Ctrl+E: Toggle export menu
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                        e.preventDefault();
+                        app.toggleExportMenu();
+                    }
+                    // Arrow keys for pagination (when search not focused)
+                    if (document.activeElement !== el('globalSearch') && document.activeElement !== el('graphSearchInput') && document.activeElement?.tagName !== 'INPUT') {
+                        if (e.key === 'ArrowLeft' && app.state.page > 1) {
+                            app.setPage(app.state.page - 1);
+                        } else if (e.key === 'ArrowRight') {
+                            const maxPg = Math.ceil(app.state.lastFiltered.length / 12);
+                            if (app.state.page < maxPg) app.setPage(app.state.page + 1);
+                        }
+                    }
+                });
             }
         };
 
-        // Initialize Authentication and Shared UI before the specific app logic
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Initialize UI Helpers (mobile menu, redirects)
             initSharedUI({ onSignOut: signOut });
-            
-            // Redirect to profile on click
+
             document.addEventListener('click', e => {
                 if (e.target.closest('#btnProfile') || e.target.closest('#userName') ||
                     e.target.closest('#mobileProfileBtn') || e.target.closest('#mobileUserName')) {
@@ -1671,20 +2428,17 @@
                 }
             });
 
-            // 2. Initialize Auth
             initAuth({
                 onAuthReady: () => {
-                    // Update Header State
                     renderHeader(authState, t, currentLang);
-                    
-                    // Fetch Avatar if available
+
                     if (authState.profile?.avatar_url) {
                         getAvatarUrl(authState.profile.avatar_url).then(url => {
                             const img = $('#userAvatar');
-                            if (url && img) { 
-                                img.src = url; 
-                                show(img); 
-                                hide($('#userInitial')); 
+                            if (url && img) {
+                                img.src = url;
+                                show(img);
+                                hide($('#userInitial'));
                             }
                         });
                     }
@@ -1692,7 +2446,6 @@
                 onAuthChange: () => renderHeader(authState, t, currentLang)
             });
 
-            // 3. Start Scholar App
             app.init();
         });
 
