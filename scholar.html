@@ -114,7 +114,7 @@
         body.dark-mode .constellation-node {
             stroke: #334155
         }
-        
+
         body.dark-mode .heatmap-tooltip {
             background: #1e293bf2;
             color: #e2e8f0;
@@ -214,17 +214,20 @@
             max-width: 280px;
             font-size: 10px
         }
-        
+
         /* UPDATED: Heatmap Tooltip to block only bottom portion */
         .heatmap-tooltip {
             pointer-events: none;
             position: absolute;
-            inset: auto 0 0 0; /* Bottom: 0, Left: 0, Right: 0, Top: Auto */
-            height: 36px; /* Fixed small height */
+            inset: auto 0 0 0;
+            /* Bottom: 0, Left: 0, Right: 0, Top: Auto */
+            height: 36px;
+            /* Fixed small height */
             background: #fffffff2;
             backdrop-filter: blur(8px);
             display: flex;
-            flex-direction: row; /* Horizontal layout */
+            flex-direction: row;
+            /* Horizontal layout */
             align-items: center;
             justify-content: center;
             z-index: 20;
@@ -500,7 +503,8 @@
                 <div class="flex items-center gap-2.5 mb-3">
                     <div
                         class="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center shadow-md shadow-green-200/50">
-                        <i class="fas fa-leaf text-sm"></i></div>
+                        <i class="fas fa-leaf text-sm"></i>
+                    </div>
                     <div class="flex-1">
                         <div class="flex items-center gap-2">
                             <h1 class="font-bold text-slate-800 text-sm leading-tight">AgriPV Network</h1>
@@ -555,7 +559,8 @@
                             <div
                                 class="bg-white px-2 rounded-lg border border-slate-200 shadow-sm flex items-center h-8">
                                 <input type="range" id="minRelevance" min="0" max="30" step="0.5" value="2"
-                                    class="w-full block"></div>
+                                    class="w-full block">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -688,10 +693,12 @@
                 </div>
                 <div id="splitHandle" class="split-handle" title="Drag to resize"></div>
                 <div id="networkPanel" class="flex flex-col min-w-0 w-1/2 bg-slate-50 relative h-full">
-                    <button onclick="document.getElementById('networkInfoModal').classList.add('active')" class="absolute top-3 right-40 z-20 w-6 h-6 flex items-center justify-center bg-white/80 backdrop-blur border border-slate-200 rounded-full text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-colors" title="Graph Information"><i class="fas fa-info text-[10px]"></i></button>
+                    <button onclick="document.getElementById('networkInfoModal').classList.add('active')"
+                        class="absolute top-3 right-40 z-20 w-6 h-6 flex items-center justify-center bg-white/80 backdrop-blur border border-slate-200 rounded-full text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-colors"
+                        title="Graph Information"><i class="fas fa-info text-[10px]"></i></button>
                     <!-- Controls and Graph container -->
                     <div class="absolute top-3 left-3 z-10 flex flex-col gap-2">
-                         <div
+                        <div
                             class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
                             <button
                                 class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
@@ -760,11 +767,14 @@
                     <div id="edgeTooltip" class="edge-tooltip hidden"></div>
                 </div>
                 <div id="constellationPanel" class="constellation-panel min-w-0 bg-slate-50 relative h-full">
-                    <button onclick="document.getElementById('constellationInfoModal').classList.add('active')" class="absolute top-3 right-3 z-20 w-6 h-6 flex items-center justify-center bg-white/80 backdrop-blur border border-slate-200 rounded-full text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-colors" title="Constellation Information"><i class="fas fa-info text-[10px]"></i></button>
+                    <button onclick="document.getElementById('constellationInfoModal').classList.add('active')"
+                        class="absolute top-3 right-3 z-20 w-6 h-6 flex items-center justify-center bg-white/80 backdrop-blur border border-slate-200 rounded-full text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-colors"
+                        title="Constellation Information"><i class="fas fa-info text-[10px]"></i></button>
                     <div class="absolute top-3 left-3 z-10">
                         <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 w-40">
                             <div class="text-[8px] font-bold text-slate-400 uppercase mb-1">Publication Similarity</div>
-                            <div class="text-[9px] text-slate-500">Papers cluster by shared topics. Edges = ≥2 shared topics. Color = dominant topic.</div>
+                            <div class="text-[9px] text-slate-500">Papers cluster by shared topics. Edges = ≥2 shared
+                                topics. Color = dominant topic.</div>
                         </div>
                     </div>
                     <div id="constellationTooltip" class="d3-tooltip hidden"></div>
@@ -795,21 +805,24 @@
                         class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed">
                         <span id="citeAPA"></span><button
                             class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
-                            onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button></div>
+                            onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button>
+                    </div>
                 </div>
                 <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">BibTeX</label>
                     <div
                         class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
                         <span id="citeBib"></span><button
                             class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
-                            onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button></div>
+                            onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button>
+                    </div>
                 </div>
                 <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">RIS</label>
                     <div
                         class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
                         <span id="citeRIS"></span><button
                             class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
-                            onclick="app.copy('citeRIS')"><i class="fas fa-copy"></i></button></div>
+                            onclick="app.copy('citeRIS')"><i class="fas fa-copy"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -847,36 +860,51 @@
         <div class="profile-modal w-full max-w-md bg-white rounded-xl shadow-2xl border border-slate-100 p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="font-bold text-sm text-slate-800">About the Collaboration Graph</h3>
-                <button onclick="document.getElementById('networkInfoModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                <button onclick="document.getElementById('networkInfoModal').classList.remove('active')"
+                    class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
             </div>
             <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
                 <p>This graph visualizes the collaboration network between researchers in the AgriPV field.</p>
                 <ul class="list-disc pl-4 space-y-1">
-                    <li><strong class="text-slate-800">Nodes:</strong> Represent individual researchers. Size indicates the number of publications and citations.</li>
-                    <li><strong class="text-slate-800">Edges:</strong> Represent co-authorship. Thicker lines mean more shared publications.</li>
-                    <li><strong class="text-slate-800">Colors:</strong> Represent the researcher's primary institution.</li>
-                    <li><strong class="text-slate-800">Groups (Hulls):</strong> Background shapes group researchers from the same institution.</li>
-                    <li><strong class="text-slate-800">Particles:</strong> Moving particles indicate the "flow" of collaboration intensity.</li>
+                    <li><strong class="text-slate-800">Nodes:</strong> Represent individual researchers. Size indicates
+                        the number of publications and citations.</li>
+                    <li><strong class="text-slate-800">Edges:</strong> Represent co-authorship. Thicker lines mean more
+                        shared publications.</li>
+                    <li><strong class="text-slate-800">Colors:</strong> Represent the researcher's primary institution.
+                    </li>
+                    <li><strong class="text-slate-800">Groups (Hulls):</strong> Background shapes group researchers from
+                        the same institution.</li>
+                    <li><strong class="text-slate-800">Particles:</strong> Moving particles indicate the "flow" of
+                        collaboration intensity.</li>
                 </ul>
-                <p class="text-slate-400 italic mt-2">Use the controls in the top-left to toggle features like particles or clustering.</p>
+                <p class="text-slate-400 italic mt-2">Use the controls in the top-left to toggle features like particles
+                    or clustering.</p>
             </div>
         </div>
     </div>
-    <div id="constellationInfoModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+    <div id="constellationInfoModal" class="modal-overlay"
+        onclick="if(event.target===this) this.classList.remove('active')">
         <div class="profile-modal w-full max-w-md bg-white rounded-xl shadow-2xl border border-slate-100 p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="font-bold text-sm text-slate-800">About the Constellation View</h3>
-                <button onclick="document.getElementById('constellationInfoModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                <button onclick="document.getElementById('constellationInfoModal').classList.remove('active')"
+                    class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
             </div>
             <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-                <p>The Constellation view organizes publications based on thematic similarity rather than authorship.</p>
+                <p>The Constellation view organizes publications based on thematic similarity rather than authorship.
+                </p>
                 <ul class="list-disc pl-4 space-y-1">
-                    <li><strong class="text-slate-800">Nodes:</strong> Represent individual publications. Size scales with citation count.</li>
-                    <li><strong class="text-slate-800">Links:</strong> Connect papers that share at least 2 major topics.</li>
-                    <li><strong class="text-slate-800">Colors:</strong> Indicate the dominant topic of the paper (see legend).</li>
-                    <li><strong class="text-slate-800">Clustering:</strong> Papers with similar topics naturally pull together, revealing thematic clusters in the research landscape.</li>
+                    <li><strong class="text-slate-800">Nodes:</strong> Represent individual publications. Size scales
+                        with citation count.</li>
+                    <li><strong class="text-slate-800">Links:</strong> Connect papers that share at least 2 major
+                        topics.</li>
+                    <li><strong class="text-slate-800">Colors:</strong> Indicate the dominant topic of the paper (see
+                        legend).</li>
+                    <li><strong class="text-slate-800">Clustering:</strong> Papers with similar topics naturally pull
+                        together, revealing thematic clusters in the research landscape.</li>
                 </ul>
-                <p class="text-slate-400 italic mt-2">Hover over nodes to see paper details. Click to open the full abstract view.</p>
+                <p class="text-slate-400 italic mt-2">Hover over nodes to see paper details. Click to open the full
+                    abstract view.</p>
             </div>
         </div>
     </div>
@@ -931,73 +959,29 @@
             d3: {}, col: new Map, bm: new Set(JSON.parse(localStorage.getItem('agripv_bookmarks') || '[]')), cache: new Map, particles: null, constellationSim: null,
             init: async () => { /* ... existing init code ... */ app.ui(); app.gr(); app.dark(); el('bookmarkCount').textContent = app.bm.size; const pg = (p, t) => { el('loadingProgress').style.width = p + '%'; el('loadingStatus').textContent = t }; try { pg(5, "Fetching network members..."); const { data: P } = await supabase.from("profiles").select("id,full_name,work_email,affiliation").not("full_name", "is", null); if (!P?.length) throw "No members"; const hx = P.map(p => p.id).sort().join('|'), c = Storage.get(CFG.key); if (Storage.get(CFG.key + "_hash") === hx && c) { pg(85, "Loading from cache..."); app.restore(c) } else { pg(10, "Resolving profiles..."); const R = await app.resolve(P, pg); pg(30, "Discovering publications..."); const W = await app.discoverWorks(R, pg); app.build(R, W); Storage.set(CFG.key + "_hash", hx); Storage.set(CFG.key, app.pack()) } pg(100, "Done"); setTimeout(() => { el('loadingOverlay').classList.add('hidden'); app.render(); setTimeout(app.fitGraph, 400) }, 450) } catch (e) { console.error(e); alert("Failed to load data.") } },
             resolve: async (P, pg) => { /* ... existing resolve code ... */ const out = []; for (let i = 0; i < P.length; i += 12) { out.push(...await Promise.all(P.slice(i, i + 12).map(async p => { let qn = p.full_name; if (/[\._\d]/.test(qn)) qn = qn.replace(/[\._]/g, ' ').replace(/\d+/g, '').trim(); const d = await fetchJSON(`${CFG.api}/authors?search=${encodeURIComponent(qn)}&per_page=10&select=id,display_name,works_count,cited_by_count,last_known_institutions`); let best = null, bS = -1, w = norm(qn), af = norm(p.affiliation || ""); (d?.results || []).forEach(r => { let sc = 0, n = norm(r.display_name || ""), in_ = norm(r.last_known_institutions?.[0]?.display_name || ""); if (n === w) sc += 10; else if (n.includes(w) || w.includes(n)) sc += 4; if (af && in_ && (in_.includes(af) || af.includes(in_))) sc += 4; sc += Math.min(2, (r.works_count || 0) / 200); if (sc > bS) { bS = sc; best = r } }); const m = best || d?.results?.[0], inst = getInst(m?.last_known_institutions?.[0]?.display_name || p.affiliation); return { id: m?.id || `local:${p.id}`, display_name: m?.display_name || p.full_name, inst, color: app.gCol(inst), net_works: 0, net_cited: 0, topics: {}, deg: 0, _wc: m?.works_count || 0 } }))); pg(10 + (Math.min(i + 12, P.length) / P.length) * 18, "Resolving profiles..."); await sleep(30) } return out },
-discoverWorks: async (R, pg) => {
+            discoverWorks: async (R, pg) => {
     const W = new Map;
     const ids = R.filter(a => !a.id.startsWith('local:')).map(a => a.id);
-    const batches = [];
-    const max = 40;
-    for (let i = 0; i < ids.length; i += max) 
-        batches.push(ids.slice(i, i + max));
+    const idSet = new Set(ids);
+    const authorBatches = [];
+    const BATCH_SIZE = 50;
+    for (let i = 0; i < ids.length; i += BATCH_SIZE)
+        authorBatches.push(ids.slice(i, i + BATCH_SIZE));
 
-    // MERGED queries: reduced from 12 to 7 by combining overlapping terms
-    const queries = [
-        // Q1: All explicit agrivoltaic terms (was queries 1 + 10)
-        {
-            q: 'agrivoltaic|agrivoltaics|agrophotovoltaic|agrophotovoltaics|' +
-               '"agri-PV"|"agro-PV"|"agri-photovoltaic"|"agro-photovoltaic"|' +
-               '"solar sharing"|rangevoltaic|ecovoltaic|' +
-               '"photovoltaic greenhouse"|"greenhouse photovoltaic"',
-            type: 'search', pages: 12
-        },
-        // Q2: Dual-use / co-location + solar+ag (was queries 2 + 3)
-        {
-            q: '"dual use"|"dual-use"|"co-location"|"co-locate"|' +
-               '"solar panel"|"solar array"|"solar farm"|"solar canopy"|' +
-               '"solar park" agriculture|crop|greenhouse|farming|' +
-               'grazing|vegetation|yield|land',
-            type: 'search', pages: 8
-        },
-        // Q3: Technical mounting/design terms (was query 4)
-        {
-            q: 'bifacial|"stilt mounted"|"vertical PV"|"semi-transparent"|' +
-               '"ground-mounted" solar|photovoltaic agriculture|crop|' +
-               'farm|grazing|albedo',
-            type: 'search', pages: 6
-        },
-        // Q4: Livestock + solar (was query 5)
-        {
-            q: 'solar|photovoltaic grazing|sheep|cattle|livestock|' +
-               'pasture|"solar grazing"',
-            type: 'search', pages: 6
-        },
-        // Q5: Nexus + food security + crop yield (was queries 6 + 8 + 9)
-        {
-            q: '"food-energy-water"|"water-energy-food"|nexus|' +
-               '"food production"|"food security"|"crop production"|' +
-               '"crop yield"|aquavoltaic|aquavoltaics|' +
-               '"floating solar" aquaculture|solar|photovoltaic',
-            type: 'search', pages: 6
-        },
-        // Q6: Microclimate / PAR / shade (was query 7)
-        {
-            q: '"land equivalent ratio"|"shade tolerance"|microclimate|' +
-               '"photosynthetically active radiation" solar|photovoltaic ' +
-               'crop|agriculture|plant|soil',
-            type: 'search', pages: 6
-        },
-        // Q7: Concept-based (agrivoltaics wikidata concept only — 
-        //     the generic "agriculture" concept Q12705 is too broad 
-        //     and was producing mostly noise that gets filtered out)
-        { q: 'concepts.wikidata:Q109680063', type: 'concept', pages: 8 }
-    ];
+    const dateFilter = `from_publication_date:${Math.max(1990, CFG.now - 25)}-01-01`;
 
-    // Early-termination tracking: if a full page of 200 results yields
-    // fewer than 5% new works, stop paginating that query
-    const NEW_WORK_THRESHOLD = 0.05;
+    const seenPages = new Set;
 
-    const runQuery = async (filterStr, maxPages = 10) => {
+    const runQuery = async (filterStr, maxPages = 10, priority = 'normal') => {
         let cursor = '*', pn = 0, consecutiveLowYield = 0;
+        const LOW_YIELD = priority === 'high' ? 0.02 : 0.05;
+        const MAX_LOW = priority === 'high' ? 3 : 2;
+
         while (cursor && pn++ < maxPages) {
+            const pageKey = `${filterStr}|${cursor}`;
+            if (seenPages.has(pageKey)) break;
+            seenPages.add(pageKey);
+
             const beforeSize = W.size;
             const r = await fetchJSON(
                 `${CFG.api}/works?filter=${filterStr}` +
@@ -1009,125 +993,232 @@ discoverWorks: async (R, pg) => {
             );
             if (!r?.results?.length) break;
 
-            r.results.forEach(w => {
-                if (!W.has(w.id)) {
-                    const sc = scoreWork(w);
-                    if (sc.s >= CFG.minRel || 
-                        (sc.s >= 0.5 && sc.tier !== 'Peripheral')) {
-                        W.set(w.id, { 
-                            ...w, _r: sc.s, _w: sc.why, _t: sc.tier 
-                        });
-                    }
+            for (const w of r.results) {
+                if (W.has(w.id)) continue;
+                const sc = scoreWork(w);
+                if (sc.s >= CFG.minRel ||
+                    (sc.s >= 0.5 && sc.tier !== 'Peripheral')) {
+                    W.set(w.id, { ...w, _r: sc.s, _w: sc.why, _t: sc.tier });
                 }
-            });
+            }
 
             const newWorks = W.size - beforeSize;
-            const yieldRate = newWorks / r.results.length;
+            const yieldRate = r.results.length > 0
+                ? newWorks / r.results.length : 0;
 
-            // Early termination: if we're getting <5% new relevant 
-            // works from a full page, stop paginating this query
-            if (yieldRate < NEW_WORK_THRESHOLD) {
+            if (yieldRate < LOW_YIELD) {
                 consecutiveLowYield++;
-                if (consecutiveLowYield >= 2) break; // 2 consecutive low pages
+                if (consecutiveLowYield >= MAX_LOW) break;
             } else {
                 consecutiveLowYield = 0;
             }
 
             cursor = r.meta?.next_cursor;
             if (!cursor || r.results.length < 200) break;
-            await sleep(15);
+            await sleep(8);
         }
     };
 
-    let done = 0;
-    const total = queries.length * batches.length;
+    // ═══════════════════════════════════════════════════
+    // PHASE 1: Global anchor queries (NO author filter)
+    // Casts the widest net — finds ALL agrivoltaic works
+    // ═══════════════════════════════════════════════════
 
-    // Run queries with higher concurrency (was 6, now 8 since fewer queries)
-    for (let i = 0; i < queries.length; i += 8) {
-        await Promise.all(
-            queries.slice(i, i + 8).map(async qObj => {
-                for (const b of batches) {
-                    const authorFilter = 
-                        `authorships.author.id:${b.join('|')}`;
-                    const dateFilter = 
-                        `from_publication_date:` +
-                        `${Math.max(1990, CFG.now - 25)}-01-01`;
-                    const searchFilter = qObj.type === 'search' 
-                        ? `default.search:${qObj.q}` 
-                        : qObj.q;
-                    const f = `${authorFilter},${searchFilter},${dateFilter}`;
-                    
-                    await runQuery(f, qObj.pages || 10);
-                    done++;
-                    pg(
-                        30 + (done / total) * 40,
-                        `Searching: ${done}/${total} (${W.size} works)...`
-                    );
-                }
-            })
-        );
-        await sleep(20);
-    }
+    const globalQueries = [
+        {
+            // All explicit agrivoltaic terms — highest yield query
+            filter: `default.search:agrivoltaic|agrivoltaics|agrophotovoltaic|` +
+                `agrophotovoltaics|"agri-PV"|"agro-PV"|"agri-photovoltaic"|` +
+                `"agro-photovoltaic"|"solar sharing"|rangevoltaic|ecovoltaic|` +
+                `"photovoltaic greenhouse"|"greenhouse photovoltaic"|` +
+                `aquavoltaic|aquavoltaics,${dateFilter}`,
+            pages: 15,
+            priority: 'high'
+        },
+        {
+            // Concept-based
+            filter: `concepts.wikidata:Q109680063,${dateFilter}`,
+            pages: 10,
+            priority: 'high'
+        },
+        {
+            // Dual-use / co-location solar+agriculture
+            filter: `default.search:"dual use"|"dual-use"|"co-location"|` +
+                `"co-locate" solar|photovoltaic agriculture|crop|farming|` +
+                `grazing|greenhouse,${dateFilter}`,
+            pages: 8,
+            priority: 'normal'
+        },
+        {
+            // Technical mounting/design terms
+            filter: `default.search:bifacial|"stilt mounted"|"vertical PV"|` +
+                `"semi-transparent"|"ground-mounted" solar|photovoltaic ` +
+                `crop|agriculture|farm|albedo|"ground cover ratio",` +
+                `${dateFilter}`,
+            pages: 6,
+            priority: 'normal'
+        },
+        {
+            // Livestock + solar (from new version's Q4 — was missing)
+            filter: `default.search:"solar grazing"|solar|photovoltaic ` +
+                `sheep|cattle|livestock|pasture|grazing,${dateFilter}`,
+            pages: 6,
+            priority: 'normal'
+        },
+        {
+            // Food-energy-water nexus (from new version's Q5 — was missing)
+            filter: `default.search:"food-energy-water"|"water-energy-food"|` +
+                `"food security"|"crop production"|"crop yield"|` +
+                `"floating solar" aquaculture|solar|photovoltaic,` +
+                `${dateFilter}`,
+            pages: 6,
+            priority: 'normal'
+        },
+        {
+            // Microclimate / PAR / shade (from new version's Q6 — was missing)
+            filter: `default.search:"land equivalent ratio"|"shade tolerance"|` +
+                `microclimate|"photosynthetically active radiation" ` +
+                `solar|photovoltaic crop|agriculture|plant|soil,` +
+                `${dateFilter}`,
+            pages: 6,
+            priority: 'normal'
+        }
+    ];
 
-    // === Enrichment phase (unchanged logic, improved threshold) ===
-    const authScores = new Map;
-    W.forEach(w => (w.authorships || []).forEach(a => {
-        if (ids.includes(a.author?.id))
-            authScores.set(
-                a.author.id, 
-                (authScores.get(a.author.id) || 0) + w._r
-            );
-    }));
+    pg(5, `Phase 1: Global agrivoltaic search...`);
+    await Promise.all(
+        globalQueries.map(q => runQuery(q.filter, q.pages, q.priority))
+    );
 
-    // Raised threshold from 30 → 40 to reduce enrichment calls
-    // (only truly prolific authors get extra queries)
-    const topA = [...authScores.entries()]
-        .filter(([, s]) => s >= 40)
-        .map(([id]) => id);
+    pg(30, `Phase 1 complete: ${W.size} works. Starting Phase 2...`);
 
-    if (topA.length) {
-        pg(73, `Enriching ${topA.length} top authors...`);
-        // Reduced from 2 search strings to 1 combined
-        const enrichSearch = 
-            'agrivoltaic|agrophotovoltaic|"solar sharing"|' +
-            '"dual use"|"co-location"|solar|photovoltaic|renewable ' +
-            'crop|agriculture|farm|food|land|vegetation|grazing';
-        
-        for (let i = 0; i < topA.length; i += 8) {
-            await Promise.all(
-                topA.slice(i, i + 8).map(async aid => {
-                    await runQuery(
-                        `authorships.author.id:${aid.split('/').pop()},` +
-                        `default.search:${enrichSearch},` +
-                        `from_publication_date:` +
-                        `${Math.max(1990, CFG.now - 25)}-01-01`,
-                        8
-                    );
-                })
-            );
-            pg(
-                73 + ((i + 8) / topA.length) * 12, 
-                "Targeted enrichment..."
-            );
+    // ═══════════════════════════════════════════════════
+    // PHASE 2: Author-scoped queries
+    // Broader search terms from new version to catch
+    // tangentially related member publications
+    // ═══════════════════════════════════════════════════
+
+    const authorQueries = [
+        {
+            // Core solar+agriculture (expanded from old version)
+            search: 'agrivoltaic|agrophotovoltaic|"solar sharing"|' +
+                '"dual use"|"co-location"|solar|photovoltaic|renewable ' +
+                'agriculture|crop|farm|food|land|vegetation|grazing|' +
+                'livestock|greenhouse',
+            pages: 6
+        },
+        {
+            // Nexus / microclimate / technical (expanded from old version)
+            search: '"land use"|"food security"|"food production"|' +
+                '"energy transition"|microclimate|"shade tolerance"|' +
+                'nexus|"land equivalent"|"crop yield"|bifacial|' +
+                '"semi-transparent"|albedo',
+            pages: 4
+        },
+        {
+            // Solar canopy / park / array terms (new — catches
+            // infrastructure-focused papers by members)
+            search: '"solar panel"|"solar array"|"solar farm"|' +
+                '"solar canopy"|"solar park"|"ground-mounted" ' +
+                'agriculture|crop|yield|land|soil|water',
+            pages: 4
+        }
+    ];
+
+    const taskQueue = [];
+    for (const q of authorQueries) {
+        for (const batch of authorBatches) {
+            taskQueue.push({
+                filter: `authorships.author.id:${batch.join('|')},` +
+                    `default.search:${q.search},${dateFilter}`,
+                pages: q.pages
+            });
         }
     }
 
-    // === Borderline abstract enrichment (unchanged) ===
+    let taskIdx = 0;
+    const CONCURRENCY = 10;
+    const runTaskQueue = async (queue, baseProgress, progressRange, label) => {
+        let idx = 0;
+        await Promise.all(Array.from(
+            { length: Math.min(CONCURRENCY, queue.length) },
+            async () => {
+                while (idx < queue.length) {
+                    const task = queue[idx++];
+                    await runQuery(task.filter, task.pages, task.priority);
+                    pg(
+                        baseProgress + (idx / queue.length) * progressRange,
+                        `${label}: ${idx}/${queue.length} (${W.size} works)...`
+                    );
+                }
+            }
+        ));
+    };
+
+    await runTaskQueue(taskQueue, 30, 30, 'Phase 2');
+
+    pg(60, `Phase 2 complete: ${W.size} works. Enrichment...`);
+
+    // ═══════════════════════════════════════════════════
+    // PHASE 3: Surgical enrichment
+    // Old version's unfiltered strategy — fetch ALL output
+    // from prolific agrivoltaic authors, let scoreWork decide
+    // ═══════════════════════════════════════════════════
+
+    const authScores = new Map;
+    W.forEach(w => (w.authorships || []).forEach(a => {
+        if (idSet.has(a.author?.id))
+            authScores.set(
+                a.author.id,
+                (authScores.get(a.author.id) || 0) + (w._r || 0)
+            );
+    }));
+
+    // Dynamic threshold — adapts to network size (old version's approach)
+    const scores = [...authScores.values()].sort((a, b) => b - a);
+    const enrichThreshold = scores.length > 4
+        ? scores[Math.floor(scores.length * 0.25)]
+        : 50;
+
+    const topAuthors = [...authScores.entries()]
+        .filter(([, s]) => s >= Math.max(enrichThreshold, 30))
+        .map(([id]) => id);
+
+    if (topAuthors.length) {
+        pg(65, `Enriching ${topAuthors.length} top authors...`);
+
+        // UNFILTERED author queries — the old version's secret sauce
+        // No search term filter, just "give me everything this person wrote"
+        const enrichTasks = topAuthors.map(aid => ({
+            filter: `authorships.author.id:${aid.split('/').pop()},${dateFilter}`,
+            pages: 5
+        }));
+
+        await runTaskQueue(enrichTasks, 65, 12, 'Enrichment');
+    }
+
+    pg(80, `Enrichment complete: ${W.size} works. Abstract check...`);
+
+    // ═══════════════════════════════════════════════════
+    // PHASE 4: Borderline abstract resolution
+    // Slightly more aggressive than old version
+    // ═══════════════════════════════════════════════════
+
     const border = [...W.values()]
-        .filter(w => 
-            w._r >= (CFG.minRel - 0.5) && 
-            w._r < (CFG.minRel + 2) && 
+        .filter(w =>
+            w._r >= (CFG.minRel - 0.5) &&
+            w._r < (CFG.minRel + 2) &&
             !w._w?.some(x => x.includes('explicit'))
         )
         .sort((a, b) => b._r - a._r)
-        .slice(0, CFG.cap);
+        .slice(0, 60);
 
     if (border.length) {
-        pg(87, `Fetching abstracts for ${border.length} borderline works...`);
+        pg(82, `Abstracts: ${border.length} borderline works...`);
         let k = 0;
         await Promise.all(
             Array.from(
-                { length: Math.min(CFG.conc, border.length) }, 
+                { length: Math.min(12, border.length) },
                 async () => {
                     while (k < border.length) {
                         const w = border[k++];
@@ -1139,19 +1230,16 @@ discoverWorks: async (R, pg) => {
                             const ab = invIdx(d.abstract_inverted_index);
                             const sc = scoreWork(w, ab);
                             if (sc.s > w._r) {
-                                w._r = sc.s;
-                                w._t = sc.tier;
-                                w._w = [
-                                    ...new Set([...w._w, ...sc.why, 'abs'])
-                                ];
+                                w._r = sc.s; w._t = sc.tier;
+                                w._w = [...new Set([...w._w, ...sc.why, 'abs'])];
                             }
                             app.cache.set(w.id, ab);
                         }
                         pg(
-                            87 + (k / border.length) * 8,
-                            `Enriching ${k}/${border.length}...`
+                            82 + (k / border.length) * 13,
+                            `Abstracts ${k}/${border.length}...`
                         );
-                        await sleep(10);
+                        await sleep(5);
                     }
                 }
             )
@@ -1160,18 +1248,18 @@ discoverWorks: async (R, pg) => {
 
     // Final filter
     for (const [id, w] of W) {
-        if (w._r < CFG.minRel && !w._w.some(x => x.includes('explicit'))) 
+        if (w._r < CFG.minRel && !w._w.some(x => x.includes('explicit')))
             W.delete(id);
     }
 
     return [...W.values()];
-},            build: (R, P) => { /* ... existing build code ... */ const rM = new Map(R.map(r => [r.id, r])); app.data.pubs = P.map(p => { const m = (p.authorships || []).filter(a => rM.has(a.author?.id)).map(a => rM.get(a.author.id)); if (!m.length) return null; let ts = (p.topics || []).filter(t => (t.score || 0) >= 0.25).map(t => t.display_name).slice(0, 7); if (!ts.length) ts = (p.concepts || []).filter(c => (c.score || 0) > 0.55 && (c.level || 0) > 0 && !TOPIC_BLOCK.has(norm(c.display_name))).map(c => c.display_name).slice(0, 7); const cts = ts.filter(t => !TOPIC_NEG.has(norm(t))); m.forEach(r => { r.net_works++; r.net_cited += (p.cited_by_count || 0); cts.forEach(t => { r.topics[t] = (r.topics[t] || 0) + 1; app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1) }) }); if (!cts.length && ts.length) return null; return { id: p.id, title: p.title, year: p.publication_year, cites: p.cited_by_count || 0, doi: p.doi, url: p.primary_location?.landing_page_url || p.doi || p.primary_location?.pdf_url, source: p.primary_location?.source?.display_name, oa: p.open_access?.is_oa, type: p.type, score: p._r || 0, why: p._w || [], tier: p._t || 'Weak', topics: cts, allA: (p.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, mem: rM.has(a.author?.id) })), memA: m } }).filter(Boolean); app.data.researchers = R.filter(r => app.data.pubs.some(p => p.memA.includes(r))); app.buildGraph() },
+}, build: (R, P) => { /* ... existing build code ... */ const rM = new Map(R.map(r => [r.id, r])); app.data.pubs = P.map(p => { const m = (p.authorships || []).filter(a => rM.has(a.author?.id)).map(a => rM.get(a.author.id)); if (!m.length) return null; let ts = (p.topics || []).filter(t => (t.score || 0) >= 0.25).map(t => t.display_name).slice(0, 7); if (!ts.length) ts = (p.concepts || []).filter(c => (c.score || 0) > 0.55 && (c.level || 0) > 0 && !TOPIC_BLOCK.has(norm(c.display_name))).map(c => c.display_name).slice(0, 7); const cts = ts.filter(t => !TOPIC_NEG.has(norm(t))); m.forEach(r => { r.net_works++; r.net_cited += (p.cited_by_count || 0); cts.forEach(t => { r.topics[t] = (r.topics[t] || 0) + 1; app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1) }) }); if (!cts.length && ts.length) return null; return { id: p.id, title: p.title, year: p.publication_year, cites: p.cited_by_count || 0, doi: p.doi, url: p.primary_location?.landing_page_url || p.doi || p.primary_location?.pdf_url, source: p.primary_location?.source?.display_name, oa: p.open_access?.is_oa, type: p.type, score: p._r || 0, why: p._w || [], tier: p._t || 'Weak', topics: cts, allA: (p.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, mem: rM.has(a.author?.id) })), memA: m } }).filter(Boolean); app.data.researchers = R.filter(r => app.data.pubs.some(p => p.memA.includes(r))); app.buildGraph() },
             buildGraph: () => { /* ... existing buildGraph code ... */ const L = new Map, D = new Map; app.data.pubs.forEach(p => { const i = p.memA.map(a => a.id); for (let x = 0; x < i.length; x++)for (let y = x + 1; y < i.length; y++) { const k = [i[x], i[y]].sort().join('|'), l = L.get(k) || { source: i[x], target: i[y], w: 0, p: [] }; l.w++; l.p.push(p.id); L.set(k, l); D.set(i[x], (D.get(i[x]) || 0) + 1); D.set(i[y], (D.get(i[y]) || 0) + 1) } }); app.data.graph = { nodes: app.data.researchers.map(r => ({ ...r, deg: D.get(r.id) || 0, rad: clamp(10 + Math.sqrt(r.net_works || 0) * 3 + Math.sqrt(D.get(r.id) || 0) * 1.5, 10, 30) })), links: [...L.values()] } },
             pack: () => { /* ... existing pack code ... */ const D = { t: [], s: [] }, gx = (a, v) => { if (!v) return -1; let i = a.indexOf(v); return i === -1 ? (a.push(v), a.length - 1) : i }; return { r: app.data.researchers.map(r => ({ id: r.id, n: r.display_name, i: r.inst, nw: r.net_works, nc: r.net_cited, t: Object.keys(r.topics).map(t => gx(D.t, t)), d: r.deg })), p: app.data.pubs.map(p => ({ id: p.id, t: p.title, y: p.year, c: p.cites, d: p.doi, u: p.url, s: gx(D.s, p.source), oa: p.oa ? 1 : 0, r: p.score, w: p.why, ti: p.tier === 'Core' ? 3 : (p.tier === 'Strong' ? 2 : 1), tp: p.topics.map(t => gx(D.t, t)), aa: p.allA.slice(0, 10).map(a => a.name), ma: p.memA.map(m => m.id) })), D } },
             restore: c => { /* ... existing restore code ... */ const D = c.D || { t: [], s: [] }; app.data.researchers = c.r.map(r => ({ id: r.id, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, topics: (r.t || []).reduce((a, i) => { if (D.t[i]) a[D.t[i]] = 1; return a }, {}), deg: r.deg || 0, color: app.gCol(r.i) })); const rM = new Map(app.data.researchers.map(r => [r.id, r])); app.data.pubs = c.p.map(p => { const m = (p.ma || []).map(i => rM.get(i)).filter(Boolean), rt = (p.tp || []).map(i => D.t[i]).filter(Boolean), ct = rt.filter(t => !TOPIC_NEG.has(norm(t))); if (!ct.length && rt.length) return null; return { id: p.id, title: p.t, year: p.y, cites: p.c, doi: p.d, url: p.u, source: typeof p.s === 'number' ? D.s[p.s] : p.s, oa: !!p.oa, type: p.ty, score: p.r, why: p.w || [], tier: p.ti === 3 ? 'Core' : (p.ti === 2 ? 'Strong' : 'Weak'), topics: ct, allA: (p.aa || []).map(n => { const f = m.find(z => z.display_name === n); return { name: n, id: f ? f.id : null, mem: !!f } }), memA: m } }).filter(Boolean); app.data.topics = new Map; app.data.pubs.forEach(p => p.topics.forEach(t => app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1))); app.buildGraph() },
             gCol: i => { if (!app.col.has(i)) app.col.set(i, COLORS[app.col.size % COLORS.length]); return app.col.get(i) },
             spark: (d, w = 48, h = 16) => { const m = Math.max(...d, 1), pts = d.map((v, i) => `${(i / (d.length - 1)) * w},${h - (v / m) * (h - 2) - 1}`).join(' '); return `<svg class="sparkline-container" width="${w}" height="${h}"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="${pts}"/></svg>` },
-            render: () => { /* ... existing render code ... */ const { q, topics: T, insts: I, yFrom: yf, yTo: yt, minRel: mr, bm: bo, co } = app.state.filters, ql = norm(q); let F = app.data.pubs.filter(p => p.score >= mr && (!yf || p.year >= yf) && (!yt || p.year <= yt) && (!I.size || p.memA.some(a => I.has(a.inst))) && (!T.size || p.topics.some(t => T.has(t))) && (!bo || app.bm.has(p.id))); if (ql) F = F.filter(p => norm(p.title).includes(ql) || p.allA.some(a => norm(a.name).includes(ql)) || p.topics.some(t => norm(t).includes(ql)) || (app.cache.has(p.id) && norm(app.cache.get(p.id)).includes(ql))); if (co) F = F.filter(p => p.topics.includes(co.t1) && p.topics.includes(co.t2)); app.state.last = F; const am = new Set(F.flatMap(p => p.memA.map(a => a.id))), yc = new Map, cc = new Map; F.forEach(p => { if (p.year) { yc.set(p.year, (yc.get(p.year) || 0) + 1); cc.set(p.year, (cc.get(p.year) || 0) + p.cites) } }); const yrs = [...yc.keys()].sort((a, b) => a - b); el('statsGrid').innerHTML = [['MEMBERS', am.size], ['WORKS', F.length, yrs.map(y => yc.get(y))], ['CITES', F.reduce((s, p) => s + p.cites, 0), yrs.map(y => cc.get(y))], ['TOPICS', new Set(F.flatMap(p => p.topics)).size]].map(([l, v, s]) => `<div class="bg-white py-1.5 px-0.5 rounded border border-slate-200 shadow-sm flex flex-col items-center hover:border-green-300"><span class="text-xs font-bold text-slate-700">${v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}</span>${s ? `<div class="mt-0.5">${app.spark(s, 36, 12)}</div>` : ''}<span class="text-[7px] text-slate-400 font-bold mt-0.5">${l}</span></div>`).join(''); el('filteredCount').textContent = F.length; app.timeline(F, yc); const sF = { cited: (a, b) => b.cites - a.cites, relevance: (a, b) => b.score - a.score || b.cites - a.cites, title: (a, b) => a.title.localeCompare(b.title), recent: (a, b) => b.year - a.year || b.score - a.score, oldest: (a, b) => a.year - b.year || b.score - a.score, bookmarked: (a, b) => (app.bm.has(b.id) ? 1 : 0) - (app.bm.has(a.id) ? 1 : 0) || b.score - a.score }; F.sort(sF[app.state.sort] || sF.recent); const inf = app.state.mode === 'infinite', sz = inf ? F.length : 12, pgs = inf ? 1 : Math.ceil(F.length / sz), pg = app.state.page = clamp(app.state.page, 1, Math.max(1, pgs)), st = inf ? 0 : (pg - 1) * sz; el('publicationsList').innerHTML = F.slice(st, st + sz).map(app.pubCard).join('') || '<div class="text-center py-20 text-slate-400 text-xs">No results.</div>'; if (!inf) el('publicationsList').scrollTop = 0; ['showingFrom', 'showingTo', 'totalPublications'].forEach((id, i) => el(id).textContent = [F.length ? st + 1 : 0, Math.min(st + sz, F.length), F.length][i]); if (!inf && pgs > 1) { const b = [], ad = (p, l, a) => b.push(`<button onclick="app.setPage(${p})" class="w-6 h-6 flex items-center justify-center rounded text-[9px] font-medium ${a ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`); ad(Math.max(1, pg - 1), '<i class="fas fa-chevron-left"></i>'); (pgs <= 5 ? Array.from({ length: pgs }, (_, i) => i + 1) : (pg <= 3 ? [1, 2, 3, '...', pgs] : (pg >= pgs - 2 ? [1, '...', pgs - 2, pgs - 1, pgs] : [1, '...', pg, pg + 1, '...', pgs]))).forEach(x => x === '...' ? b.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : ad(x, x, x === pg)); ad(Math.min(pgs, pg + 1), '<i class="fas fa-chevron-right"></i>'); el('paginationContainer').innerHTML = b.join('') } else el('paginationContainer').innerHTML = ''; app.renderGraph(F, am); if (app.state.view === 'constellation') app.renderConstellation(F); const ic = new Map, tc = new Map; app.data.researchers.forEach(r => am.has(r.id) && ic.set(r.inst, (ic.get(r.inst) || 0) + 1)); F.forEach(p => p.topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1))); el('institutionFilters').innerHTML = [...ic].sort((a, b) => b[1] - a[1]).map(([i, c]) => `<label class="flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 p-1 rounded group"><input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 w-3 h-3" ${I.has(i) ? 'checked' : ''}><div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${app.gCol(i)}"></div><span class="text-[10px] text-slate-600 truncate flex-1">${esc(i)}</span><span class="text-[8px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span></label>`).join(''); el('topicFilters').innerHTML = [...tc].sort((a, b) => b[1] - a[1]).slice(0, 35).map(([t, c]) => `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] border flex gap-1 ${T.has(t) ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-50 text-slate-500 hover:bg-white'}">${esc(t)} <span class="opacity-50 text-[8px]">${c}</span></button>`).join(''); const fc = T.size + I.size + (bo ? 1 : 0) + (co ? 1 : 0), tg = (l, k, c) => `<span class="${c} px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>`; el('activeFiltersPanel').classList.toggle('hidden', !fc); el('activeFilterCount').textContent = fc; el('activeFilterTags').innerHTML = (bo ? '<span class="bg-amber-50 text-amber-700 border-amber-200 px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">Bookmarked<button onclick="app.toggleBookmarkFilter()" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>' : '') + (co ? `<span class="bg-purple-50 text-purple-700 border-purple-200 px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">Interact: ${co.t1.substring(0, 8)}... & ${co.t2.substring(0, 8)}...<button onclick="app.clrCo()" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>` : '') + [...T].map(t => tg(t, 'topics', 'bg-green-50 text-green-700 border-green-200')).join('') + [...I].map(i => tg(i, 'insts', 'bg-blue-50 text-blue-700 border-blue-200')).join(''); const actInst = [...app.col].filter(([i]) => app.data.researchers.some(r => r.inst === i && am.has(r.id))); el('legendContainer').innerHTML = actInst.map(([i, c]) => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background:${c}"></span><span class="text-[9px] text-slate-600 truncate">${esc(i)}</span></div>`).join(''); app.updSel(); app.updBm(); if (app.state.hm) app.heatmap(F) },
+            render: () => { /* ... existing render code ... */ const { q, topics: T, insts: I, yFrom: yf, yTo: yt, minRel: mr, bm: bo, co } = app.state.filters, ql = norm(q); let F = app.data.pubs.filter(p => p.score >= mr && (!yf || p.year >= yf) && (!yt || p.year <= yt) && (!I.size || p.memA.some(a => I.has(a.inst))) && (!T.size || p.topics.some(t => T.has(t))) && (!bo || app.bm.has(p.id))); if (ql) F = F.filter(p => norm(p.title).includes(ql) || p.allA.some(a => norm(a.name).includes(ql)) || p.topics.some(t => norm(t).includes(ql)) || (app.cache.has(p.id) && norm(app.cache.get(p.id)).includes(ql))); if (co) F = F.filter(p => p.topics.includes(co.t1) && p.topics.includes(co.t2)); app.state.last = F; const am = new Set(F.flatMap(p => p.memA.map(a => a.id))), yc = new Map, cc = new Map; F.forEach(p => { if (p.year) { yc.set(p.year, (yc.get(p.year) || 0) + 1); cc.set(p.year, (cc.get(p.year) || 0) + p.cites) } }); const yrs = [...yc.keys()].sort((a, b) => a - b); el('statsGrid').innerHTML = [['MEMBERS', am.size], ['WORKS', F.length, yrs.map(y => yc.get(y))], ['CITES', F.reduce((s, p) => s + p.cites, 0), yrs.map(y => cc.get(y))], ['TOPICS', new Set(F.flatMap(p => p.topics)).size]].map(([l, v, s]) => `<div class="bg-white py-1.5 px-0.5 rounded border border-slate-200 shadow-sm flex flex-col items-center hover:border-green-300"><span class="text-xs font-bold text-slate-700">${v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}</span>${s ? `<div class="mt-0.5">${app.spark(s, 36, 12)}</div>` : ''}<span class="text-[7px] text-slate-400 font-bold mt-0.5">${l}</span></div>`).join(''); el('filteredCount').textContent = F.length; app.timeline(F, yc); const sF = { cited: (a, b) => b.cites - a.cites, relevance: (a, b) => b.score - a.score || b.cites - a.cites, title: (a, b) => a.title.localeCompare(b.title), recent: (a, b) => b.year - a.year || b.score - a.score, oldest: (a, b) => a.year - b.year || b.score - a.score, bookmarked: (a, b) => (app.bm.has(b.id) ? 1 : 0) - (app.bm.has(a.id) ? 1 : 0) || b.score - a.score }; F.sort(sF[app.state.sort] || sF.recent); const inf = app.state.mode === 'infinite', sz = inf ? F.length : 12, pgs = inf ? 1 : Math.ceil(F.length / sz), pg = app.state.page = clamp(app.state.page, 1, Math.max(1, pgs)), st = inf ? 0 : (pg - 1) * sz; el('publicationsList').innerHTML = F.slice(st, st + sz).map(app.pubCard).join('') || '<div class="text-center py-20 text-slate-400 text-xs">No results.</div>'; if (!inf) el('publicationsList').scrollTop = 0;['showingFrom', 'showingTo', 'totalPublications'].forEach((id, i) => el(id).textContent = [F.length ? st + 1 : 0, Math.min(st + sz, F.length), F.length][i]); if (!inf && pgs > 1) { const b = [], ad = (p, l, a) => b.push(`<button onclick="app.setPage(${p})" class="w-6 h-6 flex items-center justify-center rounded text-[9px] font-medium ${a ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`); ad(Math.max(1, pg - 1), '<i class="fas fa-chevron-left"></i>'); (pgs <= 5 ? Array.from({ length: pgs }, (_, i) => i + 1) : (pg <= 3 ? [1, 2, 3, '...', pgs] : (pg >= pgs - 2 ? [1, '...', pgs - 2, pgs - 1, pgs] : [1, '...', pg, pg + 1, '...', pgs]))).forEach(x => x === '...' ? b.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : ad(x, x, x === pg)); ad(Math.min(pgs, pg + 1), '<i class="fas fa-chevron-right"></i>'); el('paginationContainer').innerHTML = b.join('') } else el('paginationContainer').innerHTML = ''; app.renderGraph(F, am); if (app.state.view === 'constellation') app.renderConstellation(F); const ic = new Map, tc = new Map; app.data.researchers.forEach(r => am.has(r.id) && ic.set(r.inst, (ic.get(r.inst) || 0) + 1)); F.forEach(p => p.topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1))); el('institutionFilters').innerHTML = [...ic].sort((a, b) => b[1] - a[1]).map(([i, c]) => `<label class="flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 p-1 rounded group"><input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 w-3 h-3" ${I.has(i) ? 'checked' : ''}><div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${app.gCol(i)}"></div><span class="text-[10px] text-slate-600 truncate flex-1">${esc(i)}</span><span class="text-[8px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span></label>`).join(''); el('topicFilters').innerHTML = [...tc].sort((a, b) => b[1] - a[1]).slice(0, 35).map(([t, c]) => `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] border flex gap-1 ${T.has(t) ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-50 text-slate-500 hover:bg-white'}">${esc(t)} <span class="opacity-50 text-[8px]">${c}</span></button>`).join(''); const fc = T.size + I.size + (bo ? 1 : 0) + (co ? 1 : 0), tg = (l, k, c) => `<span class="${c} px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>`; el('activeFiltersPanel').classList.toggle('hidden', !fc); el('activeFilterCount').textContent = fc; el('activeFilterTags').innerHTML = (bo ? '<span class="bg-amber-50 text-amber-700 border-amber-200 px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">Bookmarked<button onclick="app.toggleBookmarkFilter()" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>' : '') + (co ? `<span class="bg-purple-50 text-purple-700 border-purple-200 px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">Interact: ${co.t1.substring(0, 8)}... & ${co.t2.substring(0, 8)}...<button onclick="app.clrCo()" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>` : '') + [...T].map(t => tg(t, 'topics', 'bg-green-50 text-green-700 border-green-200')).join('') + [...I].map(i => tg(i, 'insts', 'bg-blue-50 text-blue-700 border-blue-200')).join(''); const actInst = [...app.col].filter(([i]) => app.data.researchers.some(r => r.inst === i && am.has(r.id))); el('legendContainer').innerHTML = actInst.map(([i, c]) => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background:${c}"></span><span class="text-[9px] text-slate-600 truncate">${esc(i)}</span></div>`).join(''); app.updSel(); app.updBm(); if (app.state.hm) app.heatmap(F) },
             pubCard: p => `<div class="pub-card p-3 bg-white mb-2 cursor-pointer" onclick="app.detail('${p.id}')"><div class="flex items-start gap-2"><input type="checkbox" class="pub-checkbox mt-1" ${app.state.sel.has(p.id) ? 'checked' : ''} onclick="event.stopPropagation();app.togSel('${p.id}')"><div class="flex-1 min-w-0"><div class="flex items-start justify-between gap-2 mb-1.5"><h4 class="font-bold text-slate-800 text-xs leading-snug flex-1">${esc(p.title)}</h4><div class="shrink-0 flex items-center gap-1"><button class="bookmark-btn ${app.bm.has(p.id) ? 'active text-amber-500' : 'text-slate-300 hover:text-amber-400'} p-1 text-xs" onclick="event.stopPropagation();app.togBm('${p.id}')"><i class="fas fa-bookmark"></i></button>${p.oa ? '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[8px] font-bold rounded border border-amber-100 uppercase">OA</span>' : ''} ${p.tier === 'Core' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-green-100 text-green-800 border border-green-200">Core</span>' : (p.tier === 'Strong' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">Strong</span>' : '')}</div></div><div class="flex flex-wrap gap-1 mb-2">${p.allA.slice(0, 5).map(a => `<span class="px-1.5 py-0.5 rounded text-[9px] truncate max-w-[100px] ${a.mem ? 'network-member font-medium' : 'external-author'}">${esc(a.name)}</span>`).join('')}${p.allA.length > 5 ? `<span class="text-[9px] text-slate-400 self-center">+${p.allA.length - 5}</span>` : ''}</div><div class="flex items-center gap-3 text-[9px] text-slate-500 font-medium"><span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${p.year || ''}</span><span class="flex items-center gap-1"><i class="fas fa-quote-right text-slate-400"></i> ${p.cites}</span><span class="ml-auto text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 font-semibold">Score: ${p.score.toFixed(1)}</span><div class="flex gap-1 ml-1"><button class="hover:text-brand p-1" onclick="event.stopPropagation();app.cite('${p.id}')"><i class="fas fa-quote-left"></i></button>${p.doi ? `<button class="hover:text-blue-600 p-1 transition-colors" onclick="event.stopPropagation();app.cpD(event, '${jsStr(p.doi)}')" title="Copy DOI"><i class="fas fa-copy"></i></button><a href="https://doi.org/${p.doi}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 p-1 transition-colors" onclick="event.stopPropagation()" title="Open Paper"><i class="fas fa-external-link-alt"></i></a>` : ''}</div></div></div></div></div>`,
             timeline: (F, yc) => { const svg = d3.select('#timelineChart'); svg.selectAll('*').remove(); if (!yc.size) return; const yrs = [...yc.keys()].sort((a, b) => a - b), min = yrs[0], max = yrs[yrs.length - 1], all = Array.from({ length: max - min + 1 }, (_, i) => min + i); const W = el('timelineChart').clientWidth, H = 50, m = { t: 2, r: 2, b: 12, l: 2 }, x = d3.scaleBand().domain(all).range([m.l, W - m.r]).padding(0.2), y = d3.scaleLinear().domain([0, d3.max([...yc.values()]) || 1]).range([H - m.b, m.t]); const g = svg.append('g'), { yFrom: yf, yTo: yt } = app.state.filters; g.selectAll('rect').data(all).enter().append('rect').attr('class', d => `timeline-bar ${(yf && d >= yf && (!yt || d <= yt)) || (yt && d <= yt && (!yf || d >= yf)) ? 'selected' : ''}`).attr('x', d => x(d)).attr('y', d => y(yc.get(d) || 0)).attr('width', x.bandwidth()).attr('height', d => H - m.b - y(yc.get(d) || 0)).attr('rx', 1).on('click', (e, d) => { if (e.shiftKey && yf) { app.state.filters.yTo = d; el('yearTo').value = d } else if (yf === d && !yt) { app.state.filters.yFrom = app.state.filters.yTo = null; el('yearFrom').value = el('yearTo').value = '' } else { app.state.filters.yFrom = d; app.state.filters.yTo = null; el('yearFrom').value = d; el('yearTo').value = '' } app.render() }); const lbl = all.length > 12 ? 3 : (all.length > 6 ? 2 : 1); g.selectAll('.yl').data(all.filter((_, i) => i % lbl === 0 || _ === max)).enter().append('text').attr('x', d => x(d) + x.bandwidth() / 2).attr('y', H - 1).attr('text-anchor', 'middle').attr('font-size', 7).attr('fill', '#94a3b8').text(d => d.toString().slice(-2)) },
             heatmap: F => {
@@ -1192,15 +1280,15 @@ discoverWorks: async (R, pg) => {
                             tt.innerHTML = `<div class="flex items-center gap-1.5"><span class="text-slate-500 font-semibold">Filter:</span><span class="text-slate-700 font-bold">${top[i]}</span><span class="text-slate-400">&</span><span class="text-slate-700 font-bold">${top[j]}</span><span class="ml-1 bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-bold">${v}</span></div>`;
                             tt.classList.remove('opacity-0', 'pointer-events-none');
                         }).on('mouseout', () => tt.classList.add('opacity-0', 'pointer-events-none'))
-                        .on('click', () => { app.state.filters.co = sel ? null : { t1: top[i], t2: top[j] }; app.render() });
+                            .on('click', () => { app.state.filters.co = sel ? null : { t1: top[i], t2: top[j] }; app.render() });
                     }
                 }
             },
-            gr: () => {  const svg = d3.select('#networkGraph'), g = svg.append('g'), defs = svg.append('defs'); COLORS.forEach(c => defs.append('radialGradient').attr('id', 'g-' + c.slice(1)).attr('cx', '30%').attr('cy', '30%').call(gg => { gg.append('stop').attr('offset', '0%').attr('stop-color', d3.color(c).brighter(1.2)); gg.append('stop').attr('offset', '100%').attr('stop-color', c) })); const z = d3.zoom().scaleExtent([.1, 8]).on('zoom', e => { g.attr('transform', e.transform); app.d3.k = e.transform.k; if (app.d3.lbl) app.d3.lbl.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none'); if (app.particles) app.particles.setTransform({ x: e.transform.x, y: e.transform.y, k: e.transform.k }) }); app.d3 = { svg, g, zoom: z, sim: d3.forceSimulation().force('link', d3.forceLink().id(d => d.id).distance(120).strength(.3)).force('charge', d3.forceManyBody().strength(-320)).force('collide', d3.forceCollide().radius(d => d.rad + 4).iterations(3)), k: 1 }; svg.call(z); app.particles = new ParticleSystem(el('particleCanvas')); const resizeObs = new ResizeObserver(() => { app.resizeGraph() }); resizeObs.observe(el('graphContainer')); window.addEventListener('resize', app.resizeGraph); app.resizeGraph() },
+            gr: () => { const svg = d3.select('#networkGraph'), g = svg.append('g'), defs = svg.append('defs'); COLORS.forEach(c => defs.append('radialGradient').attr('id', 'g-' + c.slice(1)).attr('cx', '30%').attr('cy', '30%').call(gg => { gg.append('stop').attr('offset', '0%').attr('stop-color', d3.color(c).brighter(1.2)); gg.append('stop').attr('offset', '100%').attr('stop-color', c) })); const z = d3.zoom().scaleExtent([.1, 8]).on('zoom', e => { g.attr('transform', e.transform); app.d3.k = e.transform.k; if (app.d3.lbl) app.d3.lbl.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none'); if (app.particles) app.particles.setTransform({ x: e.transform.x, y: e.transform.y, k: e.transform.k }) }); app.d3 = { svg, g, zoom: z, sim: d3.forceSimulation().force('link', d3.forceLink().id(d => d.id).distance(120).strength(.3)).force('charge', d3.forceManyBody().strength(-320)).force('collide', d3.forceCollide().radius(d => d.rad + 4).iterations(3)), k: 1 }; svg.call(z); app.particles = new ParticleSystem(el('particleCanvas')); const resizeObs = new ResizeObserver(() => { app.resizeGraph() }); resizeObs.observe(el('graphContainer')); window.addEventListener('resize', app.resizeGraph); app.resizeGraph() },
             resizeGraph: () => { const c = el('graphContainer'), w = c.clientWidth || 800, h = c.clientHeight || 600; app.d3.svg.attr('viewBox', `0 0 ${w} ${h}`); app.d3.sim.force('center', d3.forceCenter(w / 2, h / 2)); app.clus(); app.d3.sim.alpha(.3).restart(); if (app.particles) app.particles.resize() },
-            clus: () => {  if (!app.d3.nodes || !app.state.graph.cluster) { app.d3.sim.force('x', null).force('y', null); return } const w = el('graphContainer').clientWidth, h = el('graphContainer').clientHeight, insts = [...new Set(app.d3.nodes.map(n => n.inst))].sort(), r = Math.min(w, h) * 0.28, pos = new Map(insts.map((i, x) => [i, { x: w / 2 + Math.cos((x / insts.length) * Math.PI * 2 - Math.PI / 2) * r, y: h / 2 + Math.sin((x / insts.length) * Math.PI * 2 - Math.PI / 2) * r }])); app.d3.sim.force('x', d3.forceX(d => pos.get(d.inst)?.x).strength(.15)).force('y', d3.forceY(d => pos.get(d.inst)?.y).strength(.15)) },
-            renderGraph: (P, vis) => {  const nodes = app.data.graph.nodes.filter(n => vis.has(n.id)), links = app.data.graph.links.filter(l => vis.has(l.source.id || l.source) && vis.has(l.target.id || l.target)); app.d3.nodes = nodes; const { g, sim } = app.d3; g.selectAll('*').remove(); const adj = new Map, linksMap = new Map, nodesMap = new Map; nodes.forEach(n => nodesMap.set(n.id, n)); links.forEach(l => { const sid = l.source.id || l.source, tid = l.target.id || l.target; (adj.get(sid) || adj.set(sid, new Set).get(sid)).add(tid); (adj.get(tid) || adj.set(tid, new Set).get(tid)).add(sid); linksMap.set([sid, tid].sort().join('|'), l) }); const maxW = d3.max(links, d => d.w) || 1, wS = d3.scaleSqrt().domain([1, maxW]).range([.5, 3]), tip = el('tooltip'), et = el('edgeTooltip'); const hullGroup = g.append('g').attr('class', 'hull-layer'); const instGroups = new Map(); nodes.forEach(n => { if (!instGroups.has(n.inst)) instGroups.set(n.inst, []); instGroups.get(n.inst).push(n) }); const hullPaths = []; instGroups.forEach((groupNodes, inst) => { if (groupNodes.length < 1) return; const path = hullGroup.append('path').attr('class', 'hull-path').attr('fill', app.gCol(inst)).attr('stroke', app.gCol(inst)).attr('stroke-width', 20).attr('d', ''); hullPaths.push({ path, nodes: groupNodes, inst }) }); const updateHulls = () => { if (!app.state.graph.cluster) { hullPaths.forEach(h => h.path.attr('d', '')); return } for (const hp of hullPaths) { const pts = hp.nodes.filter(n => n.x != null).map(n => [n.x, n.y]); hp.path.attr('d', computeHullPath(pts, 20)) } }; const lnk = g.append('g').selectAll('line').data(links).enter().append('line').attr('stroke', '#cbd5e1').attr('stroke-opacity', d => .4 + .3 * (d.w / maxW)).attr('stroke-width', d => wS(d.w)).on('mouseover', (e, d) => { const r = el('graphContainer').getBoundingClientRect(); Object.assign(et.style, { left: Math.min(e.clientX - r.left + 10, r.width - 200) + 'px', top: Math.min(e.clientY - r.top + 10, r.height - 100) + 'px' }); et.innerHTML = `<div class="font-bold text-slate-700">${esc((d.source.display_name || d.source) + ' ↔ ' + (d.target.display_name || d.target))}</div><div class="text-[9px] text-green-700">${d.w} papers</div>`; et.classList.remove('hidden') }).on('mouseout', () => et.classList.add('hidden')); const nd = g.append('g').selectAll('g').data(nodes).enter().append('g').call(d3.drag().on('start', (e, d) => { if (!e.active) sim.alphaTarget(.3).restart(); d.fx = d.x; d.fy = d.y }).on('drag', (e, d) => { d.fx = e.x; d.fy = e.y }).on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null })); nd.append('circle').attr('class', 'search-highlight-ring').attr('r', d => d.rad + 6).attr('fill', 'none').attr('stroke', '#16a34a').attr('stroke-width', 2).attr('opacity', 0); nd.each(function (d) { const arcs = buildTemporalArcs(d.id, P, CFG.now); if (!arcs.length) return; const arcGroup = d3.select(this).append('g').attr('class', 'temporal-arc'); const outerR = d.rad + 4, innerR = d.rad + 1, arcGen = d3.arc(); let startAngle = 0, total = arcs.reduce((s, a) => s + a.count, 0); for (const arc of arcs) { const frac = arc.count / total, endAngle = startAngle + frac * Math.PI * 2; arcGroup.append('path').attr('d', arcGen({ innerRadius: innerR, outerRadius: outerR, startAngle, endAngle })).attr('fill', arc.color).attr('opacity', 0.7); startAngle = endAngle } }); nd.append('circle').attr('r', d => d.rad).attr('fill', d => `url(#g-${d.color.slice(1)})`).attr('stroke', '#ffffff4d').attr('stroke-width', 1.5).style('cursor', 'pointer'); nd.append('text').text(d => d.display_name.split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase()).attr('dy', '0.35em').attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', d => Math.max(8, d.rad * .45)).attr('font-weight', '600').style('pointer-events', 'none'); app.d3.lbl = nd.append('text').attr('class', 'node-label').text(d => d.display_name.split(' ').pop().replace(/[,;]/g, '')).attr('text-anchor', 'middle').attr('y', d => d.rad + 12).attr('fill', '#334155').attr('font-size', 10).attr('font-weight', '600').style('pointer-events', 'none').style('display', app.state.graph.labels ? null : 'none'); app.d3.nd = nd; nd.on('mouseover', (e, d) => { nd.transition().duration(200).attr('opacity', n => (n.id === d.id || adj.get(d.id)?.has(n.id)) ? 1 : .1); lnk.transition().duration(200).attr('stroke', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? '#475569' : '#e2e8f0').attr('stroke-opacity', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? 1 : .05); const r = el('graphContainer').getBoundingClientRect(); Object.assign(tip.style, { left: Math.min(e.clientX - r.left + 15, r.width - 340) + 'px', top: Math.min(e.clientY - r.top + 15, r.height - 200) + 'px' }); const egoSVG = buildEgoMiniSVG(d.id, adj, nodesMap, linksMap); tip.innerHTML = `<div class="font-bold text-slate-800">${esc(d.display_name)}</div><div class="text-[9px] text-slate-500 mb-2">${esc(d.inst)}</div><div class="flex gap-2 text-center"><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_works}</div><div class="text-[7px] uppercase">Works</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_cited}</div><div class="text-[7px] uppercase">Cites</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${adj.get(d.id)?.size || 0}</div><div class="text-[7px] uppercase">Collab</div></div></div>${egoSVG ? `<div class="mt-1 border-t border-slate-100 pt-1"><div class="text-[8px] font-bold text-slate-400 uppercase">Collaboration Network</div>${egoSVG}</div>` : ''}`; tip.classList.remove('hidden') }).on('mouseout', () => { nd.transition().duration(200).attr('opacity', 1); lnk.transition().duration(200).attr('stroke', '#cbd5e1').attr('stroke-opacity', d => .4 + .3 * (d.w / maxW)); tip.classList.add('hidden') }).on('click', (e, d) => { e.stopPropagation(); e.shiftKey ? app.cmp(d) : app.profile(d) }); if (app.particles) { app.particles.setLinks(links); if (app.state.graph.particles) { app.particles.resize(); app.particles.start() } else { app.particles.stop() } } app.clus(); sim.nodes(nodes).on('tick', () => { const cw = el('graphContainer').clientWidth, ch = el('graphContainer').clientHeight; nodes.forEach(n => { n.x = clamp(n.x, 25 + n.rad, cw - 25 - n.rad); n.y = clamp(n.y, 25 + n.rad, ch - 25 - n.rad) }); lnk.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y); nd.attr('transform', d => `translate(${d.x},${d.y})`); updateHulls() }); sim.force('link').links(links); sim.alpha(1).restart(); app.hl() },
-            renderConstellation: (F) => {  const svg = d3.select('#constellationGraph'); svg.selectAll('*').remove(); if (!F.length) return; const container = el('constellationPanel'); const W = container.clientWidth || 800; const H = container.clientHeight || 600; svg.attr('viewBox', `0 0 ${W} ${H}`); const topicColors = new Map(); const tc = new Map(); F.forEach(p => p.topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1))); const sortedTopics = [...tc.entries()].sort((a, b) => b[1] - a[1]); sortedTopics.forEach(([t], i) => topicColors.set(t, COLORS[i % COLORS.length])); const cNodes = F.slice(0, 200).map(p => ({ id: p.id, title: p.title, year: p.year, cites: p.cites, topics: p.topics, score: p.score, color: topicColors.get(p.topics[0]) || '#94a3b8', r: clamp(3 + Math.sqrt(p.cites) * 0.5, 3, 12) })); const cLinks = []; for (let i = 0; i < cNodes.length; i++) { for (let j = i + 1; j < cNodes.length; j++) { const shared = cNodes[i].topics.filter(t => cNodes[j].topics.includes(t)).length; if (shared >= 2) { cLinks.push({ source: cNodes[i].id, target: cNodes[j].id, w: shared }) } } } const g = svg.append('g'); const zoom = d3.zoom().scaleExtent([0.2, 5]).on('zoom', e => g.attr('transform', e.transform)); svg.call(zoom); const cSim = d3.forceSimulation(cNodes).force('link', d3.forceLink(cLinks).id(d => d.id).distance(40).strength(d => d.w * 0.05)).force('charge', d3.forceManyBody().strength(-15)).force('center', d3.forceCenter(W / 2, H / 2)).force('collide', d3.forceCollide().radius(d => d.r + 2)); if (app.constellationSim) app.constellationSim.stop(); app.constellationSim = cSim; const link = g.append('g').selectAll('line').data(cLinks).enter().append('line').attr('class', 'constellation-link').attr('stroke-width', d => d.w * 0.5); const node = g.append('g').selectAll('circle').data(cNodes).enter().append('circle').attr('class', 'constellation-node').attr('r', d => d.r).attr('fill', d => d.color).attr('opacity', 0.7); const cTip = el('constellationTooltip'); node.on('mouseover', (e, d) => { const r = container.getBoundingClientRect(); Object.assign(cTip.style, { left: Math.min(e.clientX - r.left + 10, r.width - 220) + 'px', top: Math.min(e.clientY - r.top + 10, r.height - 120) + 'px' }); cTip.innerHTML = `<div class="font-bold text-slate-800 text-[11px] leading-snug mb-1">${esc(d.title)}</div><div class="text-[9px] text-slate-500">${d.year} · ${d.cites} cites · Score ${d.score.toFixed(1)}</div><div class="flex flex-wrap gap-1 mt-1">${d.topics.slice(0, 4).map(t => `<span class="px-1 py-0.5 rounded text-[8px] border" style="background:${topicColors.get(t) || '#f1f5f9'}20;border-color:${topicColors.get(t) || '#e2e8f0'};color:${topicColors.get(t) || '#64748b'}">${esc(t.substring(0, 20))}</span>`).join('')}</div>`; cTip.classList.remove('hidden') }).on('mouseout', () => cTip.classList.add('hidden')).on('click', (e, d) => { e.stopPropagation(); app.detail(d.id) }); cSim.on('tick', () => { link.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y); node.attr('cx', d => d.x).attr('cy', d => d.y) }); const legendG = svg.append('g').attr('transform', `translate(${W - 150}, 20)`); legendG.append('rect').attr('width', 140).attr('height', Math.min(sortedTopics.length, 8) * 14 + 22).attr('rx', 6).attr('fill', 'white').attr('fill-opacity', 0.9).attr('stroke', '#e2e8f0'); legendG.append('text').attr('x', 8).attr('y', 14).attr('font-size', 8).attr('font-weight', 700).attr('fill', '#94a3b8').text('TOPIC COLORS'); sortedTopics.slice(0, 8).forEach(([t], i) => { legendG.append('circle').attr('cx', 12).attr('cy', 28 + i * 14).attr('r', 4).attr('fill', topicColors.get(t)); legendG.append('text').attr('x', 22).attr('y', 31 + i * 14).attr('font-size', 8).attr('fill', '#64748b').text(t.length > 18 ? t.substring(0, 18) + '…' : t) }) },
+            clus: () => { if (!app.d3.nodes || !app.state.graph.cluster) { app.d3.sim.force('x', null).force('y', null); return } const w = el('graphContainer').clientWidth, h = el('graphContainer').clientHeight, insts = [...new Set(app.d3.nodes.map(n => n.inst))].sort(), r = Math.min(w, h) * 0.28, pos = new Map(insts.map((i, x) => [i, { x: w / 2 + Math.cos((x / insts.length) * Math.PI * 2 - Math.PI / 2) * r, y: h / 2 + Math.sin((x / insts.length) * Math.PI * 2 - Math.PI / 2) * r }])); app.d3.sim.force('x', d3.forceX(d => pos.get(d.inst)?.x).strength(.15)).force('y', d3.forceY(d => pos.get(d.inst)?.y).strength(.15)) },
+            renderGraph: (P, vis) => { const nodes = app.data.graph.nodes.filter(n => vis.has(n.id)), links = app.data.graph.links.filter(l => vis.has(l.source.id || l.source) && vis.has(l.target.id || l.target)); app.d3.nodes = nodes; const { g, sim } = app.d3; g.selectAll('*').remove(); const adj = new Map, linksMap = new Map, nodesMap = new Map; nodes.forEach(n => nodesMap.set(n.id, n)); links.forEach(l => { const sid = l.source.id || l.source, tid = l.target.id || l.target; (adj.get(sid) || adj.set(sid, new Set).get(sid)).add(tid); (adj.get(tid) || adj.set(tid, new Set).get(tid)).add(sid); linksMap.set([sid, tid].sort().join('|'), l) }); const maxW = d3.max(links, d => d.w) || 1, wS = d3.scaleSqrt().domain([1, maxW]).range([.5, 3]), tip = el('tooltip'), et = el('edgeTooltip'); const hullGroup = g.append('g').attr('class', 'hull-layer'); const instGroups = new Map(); nodes.forEach(n => { if (!instGroups.has(n.inst)) instGroups.set(n.inst, []); instGroups.get(n.inst).push(n) }); const hullPaths = []; instGroups.forEach((groupNodes, inst) => { if (groupNodes.length < 1) return; const path = hullGroup.append('path').attr('class', 'hull-path').attr('fill', app.gCol(inst)).attr('stroke', app.gCol(inst)).attr('stroke-width', 20).attr('d', ''); hullPaths.push({ path, nodes: groupNodes, inst }) }); const updateHulls = () => { if (!app.state.graph.cluster) { hullPaths.forEach(h => h.path.attr('d', '')); return } for (const hp of hullPaths) { const pts = hp.nodes.filter(n => n.x != null).map(n => [n.x, n.y]); hp.path.attr('d', computeHullPath(pts, 20)) } }; const lnk = g.append('g').selectAll('line').data(links).enter().append('line').attr('stroke', '#cbd5e1').attr('stroke-opacity', d => .4 + .3 * (d.w / maxW)).attr('stroke-width', d => wS(d.w)).on('mouseover', (e, d) => { const r = el('graphContainer').getBoundingClientRect(); Object.assign(et.style, { left: Math.min(e.clientX - r.left + 10, r.width - 200) + 'px', top: Math.min(e.clientY - r.top + 10, r.height - 100) + 'px' }); et.innerHTML = `<div class="font-bold text-slate-700">${esc((d.source.display_name || d.source) + ' ↔ ' + (d.target.display_name || d.target))}</div><div class="text-[9px] text-green-700">${d.w} papers</div>`; et.classList.remove('hidden') }).on('mouseout', () => et.classList.add('hidden')); const nd = g.append('g').selectAll('g').data(nodes).enter().append('g').call(d3.drag().on('start', (e, d) => { if (!e.active) sim.alphaTarget(.3).restart(); d.fx = d.x; d.fy = d.y }).on('drag', (e, d) => { d.fx = e.x; d.fy = e.y }).on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null })); nd.append('circle').attr('class', 'search-highlight-ring').attr('r', d => d.rad + 6).attr('fill', 'none').attr('stroke', '#16a34a').attr('stroke-width', 2).attr('opacity', 0); nd.each(function (d) { const arcs = buildTemporalArcs(d.id, P, CFG.now); if (!arcs.length) return; const arcGroup = d3.select(this).append('g').attr('class', 'temporal-arc'); const outerR = d.rad + 4, innerR = d.rad + 1, arcGen = d3.arc(); let startAngle = 0, total = arcs.reduce((s, a) => s + a.count, 0); for (const arc of arcs) { const frac = arc.count / total, endAngle = startAngle + frac * Math.PI * 2; arcGroup.append('path').attr('d', arcGen({ innerRadius: innerR, outerRadius: outerR, startAngle, endAngle })).attr('fill', arc.color).attr('opacity', 0.7); startAngle = endAngle } }); nd.append('circle').attr('r', d => d.rad).attr('fill', d => `url(#g-${d.color.slice(1)})`).attr('stroke', '#ffffff4d').attr('stroke-width', 1.5).style('cursor', 'pointer'); nd.append('text').text(d => d.display_name.split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase()).attr('dy', '0.35em').attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', d => Math.max(8, d.rad * .45)).attr('font-weight', '600').style('pointer-events', 'none'); app.d3.lbl = nd.append('text').attr('class', 'node-label').text(d => d.display_name.split(' ').pop().replace(/[,;]/g, '')).attr('text-anchor', 'middle').attr('y', d => d.rad + 12).attr('fill', '#334155').attr('font-size', 10).attr('font-weight', '600').style('pointer-events', 'none').style('display', app.state.graph.labels ? null : 'none'); app.d3.nd = nd; nd.on('mouseover', (e, d) => { nd.transition().duration(200).attr('opacity', n => (n.id === d.id || adj.get(d.id)?.has(n.id)) ? 1 : .1); lnk.transition().duration(200).attr('stroke', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? '#475569' : '#e2e8f0').attr('stroke-opacity', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? 1 : .05); const r = el('graphContainer').getBoundingClientRect(); Object.assign(tip.style, { left: Math.min(e.clientX - r.left + 15, r.width - 340) + 'px', top: Math.min(e.clientY - r.top + 15, r.height - 200) + 'px' }); const egoSVG = buildEgoMiniSVG(d.id, adj, nodesMap, linksMap); tip.innerHTML = `<div class="font-bold text-slate-800">${esc(d.display_name)}</div><div class="text-[9px] text-slate-500 mb-2">${esc(d.inst)}</div><div class="flex gap-2 text-center"><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_works}</div><div class="text-[7px] uppercase">Works</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_cited}</div><div class="text-[7px] uppercase">Cites</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${adj.get(d.id)?.size || 0}</div><div class="text-[7px] uppercase">Collab</div></div></div>${egoSVG ? `<div class="mt-1 border-t border-slate-100 pt-1"><div class="text-[8px] font-bold text-slate-400 uppercase">Collaboration Network</div>${egoSVG}</div>` : ''}`; tip.classList.remove('hidden') }).on('mouseout', () => { nd.transition().duration(200).attr('opacity', 1); lnk.transition().duration(200).attr('stroke', '#cbd5e1').attr('stroke-opacity', d => .4 + .3 * (d.w / maxW)); tip.classList.add('hidden') }).on('click', (e, d) => { e.stopPropagation(); e.shiftKey ? app.cmp(d) : app.profile(d) }); if (app.particles) { app.particles.setLinks(links); if (app.state.graph.particles) { app.particles.resize(); app.particles.start() } else { app.particles.stop() } } app.clus(); sim.nodes(nodes).on('tick', () => { const cw = el('graphContainer').clientWidth, ch = el('graphContainer').clientHeight; nodes.forEach(n => { n.x = clamp(n.x, 25 + n.rad, cw - 25 - n.rad); n.y = clamp(n.y, 25 + n.rad, ch - 25 - n.rad) }); lnk.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y); nd.attr('transform', d => `translate(${d.x},${d.y})`); updateHulls() }); sim.force('link').links(links); sim.alpha(1).restart(); app.hl() },
+            renderConstellation: (F) => { const svg = d3.select('#constellationGraph'); svg.selectAll('*').remove(); if (!F.length) return; const container = el('constellationPanel'); const W = container.clientWidth || 800; const H = container.clientHeight || 600; svg.attr('viewBox', `0 0 ${W} ${H}`); const topicColors = new Map(); const tc = new Map(); F.forEach(p => p.topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1))); const sortedTopics = [...tc.entries()].sort((a, b) => b[1] - a[1]); sortedTopics.forEach(([t], i) => topicColors.set(t, COLORS[i % COLORS.length])); const cNodes = F.slice(0, 200).map(p => ({ id: p.id, title: p.title, year: p.year, cites: p.cites, topics: p.topics, score: p.score, color: topicColors.get(p.topics[0]) || '#94a3b8', r: clamp(3 + Math.sqrt(p.cites) * 0.5, 3, 12) })); const cLinks = []; for (let i = 0; i < cNodes.length; i++) { for (let j = i + 1; j < cNodes.length; j++) { const shared = cNodes[i].topics.filter(t => cNodes[j].topics.includes(t)).length; if (shared >= 2) { cLinks.push({ source: cNodes[i].id, target: cNodes[j].id, w: shared }) } } } const g = svg.append('g'); const zoom = d3.zoom().scaleExtent([0.2, 5]).on('zoom', e => g.attr('transform', e.transform)); svg.call(zoom); const cSim = d3.forceSimulation(cNodes).force('link', d3.forceLink(cLinks).id(d => d.id).distance(40).strength(d => d.w * 0.05)).force('charge', d3.forceManyBody().strength(-15)).force('center', d3.forceCenter(W / 2, H / 2)).force('collide', d3.forceCollide().radius(d => d.r + 2)); if (app.constellationSim) app.constellationSim.stop(); app.constellationSim = cSim; const link = g.append('g').selectAll('line').data(cLinks).enter().append('line').attr('class', 'constellation-link').attr('stroke-width', d => d.w * 0.5); const node = g.append('g').selectAll('circle').data(cNodes).enter().append('circle').attr('class', 'constellation-node').attr('r', d => d.r).attr('fill', d => d.color).attr('opacity', 0.7); const cTip = el('constellationTooltip'); node.on('mouseover', (e, d) => { const r = container.getBoundingClientRect(); Object.assign(cTip.style, { left: Math.min(e.clientX - r.left + 10, r.width - 220) + 'px', top: Math.min(e.clientY - r.top + 10, r.height - 120) + 'px' }); cTip.innerHTML = `<div class="font-bold text-slate-800 text-[11px] leading-snug mb-1">${esc(d.title)}</div><div class="text-[9px] text-slate-500">${d.year} · ${d.cites} cites · Score ${d.score.toFixed(1)}</div><div class="flex flex-wrap gap-1 mt-1">${d.topics.slice(0, 4).map(t => `<span class="px-1 py-0.5 rounded text-[8px] border" style="background:${topicColors.get(t) || '#f1f5f9'}20;border-color:${topicColors.get(t) || '#e2e8f0'};color:${topicColors.get(t) || '#64748b'}">${esc(t.substring(0, 20))}</span>`).join('')}</div>`; cTip.classList.remove('hidden') }).on('mouseout', () => cTip.classList.add('hidden')).on('click', (e, d) => { e.stopPropagation(); app.detail(d.id) }); cSim.on('tick', () => { link.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y); node.attr('cx', d => d.x).attr('cy', d => d.y) }); const legendG = svg.append('g').attr('transform', `translate(${W - 150}, 20)`); legendG.append('rect').attr('width', 140).attr('height', Math.min(sortedTopics.length, 8) * 14 + 22).attr('rx', 6).attr('fill', 'white').attr('fill-opacity', 0.9).attr('stroke', '#e2e8f0'); legendG.append('text').attr('x', 8).attr('y', 14).attr('font-size', 8).attr('font-weight', 700).attr('fill', '#94a3b8').text('TOPIC COLORS'); sortedTopics.slice(0, 8).forEach(([t], i) => { legendG.append('circle').attr('cx', 12).attr('cy', 28 + i * 14).attr('r', 4).attr('fill', topicColors.get(t)); legendG.append('text').attr('x', 22).attr('y', 31 + i * 14).attr('font-size', 8).attr('fill', '#64748b').text(t.length > 18 ? t.substring(0, 18) + '…' : t) }) },
             hl: () => { const q = norm(el('graphSearchInput')?.value || ''); if (!app.d3.nd) return; app.d3.nd.select('.search-highlight-ring').attr('opacity', d => q && norm(d.display_name).includes(q) ? 1 : 0).each(function (d) { d3.select(this).classed('pulse-highlight', q && norm(d.display_name).includes(q)) }) },
             cmp: d => { const i = app.state.cmp.findIndex(n => n.id === d.id); if (i >= 0) { app.state.cmp.splice(i, 1); return } app.state.cmp.push(d); if (app.state.cmp.length >= 2) { const [a, b] = app.state.cmp; el('compareModal').classList.add('active'); app.state.cmp = []; const ap = app.data.pubs.filter(p => p.memA.some(m => m.id === a.id)), bp = app.data.pubs.filter(p => p.memA.some(m => m.id === b.id)), sh = ap.filter(p => p.memA.some(m => m.id === b.id)), at = new Set(ap.flatMap(p => p.topics)), bt = new Set(bp.flatMap(p => p.topics)); el('compareContent').innerHTML = `<div class="flex justify-between items-start mb-6"><h2 class="text-lg font-bold text-slate-800">Researcher Comparison</h2><button onclick="document.getElementById('compareModal').classList.remove('active')"><i class="fas fa-times"></i></button></div><div class="grid grid-cols-2 gap-6 mb-6"><div class="text-center"><div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white font-bold text-xl shadow-lg mb-2" style="background:${a.color}">${a.display_name.substring(0, 2)}</div><h3 class="font-bold text-slate-800 text-sm">${esc(a.display_name)}</h3></div><div class="text-center"><div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white font-bold text-xl shadow-lg mb-2" style="background:${b.color}">${b.display_name.substring(0, 2)}</div><h3 class="font-bold text-slate-800 text-sm">${esc(b.display_name)}</h3></div></div><div class="grid grid-cols-3 gap-3 mb-6 text-center"><div class="bg-blue-50 rounded-lg p-3"><div class="grid grid-cols-2"><div><span class="block font-bold text-lg">${ap.length}</span><span class="text-[8px]">Works</span></div><div><span class="block font-bold text-lg">${bp.length}</span><span class="text-[8px]">Works</span></div></div></div><div class="bg-green-50 rounded-lg p-3"><span class="block font-bold text-lg">${sh.length}</span><span class="text-[8px]">Shared</span></div><div class="bg-purple-50 rounded-lg p-3"><div class="grid grid-cols-2"><div><span class="block font-bold text-lg">${ap.reduce((s, p) => s + p.cites, 0)}</span><span class="text-[8px]">Cites</span></div><div><span class="block font-bold text-lg">${bp.reduce((s, p) => s + p.cites, 0)}</span><span class="text-[8px]">Cites</span></div></div></div></div>` } },
             tog: (k, v) => { app.state.filters[k].has(v) ? app.state.filters[k].delete(v) : app.state.filters[k].add(v); app.state.page = 1; app.render() },
@@ -1229,7 +1317,7 @@ discoverWorks: async (R, pg) => {
             exportGraphSVG: () => { const s = el('networkGraph').cloneNode(true); s.setAttribute('xmlns', "http://www.w3.org/2000/svg"); s.insertBefore(Object.assign(document.createElement('style'), { textContent: `circle{stroke:#fff;stroke-width:1px}line{stroke:#94a3b8}text{font-family:sans-serif}` }), s.firstChild); const u = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(s)], { type: 'image/svg+xml' })); Object.assign(document.createElement('a'), { href: u, download: 'agripv_graph.svg' }).click() },
             exportGraphPNG: () => { const c = Object.assign(document.createElement('canvas'), { width: 1600, height: 1200 }), ctx = c.getContext('2d'), img = new Image(); img.onload = () => { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 1600, 1200); ctx.drawImage(img, 0, 0, 1600, 1200); c.toBlob(b => { Object.assign(document.createElement('a'), { href: URL.createObjectURL(b), download: 'agripv_graph.png' }).click() }) }; img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(new XMLSerializer().serializeToString(el('networkGraph'))))) },
             setView: v => { app.state.view = v; const both = v === 'both'; const isPub = v === 'publications'; const isNet = v === 'network'; const isCon = v === 'constellation'; el('publicationsPanel').style.width = both ? '50%' : (isPub ? '100%' : '0%'); el('publicationsPanel').style.display = (isPub || both) ? 'flex' : 'none'; el('networkPanel').style.width = both ? '50%' : (isNet ? '100%' : '0%'); el('networkPanel').style.display = (isNet || both) ? 'flex' : 'none'; el('constellationPanel').style.width = isCon ? '100%' : '0%'; el('constellationPanel').classList.toggle('active', isCon); el('splitHandle').style.display = both ? 'block' : 'none'; if (isNet || both) { setTimeout(() => { app.resizeGraph(); app.d3.sim.alpha(1).restart(); app.fitGraph() }, 150) } if (isCon) { setTimeout(() => app.renderConstellation(app.state.last), 150) } if (app.particles) { if ((isNet || both) && app.state.graph.particles) { app.particles.resize(); app.particles.start() } else { app.particles.stop() } } document.querySelectorAll('.view-btn').forEach(b => { const active = b.dataset.view === v; b.className = `view-btn px-2.5 py-1 text-[11px] font-semibold rounded ${active ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}` }) },
-            ui: () => { let tm; el('globalSearch').oninput = e => { clearTimeout(tm); tm = setTimeout(() => { app.state.filters.q = e.target.value; app.state.page = 1; app.render() }, 300) }; el('sortSelect').onchange = e => { app.state.sort = e.target.value; app.render() }; ['yearFrom', 'yearTo'].forEach(i => el(i).onchange = e => { app.state.filters[i === 'yearFrom' ? 'yFrom' : 'yTo'] = e.target.value ? clamp(+e.target.value, 2000, 2026) : null; app.render() }); el('minRelevance').oninput = e => { const v = +e.target.value; el('valMinRel').textContent = v.toFixed(1); clearTimeout(tm); tm = setTimeout(() => { app.state.filters.minRel = v; app.render() }, 200) }; el('linkDistance').oninput = e => { app.d3.sim.force('link').distance(+e.target.value); app.d3.sim.alpha(.3).restart() }; el('chargeStrength').oninput = e => { app.d3.sim.force('charge').strength(-e.target.value); app.d3.sim.alpha(.3).restart() }; document.querySelectorAll('.view-btn').forEach(b => b.onclick = () => app.setView(b.dataset.view)); let d = false; el('splitHandle').onmousedown = () => { d = true; document.body.style.cursor = 'col-resize' }; document.onmouseup = () => { if (d) app.resizeGraph(); d = false; document.body.style.cursor = 'default' }; document.onmousemove = e => { if (d) { const p = (e.clientX - 320) / (document.body.clientWidth - 320) * 100; if (p > 15 && p < 85) { el('publicationsPanel').style.width = p + '%'; el('networkPanel').style.width = (100 - p) + '%'; app.resizeGraph() } } }; document.addEventListener('click', e => { if (!el('exportDropdown').contains(e.target)) el('exportMenu').classList.add('hidden') }); el('darkModeToggle').onclick = () => app.toggleDarkMode(); el('graphSearchInput').oninput = () => setTimeout(app.hl, 200) }
+            ui: () => { let tm; el('globalSearch').oninput = e => { clearTimeout(tm); tm = setTimeout(() => { app.state.filters.q = e.target.value; app.state.page = 1; app.render() }, 300) }; el('sortSelect').onchange = e => { app.state.sort = e.target.value; app.render() };['yearFrom', 'yearTo'].forEach(i => el(i).onchange = e => { app.state.filters[i === 'yearFrom' ? 'yFrom' : 'yTo'] = e.target.value ? clamp(+e.target.value, 2000, 2026) : null; app.render() }); el('minRelevance').oninput = e => { const v = +e.target.value; el('valMinRel').textContent = v.toFixed(1); clearTimeout(tm); tm = setTimeout(() => { app.state.filters.minRel = v; app.render() }, 200) }; el('linkDistance').oninput = e => { app.d3.sim.force('link').distance(+e.target.value); app.d3.sim.alpha(.3).restart() }; el('chargeStrength').oninput = e => { app.d3.sim.force('charge').strength(-e.target.value); app.d3.sim.alpha(.3).restart() }; document.querySelectorAll('.view-btn').forEach(b => b.onclick = () => app.setView(b.dataset.view)); let d = false; el('splitHandle').onmousedown = () => { d = true; document.body.style.cursor = 'col-resize' }; document.onmouseup = () => { if (d) app.resizeGraph(); d = false; document.body.style.cursor = 'default' }; document.onmousemove = e => { if (d) { const p = (e.clientX - 320) / (document.body.clientWidth - 320) * 100; if (p > 15 && p < 85) { el('publicationsPanel').style.width = p + '%'; el('networkPanel').style.width = (100 - p) + '%'; app.resizeGraph() } } }; document.addEventListener('click', e => { if (!el('exportDropdown').contains(e.target)) el('exportMenu').classList.add('hidden') }); el('darkModeToggle').onclick = () => app.toggleDarkMode(); el('graphSearchInput').oninput = () => setTimeout(app.hl, 200) }
         };
         const jsStr = s => (s || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
         document.addEventListener('DOMContentLoaded', () => { initSharedUI({ onSignOut: signOut }); initAuth({ onAuthReady: () => { renderHeader(authState, { en: { nav: { schedule: "Schedule", archive: "Archive", scholar: "Scholar", network: "Network", map: "Map", about: "About", admin: "Admin" }, auth: { signin: "Sign in", signout: "Sign out" } }, es: { nav: { schedule: "Programa", archive: "Archivo", scholar: "Académico", network: "Red", map: "Mapa", about: "Acerca de", admin: "Admin" }, auth: { signin: "Ingresar", signout: "Salir" } } }, localStorage.getItem('lang') || 'en'); if (authState.profile?.avatar_url) getAvatarUrl(authState.profile.avatar_url).then(u => { if (u) { $('#userAvatar').src = u; show($('#userAvatar')); hide($('#userInitial')) } }) }, onAuthChange: () => { } }); app.init() }); window.app = app;
