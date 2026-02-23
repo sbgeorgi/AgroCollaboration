@@ -66,7 +66,8 @@
         body.dark-mode .d3-tooltip {
             background: #1e293bf2;
             border-color: #334155;
-            color: #e2e8f0
+            color: #e2e8f0;
+            box-shadow: 0 4px 20px -2px rgba(0,0,0,0.5);
         }
 
         body.dark-mode .modal-overlay {
@@ -119,6 +120,16 @@
             background: #1e293bf2;
             color: #e2e8f0;
             border-color: #334155;
+        }
+
+        body.dark-mode .minimap-container {
+            background: rgba(30,41,59,0.85);
+            border-color: #475569;
+        }
+
+        body.dark-mode .minimap-viewport {
+            stroke: #34d399;
+            fill: rgba(52, 211, 153, 0.1);
         }
 
         .custom-scroll::-webkit-scrollbar {
@@ -215,19 +226,15 @@
             font-size: 10px
         }
 
-        /* UPDATED: Heatmap Tooltip to block only bottom portion */
         .heatmap-tooltip {
             pointer-events: none;
             position: absolute;
             inset: auto 0 0 0;
-            /* Bottom: 0, Left: 0, Right: 0, Top: Auto */
             height: 36px;
-            /* Fixed small height */
             background: #fffffff2;
             backdrop-filter: blur(8px);
             display: flex;
             flex-direction: row;
-            /* Horizontal layout */
             align-items: center;
             justify-content: center;
             z-index: 20;
@@ -369,17 +376,23 @@
         .timeline-bar {
             fill: #16a34a;
             opacity: .4;
-            cursor: pointer;
-            transition: opacity .15s
-        }
-
-        .timeline-bar:hover {
-            opacity: .8
         }
 
         .timeline-bar.selected {
             opacity: 1;
             fill: #15803d
+        }
+
+        .brush .selection {
+            fill: #16a34a;
+            fill-opacity: 0.2;
+            stroke: #15803d;
+            stroke-width: 1px;
+            stroke-dasharray: 4, 2;
+        }
+
+        .brush .handle {
+            fill: #16a34a;
         }
 
         .bookmark-btn {
@@ -400,15 +413,6 @@
             height: 13px;
             cursor: pointer;
             flex-shrink: 0
-        }
-
-        .batch-bar {
-            transition: all .3s ease;
-            transform: translateY(100%)
-        }
-
-        .batch-bar.visible {
-            transform: translateY(0)
         }
 
         .sparkline-container {
@@ -490,41 +494,55 @@
             stroke: #94a3b8;
             stroke-width: 1
         }
+
+        .minimap-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 160px;
+            height: 120px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(4px);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            z-index: 20;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .minimap-viewport {
+            stroke: #16a34a;
+            stroke-width: 1.5;
+            fill: rgba(22, 163, 74, 0.1);
+            pointer-events: none;
+        }
     </style>
 </head>
 
 <body class="bg-white text-slate-700 h-screen w-screen flex flex-col overflow-hidden">
-    <!-- Body content remains same, just updated CSS above and JS logic below -->
     <div id="scholarApp" class="flex flex-1 overflow-hidden min-h-0 w-full">
-        <aside
-            class="w-[320px] flex flex-col border-r border-slate-200 bg-slate-50/80 shrink-0 h-full z-30 backdrop-blur-sm">
-            <!-- Sidebar content -->
+        <aside class="w-[320px] flex flex-col border-r border-slate-200 bg-slate-50/80 shrink-0 h-full z-30 backdrop-blur-sm">
             <div class="p-4 border-b border-slate-200 bg-white">
                 <div class="flex items-center gap-2.5 mb-3">
-                    <div
-                        class="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center shadow-md shadow-green-200/50">
+                    <div class="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center shadow-md shadow-green-200/50">
                         <i class="fas fa-leaf text-sm"></i>
                     </div>
                     <div class="flex-1">
                         <div class="flex items-center gap-2">
                             <h1 class="font-bold text-slate-800 text-sm leading-tight">AgriPV Network</h1>
-                            <button id="bookmarkFilterBtn" onclick="app.toggleBookmarkFilter()"
-                                class="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold border transition-all bg-slate-50 text-slate-500 border-slate-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200"><i
-                                    class="fas fa-bookmark"></i> <span id="bookmarkCount">0</span></button>
+                            <button id="bookmarkFilterBtn" onclick="app.toggleBookmarkFilter()" class="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold border transition-all bg-slate-50 text-slate-500 border-slate-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200"><i class="fas fa-bookmark"></i> <span id="bookmarkCount">0</span></button>
                         </div>
                         <p class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Research Explorer</p>
                     </div>
                     <div class="flex items-center gap-1">
-                        <button id="darkModeToggle" title="Toggle Dark Mode"
-                            class="w-7 h-7 flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"><i
-                                class="fas fa-moon text-xs" id="darkModeIcon"></i></button>
+                        <button id="darkModeToggle" title="Toggle Dark Mode" class="w-7 h-7 flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"><i class="fas fa-moon text-xs" id="darkModeIcon"></i></button>
                     </div>
                 </div>
                 <div class="relative group">
-                    <input type="text" id="globalSearch" placeholder="Search title, author, topic, abstract..."
-                        class="w-full bg-slate-100 border-none rounded-md py-2 pl-9 pr-3 text-xs font-medium focus:ring-1 focus:ring-green-500 focus:bg-white transition-all placeholder:text-slate-400">
-                    <i
-                        class="fas fa-search text-slate-400 absolute left-3 top-2.5 text-xs group-focus-within:text-green-600"></i>
+                    <input type="text" id="globalSearch" placeholder="Search title, author, topic, abstract..." class="w-full bg-slate-100 border-none rounded-md py-2 pl-9 pr-3 text-xs font-medium focus:ring-1 focus:ring-green-500 focus:bg-white transition-all placeholder:text-slate-400">
+                    <i class="fas fa-search text-slate-400 absolute left-3 top-2.5 text-xs group-focus-within:text-green-600"></i>
                 </div>
             </div>
             <div class="flex-1 overflow-y-auto custom-scroll p-4">
@@ -534,94 +552,63 @@
                 </div>
                 <div class="filter-section">
                     <div class="filter-header">Publication Timeline</div>
-                    <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-2"><svg id="timelineChart"
-                            width="100%" height="50"></svg>
-                        <div class="text-[8px] text-slate-400 mt-1 leading-snug text-center">Click to filter.
-                            Shift+click for range.</div>
+                    <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-2 relative">
+                        <svg id="timelineChart" width="100%" height="50"></svg>
+                        <div class="text-[8px] text-slate-400 mt-1 leading-snug text-center pointer-events-none">Drag across years to brush-filter time bounds.</div>
                     </div>
                 </div>
                 <div class="filter-section">
                     <div class="grid grid-cols-2 gap-3">
                         <div class="flex flex-col">
                             <div class="filter-header">Pub Year</div>
-                            <div
-                                class="flex items-center gap-1 bg-white px-1 rounded-lg border border-slate-200 shadow-sm h-8">
-                                <input type="number" id="yearFrom" min="2000" max="2026" placeholder="2000"
-                                    class="w-full border-none bg-transparent text-center text-[10px] font-medium focus:ring-0 p-1 text-slate-600 placeholder:text-slate-300"><span
-                                    class="text-slate-300 text-[8px] font-bold">-</span><input type="number" id="yearTo"
-                                    min="2000" max="2026" placeholder="2025"
-                                    class="w-full border-none bg-transparent text-center text-[10px] font-medium focus:ring-0 p-1 text-slate-600 placeholder:text-slate-300">
+                            <div class="flex items-center gap-1 bg-white px-1 rounded-lg border border-slate-200 shadow-sm h-8">
+                                <input type="number" id="yearFrom" min="2000" max="2026" placeholder="2000" class="w-full border-none bg-transparent text-center text-[10px] font-medium focus:ring-0 p-1 text-slate-600 placeholder:text-slate-300"><span class="text-slate-300 text-[8px] font-bold">-</span><input type="number" id="yearTo" min="2000" max="2026" placeholder="2025" class="w-full border-none bg-transparent text-center text-[10px] font-medium focus:ring-0 p-1 text-slate-600 placeholder:text-slate-300">
                             </div>
                         </div>
                         <div class="flex flex-col">
-                            <div class="filter-header">Min Score: <span class="text-green-600 font-mono"
-                                    id="valMinRel">4.0</span></div>
-                            <div
-                                class="bg-white px-2 rounded-lg border border-slate-200 shadow-sm flex items-center h-8">
-                                <input type="range" id="minRelevance" min="0" max="30" step="0.5" value="2"
-                                    class="w-full block">
+                            <div class="filter-header">Min Score: <span class="text-green-600 font-mono" id="valMinRel">4.0</span></div>
+                            <div class="bg-white px-2 rounded-lg border border-slate-200 shadow-sm flex items-center h-8">
+                                <input type="range" id="minRelevance" min="0" max="30" step="0.5" value="2" class="w-full block">
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="filter-section h-48">
-                    <div class="filter-header">Institutions <button class="text-green-600 hover:underline"
-                            onclick="app.clear('insts')">Reset</button></div>
-                    <div id="institutionFilters" class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-0.5 max-h-40">
-                    </div>
+                    <div class="filter-header">Institutions <button class="text-green-600 hover:underline" onclick="app.clear('insts')">Reset</button></div>
+                    <div id="institutionFilters" class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-0.5 max-h-40"></div>
                 </div>
                 <div class="filter-section">
-                    <div class="filter-header">Topics <button class="text-green-600 hover:underline"
-                            onclick="app.clear('topics')">Reset</button></div>
+                    <div class="filter-header">Topics <button class="text-green-600 hover:underline" onclick="app.clear('topics')">Reset</button></div>
                     <div id="topicFilters" class="flex flex-wrap gap-1 max-h-40 overflow-y-auto custom-scroll"></div>
                 </div>
                 <div class="mt-2">
                     <div class="filter-header">Topic Co-occurrence</div>
-                    <div id="heatmapContainer"
-                        class="bg-white rounded-lg border border-slate-200 shadow-sm p-2 mt-2 relative overflow-hidden">
+                    <div id="heatmapContainer" class="bg-white rounded-lg border border-slate-200 shadow-sm p-2 mt-2 relative overflow-hidden">
                         <svg id="heatmapChart" width="100%" height="200"></svg>
                         <div id="heatmapTooltip" class="heatmap-tooltip opacity-0 pointer-events-none"></div>
-                        <div class="text-[8px] text-slate-400 mt-1 leading-snug text-center">Select cell to filter
-                            interactions</div>
+                        <div class="text-[8px] text-slate-400 mt-1 leading-snug text-center">Select cell to filter interactions</div>
                     </div>
                 </div>
             </div>
             <div id="activeFiltersPanel" class="px-4 py-3 bg-white border-t border-slate-200 hidden shrink-0">
-                <div class="flex justify-between items-center mb-2"><span
-                        class="text-[10px] font-semibold text-slate-500"><span id="activeFilterCount">0</span> filters
-                        active</span><button class="text-[9px] text-red-500 font-semibold hover:text-red-700"
-                        onclick="app.reset()">Clear All</button></div>
+                <div class="flex justify-between items-center mb-2"><span class="text-[10px] font-semibold text-slate-500"><span id="activeFilterCount">0</span> filters active</span><button class="text-[9px] text-red-500 font-semibold hover:text-red-700" onclick="app.reset()">Clear All</button></div>
                 <div id="activeFilterTags" class="flex flex-wrap gap-1 max-h-14 overflow-y-auto custom-scroll"></div>
             </div>
         </aside>
         <main class="flex-1 flex flex-col h-full overflow-hidden bg-white relative">
-            <header
-                class="h-12 border-b border-slate-200 flex items-center justify-between px-4 bg-white shrink-0 z-20">
+            <header class="h-12 border-b border-slate-200 flex items-center justify-between px-4 bg-white shrink-0 z-20">
                 <div class="flex gap-0.5 p-0.5 bg-slate-100 rounded-md border border-slate-200">
-                    <button data-view="both"
-                        class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded bg-white shadow-sm text-slate-800"><i
-                            class="fas fa-columns mr-1.5"></i>Split</button>
-                    <button data-view="publications"
-                        class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i
-                            class="fas fa-list mr-1.5"></i>List</button>
-                    <button data-view="network"
-                        class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i
-                            class="fas fa-project-diagram mr-1.5"></i>Graph</button>
-                    <button data-view="constellation"
-                        class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i
-                            class="fas fa-star mr-1.5"></i>Constellation</button>
+                    <button data-view="both" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded bg-white shadow-sm text-slate-800"><i class="fas fa-columns mr-1.5"></i>Split</button>
+                    <button data-view="publications" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i class="fas fa-list mr-1.5"></i>List</button>
+                    <button data-view="network" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i class="fas fa-project-diagram mr-1.5"></i>Graph</button>
+                    <button data-view="constellation" class="view-btn px-2.5 py-1 text-[11px] font-semibold rounded text-slate-500 hover:text-slate-700"><i class="fas fa-star mr-1.5"></i>Constellation</button>
                 </div>
                 <div class="flex items-center gap-4">
-                    <div class="text-[11px] text-slate-500 font-medium">Found <span id="filteredCount"
-                            class="text-slate-900 font-bold">0</span> results</div>
+                    <div class="text-[11px] text-slate-500 font-medium">Found <span id="filteredCount" class="text-slate-900 font-bold">0</span> results</div>
                     <div class="h-3 w-px bg-slate-300"></div>
-                    <button id="scrollModeBtn" onclick="app.toggleScrollMode()"
-                        class="text-[10px] text-slate-500 hover:text-slate-700 font-medium flex items-center gap-1"
-                        title="Toggle between paginated and infinite scroll"><i class="fas fa-stream text-[9px]"></i>
-                        <span id="scrollModeLabel">Pages</span></button>
+                    <button id="scrollModeBtn" onclick="app.toggleScrollMode()" class="text-[10px] text-slate-500 hover:text-slate-700 font-medium flex items-center gap-1" title="Toggle between paginated and infinite scroll"><i class="fas fa-stream text-[9px]"></i> <span id="scrollModeLabel">Pages</span></button>
                     <div class="h-3 w-px bg-slate-300"></div>
-                    <select id="sortSelect"
-                        class="text-[11px] font-medium bg-transparent border-none outline-none text-slate-600 cursor-pointer hover:text-slate-900 focus:ring-0 py-0 pl-0 pr-6">
+                    <select id="sortSelect" class="text-[11px] font-medium bg-transparent border-none outline-none text-slate-600 cursor-pointer hover:text-slate-900 focus:ring-0 py-0 pl-0 pr-6">
                         <option value="recent">Newest First</option>
                         <option value="oldest">Oldest First</option>
                         <option value="relevance">Relevance Score</option>
@@ -630,151 +617,92 @@
                         <option value="bookmarked">Bookmarked First</option>
                     </select>
                     <div class="relative" id="exportDropdown">
-                        <button
-                            class="px-2.5 py-1 bg-slate-900 text-white text-[11px] font-semibold rounded hover:bg-slate-800 shadow-sm transition-colors flex items-center gap-1.5"
-                            onclick="app.toggleExportMenu()"><i class="fas fa-download"></i>Export <i
-                                class="fas fa-chevron-down text-[8px] opacity-60"></i></button>
-                        <div id="exportMenu"
-                            class="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-lg shadow-lg py-1 hidden z-50">
-                            <button onclick="app.exportData('csv')"
-                                class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
-                                    class="fas fa-file-csv w-4 text-green-600"></i>CSV Spreadsheet</button>
-                            <button onclick="app.exportData('bib')"
-                                class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
-                                    class="fas fa-code w-4 text-purple-600"></i>BibTeX (.bib)</button>
-                            <button onclick="app.exportData('ris')"
-                                class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
-                                    class="fas fa-file-import w-4 text-blue-600"></i>RIS (Zotero)</button>
+                        <button class="px-2.5 py-1 bg-slate-900 text-white text-[11px] font-semibold rounded hover:bg-slate-800 shadow-sm transition-colors flex items-center gap-1.5" onclick="app.toggleExportMenu()"><i class="fas fa-download"></i>Export <i class="fas fa-chevron-down text-[8px] opacity-60"></i></button>
+                        <div id="exportMenu" class="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-lg shadow-lg py-1 hidden z-50">
+                            <button onclick="app.exportData('csv')" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-file-csv w-4 text-green-600"></i>CSV Spreadsheet</button>
+                            <button onclick="app.exportData('bib')" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-code w-4 text-purple-600"></i>BibTeX (.bib)</button>
+                            <button onclick="app.exportData('ris')" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-file-import w-4 text-blue-600"></i>RIS (Zotero)</button>
                             <div class="border-t border-slate-100 my-1"></div>
-                            <button onclick="app.exportData('csv', true)" id="exportSelectedBtn"
-                                class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2 hidden"><i
-                                    class="fas fa-check-square w-4 text-green-600"></i>Selected as CSV</button>
-                            <button onclick="app.exportData('bib', true)" id="exportSelectedBibBtn"
-                                class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2 hidden"><i
-                                    class="fas fa-check-square w-4 text-purple-600"></i>Selected as BibTeX</button>
+                            <button onclick="app.exportData('csv', true)" id="exportSelectedBtn" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2 hidden"><i class="fas fa-check-square w-4 text-green-600"></i>Selected as CSV</button>
+                            <button onclick="app.exportData('bib', true)" id="exportSelectedBibBtn" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2 hidden"><i class="fas fa-check-square w-4 text-purple-600"></i>Selected as BibTeX</button>
                             <div id="exportSelectedDivider" class="border-t border-slate-100 my-1 hidden"></div>
-                            <button onclick="app.exportGraphSVG()"
-                                class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
-                                    class="fas fa-image w-4 text-rose-600"></i>Graph as SVG</button>
-                            <button onclick="app.exportGraphPNG()"
-                                class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i
-                                    class="fas fa-file-image w-4 text-orange-600"></i>Graph as PNG</button>
+                            <button onclick="app.exportGraphSVG()" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-image w-4 text-rose-600"></i>Graph as SVG</button>
+                            <button onclick="app.exportGraphPNG()" class="w-full text-left px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i class="fas fa-file-image w-4 text-orange-600"></i>Graph as PNG</button>
                         </div>
                     </div>
                 </div>
             </header>
             <div id="contentArea" class="flex-1 flex overflow-hidden relative">
-                <!-- Content panels (list, graph, constellation) -->
-                <div id="publicationsPanel"
-                    class="flex flex-col min-w-0 w-1/2 bg-white h-full border-r border-slate-100">
-                    <div
-                        class="flex items-center justify-between px-3 py-1.5 border-b border-slate-100 shrink-0 bg-slate-50/50 min-h-[28px]">
+                <div id="publicationsPanel" class="flex flex-col min-w-0 w-1/2 bg-white h-full border-r border-slate-100">
+                    <div class="flex items-center justify-between px-3 py-1.5 border-b border-slate-100 shrink-0 bg-slate-50/50 min-h-[28px]">
                         <div id="batchActions" class="flex items-center gap-1 hidden">
-                            <span class="text-[9px] text-slate-500 font-medium"><span id="selectedCount">0</span>
-                                selected</span>
-                            <button onclick="app.batchCite()"
-                                class="px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 hover:text-green-600 bg-slate-100 rounded border border-slate-200"
-                                title="Cite Selected"><i class="fas fa-quote-left"></i></button>
-                            <button onclick="app.batchBookmark()"
-                                class="px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 hover:text-amber-500 bg-slate-100 rounded border border-slate-200"
-                                title="Bookmark Selected"><i class="fas fa-bookmark"></i></button>
-                            <button onclick="app.clearSelection()"
-                                class="px-1.5 py-0.5 text-[9px] font-semibold text-red-400 hover:text-red-600 bg-slate-100 rounded border border-slate-200"
-                                title="Clear Selection"><i class="fas fa-times"></i></button>
+                            <span class="text-[9px] text-slate-500 font-medium"><span id="selectedCount">0</span> selected</span>
+                            <button onclick="app.batchCite()" class="px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 hover:text-green-600 bg-slate-100 rounded border border-slate-200" title="Cite Selected"><i class="fas fa-quote-left"></i></button>
+                            <button onclick="app.batchBookmark()" class="px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 hover:text-amber-500 bg-slate-100 rounded border border-slate-200" title="Bookmark Selected"><i class="fas fa-bookmark"></i></button>
+                            <button onclick="app.clearSelection()" class="px-1.5 py-0.5 text-[9px] font-semibold text-red-400 hover:text-red-600 bg-slate-100 rounded border border-slate-200" title="Clear Selection"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
                     <div id="publicationsList" class="flex-1 overflow-y-auto p-2 custom-scroll bg-white"></div>
                     <div class="p-2 border-t border-slate-200 bg-white shrink-0 flex flex-col gap-2">
-                        <div class="flex justify-between items-center text-[10px] text-slate-400 px-1"><span><span
-                                    id="showingFrom">0</span>-<span id="showingTo">0</span> of <span
-                                    id="totalPublications">0</span></span></div>
+                        <div class="flex justify-between items-center text-[10px] text-slate-400 px-1"><span><span id="showingFrom">0</span>-<span id="showingTo">0</span> of <span id="totalPublications">0</span></span></div>
                         <div id="paginationContainer" class="flex justify-center gap-1"></div>
                     </div>
                 </div>
                 <div id="splitHandle" class="split-handle" title="Drag to resize"></div>
                 <div id="networkPanel" class="flex flex-col min-w-0 w-1/2 bg-slate-50 relative h-full">
-                    <button onclick="document.getElementById('networkInfoModal').classList.add('active')"
-                        class="absolute top-3 right-40 z-20 w-6 h-6 flex items-center justify-center bg-white/80 backdrop-blur border border-slate-200 rounded-full text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-colors"
-                        title="Graph Information"><i class="fas fa-info text-[10px]"></i></button>
-                    <!-- Controls and Graph container -->
+                    <button onclick="document.getElementById('networkInfoModal').classList.add('active')" class="absolute top-3 right-40 z-20 w-6 h-6 flex items-center justify-center bg-white/80 backdrop-blur border border-slate-200 rounded-full text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-colors" title="Graph Information"><i class="fas fa-info text-[10px]"></i></button>
                     <div class="absolute top-3 left-3 z-10 flex flex-col gap-2">
-                        <div
-                            class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
-                            <button
-                                class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
-                                onclick="app.zoom(1.3)" title="Zoom In"><i class="fas fa-plus text-[10px]"></i></button>
-                            <button
-                                class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
-                                onclick="app.zoom(0.7)" title="Zoom Out"><i
-                                    class="fas fa-minus text-[10px]"></i></button>
-                            <button
-                                class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
-                                onclick="app.fitGraph()" title="Fit to Screen"><i
-                                    class="fas fa-compress-arrows-alt text-[10px]"></i></button>
+                        <div class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
+                            <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.zoom(1.3)" title="Zoom In"><i class="fas fa-plus text-[10px]"></i></button>
+                            <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.zoom(0.7)" title="Zoom Out"><i class="fas fa-minus text-[10px]"></i></button>
+                            <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.fitGraph()" title="Fit to Screen"><i class="fas fa-compress-arrows-alt text-[10px]"></i></button>
                         </div>
-                        <div
-                            class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
-                            <button
-                                class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
-                                onclick="app.toggleCluster()" title="Toggle Grouping"><i
-                                    class="fas fa-layer-group text-[10px]"></i></button>
-                            <button
-                                class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
-                                onclick="app.toggleLabels()" title="Toggle Labels"><i
-                                    class="fas fa-tag text-[10px]"></i></button>
-                            <button
-                                class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600"
-                                onclick="app.toggleParticles()" title="Toggle Flow Particles" id="particleToggleBtn"><i
-                                    class="fas fa-water text-[10px]"></i></button>
+                        <div class="bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-0.5 flex flex-col gap-0.5">
+                            <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.toggleCluster()" title="Toggle Grouping"><i class="fas fa-layer-group text-[10px]"></i></button>
+                            <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.toggleLabels()" title="Toggle Labels"><i class="fas fa-tag text-[10px]"></i></button>
+                            <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600" onclick="app.toggleParticles()" title="Toggle Flow Particles" id="particleToggleBtn"><i class="fas fa-water text-[10px]"></i></button>
                         </div>
                     </div>
                     <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-                        <div
-                            class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 w-32 space-y-2">
+                        <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 w-32 space-y-2">
                             <div>
-                                <div class="flex justify-between mb-0.5"><label
-                                        class="text-[8px] font-bold text-slate-400 uppercase">Link Dist</label></div>
-                                <input type="range" id="linkDistance" min="50" max="320" value="120"
-                                    class="w-full block">
+                                <div class="flex justify-between mb-0.5"><label class="text-[8px] font-bold text-slate-400 uppercase">Link Dist</label></div>
+                                <input type="range" id="linkDistance" min="50" max="320" value="120" class="w-full block">
                             </div>
                             <div>
-                                <div class="flex justify-between mb-0.5"><label
-                                        class="text-[8px] font-bold text-slate-400 uppercase">Gravity</label></div>
-                                <input type="range" id="chargeStrength" min="100" max="900" value="320"
-                                    class="w-full block">
+                                <div class="flex justify-between mb-0.5"><label class="text-[8px] font-bold text-slate-400 uppercase">Gravity</label></div>
+                                <input type="range" id="chargeStrength" min="100" max="900" value="320" class="w-full block">
                             </div>
                         </div>
                         <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-1.5 w-32">
-                            <div class="flex items-center gap-1 mb-1"><i
-                                    class="fas fa-search text-[8px] text-slate-400"></i><label
-                                    class="text-[8px] font-bold text-slate-400 uppercase">Find Node</label></div>
-                            <input type="text" id="graphSearchInput" placeholder="Researcher..."
-                                class="graph-search-input w-full bg-slate-50 border border-slate-200 rounded py-1 px-1.5 text-[10px] focus:ring-1 focus:ring-green-500 focus:bg-white placeholder:text-slate-300">
+                            <div class="flex items-center gap-1 mb-1"><i class="fas fa-search text-[8px] text-slate-400"></i><label class="text-[8px] font-bold text-slate-400 uppercase">Find Node</label></div>
+                            <input type="text" id="graphSearchInput" placeholder="Researcher..." class="graph-search-input w-full bg-slate-50 border border-slate-200 rounded py-1 px-1.5 text-[10px] focus:ring-1 focus:ring-green-500 focus:bg-white placeholder:text-slate-300">
                         </div>
                     </div>
                     <div class="absolute bottom-3 left-3 z-10 pointer-events-none">
-                        <div
-                            class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 max-h-32 overflow-y-auto custom-scroll w-40 pointer-events-auto">
+                        <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 max-h-32 overflow-y-auto custom-scroll w-40 pointer-events-auto">
                             <div class="text-[8px] font-bold text-slate-400 uppercase mb-1">Affiliations</div>
                             <div id="legendContainer" class="space-y-0.5"></div>
                         </div>
                     </div>
+                    
+                    <div id="minimapContainer" class="minimap-container hidden lg:block">
+                        <svg id="minimapGraph" width="100%" height="100%"></svg>
+                    </div>
+
                     <div id="graphContainer" class="flex-1 w-full h-full cursor-grab overflow-hidden">
                         <canvas id="particleCanvas"></canvas>
                         <svg id="networkGraph" width="100%" height="100%"></svg>
                     </div>
                     <div id="tooltip" class="d3-tooltip hidden"></div>
-                    <div id="edgeTooltip" class="edge-tooltip hidden"></div>
+                    <div id="edgeTooltip" class="edge-tooltip hidden cursor-pointer"></div>
                 </div>
                 <div id="constellationPanel" class="constellation-panel min-w-0 bg-slate-50 relative h-full">
-                    <button onclick="document.getElementById('constellationInfoModal').classList.add('active')"
-                        class="absolute top-3 right-3 z-20 w-6 h-6 flex items-center justify-center bg-white/80 backdrop-blur border border-slate-200 rounded-full text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-colors"
-                        title="Constellation Information"><i class="fas fa-info text-[10px]"></i></button>
+                    <button onclick="document.getElementById('constellationInfoModal').classList.add('active')" class="absolute top-3 right-3 z-20 w-6 h-6 flex items-center justify-center bg-white/80 backdrop-blur border border-slate-200 rounded-full text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-colors" title="Constellation Information"><i class="fas fa-info text-[10px]"></i></button>
                     <div class="absolute top-3 left-3 z-10">
                         <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-lg shadow-sm p-2 w-40">
                             <div class="text-[8px] font-bold text-slate-400 uppercase mb-1">Publication Similarity</div>
-                            <div class="text-[9px] text-slate-500">Papers cluster by shared topics. Edges = ≥2 shared
-                                topics. Color = dominant topic.</div>
+                            <div class="text-[9px] text-slate-500">Papers cluster by shared topics. Edges = ≥2 shared topics. Color = dominant topic.</div>
                         </div>
                     </div>
                     <div id="constellationTooltip" class="d3-tooltip hidden"></div>
@@ -783,7 +711,7 @@
             </div>
         </main>
     </div>
-    <!-- Modals remain same -->
+
     <div id="loadingOverlay" class="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
         <div class="spinner mb-4 border-slate-200 border-t-green-600"></div>
         <h3 class="text-base font-bold text-slate-800 tracking-tight">Initializing Explorer</h3>
@@ -792,66 +720,61 @@
             <div id="loadingProgress" class="h-full bg-green-500 w-0 transition-all duration-300"></div>
         </div>
     </div>
+    
     <div id="citationModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
         <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 p-5">
             <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
-                <h3 class="font-bold text-sm text-slate-800">Cite Publication</h3><button
-                    onclick="document.getElementById('citationModal').classList.remove('active')"
-                    class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                <h3 class="font-bold text-sm text-slate-800">Cite Publication</h3><button onclick="document.getElementById('citationModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
             </div>
             <div class="space-y-3">
                 <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">APA</label>
-                    <div
-                        class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed">
-                        <span id="citeAPA"></span><button
-                            class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
-                            onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button>
+                    <div class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed">
+                        <span id="citeAPA"></span><button class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]" onclick="app.copy('citeAPA')"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
                 <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">BibTeX</label>
-                    <div
-                        class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
-                        <span id="citeBib"></span><button
-                            class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
-                            onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button>
+                    <div class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
+                        <span id="citeBib"></span><button class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]" onclick="app.copy('citeBib')"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
                 <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">RIS</label>
-                    <div
-                        class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
-                        <span id="citeRIS"></span><button
-                            class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]"
-                            onclick="app.copy('citeRIS')"><i class="fas fa-copy"></i></button>
+                    <div class="bg-slate-50 p-2.5 rounded border border-slate-200 relative group text-xs text-slate-600 font-mono leading-relaxed break-all">
+                        <span id="citeRIS"></span><button class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-slate-400 hover:text-green-600 text-[10px]" onclick="app.copy('citeRIS')"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div id="detailModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-        <div
-            class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+        <div class="profile-modal w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
             <div id="detailContent" class="overflow-y-auto p-8 custom-scroll"></div>
         </div>
     </div>
+    
+    <div id="edgeDetailModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+        <div class="profile-modal w-full max-w-3xl max-h-[85vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
+                <h3 class="font-bold text-sm text-slate-800" id="edgeDetailTitle">Shared Works</h3>
+                <button onclick="document.getElementById('edgeDetailModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="edgeDetailContent" class="overflow-y-auto p-5 custom-scroll space-y-3 bg-white"></div>
+        </div>
+    </div>
+
     <div id="researcherModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-        <div
-            class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]">
+        <div class="profile-modal w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]">
             <div id="researcherContent" class="overflow-y-auto custom-scroll p-0"></div>
         </div>
     </div>
     <div id="compareModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-        <div
-            class="profile-modal w-full max-w-3xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+        <div class="profile-modal w-full max-w-3xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
             <div id="compareContent" class="overflow-y-auto p-6 custom-scroll"></div>
         </div>
     </div>
     <div id="batchCiteModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
-        <div
-            class="profile-modal w-full max-w-2xl max-h-[85vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+        <div class="profile-modal w-full max-w-2xl max-h-[85vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-5 border-b border-slate-100">
-                <h3 class="font-bold text-sm text-slate-800">Batch Citations</h3><button
-                    onclick="document.getElementById('batchCiteModal').classList.remove('active')"
-                    class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                <h3 class="font-bold text-sm text-slate-800">Batch Citations</h3><button onclick="document.getElementById('batchCiteModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
             </div>
             <div id="batchCiteContent" class="overflow-y-auto p-5 custom-scroll space-y-3"></div>
         </div>
@@ -860,51 +783,36 @@
         <div class="profile-modal w-full max-w-md bg-white rounded-xl shadow-2xl border border-slate-100 p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="font-bold text-sm text-slate-800">About the Collaboration Graph</h3>
-                <button onclick="document.getElementById('networkInfoModal').classList.remove('active')"
-                    class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                <button onclick="document.getElementById('networkInfoModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
             </div>
             <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
                 <p>This graph visualizes the collaboration network between researchers in the AgriPV field.</p>
                 <ul class="list-disc pl-4 space-y-1">
-                    <li><strong class="text-slate-800">Nodes:</strong> Represent individual researchers. Size indicates
-                        the number of publications and citations.</li>
-                    <li><strong class="text-slate-800">Edges:</strong> Represent co-authorship. Thicker lines mean more
-                        shared publications.</li>
-                    <li><strong class="text-slate-800">Colors:</strong> Represent the researcher's primary institution.
-                    </li>
-                    <li><strong class="text-slate-800">Groups (Hulls):</strong> Background shapes group researchers from
-                        the same institution.</li>
-                    <li><strong class="text-slate-800">Particles:</strong> Moving particles indicate the "flow" of
-                        collaboration intensity.</li>
+                    <li><strong class="text-slate-800">Nodes:</strong> Represent individual researchers. Size indicates the number of publications and citations.</li>
+                    <li><strong class="text-slate-800">Curvilinear Edges:</strong> Represent co-authorship. Thicker arcs mean more shared publications. Click an edge to inspect shared works.</li>
+                    <li><strong class="text-slate-800">Colors:</strong> Represent the researcher's primary institution.</li>
+                    <li><strong class="text-slate-800">Groups (Hulls):</strong> Background shapes group researchers from the same institution.</li>
+                    <li><strong class="text-slate-800">Particles:</strong> Moving particles indicate the "flow" of collaboration intensity.</li>
                 </ul>
-                <p class="text-slate-400 italic mt-2">Use the controls in the top-left to toggle features like particles
-                    or clustering.</p>
+                <p class="text-slate-400 italic mt-2">Use the controls in the top-left to toggle features like particles or clustering.</p>
             </div>
         </div>
     </div>
-    <div id="constellationInfoModal" class="modal-overlay"
-        onclick="if(event.target===this) this.classList.remove('active')">
+    <div id="constellationInfoModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active')">
         <div class="profile-modal w-full max-w-md bg-white rounded-xl shadow-2xl border border-slate-100 p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="font-bold text-sm text-slate-800">About the Constellation View</h3>
-                <button onclick="document.getElementById('constellationInfoModal').classList.remove('active')"
-                    class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                <button onclick="document.getElementById('constellationInfoModal').classList.remove('active')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
             </div>
             <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-                <p>The Constellation view organizes publications based on thematic similarity rather than authorship.
-                </p>
+                <p>The Constellation view organizes publications based on thematic similarity rather than authorship.</p>
                 <ul class="list-disc pl-4 space-y-1">
-                    <li><strong class="text-slate-800">Nodes:</strong> Represent individual publications. Size scales
-                        with citation count.</li>
-                    <li><strong class="text-slate-800">Links:</strong> Connect papers that share at least 2 major
-                        topics.</li>
-                    <li><strong class="text-slate-800">Colors:</strong> Indicate the dominant topic of the paper (see
-                        legend).</li>
-                    <li><strong class="text-slate-800">Clustering:</strong> Papers with similar topics naturally pull
-                        together, revealing thematic clusters in the research landscape.</li>
+                    <li><strong class="text-slate-800">Nodes:</strong> Represent individual publications. Size scales with citation count.</li>
+                    <li><strong class="text-slate-800">Links:</strong> Connect papers that share at least 2 major topics.</li>
+                    <li><strong class="text-slate-800">Colors:</strong> Indicate the dominant topic of the paper (see legend).</li>
+                    <li><strong class="text-slate-800">Clustering:</strong> Papers with similar topics naturally pull together, revealing thematic clusters in the research landscape.</li>
                 </ul>
-                <p class="text-slate-400 italic mt-2">Hover over nodes to see paper details. Click to open the full
-                    abstract view.</p>
+                <p class="text-slate-400 italic mt-2">The canvas detects cursor proximity for effortless exploration of dense clusters.</p>
             </div>
         </div>
     </div>
@@ -920,7 +828,6 @@
         const RX = { explicit: /\b(agri[\s-]?(pv|photo)?voltai[ckqs]?(s)?|agro[\s-]?(photo)?voltai[ckqs]?(s)?|agri[\s-]?pv|agro[\s-]?pv|solar[\s-]?sharing|solar[\s-]?farm(ing|er)|farming[\s-]?(with|under)[\s-]?(solar|pv)|photovoltaic[\s-]?greenhouse|greenhouse[\s-]?photovoltaic|range[\s-]?voltaic|ecovoltaic|aqua[\s-]?voltaic|aqua[\s-]?pv)\b/i, solar: /\b(pv|photovoltai[ckqs]?|solar\s*(module|panel|array|collector|energy|power|cell|park|installation|tracker|generator))\b/i, agri: /\b(crop|harvest|biomass|agronom|horticultur|viticultur|orchard|vineyard|greenhouse|livestock|pasture|grazing|sheep|cattle|arable|cultivat|irrigation|soil\s*moisture|shade\s*tolerant|photosynthe|transpiration|pollinator|forage|silage|hay\b|food\s*production|food\s*security|aquacultur|silvopastur)\b/i, interaction: /\b(dual[\s-]?use|co[\s-]?locat|land[\s-]?use[\s-]?efficien|ler\b|land[\s-]?equivalent[\s-]?ratio|shading\s*effect|beneath\s*(panels?|arrays?)|under\s*(panels?|arrays?)|inter[\s-]?row|microclimat|light[\s-]?management|par\b|photosynthetical[\s-]?active|food[\s-]?energy[\s-]?water|water[\s-]?energy[\s-]?food|nexus)\b/i, neg: /\b(uncolog|cancer|tumor|biomed|patient|surgery|clinic|hospital|medic|therap|gene(tic|ome|s)?\b|rna|dna|protein|cell\s*(culture|line|signaling)|molecular|disease|syndrome|disorder|health|morbidity|mortality|epidemi|virus|bacteri|infection|parkinson|alzheimer|stroke|diabetes|insulin|obesity|cardio|respiratory|lewy|dementia|schizo|autism|spin\b|magnetic|galaxy|telescope|neutron|boson|nanotube|graphene|supercapacit|lithium|battery(?!.*(solar|pv|storage)))\b/i, prox: /\b(solar|pv|photovoltai).{0,80}(crop|farm|agri|plant|yield|soil)|(crop|farm|agri|plant|yield|soil).{0,80}(solar|pv|photovoltai)/i, tech: /\b(bifacial|tracking|inverter|mounting|racking|albedo|ground[\s-]?cover|gcr|row[\s-]?spacing|tilt[\s-]?angle|elevation|stilt|vertical[\s-]?pv|semi[\s-]?transparent)\b/i };
         const TOPIC_NEG = new Set(["parkinson's disease mechanisms and treatments", "air quality and health impacts", "global health care issues", "climate change and health impacts", "global public health policies and epidemiology", "global maternal and child health", "neurological diseases and metabolism", "health disparities and outcomes", "genetic associations and epidemiology", "nuclear receptors and signaling", "covid-19 epidemiological studies", "cellular transport and secretion", "autism spectrum disorder research", "sars-cov-2 and covid-19 research", "sphingolipid metabolism and signaling", "neurological disorders and treatments", "advanced sensor and energy harvesting materials", "dielectric materials and actuators", "advanced materials and mechanics", "atmospheric chemistry and aerosols", "air quality monitoring and forecasting", "geology and paleoclimatology research", "genetics and neurodevelopmental disorders", "lysosomal storage disorders research", "antibiotic resistance in bacteria", "genomic variations and chromosomal abnormalities", "genomics and rare diseases", "dementia and cognitive impairment research", "sars-cov-2 detection and testing", "healthcare cost, quality, practices", "rna regulation and disease", "liver disease diagnosis and treatment", "epigenetics and dna methylation", "genetic syndromes and imprinting", "supercapacitor materials and fabrication", "carbon nanotubes in composites", "graphene research and applications", "genomics and phylogenetic studies", "mxene and max phase materials", "child nutrition and water access", "liver disease and transplantation", "microbial community ecology and physiology", "alzheimer's disease research and treatments", "genetic neurodegenerative diseases", "rna and protein synthesis mechanisms", "rna research and splicing", "diabetes, cardiovascular risks, and lipoproteins", "health systems, economic evaluations, quality of life", "cryospheric studies and observations", "rna modifications and cancer", "antibiotic use and resistance", "nutritional studies and diet", "alcohol consumption and health effects", "smoking behavior and cessation", "endoplasmic reticulum stress and disease", "aeolian processes and effects", "energy harvesting in wireless networks", "health, environment, cognitive aging", "healthcare systems and reforms"].map(s => norm(s)));
         const INST_MAP = [['arizona', 'Univ. of Arizona'], ['unam', 'UNAM'], ['nacional autonoma', 'UNAM'], ['chile', 'Univ. de Chile'], ['fraunhofer', 'Fraunhofer ISE'], ['wageningen', 'Wageningen UR'], ['nrel', 'NREL'], ['davis', 'UC Davis'], ['umass', 'UMass Amherst'], ['massachusetts', 'UMass Amherst']], TOPIC_BLOCK = new Set(["medicine", "physics", "materials science", "computer science", "chemistry", "biology", "mathematics", "philosophy", "art", "psychology", "geology", "sociology"]);
-        /* ... existing functions fetchJSON, getInst, invIdx, Storage, scoreWork ... */
         const fetchJSON = async (u, r = 3) => {
             u += (u.includes('?') ? '&' : '?') + 'mailto=research-tool@agripv.org';
             for (let i = 0; i < r; i++) {
@@ -946,322 +853,149 @@
             return { s: Math.max(0, Math.round(s * 10) / 10), why, tier: s >= 35 ? 'Core' : s >= 15 ? 'Strong' : s >= 8 ? 'Related' : 'Peripheral' };
         };
 
-        /* ... existing graph/helper functions (computeHullPath, ParticleSystem, etc.) ... */
         const computeHullPath = (points, pad = 24) => { if (points.length < 3) { if (points.length === 2) { const [a, b] = points, dx = b[0] - a[0], dy = b[1] - a[1], len = Math.sqrt(dx * dx + dy * dy) || 1, nx = -dy / len * pad, ny = dx / len * pad; return `M${a[0] + nx},${a[1] + ny}L${b[0] + nx},${b[1] + ny}L${b[0] - nx},${b[1] - ny}L${a[0] - nx},${a[1] - ny}Z` } if (points.length === 1) { const [cx, cy] = points[0]; return `M${cx - pad},${cy}A${pad},${pad} 0 1,0 ${cx + pad},${cy}A${pad},${pad} 0 1,0 ${cx - pad},${cy}Z` } return '' } const hull = d3.polygonHull(points); if (!hull) return ''; const cx = d3.mean(hull, d => d[0]), cy = d3.mean(hull, d => d[1]), expanded = hull.map(([x, y]) => { const dx = x - cx, dy = y - cy, len = Math.sqrt(dx * dx + dy * dy) || 1; return [x + dx / len * pad, y + dy / len * pad] }); return d3.line().curve(d3.curveCatmullRomClosed.alpha(0.5))(expanded) };
-        class ParticleSystem { constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); this.particles = []; this.links = []; this.active = true; this.transform = { x: 0, y: 0, k: 1 }; this._raf = null; this._lastTime = 0 } setLinks(links) { this.links = links; this.particles = []; for (const link of links) { const count = Math.min(Math.max(1, link.w), 5); for (let i = 0; i < count; i++) { this.particles.push({ link, t: Math.random(), speed: (0.3 + Math.random() * 0.4) * (0.5 + link.w * 0.15) }) } } } setTransform(t) { this.transform = t } resize() { const r = devicePixelRatio || 1, w = this.canvas.parentElement.clientWidth, h = this.canvas.parentElement.clientHeight; this.canvas.width = w * r; this.canvas.height = h * r; this.canvas.style.width = w + 'px'; this.canvas.style.height = h + 'px'; this.ctx.setTransform(r, 0, 0, r, 0, 0) } start() { this.active = true; this._lastTime = performance.now(); const loop = (now) => { if (!this.active) return; const dt = Math.min((now - this._lastTime) / 1000, 0.05); this._lastTime = now; this._update(dt); this._draw(); this._raf = requestAnimationFrame(loop) }; this._raf = requestAnimationFrame(loop) } stop() { this.active = false; if (this._raf) cancelAnimationFrame(this._raf); this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height) } _update(dt) { for (const p of this.particles) { p.t += p.speed * dt * 0.4; if (p.t > 1) p.t -= 1 } } _draw() { const ctx = this.ctx, { x: tx, y: ty, k } = this.transform, w = this.canvas.clientWidth, h = this.canvas.clientHeight; ctx.clearRect(0, 0, w, h); ctx.save(); ctx.translate(tx, ty); ctx.scale(k, k); const isDark = document.body.classList.contains('dark-mode'), fillColor = isDark ? 'rgba(134,239,172,0.7)' : 'rgba(22,163,74,0.6)'; ctx.fillStyle = fillColor; for (const p of this.particles) { const src = p.link.source, tgt = p.link.target; if (src.x == null || tgt.x == null) continue; const px = src.x + (tgt.x - src.x) * p.t, py = src.y + (tgt.y - src.y) * p.t; ctx.beginPath(); ctx.arc(px, py, 1.5 / k, 0, Math.PI * 2); ctx.fill() } ctx.restore() } }
+        class ParticleSystem { constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); this.particles = []; this.links = []; this.active = true; this.transform = { x: 0, y: 0, k: 1 }; this._raf = null; this._lastTime = 0 } setLinks(links) { this.links = links; this.particles = []; for (const link of links) { const count = Math.min(Math.max(1, link.w), 5); for (let i = 0; i < count; i++) { this.particles.push({ link, t: Math.random(), speed: (0.3 + Math.random() * 0.4) * (0.5 + link.w * 0.15) }) } } } setTransform(t) { this.transform = t } resize() { const r = devicePixelRatio || 1, w = this.canvas.parentElement.clientWidth, h = this.canvas.parentElement.clientHeight; this.canvas.width = w * r; this.canvas.height = h * r; this.canvas.style.width = w + 'px'; this.canvas.style.height = h + 'px'; this.ctx.setTransform(r, 0, 0, r, 0, 0) } start() { this.active = true; this._lastTime = performance.now(); const loop = (now) => { if (!this.active) return; const dt = Math.min((now - this._lastTime) / 1000, 0.05); this._lastTime = now; this._update(dt); this._draw(); this._raf = requestAnimationFrame(loop) }; this._raf = requestAnimationFrame(loop) } stop() { this.active = false; if (this._raf) cancelAnimationFrame(this._raf); this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height) } _update(dt) { for (const p of this.particles) { p.t += p.speed * dt * 0.4; if (p.t > 1) p.t -= 1 } } _draw() { const ctx = this.ctx, { x: tx, y: ty, k } = this.transform, w = this.canvas.clientWidth, h = this.canvas.clientHeight; ctx.clearRect(0, 0, w, h); ctx.save(); ctx.translate(tx, ty); ctx.scale(k, k); const isDark = document.body.classList.contains('dark-mode'), fillColor = isDark ? 'rgba(134,239,172,0.7)' : 'rgba(22,163,74,0.6)'; ctx.fillStyle = fillColor; for (const p of this.particles) { const src = p.link.source, tgt = p.link.target; if (src.x == null || tgt.x == null) continue; const dx = tgt.x - src.x, dy = tgt.y - src.y, dr = Math.sqrt(dx * dx + dy * dy) * 1.5; const curveX = src.x + dx * 0.5 - dy * (0.25); const curveY = src.y + dy * 0.5 + dx * (0.25); const px = Math.pow(1 - p.t, 2) * src.x + 2 * (1 - p.t) * p.t * curveX + Math.pow(p.t, 2) * tgt.x; const py = Math.pow(1 - p.t, 2) * src.y + 2 * (1 - p.t) * p.t * curveY + Math.pow(p.t, 2) * tgt.y; ctx.beginPath(); ctx.arc(px, py, 1.5 / k, 0, Math.PI * 2); ctx.fill() } ctx.restore() } }
         const buildEgoMiniSVG = (centerId, adj, nodesMap, linksMap, maxNeighbors = 10) => { const neighbors = [...(adj.get(centerId) || [])].slice(0, maxNeighbors); if (!neighbors.length) return ''; const center = nodesMap.get(centerId); if (!center) return ''; const w = 180, h = 140, cx = w / 2, cy = h / 2, r = 45; let svg = `<svg width="${w}" height="${h}" class="mt-2" style="display:block">`; neighbors.forEach((nid, i) => { const angle = (i / neighbors.length) * Math.PI * 2 - Math.PI / 2, nx = cx + Math.cos(angle) * r, ny = cy + Math.sin(angle) * r, n = nodesMap.get(nid), linkKey = [centerId, nid].sort().join('|'), lw = linksMap.get(linkKey)?.w || 1; svg += `<line class="ego-mini-link" x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke-opacity="${0.3 + lw * 0.1}"/>`; svg += `<circle class="ego-mini-node" cx="${nx}" cy="${ny}" r="6" fill="${n ? n.color : '#94a3b8'}" stroke="white" stroke-width="1"/>`; const label = n ? n.display_name.split(' ').pop().substring(0, 6) : '?'; svg += `<text x="${nx}" y="${ny + 14}" text-anchor="middle" font-size="7" fill="#64748b">${esc(label)}</text>`; svg += `<text x="${(cx + nx) / 2}" y="${(cy + ny) / 2 - 3}" text-anchor="middle" font-size="7" fill="#16a34a" font-weight="600">${lw}</text>` }); svg += `<circle cx="${cx}" cy="${cy}" r="9" fill="${center.color}" stroke="white" stroke-width="1.5"/>`; svg += `<text x="${cx}" y="${cy + 3.5}" text-anchor="middle" font-size="7" fill="white" font-weight="700">${center.display_name.substring(0, 2)}</text>`; svg += '</svg>'; return svg };
         const buildTemporalArcs = (researcherId, pubs, currentYear) => { const yearCounts = new Map(); pubs.forEach(p => { if (p.memA.some(a => a.id === researcherId) && p.year) { yearCounts.set(p.year, (yearCounts.get(p.year) || 0) + 1) } }); if (!yearCounts.size) return []; const years = [...yearCounts.keys()].sort((a, b) => a - b), total = [...yearCounts.values()].reduce((s, v) => s + v, 0), colorScale = d3.scaleSequential(d3.interpolateGreens).domain([years[0] - 1, currentYear + 1]), arcGen = d3.arc(); let startAngle = 0; const arcs = []; for (const yr of years) { const frac = yearCounts.get(yr) / total, endAngle = startAngle + frac * Math.PI * 2; arcs.push({ path: arcGen({ innerRadius: 0, outerRadius: 1, startAngle, endAngle }), color: colorScale(yr), year: yr, count: yearCounts.get(yr) }); startAngle = endAngle } return arcs };
 
         const app = {
-            /* ... existing app data structure and init/resolve/build logic ... */
             data: { researchers: [], pubs: [], topics: new Map, graph: { nodes: [], links: [] } },
             state: { filters: { q: '', topics: new Set, insts: new Set, yFrom: null, yTo: null, minRel: CFG.defMin, bm: false, co: null }, page: 1, sort: 'recent', graph: { cluster: true, labels: true, particles: true }, last: [], sel: new Set, cmp: [], mode: 'paginated', dark: localStorage.getItem('agripv_dark') === '1', hm: true, view: 'both' },
-            d3: {}, col: new Map, bm: new Set(JSON.parse(localStorage.getItem('agripv_bookmarks') || '[]')), cache: new Map, particles: null, constellationSim: null,
-            init: async () => { /* ... existing init code ... */ app.ui(); app.gr(); app.dark(); el('bookmarkCount').textContent = app.bm.size; const pg = (p, t) => { el('loadingProgress').style.width = p + '%'; el('loadingStatus').textContent = t }; try { pg(5, "Fetching network members..."); const { data: P } = await supabase.from("profiles").select("id,full_name,work_email,affiliation").not("full_name", "is", null); if (!P?.length) throw "No members"; const hx = P.map(p => p.id).sort().join('|'), c = Storage.get(CFG.key); if (Storage.get(CFG.key + "_hash") === hx && c) { pg(85, "Loading from cache..."); app.restore(c) } else { pg(10, "Resolving profiles..."); const R = await app.resolve(P, pg); pg(30, "Discovering publications..."); const W = await app.discoverWorks(R, pg); app.build(R, W); Storage.set(CFG.key + "_hash", hx); Storage.set(CFG.key, app.pack()) } pg(100, "Done"); setTimeout(() => { el('loadingOverlay').classList.add('hidden'); app.render(); setTimeout(app.fitGraph, 400) }, 450) } catch (e) { console.error(e); alert("Failed to load data.") } },
-            resolve: async (P, pg) => { /* ... existing resolve code ... */ const out = []; for (let i = 0; i < P.length; i += 12) { out.push(...await Promise.all(P.slice(i, i + 12).map(async p => { let qn = p.full_name; if (/[\._\d]/.test(qn)) qn = qn.replace(/[\._]/g, ' ').replace(/\d+/g, '').trim(); const d = await fetchJSON(`${CFG.api}/authors?search=${encodeURIComponent(qn)}&per_page=10&select=id,display_name,works_count,cited_by_count,last_known_institutions`); let best = null, bS = -1, w = norm(qn), af = norm(p.affiliation || ""); (d?.results || []).forEach(r => { let sc = 0, n = norm(r.display_name || ""), in_ = norm(r.last_known_institutions?.[0]?.display_name || ""); if (n === w) sc += 10; else if (n.includes(w) || w.includes(n)) sc += 4; if (af && in_ && (in_.includes(af) || af.includes(in_))) sc += 4; sc += Math.min(2, (r.works_count || 0) / 200); if (sc > bS) { bS = sc; best = r } }); const m = best || d?.results?.[0], inst = getInst(m?.last_known_institutions?.[0]?.display_name || p.affiliation); return { id: m?.id || `local:${p.id}`, display_name: m?.display_name || p.full_name, inst, color: app.gCol(inst), net_works: 0, net_cited: 0, topics: {}, deg: 0, _wc: m?.works_count || 0 } }))); pg(10 + (Math.min(i + 12, P.length) / P.length) * 18, "Resolving profiles..."); await sleep(30) } return out },
+            d3: {}, col: new Map, bm: new Set(JSON.parse(localStorage.getItem('agripv_bookmarks') || '[]')), cache: new Map, particles: null, constellationSim: null, minimapScale: 0.1,
+            init: async () => { app.ui(); app.gr(); app.dark(); el('bookmarkCount').textContent = app.bm.size; const pg = (p, t) => { el('loadingProgress').style.width = p + '%'; el('loadingStatus').textContent = t }; try { pg(5, "Fetching network members..."); const { data: P } = await supabase.from("profiles").select("id,full_name,work_email,affiliation").not("full_name", "is", null); if (!P?.length) throw "No members"; const hx = P.map(p => p.id).sort().join('|'), c = Storage.get(CFG.key); if (Storage.get(CFG.key + "_hash") === hx && c) { pg(85, "Loading from cache..."); app.restore(c) } else { pg(10, "Resolving profiles..."); const R = await app.resolve(P, pg); pg(30, "Discovering publications..."); const W = await app.discoverWorks(R, pg); app.build(R, W); Storage.set(CFG.key + "_hash", hx); Storage.set(CFG.key, app.pack()) } pg(100, "Done"); setTimeout(() => { el('loadingOverlay').classList.add('hidden'); app.render(); setTimeout(app.fitGraph, 400) }, 450) } catch (e) { console.error(e); alert("Failed to load data.") } },
+            resolve: async (P, pg) => { const out = []; for (let i = 0; i < P.length; i += 12) { out.push(...await Promise.all(P.slice(i, i + 12).map(async p => { let qn = p.full_name; if (/[\._\d]/.test(qn)) qn = qn.replace(/[\._]/g, ' ').replace(/\d+/g, '').trim(); const d = await fetchJSON(`${CFG.api}/authors?search=${encodeURIComponent(qn)}&per_page=10&select=id,display_name,works_count,cited_by_count,last_known_institutions`); let best = null, bS = -1, w = norm(qn), af = norm(p.affiliation || ""); (d?.results || []).forEach(r => { let sc = 0, n = norm(r.display_name || ""), in_ = norm(r.last_known_institutions?.[0]?.display_name || ""); if (n === w) sc += 10; else if (n.includes(w) || w.includes(n)) sc += 4; if (af && in_ && (in_.includes(af) || af.includes(in_))) sc += 4; sc += Math.min(2, (r.works_count || 0) / 200); if (sc > bS) { bS = sc; best = r } }); const m = best || d?.results?.[0], inst = getInst(m?.last_known_institutions?.[0]?.display_name || p.affiliation); return { id: m?.id || `local:${p.id}`, display_name: m?.display_name || p.full_name, inst, color: app.gCol(inst), net_works: 0, net_cited: 0, net_hindex: 0, topics: {}, deg: 0, _wc: m?.works_count || 0 } }))); pg(10 + (Math.min(i + 12, P.length) / P.length) * 18, "Resolving profiles..."); await sleep(30) } return out },
             discoverWorks: async (R, pg) => {
-    const W = new Map;
-    const ids = R.filter(a => !a.id.startsWith('local:')).map(a => a.id);
-    const idSet = new Set(ids);
-    const authorBatches = [];
-    const BATCH_SIZE = 50;
-    for (let i = 0; i < ids.length; i += BATCH_SIZE)
-        authorBatches.push(ids.slice(i, i + BATCH_SIZE));
-
-    const dateFilter = `from_publication_date:${Math.max(1990, CFG.now - 25)}-01-01`;
-
-    const seenPages = new Set;
-
-    const runQuery = async (filterStr, maxPages = 10, priority = 'normal') => {
-        let cursor = '*', pn = 0, consecutiveLowYield = 0;
-        const LOW_YIELD = priority === 'high' ? 0.02 : 0.05;
-        const MAX_LOW = priority === 'high' ? 3 : 2;
-
-        while (cursor && pn++ < maxPages) {
-            const pageKey = `${filterStr}|${cursor}`;
-            if (seenPages.has(pageKey)) break;
-            seenPages.add(pageKey);
-
-            const beforeSize = W.size;
-            const r = await fetchJSON(
-                `${CFG.api}/works?filter=${filterStr}` +
-                `&per_page=200&cursor=${encodeURIComponent(cursor)}` +
-                `&sort=cited_by_count:desc` +
-                `&select=id,title,publication_year,cited_by_count,type,` +
-                `primary_location,open_access,doi,authorships,concepts,` +
-                `topics,keywords`
-            );
-            if (!r?.results?.length) break;
-
-            for (const w of r.results) {
-                if (W.has(w.id)) continue;
-                const sc = scoreWork(w);
-                if (sc.s >= CFG.minRel ||
-                    (sc.s >= 0.5 && sc.tier !== 'Peripheral')) {
-                    W.set(w.id, { ...w, _r: sc.s, _w: sc.why, _t: sc.tier });
-                }
-            }
-
-            const newWorks = W.size - beforeSize;
-            const yieldRate = r.results.length > 0
-                ? newWorks / r.results.length : 0;
-
-            if (yieldRate < LOW_YIELD) {
-                consecutiveLowYield++;
-                if (consecutiveLowYield >= MAX_LOW) break;
-            } else {
-                consecutiveLowYield = 0;
-            }
-
-            cursor = r.meta?.next_cursor;
-            if (!cursor || r.results.length < 200) break;
-            await sleep(8);
-        }
-    };
-
-    // ═══════════════════════════════════════════════════
-    // PHASE 1: Global anchor queries (NO author filter)
-    // Casts the widest net — finds ALL agrivoltaic works
-    // ═══════════════════════════════════════════════════
-
-    const globalQueries = [
-        {
-            // All explicit agrivoltaic terms — highest yield query
-            filter: `default.search:agrivoltaic|agrivoltaics|agrophotovoltaic|` +
-                `agrophotovoltaics|"agri-PV"|"agro-PV"|"agri-photovoltaic"|` +
-                `"agro-photovoltaic"|"solar sharing"|rangevoltaic|ecovoltaic|` +
-                `"photovoltaic greenhouse"|"greenhouse photovoltaic"|` +
-                `aquavoltaic|aquavoltaics,${dateFilter}`,
-            pages: 15,
-            priority: 'high'
-        },
-        {
-            // Concept-based
-            filter: `concepts.wikidata:Q109680063,${dateFilter}`,
-            pages: 10,
-            priority: 'high'
-        },
-        {
-            // Dual-use / co-location solar+agriculture
-            filter: `default.search:"dual use"|"dual-use"|"co-location"|` +
-                `"co-locate" solar|photovoltaic agriculture|crop|farming|` +
-                `grazing|greenhouse,${dateFilter}`,
-            pages: 8,
-            priority: 'normal'
-        },
-        {
-            // Technical mounting/design terms
-            filter: `default.search:bifacial|"stilt mounted"|"vertical PV"|` +
-                `"semi-transparent"|"ground-mounted" solar|photovoltaic ` +
-                `crop|agriculture|farm|albedo|"ground cover ratio",` +
-                `${dateFilter}`,
-            pages: 6,
-            priority: 'normal'
-        },
-        {
-            // Livestock + solar (from new version's Q4 — was missing)
-            filter: `default.search:"solar grazing"|solar|photovoltaic ` +
-                `sheep|cattle|livestock|pasture|grazing,${dateFilter}`,
-            pages: 6,
-            priority: 'normal'
-        },
-        {
-            // Food-energy-water nexus (from new version's Q5 — was missing)
-            filter: `default.search:"food-energy-water"|"water-energy-food"|` +
-                `"food security"|"crop production"|"crop yield"|` +
-                `"floating solar" aquaculture|solar|photovoltaic,` +
-                `${dateFilter}`,
-            pages: 6,
-            priority: 'normal'
-        },
-        {
-            // Microclimate / PAR / shade (from new version's Q6 — was missing)
-            filter: `default.search:"land equivalent ratio"|"shade tolerance"|` +
-                `microclimate|"photosynthetically active radiation" ` +
-                `solar|photovoltaic crop|agriculture|plant|soil,` +
-                `${dateFilter}`,
-            pages: 6,
-            priority: 'normal'
-        }
-    ];
-
-    pg(5, `Phase 1: Global agrivoltaic search...`);
-    await Promise.all(
-        globalQueries.map(q => runQuery(q.filter, q.pages, q.priority))
-    );
-
-    pg(30, `Phase 1 complete: ${W.size} works. Starting Phase 2...`);
-
-    // ═══════════════════════════════════════════════════
-    // PHASE 2: Author-scoped queries
-    // Broader search terms from new version to catch
-    // tangentially related member publications
-    // ═══════════════════════════════════════════════════
-
-    const authorQueries = [
-        {
-            // Core solar+agriculture (expanded from old version)
-            search: 'agrivoltaic|agrophotovoltaic|"solar sharing"|' +
-                '"dual use"|"co-location"|solar|photovoltaic|renewable ' +
-                'agriculture|crop|farm|food|land|vegetation|grazing|' +
-                'livestock|greenhouse',
-            pages: 6
-        },
-        {
-            // Nexus / microclimate / technical (expanded from old version)
-            search: '"land use"|"food security"|"food production"|' +
-                '"energy transition"|microclimate|"shade tolerance"|' +
-                'nexus|"land equivalent"|"crop yield"|bifacial|' +
-                '"semi-transparent"|albedo',
-            pages: 4
-        },
-        {
-            // Solar canopy / park / array terms (new — catches
-            // infrastructure-focused papers by members)
-            search: '"solar panel"|"solar array"|"solar farm"|' +
-                '"solar canopy"|"solar park"|"ground-mounted" ' +
-                'agriculture|crop|yield|land|soil|water',
-            pages: 4
-        }
-    ];
-
-    const taskQueue = [];
-    for (const q of authorQueries) {
-        for (const batch of authorBatches) {
-            taskQueue.push({
-                filter: `authorships.author.id:${batch.join('|')},` +
-                    `default.search:${q.search},${dateFilter}`,
-                pages: q.pages
-            });
-        }
-    }
-
-    let taskIdx = 0;
-    const CONCURRENCY = 10;
-    const runTaskQueue = async (queue, baseProgress, progressRange, label) => {
-        let idx = 0;
-        await Promise.all(Array.from(
-            { length: Math.min(CONCURRENCY, queue.length) },
-            async () => {
-                while (idx < queue.length) {
-                    const task = queue[idx++];
-                    await runQuery(task.filter, task.pages, task.priority);
-                    pg(
-                        baseProgress + (idx / queue.length) * progressRange,
-                        `${label}: ${idx}/${queue.length} (${W.size} works)...`
-                    );
-                }
-            }
-        ));
-    };
-
-    await runTaskQueue(taskQueue, 30, 30, 'Phase 2');
-
-    pg(60, `Phase 2 complete: ${W.size} works. Enrichment...`);
-
-    // ═══════════════════════════════════════════════════
-    // PHASE 3: Surgical enrichment
-    // Old version's unfiltered strategy — fetch ALL output
-    // from prolific agrivoltaic authors, let scoreWork decide
-    // ═══════════════════════════════════════════════════
-
-    const authScores = new Map;
-    W.forEach(w => (w.authorships || []).forEach(a => {
-        if (idSet.has(a.author?.id))
-            authScores.set(
-                a.author.id,
-                (authScores.get(a.author.id) || 0) + (w._r || 0)
-            );
-    }));
-
-    // Dynamic threshold — adapts to network size (old version's approach)
-    const scores = [...authScores.values()].sort((a, b) => b - a);
-    const enrichThreshold = scores.length > 4
-        ? scores[Math.floor(scores.length * 0.25)]
-        : 50;
-
-    const topAuthors = [...authScores.entries()]
-        .filter(([, s]) => s >= Math.max(enrichThreshold, 30))
-        .map(([id]) => id);
-
-    if (topAuthors.length) {
-        pg(65, `Enriching ${topAuthors.length} top authors...`);
-
-        // UNFILTERED author queries — the old version's secret sauce
-        // No search term filter, just "give me everything this person wrote"
-        const enrichTasks = topAuthors.map(aid => ({
-            filter: `authorships.author.id:${aid.split('/').pop()},${dateFilter}`,
-            pages: 5
-        }));
-
-        await runTaskQueue(enrichTasks, 65, 12, 'Enrichment');
-    }
-
-    pg(80, `Enrichment complete: ${W.size} works. Abstract check...`);
-
-    // ═══════════════════════════════════════════════════
-    // PHASE 4: Borderline abstract resolution
-    // Slightly more aggressive than old version
-    // ═══════════════════════════════════════════════════
-
-    const border = [...W.values()]
-        .filter(w =>
-            w._r >= (CFG.minRel - 0.5) &&
-            w._r < (CFG.minRel + 2) &&
-            !w._w?.some(x => x.includes('explicit'))
-        )
-        .sort((a, b) => b._r - a._r)
-        .slice(0, 60);
-
-    if (border.length) {
-        pg(82, `Abstracts: ${border.length} borderline works...`);
-        let k = 0;
-        await Promise.all(
-            Array.from(
-                { length: Math.min(12, border.length) },
-                async () => {
-                    while (k < border.length) {
-                        const w = border[k++];
-                        const d = await fetchJSON(
-                            `${CFG.api}/works/${w.id.split('/').pop()}` +
-                            `?select=abstract_inverted_index`
-                        );
-                        if (d?.abstract_inverted_index) {
-                            const ab = invIdx(d.abstract_inverted_index);
-                            const sc = scoreWork(w, ab);
-                            if (sc.s > w._r) {
-                                w._r = sc.s; w._t = sc.tier;
-                                w._w = [...new Set([...w._w, ...sc.why, 'abs'])];
-                            }
-                            app.cache.set(w.id, ab);
-                        }
-                        pg(
-                            82 + (k / border.length) * 13,
-                            `Abstracts ${k}/${border.length}...`
-                        );
-                        await sleep(5);
+                const W = new Map; const ids = R.filter(a => !a.id.startsWith('local:')).map(a => a.id); const idSet = new Set(ids); const authorBatches = []; const BATCH_SIZE = 50;
+                for (let i = 0; i < ids.length; i += BATCH_SIZE) authorBatches.push(ids.slice(i, i + BATCH_SIZE));
+                const dateFilter = `from_publication_date:${Math.max(1990, CFG.now - 25)}-01-01`; const seenPages = new Set;
+                const runQuery = async (filterStr, maxPages = 10, priority = 'normal') => {
+                    let cursor = '*', pn = 0, consecutiveLowYield = 0; const LOW_YIELD = priority === 'high' ? 0.02 : 0.05; const MAX_LOW = priority === 'high' ? 3 : 2;
+                    while (cursor && pn++ < maxPages) {
+                        const pageKey = `${filterStr}|${cursor}`; if (seenPages.has(pageKey)) break; seenPages.add(pageKey);
+                        const beforeSize = W.size; const r = await fetchJSON(`${CFG.api}/works?filter=${filterStr}&per_page=200&cursor=${encodeURIComponent(cursor)}&sort=cited_by_count:desc&select=id,title,publication_year,cited_by_count,type,primary_location,open_access,doi,authorships,concepts,topics,keywords`);
+                        if (!r?.results?.length) break;
+                        for (const w of r.results) { if (W.has(w.id)) continue; const sc = scoreWork(w); if (sc.s >= CFG.minRel || (sc.s >= 0.5 && sc.tier !== 'Peripheral')) { W.set(w.id, { ...w, _r: sc.s, _w: sc.why, _t: sc.tier }); } }
+                        const newWorks = W.size - beforeSize; const yieldRate = r.results.length > 0 ? newWorks / r.results.length : 0;
+                        if (yieldRate < LOW_YIELD) { consecutiveLowYield++; if (consecutiveLowYield >= MAX_LOW) break; } else { consecutiveLowYield = 0; }
+                        cursor = r.meta?.next_cursor; if (!cursor || r.results.length < 200) break; await sleep(8);
                     }
-                }
-            )
-        );
-    }
-
-    // Final filter
-    for (const [id, w] of W) {
-        if (w._r < CFG.minRel && !w._w.some(x => x.includes('explicit')))
-            W.delete(id);
-    }
-
-    return [...W.values()];
-}, build: (R, P) => { /* ... existing build code ... */ const rM = new Map(R.map(r => [r.id, r])); app.data.pubs = P.map(p => { const m = (p.authorships || []).filter(a => rM.has(a.author?.id)).map(a => rM.get(a.author.id)); if (!m.length) return null; let ts = (p.topics || []).filter(t => (t.score || 0) >= 0.25).map(t => t.display_name).slice(0, 7); if (!ts.length) ts = (p.concepts || []).filter(c => (c.score || 0) > 0.55 && (c.level || 0) > 0 && !TOPIC_BLOCK.has(norm(c.display_name))).map(c => c.display_name).slice(0, 7); const cts = ts.filter(t => !TOPIC_NEG.has(norm(t))); m.forEach(r => { r.net_works++; r.net_cited += (p.cited_by_count || 0); cts.forEach(t => { r.topics[t] = (r.topics[t] || 0) + 1; app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1) }) }); if (!cts.length && ts.length) return null; return { id: p.id, title: p.title, year: p.publication_year, cites: p.cited_by_count || 0, doi: p.doi, url: p.primary_location?.landing_page_url || p.doi || p.primary_location?.pdf_url, source: p.primary_location?.source?.display_name, oa: p.open_access?.is_oa, type: p.type, score: p._r || 0, why: p._w || [], tier: p._t || 'Weak', topics: cts, allA: (p.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, mem: rM.has(a.author?.id) })), memA: m } }).filter(Boolean); app.data.researchers = R.filter(r => app.data.pubs.some(p => p.memA.includes(r))); app.buildGraph() },
-            buildGraph: () => { /* ... existing buildGraph code ... */ const L = new Map, D = new Map; app.data.pubs.forEach(p => { const i = p.memA.map(a => a.id); for (let x = 0; x < i.length; x++)for (let y = x + 1; y < i.length; y++) { const k = [i[x], i[y]].sort().join('|'), l = L.get(k) || { source: i[x], target: i[y], w: 0, p: [] }; l.w++; l.p.push(p.id); L.set(k, l); D.set(i[x], (D.get(i[x]) || 0) + 1); D.set(i[y], (D.get(i[y]) || 0) + 1) } }); app.data.graph = { nodes: app.data.researchers.map(r => ({ ...r, deg: D.get(r.id) || 0, rad: clamp(10 + Math.sqrt(r.net_works || 0) * 3 + Math.sqrt(D.get(r.id) || 0) * 1.5, 10, 30) })), links: [...L.values()] } },
-            pack: () => { /* ... existing pack code ... */ const D = { t: [], s: [] }, gx = (a, v) => { if (!v) return -1; let i = a.indexOf(v); return i === -1 ? (a.push(v), a.length - 1) : i }; return { r: app.data.researchers.map(r => ({ id: r.id, n: r.display_name, i: r.inst, nw: r.net_works, nc: r.net_cited, t: Object.keys(r.topics).map(t => gx(D.t, t)), d: r.deg })), p: app.data.pubs.map(p => ({ id: p.id, t: p.title, y: p.year, c: p.cites, d: p.doi, u: p.url, s: gx(D.s, p.source), oa: p.oa ? 1 : 0, r: p.score, w: p.why, ti: p.tier === 'Core' ? 3 : (p.tier === 'Strong' ? 2 : 1), tp: p.topics.map(t => gx(D.t, t)), aa: p.allA.slice(0, 10).map(a => a.name), ma: p.memA.map(m => m.id) })), D } },
-            restore: c => { /* ... existing restore code ... */ const D = c.D || { t: [], s: [] }; app.data.researchers = c.r.map(r => ({ id: r.id, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, topics: (r.t || []).reduce((a, i) => { if (D.t[i]) a[D.t[i]] = 1; return a }, {}), deg: r.deg || 0, color: app.gCol(r.i) })); const rM = new Map(app.data.researchers.map(r => [r.id, r])); app.data.pubs = c.p.map(p => { const m = (p.ma || []).map(i => rM.get(i)).filter(Boolean), rt = (p.tp || []).map(i => D.t[i]).filter(Boolean), ct = rt.filter(t => !TOPIC_NEG.has(norm(t))); if (!ct.length && rt.length) return null; return { id: p.id, title: p.t, year: p.y, cites: p.c, doi: p.d, url: p.u, source: typeof p.s === 'number' ? D.s[p.s] : p.s, oa: !!p.oa, type: p.ty, score: p.r, why: p.w || [], tier: p.ti === 3 ? 'Core' : (p.ti === 2 ? 'Strong' : 'Weak'), topics: ct, allA: (p.aa || []).map(n => { const f = m.find(z => z.display_name === n); return { name: n, id: f ? f.id : null, mem: !!f } }), memA: m } }).filter(Boolean); app.data.topics = new Map; app.data.pubs.forEach(p => p.topics.forEach(t => app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1))); app.buildGraph() },
+                };
+                const globalQueries = [
+                    { filter: `default.search:agrivoltaic|agrivoltaics|agrophotovoltaic|agrophotovoltaics|"agri-PV"|"agro-PV"|"agri-photovoltaic"|"agro-photovoltaic"|"solar sharing"|rangevoltaic|ecovoltaic|"photovoltaic greenhouse"|"greenhouse photovoltaic"|aquavoltaic|aquavoltaics,${dateFilter}`, pages: 15, priority: 'high' },
+                    { filter: `concepts.wikidata:Q109680063,${dateFilter}`, pages: 10, priority: 'high' },
+                    { filter: `default.search:"dual use"|"dual-use"|"co-location"|"co-locate" solar|photovoltaic agriculture|crop|farming|grazing|greenhouse,${dateFilter}`, pages: 8, priority: 'normal' },
+                    { filter: `default.search:bifacial|"stilt mounted"|"vertical PV"|"semi-transparent"|"ground-mounted" solar|photovoltaic crop|agriculture|farm|albedo|"ground cover ratio",${dateFilter}`, pages: 6, priority: 'normal' },
+                    { filter: `default.search:"solar grazing"|solar|photovoltaic sheep|cattle|livestock|pasture|grazing,${dateFilter}`, pages: 6, priority: 'normal' },
+                    { filter: `default.search:"food-energy-water"|"water-energy-food"|"food security"|"crop production"|"crop yield"|"floating solar" aquaculture|solar|photovoltaic,${dateFilter}`, pages: 6, priority: 'normal' },
+                    { filter: `default.search:"land equivalent ratio"|"shade tolerance"|microclimate|"photosynthetically active radiation" solar|photovoltaic crop|agriculture|plant|soil,${dateFilter}`, pages: 6, priority: 'normal' }
+                ];
+                pg(5, `Phase 1: Global agrivoltaic search...`); await Promise.all(globalQueries.map(q => runQuery(q.filter, q.pages, q.priority)));
+                pg(30, `Phase 1 complete: ${W.size} works. Starting Phase 2...`);
+                const authorQueries = [
+                    { search: 'agrivoltaic|agrophotovoltaic|"solar sharing"|"dual use"|"co-location"|solar|photovoltaic|renewable agriculture|crop|farm|food|land|vegetation|grazing|livestock|greenhouse', pages: 6 },
+                    { search: '"land use"|"food security"|"food production"|"energy transition"|microclimate|"shade tolerance"|nexus|"land equivalent"|"crop yield"|bifacial|"semi-transparent"|albedo', pages: 4 },
+                    { search: '"solar panel"|"solar array"|"solar farm"|"solar canopy"|"solar park"|"ground-mounted" agriculture|crop|yield|land|soil|water', pages: 4 }
+                ];
+                const taskQueue = []; for (const q of authorQueries) { for (const batch of authorBatches) { taskQueue.push({ filter: `authorships.author.id:${batch.join('|')},default.search:${q.search},${dateFilter}`, pages: q.pages }); } }
+                let taskIdx = 0; const CONCURRENCY = 10;
+                const runTaskQueue = async (queue, baseProgress, progressRange, label) => { let idx = 0; await Promise.all(Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => { while (idx < queue.length) { const task = queue[idx++]; await runQuery(task.filter, task.pages, task.priority); pg(baseProgress + (idx / queue.length) * progressRange, `${label}: ${idx}/${queue.length} (${W.size} works)...`); } })); };
+                await runTaskQueue(taskQueue, 30, 30, 'Phase 2');
+                pg(60, `Phase 2 complete: ${W.size} works. Enrichment...`);
+                const authScores = new Map; W.forEach(w => (w.authorships || []).forEach(a => { if (idSet.has(a.author?.id)) authScores.set(a.author.id, (authScores.get(a.author.id) || 0) + (w._r || 0)); }));
+                const scores = [...authScores.values()].sort((a, b) => b - a); const enrichThreshold = scores.length > 4 ? scores[Math.floor(scores.length * 0.25)] : 50;
+                const topAuthors = [...authScores.entries()].filter(([, s]) => s >= Math.max(enrichThreshold, 30)).map(([id]) => id);
+                if (topAuthors.length) { pg(65, `Enriching ${topAuthors.length} top authors...`); const enrichTasks = topAuthors.map(aid => ({ filter: `authorships.author.id:${aid.split('/').pop()},${dateFilter}`, pages: 5 })); await runTaskQueue(enrichTasks, 65, 12, 'Enrichment'); }
+                pg(80, `Enrichment complete: ${W.size} works. Abstract check...`);
+                const border = [...W.values()].filter(w => w._r >= (CFG.minRel - 0.5) && w._r < (CFG.minRel + 2) && !w._w?.some(x => x.includes('explicit'))).sort((a, b) => b._r - a._r).slice(0, 60);
+                if (border.length) { pg(82, `Abstracts: ${border.length} borderline works...`); let k = 0; await Promise.all(Array.from({ length: Math.min(12, border.length) }, async () => { while (k < border.length) { const w = border[k++]; const d = await fetchJSON(`${CFG.api}/works/${w.id.split('/').pop()}?select=abstract_inverted_index`); if (d?.abstract_inverted_index) { const ab = invIdx(d.abstract_inverted_index); const sc = scoreWork(w, ab); if (sc.s > w._r) { w._r = sc.s; w._t = sc.tier; w._w = [...new Set([...w._w, ...sc.why, 'abs'])]; } app.cache.set(w.id, ab); } pg(82 + (k / border.length) * 13, `Abstracts ${k}/${border.length}...`); await sleep(5); } })); }
+                for (const [id, w] of W) { if (w._r < CFG.minRel && !w._w.some(x => x.includes('explicit'))) W.delete(id); }
+                return [...W.values()];
+            }, 
+            calcHIndex: (citesArray) => {
+                citesArray.sort((a, b) => b - a);
+                let h = 0;
+                while (h < citesArray.length && citesArray[h] >= h + 1) h++;
+                return h;
+            },
+            build: (R, P) => { const rM = new Map(R.map(r => [r.id, r])); app.data.pubs = P.map(p => { const m = (p.authorships || []).filter(a => rM.has(a.author?.id)).map(a => rM.get(a.author.id)); if (!m.length) return null; let ts = (p.topics || []).filter(t => (t.score || 0) >= 0.25).map(t => t.display_name).slice(0, 7); if (!ts.length) ts = (p.concepts || []).filter(c => (c.score || 0) > 0.55 && (c.level || 0) > 0 && !TOPIC_BLOCK.has(norm(c.display_name))).map(c => c.display_name).slice(0, 7); const cts = ts.filter(t => !TOPIC_NEG.has(norm(t))); m.forEach(r => { r.net_works++; r.net_cited += (p.cited_by_count || 0); cts.forEach(t => { r.topics[t] = (r.topics[t] || 0) + 1; app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1) }) }); if (!cts.length && ts.length) return null; return { id: p.id, title: p.title, year: p.publication_year, cites: p.cited_by_count || 0, doi: p.doi, url: p.primary_location?.landing_page_url || p.doi || p.primary_location?.pdf_url, source: p.primary_location?.source?.display_name, oa: p.open_access?.is_oa, type: p.type, score: p._r || 0, why: p._w || [], tier: p._t || 'Weak', topics: cts, allA: (p.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, mem: rM.has(a.author?.id) })), memA: m } }).filter(Boolean); app.data.researchers = R.filter(r => app.data.pubs.some(p => p.memA.includes(r))); app.buildGraph() },
+            buildGraph: () => { const L = new Map, D = new Map; app.data.pubs.forEach(p => { const i = p.memA.map(a => a.id); for (let x = 0; x < i.length; x++)for (let y = x + 1; y < i.length; y++) { const k = [i[x], i[y]].sort().join('|'), l = L.get(k) || { source: i[x], target: i[y], w: 0, p: [] }; l.w++; l.p.push(p.id); L.set(k, l); D.set(i[x], (D.get(i[x]) || 0) + 1); D.set(i[y], (D.get(i[y]) || 0) + 1) } }); 
+            app.data.researchers.forEach(r => {
+                const myPubs = app.data.pubs.filter(p => p.memA.some(a => a.id === r.id)).map(p => p.cites);
+                r.net_hindex = app.calcHIndex(myPubs);
+            });
+            app.data.graph = { nodes: app.data.researchers.map(r => ({ ...r, deg: D.get(r.id) || 0, rad: clamp(10 + Math.sqrt(r.net_works || 0) * 3 + Math.sqrt(D.get(r.id) || 0) * 1.5, 10, 30) })), links: [...L.values()] } },
+            pack: () => { const D = { t: [], s: [] }, gx = (a, v) => { if (!v) return -1; let i = a.indexOf(v); return i === -1 ? (a.push(v), a.length - 1) : i }; return { r: app.data.researchers.map(r => ({ id: r.id, n: r.display_name, i: r.inst, nw: r.net_works, nc: r.net_cited, nh: r.net_hindex, t: Object.keys(r.topics).map(t => gx(D.t, t)), d: r.deg })), p: app.data.pubs.map(p => ({ id: p.id, t: p.title, y: p.year, c: p.cites, d: p.doi, u: p.url, s: gx(D.s, p.source), oa: p.oa ? 1 : 0, r: p.score, w: p.why, ti: p.tier === 'Core' ? 3 : (p.tier === 'Strong' ? 2 : 1), tp: p.topics.map(t => gx(D.t, t)), aa: p.allA.slice(0, 10).map(a => a.name), ma: p.memA.map(m => m.id) })), D } },
+            restore: c => { const D = c.D || { t: [], s: [] }; app.data.researchers = c.r.map(r => ({ id: r.id, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, net_hindex: r.nh || 0, topics: (r.t || []).reduce((a, i) => { if (D.t[i]) a[D.t[i]] = 1; return a }, {}), deg: r.deg || 0, color: app.gCol(r.i) })); const rM = new Map(app.data.researchers.map(r => [r.id, r])); app.data.pubs = c.p.map(p => { const m = (p.ma || []).map(i => rM.get(i)).filter(Boolean), rt = (p.tp || []).map(i => D.t[i]).filter(Boolean), ct = rt.filter(t => !TOPIC_NEG.has(norm(t))); if (!ct.length && rt.length) return null; return { id: p.id, title: p.t, year: p.y, cites: p.c, doi: p.d, url: p.u, source: typeof p.s === 'number' ? D.s[p.s] : p.s, oa: !!p.oa, type: p.ty, score: p.r, why: p.w || [], tier: p.ti === 3 ? 'Core' : (p.ti === 2 ? 'Strong' : 'Weak'), topics: ct, allA: (p.aa || []).map(n => { const f = m.find(z => z.display_name === n); return { name: n, id: f ? f.id : null, mem: !!f } }), memA: m } }).filter(Boolean); app.data.topics = new Map; app.data.pubs.forEach(p => p.topics.forEach(t => app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1))); app.buildGraph() },
             gCol: i => { if (!app.col.has(i)) app.col.set(i, COLORS[app.col.size % COLORS.length]); return app.col.get(i) },
             spark: (d, w = 48, h = 16) => { const m = Math.max(...d, 1), pts = d.map((v, i) => `${(i / (d.length - 1)) * w},${h - (v / m) * (h - 2) - 1}`).join(' '); return `<svg class="sparkline-container" width="${w}" height="${h}"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="${pts}"/></svg>` },
-            render: () => { /* ... existing render code ... */ const { q, topics: T, insts: I, yFrom: yf, yTo: yt, minRel: mr, bm: bo, co } = app.state.filters, ql = norm(q); let F = app.data.pubs.filter(p => p.score >= mr && (!yf || p.year >= yf) && (!yt || p.year <= yt) && (!I.size || p.memA.some(a => I.has(a.inst))) && (!T.size || p.topics.some(t => T.has(t))) && (!bo || app.bm.has(p.id))); if (ql) F = F.filter(p => norm(p.title).includes(ql) || p.allA.some(a => norm(a.name).includes(ql)) || p.topics.some(t => norm(t).includes(ql)) || (app.cache.has(p.id) && norm(app.cache.get(p.id)).includes(ql))); if (co) F = F.filter(p => p.topics.includes(co.t1) && p.topics.includes(co.t2)); app.state.last = F; const am = new Set(F.flatMap(p => p.memA.map(a => a.id))), yc = new Map, cc = new Map; F.forEach(p => { if (p.year) { yc.set(p.year, (yc.get(p.year) || 0) + 1); cc.set(p.year, (cc.get(p.year) || 0) + p.cites) } }); const yrs = [...yc.keys()].sort((a, b) => a - b); el('statsGrid').innerHTML = [['MEMBERS', am.size], ['WORKS', F.length, yrs.map(y => yc.get(y))], ['CITES', F.reduce((s, p) => s + p.cites, 0), yrs.map(y => cc.get(y))], ['TOPICS', new Set(F.flatMap(p => p.topics)).size]].map(([l, v, s]) => `<div class="bg-white py-1.5 px-0.5 rounded border border-slate-200 shadow-sm flex flex-col items-center hover:border-green-300"><span class="text-xs font-bold text-slate-700">${v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}</span>${s ? `<div class="mt-0.5">${app.spark(s, 36, 12)}</div>` : ''}<span class="text-[7px] text-slate-400 font-bold mt-0.5">${l}</span></div>`).join(''); el('filteredCount').textContent = F.length; app.timeline(F, yc); const sF = { cited: (a, b) => b.cites - a.cites, relevance: (a, b) => b.score - a.score || b.cites - a.cites, title: (a, b) => a.title.localeCompare(b.title), recent: (a, b) => b.year - a.year || b.score - a.score, oldest: (a, b) => a.year - b.year || b.score - a.score, bookmarked: (a, b) => (app.bm.has(b.id) ? 1 : 0) - (app.bm.has(a.id) ? 1 : 0) || b.score - a.score }; F.sort(sF[app.state.sort] || sF.recent); const inf = app.state.mode === 'infinite', sz = inf ? F.length : 12, pgs = inf ? 1 : Math.ceil(F.length / sz), pg = app.state.page = clamp(app.state.page, 1, Math.max(1, pgs)), st = inf ? 0 : (pg - 1) * sz; el('publicationsList').innerHTML = F.slice(st, st + sz).map(app.pubCard).join('') || '<div class="text-center py-20 text-slate-400 text-xs">No results.</div>'; if (!inf) el('publicationsList').scrollTop = 0;['showingFrom', 'showingTo', 'totalPublications'].forEach((id, i) => el(id).textContent = [F.length ? st + 1 : 0, Math.min(st + sz, F.length), F.length][i]); if (!inf && pgs > 1) { const b = [], ad = (p, l, a) => b.push(`<button onclick="app.setPage(${p})" class="w-6 h-6 flex items-center justify-center rounded text-[9px] font-medium ${a ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`); ad(Math.max(1, pg - 1), '<i class="fas fa-chevron-left"></i>'); (pgs <= 5 ? Array.from({ length: pgs }, (_, i) => i + 1) : (pg <= 3 ? [1, 2, 3, '...', pgs] : (pg >= pgs - 2 ? [1, '...', pgs - 2, pgs - 1, pgs] : [1, '...', pg, pg + 1, '...', pgs]))).forEach(x => x === '...' ? b.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : ad(x, x, x === pg)); ad(Math.min(pgs, pg + 1), '<i class="fas fa-chevron-right"></i>'); el('paginationContainer').innerHTML = b.join('') } else el('paginationContainer').innerHTML = ''; app.renderGraph(F, am); if (app.state.view === 'constellation') app.renderConstellation(F); const ic = new Map, tc = new Map; app.data.researchers.forEach(r => am.has(r.id) && ic.set(r.inst, (ic.get(r.inst) || 0) + 1)); F.forEach(p => p.topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1))); el('institutionFilters').innerHTML = [...ic].sort((a, b) => b[1] - a[1]).map(([i, c]) => `<label class="flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 p-1 rounded group"><input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 w-3 h-3" ${I.has(i) ? 'checked' : ''}><div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${app.gCol(i)}"></div><span class="text-[10px] text-slate-600 truncate flex-1">${esc(i)}</span><span class="text-[8px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span></label>`).join(''); el('topicFilters').innerHTML = [...tc].sort((a, b) => b[1] - a[1]).slice(0, 35).map(([t, c]) => `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] border flex gap-1 ${T.has(t) ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-50 text-slate-500 hover:bg-white'}">${esc(t)} <span class="opacity-50 text-[8px]">${c}</span></button>`).join(''); const fc = T.size + I.size + (bo ? 1 : 0) + (co ? 1 : 0), tg = (l, k, c) => `<span class="${c} px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>`; el('activeFiltersPanel').classList.toggle('hidden', !fc); el('activeFilterCount').textContent = fc; el('activeFilterTags').innerHTML = (bo ? '<span class="bg-amber-50 text-amber-700 border-amber-200 px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">Bookmarked<button onclick="app.toggleBookmarkFilter()" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>' : '') + (co ? `<span class="bg-purple-50 text-purple-700 border-purple-200 px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">Interact: ${co.t1.substring(0, 8)}... & ${co.t2.substring(0, 8)}...<button onclick="app.clrCo()" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>` : '') + [...T].map(t => tg(t, 'topics', 'bg-green-50 text-green-700 border-green-200')).join('') + [...I].map(i => tg(i, 'insts', 'bg-blue-50 text-blue-700 border-blue-200')).join(''); const actInst = [...app.col].filter(([i]) => app.data.researchers.some(r => r.inst === i && am.has(r.id))); el('legendContainer').innerHTML = actInst.map(([i, c]) => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background:${c}"></span><span class="text-[9px] text-slate-600 truncate">${esc(i)}</span></div>`).join(''); app.updSel(); app.updBm(); if (app.state.hm) app.heatmap(F) },
+            render: () => { 
+                const { q, topics: T, insts: I, yFrom: yf, yTo: yt, minRel: mr, bm: bo, co } = app.state.filters, ql = norm(q); 
+                
+                let F_timeUnfiltered = app.data.pubs.filter(p => p.score >= mr && (!I.size || p.memA.some(a => I.has(a.inst))) && (!T.size || p.topics.some(t => T.has(t))) && (!bo || app.bm.has(p.id))); 
+                if (ql) F_timeUnfiltered = F_timeUnfiltered.filter(p => norm(p.title).includes(ql) || p.allA.some(a => norm(a.name).includes(ql)) || p.topics.some(t => norm(t).includes(ql)) || (app.cache.has(p.id) && norm(app.cache.get(p.id)).includes(ql))); 
+                if (co) F_timeUnfiltered = F_timeUnfiltered.filter(p => p.topics.includes(co.t1) && p.topics.includes(co.t2)); 
+
+                const timelineYc = new Map(); F_timeUnfiltered.forEach(p => { if (p.year) timelineYc.set(p.year, (timelineYc.get(p.year) || 0) + 1); }); 
+
+                let F = F_timeUnfiltered.filter(p => (!yf || p.year >= yf) && (!yt || p.year <= yt)); 
+                app.state.last = F; 
+                
+                const am = new Set(F.flatMap(p => p.memA.map(a => a.id))), yc = new Map, cc = new Map; F.forEach(p => { if (p.year) { yc.set(p.year, (yc.get(p.year) || 0) + 1); cc.set(p.year, (cc.get(p.year) || 0) + p.cites) } }); const yrs = [...yc.keys()].sort((a, b) => a - b); el('statsGrid').innerHTML = [['MEMBERS', am.size], ['WORKS', F.length, yrs.map(y => yc.get(y))], ['CITES', F.reduce((s, p) => s + p.cites, 0), yrs.map(y => cc.get(y))], ['TOPICS', new Set(F.flatMap(p => p.topics)).size]].map(([l, v, s]) => `<div class="bg-white py-1.5 px-0.5 rounded border border-slate-200 shadow-sm flex flex-col items-center hover:border-green-300"><span class="text-xs font-bold text-slate-700">${v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}</span>${s ? `<div class="mt-0.5">${app.spark(s, 36, 12)}</div>` : ''}<span class="text-[7px] text-slate-400 font-bold mt-0.5">${l}</span></div>`).join(''); el('filteredCount').textContent = F.length; 
+                
+                app.timeline(timelineYc); 
+                
+                const sF = { cited: (a, b) => b.cites - a.cites, relevance: (a, b) => b.score - a.score || b.cites - a.cites, title: (a, b) => a.title.localeCompare(b.title), recent: (a, b) => b.year - a.year || b.score - a.score, oldest: (a, b) => a.year - b.year || b.score - a.score, bookmarked: (a, b) => (app.bm.has(b.id) ? 1 : 0) - (app.bm.has(a.id) ? 1 : 0) || b.score - a.score }; F.sort(sF[app.state.sort] || sF.recent); const inf = app.state.mode === 'infinite', sz = inf ? F.length : 12, pgs = inf ? 1 : Math.ceil(F.length / sz), pg = app.state.page = clamp(app.state.page, 1, Math.max(1, pgs)), st = inf ? 0 : (pg - 1) * sz; el('publicationsList').innerHTML = F.slice(st, st + sz).map(app.pubCard).join('') || '<div class="text-center py-20 text-slate-400 text-xs">No results.</div>'; if (!inf) el('publicationsList').scrollTop = 0;['showingFrom', 'showingTo', 'totalPublications'].forEach((id, i) => el(id).textContent = [F.length ? st + 1 : 0, Math.min(st + sz, F.length), F.length][i]); if (!inf && pgs > 1) { const b = [], ad = (p, l, a) => b.push(`<button onclick="app.setPage(${p})" class="w-6 h-6 flex items-center justify-center rounded text-[9px] font-medium ${a ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`); ad(Math.max(1, pg - 1), '<i class="fas fa-chevron-left"></i>'); (pgs <= 5 ? Array.from({ length: pgs }, (_, i) => i + 1) : (pg <= 3 ? [1, 2, 3, '...', pgs] : (pg >= pgs - 2 ? [1, '...', pgs - 2, pgs - 1, pgs] : [1, '...', pg, pg + 1, '...', pgs]))).forEach(x => x === '...' ? b.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : ad(x, x, x === pg)); ad(Math.min(pgs, pg + 1), '<i class="fas fa-chevron-right"></i>'); el('paginationContainer').innerHTML = b.join('') } else el('paginationContainer').innerHTML = ''; app.renderGraph(F, am); if (app.state.view === 'constellation') app.renderConstellation(F); const ic = new Map, tc = new Map; app.data.researchers.forEach(r => am.has(r.id) && ic.set(r.inst, (ic.get(r.inst) || 0) + 1)); F.forEach(p => p.topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1))); el('institutionFilters').innerHTML = [...ic].sort((a, b) => b[1] - a[1]).map(([i, c]) => `<label class="flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 p-1 rounded group"><input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 w-3 h-3" ${I.has(i) ? 'checked' : ''}><div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${app.gCol(i)}"></div><span class="text-[10px] text-slate-600 truncate flex-1">${esc(i)}</span><span class="text-[8px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span></label>`).join(''); el('topicFilters').innerHTML = [...tc].sort((a, b) => b[1] - a[1]).slice(0, 35).map(([t, c]) => `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] border flex gap-1 ${T.has(t) ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-50 text-slate-500 hover:bg-white'}">${esc(t)} <span class="opacity-50 text-[8px]">${c}</span></button>`).join(''); const fc = T.size + I.size + (bo ? 1 : 0) + (co ? 1 : 0), tg = (l, k, c) => `<span class="${c} px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>`; el('activeFiltersPanel').classList.toggle('hidden', !fc); el('activeFilterCount').textContent = fc; el('activeFilterTags').innerHTML = (bo ? '<span class="bg-amber-50 text-amber-700 border-amber-200 px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">Bookmarked<button onclick="app.toggleBookmarkFilter()" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>' : '') + (co ? `<span class="bg-purple-50 text-purple-700 border-purple-200 px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">Interact: ${co.t1.substring(0, 8)}... & ${co.t2.substring(0, 8)}...<button onclick="app.clrCo()" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>` : '') + [...T].map(t => tg(t, 'topics', 'bg-green-50 text-green-700 border-green-200')).join('') + [...I].map(i => tg(i, 'insts', 'bg-blue-50 text-blue-700 border-blue-200')).join(''); const actInst = [...app.col].filter(([i]) => app.data.researchers.some(r => r.inst === i && am.has(r.id))); el('legendContainer').innerHTML = actInst.map(([i, c]) => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background:${c}"></span><span class="text-[9px] text-slate-600 truncate">${esc(i)}</span></div>`).join(''); app.updSel(); app.updBm(); if (app.state.hm) app.heatmap(F) },
             pubCard: p => `<div class="pub-card p-3 bg-white mb-2 cursor-pointer" onclick="app.detail('${p.id}')"><div class="flex items-start gap-2"><input type="checkbox" class="pub-checkbox mt-1" ${app.state.sel.has(p.id) ? 'checked' : ''} onclick="event.stopPropagation();app.togSel('${p.id}')"><div class="flex-1 min-w-0"><div class="flex items-start justify-between gap-2 mb-1.5"><h4 class="font-bold text-slate-800 text-xs leading-snug flex-1">${esc(p.title)}</h4><div class="shrink-0 flex items-center gap-1"><button class="bookmark-btn ${app.bm.has(p.id) ? 'active text-amber-500' : 'text-slate-300 hover:text-amber-400'} p-1 text-xs" onclick="event.stopPropagation();app.togBm('${p.id}')"><i class="fas fa-bookmark"></i></button>${p.oa ? '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[8px] font-bold rounded border border-amber-100 uppercase">OA</span>' : ''} ${p.tier === 'Core' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-green-100 text-green-800 border border-green-200">Core</span>' : (p.tier === 'Strong' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">Strong</span>' : '')}</div></div><div class="flex flex-wrap gap-1 mb-2">${p.allA.slice(0, 5).map(a => `<span class="px-1.5 py-0.5 rounded text-[9px] truncate max-w-[100px] ${a.mem ? 'network-member font-medium' : 'external-author'}">${esc(a.name)}</span>`).join('')}${p.allA.length > 5 ? `<span class="text-[9px] text-slate-400 self-center">+${p.allA.length - 5}</span>` : ''}</div><div class="flex items-center gap-3 text-[9px] text-slate-500 font-medium"><span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${p.year || ''}</span><span class="flex items-center gap-1"><i class="fas fa-quote-right text-slate-400"></i> ${p.cites}</span><span class="ml-auto text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 font-semibold">Score: ${p.score.toFixed(1)}</span><div class="flex gap-1 ml-1"><button class="hover:text-brand p-1" onclick="event.stopPropagation();app.cite('${p.id}')"><i class="fas fa-quote-left"></i></button>${p.doi ? `<button class="hover:text-blue-600 p-1 transition-colors" onclick="event.stopPropagation();app.cpD(event, '${jsStr(p.doi)}')" title="Copy DOI"><i class="fas fa-copy"></i></button><a href="https://doi.org/${p.doi}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 p-1 transition-colors" onclick="event.stopPropagation()" title="Open Paper"><i class="fas fa-external-link-alt"></i></a>` : ''}</div></div></div></div></div>`,
-            timeline: (F, yc) => { const svg = d3.select('#timelineChart'); svg.selectAll('*').remove(); if (!yc.size) return; const yrs = [...yc.keys()].sort((a, b) => a - b), min = yrs[0], max = yrs[yrs.length - 1], all = Array.from({ length: max - min + 1 }, (_, i) => min + i); const W = el('timelineChart').clientWidth, H = 50, m = { t: 2, r: 2, b: 12, l: 2 }, x = d3.scaleBand().domain(all).range([m.l, W - m.r]).padding(0.2), y = d3.scaleLinear().domain([0, d3.max([...yc.values()]) || 1]).range([H - m.b, m.t]); const g = svg.append('g'), { yFrom: yf, yTo: yt } = app.state.filters; g.selectAll('rect').data(all).enter().append('rect').attr('class', d => `timeline-bar ${(yf && d >= yf && (!yt || d <= yt)) || (yt && d <= yt && (!yf || d >= yf)) ? 'selected' : ''}`).attr('x', d => x(d)).attr('y', d => y(yc.get(d) || 0)).attr('width', x.bandwidth()).attr('height', d => H - m.b - y(yc.get(d) || 0)).attr('rx', 1).on('click', (e, d) => { if (e.shiftKey && yf) { app.state.filters.yTo = d; el('yearTo').value = d } else if (yf === d && !yt) { app.state.filters.yFrom = app.state.filters.yTo = null; el('yearFrom').value = el('yearTo').value = '' } else { app.state.filters.yFrom = d; app.state.filters.yTo = null; el('yearFrom').value = d; el('yearTo').value = '' } app.render() }); const lbl = all.length > 12 ? 3 : (all.length > 6 ? 2 : 1); g.selectAll('.yl').data(all.filter((_, i) => i % lbl === 0 || _ === max)).enter().append('text').attr('x', d => x(d) + x.bandwidth() / 2).attr('y', H - 1).attr('text-anchor', 'middle').attr('font-size', 7).attr('fill', '#94a3b8').text(d => d.toString().slice(-2)) },
+            timeline: (yc) => { 
+                const svg = d3.select('#timelineChart'); 
+                const allYears = app.data.pubs.map(p => p.year).filter(Boolean); 
+                if (!allYears.length) return; 
+                const minYear = Math.min(...allYears); 
+                const maxYear = Math.max(...allYears); 
+                const all = Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i); 
+                
+                const W = el('timelineChart').clientWidth || 300, H = 50, m = { t: 2, r: 2, b: 12, l: 2 }; 
+                const x = d3.scaleBand().domain(all).range([m.l, W - m.r]).padding(0.2); 
+                const maxVal = d3.max([...yc.values()]) || 1; 
+                const y = d3.scaleLinear().domain([0, maxVal]).range([H - m.b, m.t]); 
+                const { yFrom: yf, yTo: yt } = app.state.filters; 
+
+                if (svg.select('g').empty()) { 
+                    const g = svg.append('g'); 
+                    g.append('g').attr('class', 'bars-group'); 
+                    g.append('g').attr('class', 'brush-group'); 
+                    g.append('g').attr('class', 'labels-group'); 
+                    const lbl = all.length > 12 ? 3 : (all.length > 6 ? 2 : 1); 
+                    svg.select('.labels-group').selectAll('.yl').data(all.filter((_, i) => i % lbl === 0 || _ === maxYear)).enter().append('text').attr('class', 'yl').attr('x', d => x(d) + x.bandwidth() / 2).attr('y', H - 1).attr('text-anchor', 'middle').attr('font-size', 7).attr('fill', '#94a3b8').text(d => d.toString().slice(-2)); 
+                } 
+
+                const bars = svg.select('.bars-group').selectAll('rect').data(all, d => d); 
+                bars.enter().append('rect').attr('x', d => x(d)).attr('y', H - m.b).attr('width', x.bandwidth()).attr('height', 0).attr('rx', 1).merge(bars).attr('class', d => `timeline-bar ${(yf && d >= yf && (!yt || d <= yt)) || (yt && d <= yt && (!yf || d >= yf)) ? 'selected' : ''}`).transition().duration(400).attr('x', d => x(d)).attr('y', d => y(yc.get(d) || 0)).attr('width', x.bandwidth()).attr('height', d => H - m.b - y(yc.get(d) || 0)); 
+                bars.exit().remove(); 
+
+                const brushGroup = svg.select('.brush-group'); 
+                const brush = d3.brushX().extent([[m.l, m.t], [W - m.r, H - m.b]]).on("end", (e) => { 
+                    if (!e.sourceEvent) return; 
+                    if (!e.selection) { 
+                        if (app.state.filters.yFrom || app.state.filters.yTo) { 
+                            app.state.filters.yFrom = null; app.state.filters.yTo = null; el('yearFrom').value = ''; el('yearTo').value = ''; app.render(); 
+                        } 
+                    } else { 
+                        const [x0, x1] = e.selection; const selectedYears = all.filter(d => { const px = x(d) + x.bandwidth() / 2; return px >= x0 && px <= x1; }); 
+                        if (selectedYears.length) { 
+                            app.state.filters.yFrom = selectedYears[0]; app.state.filters.yTo = selectedYears[selectedYears.length - 1]; el('yearFrom').value = app.state.filters.yFrom; el('yearTo').value = app.state.filters.yTo; app.render(); 
+                        } 
+                    } 
+                }); 
+
+                brushGroup.call(brush); 
+                if (yf || yt) { 
+                    const sY = Math.max(minYear, yf || minYear); const eY = Math.min(maxYear, yt || maxYear); const startX = x(sY); const endX = x(eY) + x.bandwidth(); 
+                    if (startX !== undefined && endX !== undefined) brushGroup.call(brush.move, [startX, endX]); 
+                } else { 
+                    brushGroup.call(brush.move, null); 
+                } 
+            },
             heatmap: F => {
                 const svg = d3.select('#heatmapChart'); svg.selectAll('*').remove();
                 const pairs = new Map, tc = new Map;
@@ -1276,7 +1010,6 @@
                     if (v > 0) {
                         g.append('text').attr('x', j * cW + cW / 2).attr('y', i * cH + cH / 2 + 2).attr('text-anchor', 'middle').attr('font-size', '8px').attr('fill', v > max / 2 ? 'white' : '#334155').attr('pointer-events', 'none').text(v);
                         r.on('mouseover', () => {
-                            // UPDATED: Compact horizontal format for bottom bar tooltip
                             tt.innerHTML = `<div class="flex items-center gap-1.5"><span class="text-slate-500 font-semibold">Filter:</span><span class="text-slate-700 font-bold">${top[i]}</span><span class="text-slate-400">&</span><span class="text-slate-700 font-bold">${top[j]}</span><span class="ml-1 bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-bold">${v}</span></div>`;
                             tt.classList.remove('opacity-0', 'pointer-events-none');
                         }).on('mouseout', () => tt.classList.add('opacity-0', 'pointer-events-none'))
@@ -1284,11 +1017,47 @@
                     }
                 }
             },
-            gr: () => { const svg = d3.select('#networkGraph'), g = svg.append('g'), defs = svg.append('defs'); COLORS.forEach(c => defs.append('radialGradient').attr('id', 'g-' + c.slice(1)).attr('cx', '30%').attr('cy', '30%').call(gg => { gg.append('stop').attr('offset', '0%').attr('stop-color', d3.color(c).brighter(1.2)); gg.append('stop').attr('offset', '100%').attr('stop-color', c) })); const z = d3.zoom().scaleExtent([.1, 8]).on('zoom', e => { g.attr('transform', e.transform); app.d3.k = e.transform.k; if (app.d3.lbl) app.d3.lbl.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none'); if (app.particles) app.particles.setTransform({ x: e.transform.x, y: e.transform.y, k: e.transform.k }) }); app.d3 = { svg, g, zoom: z, sim: d3.forceSimulation().force('link', d3.forceLink().id(d => d.id).distance(120).strength(.3)).force('charge', d3.forceManyBody().strength(-320)).force('collide', d3.forceCollide().radius(d => d.rad + 4).iterations(3)), k: 1 }; svg.call(z); app.particles = new ParticleSystem(el('particleCanvas')); const resizeObs = new ResizeObserver(() => { app.resizeGraph() }); resizeObs.observe(el('graphContainer')); window.addEventListener('resize', app.resizeGraph); app.resizeGraph() },
+            gr: () => { const svg = d3.select('#networkGraph'), g = svg.append('g'), defs = svg.append('defs'); COLORS.forEach(c => defs.append('radialGradient').attr('id', 'g-' + c.slice(1)).attr('cx', '30%').attr('cy', '30%').call(gg => { gg.append('stop').attr('offset', '0%').attr('stop-color', d3.color(c).brighter(1.2)); gg.append('stop').attr('offset', '100%').attr('stop-color', c) })); const z = d3.zoom().scaleExtent([.1, 8]).on('zoom', e => { g.attr('transform', e.transform); app.d3.k = e.transform.k; if (app.d3.lbl) app.d3.lbl.style('display', app.state.graph.labels && app.d3.k >= 0.8 ? null : 'none'); if (app.particles) app.particles.setTransform({ x: e.transform.x, y: e.transform.y, k: e.transform.k }); app.updateMinimap(e.transform); }); app.d3 = { svg, g, zoom: z, sim: d3.forceSimulation().force('link', d3.forceLink().id(d => d.id).distance(120).strength(.3)).force('charge', d3.forceManyBody().strength(-320)).force('collide', d3.forceCollide().radius(d => d.rad + 4).iterations(3)), k: 1 }; svg.call(z); app.particles = new ParticleSystem(el('particleCanvas')); const resizeObs = new ResizeObserver(() => { app.resizeGraph() }); resizeObs.observe(el('graphContainer')); window.addEventListener('resize', app.resizeGraph); app.resizeGraph() },
             resizeGraph: () => { const c = el('graphContainer'), w = c.clientWidth || 800, h = c.clientHeight || 600; app.d3.svg.attr('viewBox', `0 0 ${w} ${h}`); app.d3.sim.force('center', d3.forceCenter(w / 2, h / 2)); app.clus(); app.d3.sim.alpha(.3).restart(); if (app.particles) app.particles.resize() },
             clus: () => { if (!app.d3.nodes || !app.state.graph.cluster) { app.d3.sim.force('x', null).force('y', null); return } const w = el('graphContainer').clientWidth, h = el('graphContainer').clientHeight, insts = [...new Set(app.d3.nodes.map(n => n.inst))].sort(), r = Math.min(w, h) * 0.28, pos = new Map(insts.map((i, x) => [i, { x: w / 2 + Math.cos((x / insts.length) * Math.PI * 2 - Math.PI / 2) * r, y: h / 2 + Math.sin((x / insts.length) * Math.PI * 2 - Math.PI / 2) * r }])); app.d3.sim.force('x', d3.forceX(d => pos.get(d.inst)?.x).strength(.15)).force('y', d3.forceY(d => pos.get(d.inst)?.y).strength(.15)) },
-            renderGraph: (P, vis) => { const nodes = app.data.graph.nodes.filter(n => vis.has(n.id)), links = app.data.graph.links.filter(l => vis.has(l.source.id || l.source) && vis.has(l.target.id || l.target)); app.d3.nodes = nodes; const { g, sim } = app.d3; g.selectAll('*').remove(); const adj = new Map, linksMap = new Map, nodesMap = new Map; nodes.forEach(n => nodesMap.set(n.id, n)); links.forEach(l => { const sid = l.source.id || l.source, tid = l.target.id || l.target; (adj.get(sid) || adj.set(sid, new Set).get(sid)).add(tid); (adj.get(tid) || adj.set(tid, new Set).get(tid)).add(sid); linksMap.set([sid, tid].sort().join('|'), l) }); const maxW = d3.max(links, d => d.w) || 1, wS = d3.scaleSqrt().domain([1, maxW]).range([.5, 3]), tip = el('tooltip'), et = el('edgeTooltip'); const hullGroup = g.append('g').attr('class', 'hull-layer'); const instGroups = new Map(); nodes.forEach(n => { if (!instGroups.has(n.inst)) instGroups.set(n.inst, []); instGroups.get(n.inst).push(n) }); const hullPaths = []; instGroups.forEach((groupNodes, inst) => { if (groupNodes.length < 1) return; const path = hullGroup.append('path').attr('class', 'hull-path').attr('fill', app.gCol(inst)).attr('stroke', app.gCol(inst)).attr('stroke-width', 20).attr('d', ''); hullPaths.push({ path, nodes: groupNodes, inst }) }); const updateHulls = () => { if (!app.state.graph.cluster) { hullPaths.forEach(h => h.path.attr('d', '')); return } for (const hp of hullPaths) { const pts = hp.nodes.filter(n => n.x != null).map(n => [n.x, n.y]); hp.path.attr('d', computeHullPath(pts, 20)) } }; const lnk = g.append('g').selectAll('line').data(links).enter().append('line').attr('stroke', '#cbd5e1').attr('stroke-opacity', d => .4 + .3 * (d.w / maxW)).attr('stroke-width', d => wS(d.w)).on('mouseover', (e, d) => { const r = el('graphContainer').getBoundingClientRect(); Object.assign(et.style, { left: Math.min(e.clientX - r.left + 10, r.width - 200) + 'px', top: Math.min(e.clientY - r.top + 10, r.height - 100) + 'px' }); et.innerHTML = `<div class="font-bold text-slate-700">${esc((d.source.display_name || d.source) + ' ↔ ' + (d.target.display_name || d.target))}</div><div class="text-[9px] text-green-700">${d.w} papers</div>`; et.classList.remove('hidden') }).on('mouseout', () => et.classList.add('hidden')); const nd = g.append('g').selectAll('g').data(nodes).enter().append('g').call(d3.drag().on('start', (e, d) => { if (!e.active) sim.alphaTarget(.3).restart(); d.fx = d.x; d.fy = d.y }).on('drag', (e, d) => { d.fx = e.x; d.fy = e.y }).on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null })); nd.append('circle').attr('class', 'search-highlight-ring').attr('r', d => d.rad + 6).attr('fill', 'none').attr('stroke', '#16a34a').attr('stroke-width', 2).attr('opacity', 0); nd.each(function (d) { const arcs = buildTemporalArcs(d.id, P, CFG.now); if (!arcs.length) return; const arcGroup = d3.select(this).append('g').attr('class', 'temporal-arc'); const outerR = d.rad + 4, innerR = d.rad + 1, arcGen = d3.arc(); let startAngle = 0, total = arcs.reduce((s, a) => s + a.count, 0); for (const arc of arcs) { const frac = arc.count / total, endAngle = startAngle + frac * Math.PI * 2; arcGroup.append('path').attr('d', arcGen({ innerRadius: innerR, outerRadius: outerR, startAngle, endAngle })).attr('fill', arc.color).attr('opacity', 0.7); startAngle = endAngle } }); nd.append('circle').attr('r', d => d.rad).attr('fill', d => `url(#g-${d.color.slice(1)})`).attr('stroke', '#ffffff4d').attr('stroke-width', 1.5).style('cursor', 'pointer'); nd.append('text').text(d => d.display_name.split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase()).attr('dy', '0.35em').attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', d => Math.max(8, d.rad * .45)).attr('font-weight', '600').style('pointer-events', 'none'); app.d3.lbl = nd.append('text').attr('class', 'node-label').text(d => d.display_name.split(' ').pop().replace(/[,;]/g, '')).attr('text-anchor', 'middle').attr('y', d => d.rad + 12).attr('fill', '#334155').attr('font-size', 10).attr('font-weight', '600').style('pointer-events', 'none').style('display', app.state.graph.labels ? null : 'none'); app.d3.nd = nd; nd.on('mouseover', (e, d) => { nd.transition().duration(200).attr('opacity', n => (n.id === d.id || adj.get(d.id)?.has(n.id)) ? 1 : .1); lnk.transition().duration(200).attr('stroke', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? '#475569' : '#e2e8f0').attr('stroke-opacity', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? 1 : .05); const r = el('graphContainer').getBoundingClientRect(); Object.assign(tip.style, { left: Math.min(e.clientX - r.left + 15, r.width - 340) + 'px', top: Math.min(e.clientY - r.top + 15, r.height - 200) + 'px' }); const egoSVG = buildEgoMiniSVG(d.id, adj, nodesMap, linksMap); tip.innerHTML = `<div class="font-bold text-slate-800">${esc(d.display_name)}</div><div class="text-[9px] text-slate-500 mb-2">${esc(d.inst)}</div><div class="flex gap-2 text-center"><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_works}</div><div class="text-[7px] uppercase">Works</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_cited}</div><div class="text-[7px] uppercase">Cites</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${adj.get(d.id)?.size || 0}</div><div class="text-[7px] uppercase">Collab</div></div></div>${egoSVG ? `<div class="mt-1 border-t border-slate-100 pt-1"><div class="text-[8px] font-bold text-slate-400 uppercase">Collaboration Network</div>${egoSVG}</div>` : ''}`; tip.classList.remove('hidden') }).on('mouseout', () => { nd.transition().duration(200).attr('opacity', 1); lnk.transition().duration(200).attr('stroke', '#cbd5e1').attr('stroke-opacity', d => .4 + .3 * (d.w / maxW)); tip.classList.add('hidden') }).on('click', (e, d) => { e.stopPropagation(); e.shiftKey ? app.cmp(d) : app.profile(d) }); if (app.particles) { app.particles.setLinks(links); if (app.state.graph.particles) { app.particles.resize(); app.particles.start() } else { app.particles.stop() } } app.clus(); sim.nodes(nodes).on('tick', () => { const cw = el('graphContainer').clientWidth, ch = el('graphContainer').clientHeight; nodes.forEach(n => { n.x = clamp(n.x, 25 + n.rad, cw - 25 - n.rad); n.y = clamp(n.y, 25 + n.rad, ch - 25 - n.rad) }); lnk.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y); nd.attr('transform', d => `translate(${d.x},${d.y})`); updateHulls() }); sim.force('link').links(links); sim.alpha(1).restart(); app.hl() },
-            renderConstellation: (F) => { const svg = d3.select('#constellationGraph'); svg.selectAll('*').remove(); if (!F.length) return; const container = el('constellationPanel'); const W = container.clientWidth || 800; const H = container.clientHeight || 600; svg.attr('viewBox', `0 0 ${W} ${H}`); const topicColors = new Map(); const tc = new Map(); F.forEach(p => p.topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1))); const sortedTopics = [...tc.entries()].sort((a, b) => b[1] - a[1]); sortedTopics.forEach(([t], i) => topicColors.set(t, COLORS[i % COLORS.length])); const cNodes = F.slice(0, 200).map(p => ({ id: p.id, title: p.title, year: p.year, cites: p.cites, topics: p.topics, score: p.score, color: topicColors.get(p.topics[0]) || '#94a3b8', r: clamp(3 + Math.sqrt(p.cites) * 0.5, 3, 12) })); const cLinks = []; for (let i = 0; i < cNodes.length; i++) { for (let j = i + 1; j < cNodes.length; j++) { const shared = cNodes[i].topics.filter(t => cNodes[j].topics.includes(t)).length; if (shared >= 2) { cLinks.push({ source: cNodes[i].id, target: cNodes[j].id, w: shared }) } } } const g = svg.append('g'); const zoom = d3.zoom().scaleExtent([0.2, 5]).on('zoom', e => g.attr('transform', e.transform)); svg.call(zoom); const cSim = d3.forceSimulation(cNodes).force('link', d3.forceLink(cLinks).id(d => d.id).distance(40).strength(d => d.w * 0.05)).force('charge', d3.forceManyBody().strength(-15)).force('center', d3.forceCenter(W / 2, H / 2)).force('collide', d3.forceCollide().radius(d => d.r + 2)); if (app.constellationSim) app.constellationSim.stop(); app.constellationSim = cSim; const link = g.append('g').selectAll('line').data(cLinks).enter().append('line').attr('class', 'constellation-link').attr('stroke-width', d => d.w * 0.5); const node = g.append('g').selectAll('circle').data(cNodes).enter().append('circle').attr('class', 'constellation-node').attr('r', d => d.r).attr('fill', d => d.color).attr('opacity', 0.7); const cTip = el('constellationTooltip'); node.on('mouseover', (e, d) => { const r = container.getBoundingClientRect(); Object.assign(cTip.style, { left: Math.min(e.clientX - r.left + 10, r.width - 220) + 'px', top: Math.min(e.clientY - r.top + 10, r.height - 120) + 'px' }); cTip.innerHTML = `<div class="font-bold text-slate-800 text-[11px] leading-snug mb-1">${esc(d.title)}</div><div class="text-[9px] text-slate-500">${d.year} · ${d.cites} cites · Score ${d.score.toFixed(1)}</div><div class="flex flex-wrap gap-1 mt-1">${d.topics.slice(0, 4).map(t => `<span class="px-1 py-0.5 rounded text-[8px] border" style="background:${topicColors.get(t) || '#f1f5f9'}20;border-color:${topicColors.get(t) || '#e2e8f0'};color:${topicColors.get(t) || '#64748b'}">${esc(t.substring(0, 20))}</span>`).join('')}</div>`; cTip.classList.remove('hidden') }).on('mouseout', () => cTip.classList.add('hidden')).on('click', (e, d) => { e.stopPropagation(); app.detail(d.id) }); cSim.on('tick', () => { link.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y); node.attr('cx', d => d.x).attr('cy', d => d.y) }); const legendG = svg.append('g').attr('transform', `translate(${W - 150}, 20)`); legendG.append('rect').attr('width', 140).attr('height', Math.min(sortedTopics.length, 8) * 14 + 22).attr('rx', 6).attr('fill', 'white').attr('fill-opacity', 0.9).attr('stroke', '#e2e8f0'); legendG.append('text').attr('x', 8).attr('y', 14).attr('font-size', 8).attr('font-weight', 700).attr('fill', '#94a3b8').text('TOPIC COLORS'); sortedTopics.slice(0, 8).forEach(([t], i) => { legendG.append('circle').attr('cx', 12).attr('cy', 28 + i * 14).attr('r', 4).attr('fill', topicColors.get(t)); legendG.append('text').attr('x', 22).attr('y', 31 + i * 14).attr('font-size', 8).attr('fill', '#64748b').text(t.length > 18 ? t.substring(0, 18) + '…' : t) }) },
+            renderGraph: (P, vis) => { const nodes = app.data.graph.nodes.filter(n => vis.has(n.id)), links = app.data.graph.links.filter(l => vis.has(l.source.id || l.source) && vis.has(l.target.id || l.target)); app.d3.nodes = nodes; const { g, sim } = app.d3; g.selectAll('*').remove(); const adj = new Map, linksMap = new Map, nodesMap = new Map; nodes.forEach(n => nodesMap.set(n.id, n)); links.forEach(l => { const sid = l.source.id || l.source, tid = l.target.id || l.target; (adj.get(sid) || adj.set(sid, new Set).get(sid)).add(tid); (adj.get(tid) || adj.set(tid, new Set).get(tid)).add(sid); linksMap.set([sid, tid].sort().join('|'), l) }); const maxW = d3.max(links, d => d.w) || 1, wS = d3.scaleSqrt().domain([1, maxW]).range([.5, 3]), tip = el('tooltip'), et = el('edgeTooltip'); const hullGroup = g.append('g').attr('class', 'hull-layer'); const instGroups = new Map(); nodes.forEach(n => { if (!instGroups.has(n.inst)) instGroups.set(n.inst, []); instGroups.get(n.inst).push(n) }); const hullPaths = []; instGroups.forEach((groupNodes, inst) => { if (groupNodes.length < 1) return; const path = hullGroup.append('path').attr('class', 'hull-path').attr('fill', app.gCol(inst)).attr('stroke', app.gCol(inst)).attr('stroke-width', 20).attr('d', ''); hullPaths.push({ path, nodes: groupNodes, inst }) }); const updateHulls = () => { if (!app.state.graph.cluster) { hullPaths.forEach(h => h.path.attr('d', '')); return } for (const hp of hullPaths) { const pts = hp.nodes.filter(n => n.x != null).map(n => [n.x, n.y]); hp.path.attr('d', computeHullPath(pts, 20)) } }; 
+            
+            const lnk = g.append('g').selectAll('path').data(links).enter().append('path').attr('class', 'link-curve').attr('fill', 'none').attr('stroke', '#cbd5e1').attr('stroke-opacity', d => .4 + .3 * (d.w / maxW)).attr('stroke-width', d => wS(d.w)).style('cursor', 'pointer').on('mouseover', (e, d) => { const r = el('graphContainer').getBoundingClientRect(); Object.assign(et.style, { left: Math.min(e.clientX - r.left + 10, r.width - 200) + 'px', top: Math.min(e.clientY - r.top + 10, r.height - 100) + 'px' }); et.innerHTML = `<div class="font-bold text-slate-700">${esc((d.source.display_name || d.source) + ' ↔ ' + (d.target.display_name || d.target))}</div><div class="text-[9px] text-green-700">${d.w} papers together</div><div class="text-[8px] text-slate-400 mt-1 italic">Click to inspect shared works</div>`; et.classList.remove('hidden') }).on('mouseout', () => et.classList.add('hidden')).on('click', (e, d) => { e.stopPropagation(); et.classList.add('hidden'); app.edgeDetail(d) }); 
+            
+            const nd = g.append('g').selectAll('g').data(nodes).enter().append('g').call(d3.drag().on('start', (e, d) => { if (!e.active) sim.alphaTarget(.3).restart(); d.fx = d.x; d.fy = d.y }).on('drag', (e, d) => { d.fx = e.x; d.fy = e.y }).on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null })); nd.append('circle').attr('class', 'search-highlight-ring').attr('r', d => d.rad + 6).attr('fill', 'none').attr('stroke', '#16a34a').attr('stroke-width', 2).attr('opacity', 0); nd.each(function (d) { const arcs = buildTemporalArcs(d.id, P, CFG.now); if (!arcs.length) return; const arcGroup = d3.select(this).append('g').attr('class', 'temporal-arc'); const outerR = d.rad + 4, innerR = d.rad + 1, arcGen = d3.arc(); let startAngle = 0, total = arcs.reduce((s, a) => s + a.count, 0); for (const arc of arcs) { const frac = arc.count / total, endAngle = startAngle + frac * Math.PI * 2; arcGroup.append('path').attr('d', arcGen({ innerRadius: innerR, outerRadius: outerR, startAngle, endAngle })).attr('fill', arc.color).attr('opacity', 0.7); startAngle = endAngle } }); nd.append('circle').attr('r', d => d.rad).attr('fill', d => `url(#g-${d.color.slice(1)})`).attr('stroke', '#ffffff4d').attr('stroke-width', 1.5).style('cursor', 'pointer'); nd.append('text').text(d => d.display_name.split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase()).attr('dy', '0.35em').attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', d => Math.max(8, d.rad * .45)).attr('font-weight', '600').style('pointer-events', 'none'); app.d3.lbl = nd.append('text').attr('class', 'node-label').text(d => d.display_name.split(' ').pop().replace(/[,;]/g, '')).attr('text-anchor', 'middle').attr('y', d => d.rad + 12).attr('fill', '#334155').attr('font-size', 10).attr('font-weight', '600').style('pointer-events', 'none').style('display', app.state.graph.labels ? null : 'none'); app.d3.nd = nd; nd.on('mouseover', (e, d) => { nd.transition().duration(200).attr('opacity', n => (n.id === d.id || adj.get(d.id)?.has(n.id)) ? 1 : .1); lnk.transition().duration(200).attr('stroke', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? '#475569' : '#e2e8f0').attr('stroke-opacity', l => ((l.source.id || l.source) === d.id || (l.target.id || l.target) === d.id) ? 1 : .05); const r = el('graphContainer').getBoundingClientRect(); Object.assign(tip.style, { left: Math.min(e.clientX - r.left + 15, r.width - 340) + 'px', top: Math.min(e.clientY - r.top + 15, r.height - 200) + 'px' }); const egoSVG = buildEgoMiniSVG(d.id, adj, nodesMap, linksMap); tip.innerHTML = `<div class="font-bold text-slate-800">${esc(d.display_name)}</div><div class="text-[9px] text-slate-500 mb-2">${esc(d.inst)}</div><div class="flex gap-2 text-center"><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_works}</div><div class="text-[7px] uppercase">Works</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${d.net_cited}</div><div class="text-[7px] uppercase">Cites</div></div><div class="bg-slate-50 border rounded px-1.5 py-0.5 flex-1"><div class="font-bold text-slate-700">${adj.get(d.id)?.size || 0}</div><div class="text-[7px] uppercase">Collab</div></div></div>${egoSVG ? `<div class="mt-1 border-t border-slate-100 pt-1"><div class="text-[8px] font-bold text-slate-400 uppercase">Collaboration Network</div>${egoSVG}</div>` : ''}`; tip.classList.remove('hidden') }).on('mouseout', () => { nd.transition().duration(200).attr('opacity', 1); lnk.transition().duration(200).attr('stroke', '#cbd5e1').attr('stroke-opacity', d => .4 + .3 * (d.w / maxW)); tip.classList.add('hidden') }).on('click', (e, d) => { e.stopPropagation(); e.shiftKey ? app.cmp(d) : app.profile(d) }); if (app.particles) { app.particles.setLinks(links); if (app.state.graph.particles) { app.particles.resize(); app.particles.start() } else { app.particles.stop() } } app.clus(); 
+            
+            sim.nodes(nodes).on('tick', () => { 
+                const cw = el('graphContainer').clientWidth, ch = el('graphContainer').clientHeight; 
+                nodes.forEach(n => { n.x = clamp(n.x, 25 + n.rad, cw - 25 - n.rad); n.y = clamp(n.y, 25 + n.rad, ch - 25 - n.rad) }); 
+                lnk.attr('d', d => { const dx = d.target.x - d.source.x, dy = d.target.y - d.source.y; const dr = Math.sqrt(dx * dx + dy * dy) * 1.5; return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`; });
+                nd.attr('transform', d => `translate(${d.x},${d.y})`); 
+                updateHulls();
+                if(app.d3.k < 2 && Math.random() < 0.2) app.drawMinimap(nodes, links);
+            }); 
+            sim.force('link').links(links); sim.alpha(1).restart(); app.hl();
+            setTimeout(() => app.drawMinimap(nodes, links), 500);
+            },
+            drawMinimap: (nodes, links) => {
+                const mm = d3.select('#minimapGraph'); if (mm.empty() || nodes.length === 0) return;
+                const c = el('graphContainer'), w = c.clientWidth, h = c.clientHeight; const mw = 160, mh = 120;
+                const xEx = d3.extent(nodes, d => d.x); const yEx = d3.extent(nodes, d => d.y); if (!xEx[0] || !yEx[0]) return;
+                const pad = 40; const gw = (xEx[1] - xEx[0]) + pad*2; const gh = (yEx[1] - yEx[0]) + pad*2; app.minimapScale = Math.min(mw / gw, mh / gh);
+                const offX = (mw - gw * app.minimapScale) / 2 - (xEx[0] - pad) * app.minimapScale; const offY = (mh - gh * app.minimapScale) / 2 - (yEx[0] - pad) * app.minimapScale;
+                mm.selectAll('.mm-g').remove(); const mmg = mm.insert('g', '.minimap-viewport').attr('class', 'mm-g').attr('transform', `translate(${offX},${offY}) scale(${app.minimapScale})`);
+                mmg.selectAll('line').data(links).enter().append('line').attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y).attr('stroke', '#cbd5e1').attr('stroke-width', 2).attr('stroke-opacity', 0.5);
+                mmg.selectAll('circle').data(nodes).enter().append('circle').attr('cx', d => d.x).attr('cy', d => d.y).attr('r', d => Math.max(d.rad, 8)).attr('fill', d => d.color);
+                app.minimapTransformData = { offX, offY, scale: app.minimapScale, gw, gh, pad, xEx, yEx }; app.updateMinimap(d3.zoomTransform(app.d3.svg.node()));
+            },
+            updateMinimap: (t) => {
+                const mm = d3.select('#minimapGraph'); let vp = mm.select('.minimap-viewport'); if (vp.empty()) vp = mm.append('rect').attr('class', 'minimap-viewport');
+                if (!app.minimapTransformData) return; const { offX, offY, scale } = app.minimapTransformData; const c = el('graphContainer'), w = c.clientWidth, h = c.clientHeight;
+                const vx = -t.x / t.k; const vy = -t.y / t.k; const vw = w / t.k; const vh = h / t.k;
+                vp.attr('x', vx * scale + offX).attr('y', vy * scale + offY).attr('width', vw * scale).attr('height', vh * scale);
+            },
+            renderConstellation: (F) => { const svg = d3.select('#constellationGraph'); svg.selectAll('*').remove(); if (!F.length) return; const container = el('constellationPanel'); const W = container.clientWidth || 800; const H = container.clientHeight || 600; svg.attr('viewBox', `0 0 ${W} ${H}`); const topicColors = new Map(); const tc = new Map(); F.forEach(p => p.topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1))); const sortedTopics = [...tc.entries()].sort((a, b) => b[1] - a[1]); sortedTopics.forEach(([t], i) => topicColors.set(t, COLORS[i % COLORS.length])); const cNodes = F.slice(0, 200).map(p => ({ id: p.id, title: p.title, year: p.year, cites: p.cites, topics: p.topics, score: p.score, color: topicColors.get(p.topics[0]) || '#94a3b8', r: clamp(3 + Math.sqrt(p.cites) * 0.5, 3, 12) })); const cLinks = []; for (let i = 0; i < cNodes.length; i++) { for (let j = i + 1; j < cNodes.length; j++) { const shared = cNodes[i].topics.filter(t => cNodes[j].topics.includes(t)).length; if (shared >= 2) { cLinks.push({ source: cNodes[i].id, target: cNodes[j].id, w: shared }) } } } const g = svg.append('g'); const zoom = d3.zoom().scaleExtent([0.2, 5]).on('zoom', e => g.attr('transform', e.transform)); svg.call(zoom); const cSim = d3.forceSimulation(cNodes).force('link', d3.forceLink(cLinks).id(d => d.id).distance(40).strength(d => d.w * 0.05)).force('charge', d3.forceManyBody().strength(-15)).force('center', d3.forceCenter(W / 2, H / 2)).force('collide', d3.forceCollide().radius(d => d.r + 2)); if (app.constellationSim) app.constellationSim.stop(); app.constellationSim = cSim; const link = g.append('g').selectAll('line').data(cLinks).enter().append('line').attr('class', 'constellation-link').attr('stroke-width', d => d.w * 0.5); const node = g.append('g').selectAll('circle').data(cNodes).enter().append('circle').attr('class', 'constellation-node').attr('r', d => d.r).attr('fill', d => d.color).attr('opacity', 0.7); const cTip = el('constellationTooltip'); 
+            const targetNode = g.append('g').selectAll('circle.target').data(cNodes).enter().append('circle').attr('r', d => d.r + 15).attr('fill', 'transparent').attr('cursor', 'pointer');
+            targetNode.on('mouseover', (e, d) => { const r = container.getBoundingClientRect(); Object.assign(cTip.style, { left: Math.min(e.clientX - r.left + 10, r.width - 220) + 'px', top: Math.min(e.clientY - r.top + 10, r.height - 120) + 'px' }); cTip.innerHTML = `<div class="font-bold text-slate-800 text-[11px] leading-snug mb-1">${esc(d.title)}</div><div class="text-[9px] text-slate-500">${d.year} · ${d.cites} cites · Score ${d.score.toFixed(1)}</div><div class="flex flex-wrap gap-1 mt-1">${d.topics.slice(0, 4).map(t => `<span class="px-1 py-0.5 rounded text-[8px] border" style="background:${topicColors.get(t) || '#f1f5f9'}20;border-color:${topicColors.get(t) || '#e2e8f0'};color:${topicColors.get(t) || '#64748b'}">${esc(t.substring(0, 20))}</span>`).join('')}</div>`; cTip.classList.remove('hidden'); node.filter(n => n.id===d.id).attr('stroke', '#16a34a').attr('stroke-width', 2).attr('opacity', 1); }).on('mouseout', (e, d) => { cTip.classList.add('hidden'); node.filter(n => n.id===d.id).attr('stroke', '#fff').attr('stroke-width', 0.5).attr('opacity', 0.7); }).on('click', (e, d) => { e.stopPropagation(); app.detail(d.id) }); 
+            cSim.on('tick', () => { link.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y); node.attr('cx', d => d.x).attr('cy', d => d.y); targetNode.attr('cx', d => d.x).attr('cy', d => d.y); }); const legendG = svg.append('g').attr('transform', `translate(${W - 150}, 20)`); legendG.append('rect').attr('width', 140).attr('height', Math.min(sortedTopics.length, 8) * 14 + 22).attr('rx', 6).attr('fill', 'white').attr('fill-opacity', 0.9).attr('stroke', '#e2e8f0'); legendG.append('text').attr('x', 8).attr('y', 14).attr('font-size', 8).attr('font-weight', 700).attr('fill', '#94a3b8').text('TOPIC COLORS'); sortedTopics.slice(0, 8).forEach(([t], i) => { legendG.append('circle').attr('cx', 12).attr('cy', 28 + i * 14).attr('r', 4).attr('fill', topicColors.get(t)); legendG.append('text').attr('x', 22).attr('y', 31 + i * 14).attr('font-size', 8).attr('fill', '#64748b').text(t.length > 18 ? t.substring(0, 18) + '…' : t) }) },
             hl: () => { const q = norm(el('graphSearchInput')?.value || ''); if (!app.d3.nd) return; app.d3.nd.select('.search-highlight-ring').attr('opacity', d => q && norm(d.display_name).includes(q) ? 1 : 0).each(function (d) { d3.select(this).classed('pulse-highlight', q && norm(d.display_name).includes(q)) }) },
             cmp: d => { const i = app.state.cmp.findIndex(n => n.id === d.id); if (i >= 0) { app.state.cmp.splice(i, 1); return } app.state.cmp.push(d); if (app.state.cmp.length >= 2) { const [a, b] = app.state.cmp; el('compareModal').classList.add('active'); app.state.cmp = []; const ap = app.data.pubs.filter(p => p.memA.some(m => m.id === a.id)), bp = app.data.pubs.filter(p => p.memA.some(m => m.id === b.id)), sh = ap.filter(p => p.memA.some(m => m.id === b.id)), at = new Set(ap.flatMap(p => p.topics)), bt = new Set(bp.flatMap(p => p.topics)); el('compareContent').innerHTML = `<div class="flex justify-between items-start mb-6"><h2 class="text-lg font-bold text-slate-800">Researcher Comparison</h2><button onclick="document.getElementById('compareModal').classList.remove('active')"><i class="fas fa-times"></i></button></div><div class="grid grid-cols-2 gap-6 mb-6"><div class="text-center"><div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white font-bold text-xl shadow-lg mb-2" style="background:${a.color}">${a.display_name.substring(0, 2)}</div><h3 class="font-bold text-slate-800 text-sm">${esc(a.display_name)}</h3></div><div class="text-center"><div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white font-bold text-xl shadow-lg mb-2" style="background:${b.color}">${b.display_name.substring(0, 2)}</div><h3 class="font-bold text-slate-800 text-sm">${esc(b.display_name)}</h3></div></div><div class="grid grid-cols-3 gap-3 mb-6 text-center"><div class="bg-blue-50 rounded-lg p-3"><div class="grid grid-cols-2"><div><span class="block font-bold text-lg">${ap.length}</span><span class="text-[8px]">Works</span></div><div><span class="block font-bold text-lg">${bp.length}</span><span class="text-[8px]">Works</span></div></div></div><div class="bg-green-50 rounded-lg p-3"><span class="block font-bold text-lg">${sh.length}</span><span class="text-[8px]">Shared</span></div><div class="bg-purple-50 rounded-lg p-3"><div class="grid grid-cols-2"><div><span class="block font-bold text-lg">${ap.reduce((s, p) => s + p.cites, 0)}</span><span class="text-[8px]">Cites</span></div><div><span class="block font-bold text-lg">${bp.reduce((s, p) => s + p.cites, 0)}</span><span class="text-[8px]">Cites</span></div></div></div></div>` } },
             tog: (k, v) => { app.state.filters[k].has(v) ? app.state.filters[k].delete(v) : app.state.filters[k].add(v); app.state.page = 1; app.render() },
@@ -1308,8 +1077,15 @@
             toggleScrollMode: () => { app.state.mode = app.state.mode === 'paginated' ? 'infinite' : 'paginated'; el('scrollModeLabel').textContent = app.state.mode === 'paginated' ? 'Pages' : 'Scroll'; el('publicationsPanel').classList.toggle('scroll-mode-infinite', app.state.mode === 'infinite'); app.state.page = 1; app.render() },
             dark: () => { document.body.classList.toggle('dark-mode', app.state.dark); if (el('darkModeIcon')) el('darkModeIcon').className = app.state.dark ? 'fas fa-sun text-xs' : 'fas fa-moon text-xs' }, toggleDarkMode: () => { app.state.dark = !app.state.dark; localStorage.setItem('agripv_dark', app.state.dark ? '1' : '0'); app.dark() },
             cpD: (e, d) => { navigator.clipboard.writeText(d); const btn = e.currentTarget; const originalHTML = btn.innerHTML; btn.innerHTML = '<i class="fas fa-check"></i>'; btn.classList.add('text-green-600'); setTimeout(() => { btn.innerHTML = originalHTML; btn.classList.remove('text-green-600') }, 1500) },
-            profile: r => { el('researcherModal').classList.add('active'); const P = app.data.pubs.filter(p => p.memA.some(a => a.id === r.id)).sort((a, b) => b.year - a.year), yc = new Map; P.forEach(p => yc.set(p.year, (yc.get(p.year) || 0) + 1)); const top = [...Object.entries(r.topics)].sort((a, b) => b[1] - a[1]).slice(0, 8); el('researcherContent').innerHTML = `<div class="sticky top-0 bg-white z-10 p-5 border-b border-slate-100"><div class="flex justify-between items-start"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0, 2)}</div><div><h2 class="text-lg font-bold text-slate-800">${esc(r.display_name)}</h2><p class="text-xs text-slate-500">${esc(r.inst)}</p></div></div><button onclick="document.getElementById('researcherModal').classList.remove('active')"><i class="fas fa-times"></i></button></div><div class="grid grid-cols-3 gap-3 mt-4 text-center"><div class="bg-slate-50 p-2 rounded"><span class="block font-bold text-xl">${P.length}</span><span class="text-[9px]">Pubs</span></div><div class="bg-slate-50 p-2 rounded"><span class="block font-bold text-xl">${P.reduce((s, p) => s + p.cites, 0)}</span><span class="text-[9px]">Citations</span></div><div class="bg-slate-50 p-2 rounded flex flex-col items-center justify-center">${app.spark([...yc.keys()].sort().map(y => yc.get(y)), 80, 20)}<span class="text-[9px] mt-1">Trend</span></div></div>${top.length ? `<div class="mt-3"><div class="flex flex-wrap gap-1">${top.map(([t, c]) => `<span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[9px] rounded border border-green-100">${esc(t)}</span>`).join('')}</div></div>` : ''}</div><div class="p-5 space-y-2">${P.slice(0, 15).map(p => `<div class="p-2.5 rounded border hover:bg-slate-50 cursor-pointer" onclick="document.getElementById('researcherModal').classList.remove('active');app.detail('${p.id}')"><div class="font-semibold text-xs mb-1">${esc(p.title)}</div><div class="text-[10px] text-slate-400">${p.year} • ${p.score.toFixed(1)} score</div></div>`).join('')}</div>` },
-            detail: async id => { const p = app.data.pubs.find(x => x.id === id); if (!p) return; el('detailModal').classList.add('active'); const rel = app.data.pubs.filter(r => r.id !== p.id && (r.memA.some(a => p.memA.includes(a)) || r.topics.some(t => p.topics.includes(t)))).sort((a, b) => (b.topics.filter(t => p.topics.includes(t)).length) - (a.topics.filter(t => p.topics.includes(t)).length)).slice(0, 5); const show = ab => { if (ab) app.cache.set(p.id, ab); el('detailContent').innerHTML = `<div class="flex justify-between items-start mb-4 pb-3 border-b"><div class="flex-1"><h2 class="text-lg font-bold pr-8">${esc(p.title)}</h2></div><div class="flex gap-2"><button onclick="app.togBm('${p.id}');app.detail('${p.id}')" class="text-lg ${app.bm.has(p.id) ? 'text-amber-500' : 'text-slate-300'}"><i class="fas fa-bookmark"></i></button><button onclick="document.getElementById('detailModal').classList.remove('active')"><i class="fas fa-times"></i></button></div></div><div class="flex flex-wrap gap-3 text-xs text-slate-500 mb-6 font-medium"><span class="flex items-center gap-1.5"><i class="fas fa-calendar"></i> ${p.year}</span><span class="flex items-center gap-1.5"><i class="fas fa-quote-right"></i> ${p.cites}</span>${p.source ? `<span class="flex items-center gap-1.5"><i class="fas fa-book"></i> ${esc(p.source)}</span>` : ''}${p.doi ? `<button onclick="app.cpD(event, '${jsStr(p.doi)}')" class="text-blue-600 bg-blue-50 px-1.5 rounded">DOI</button>` : ''}</div><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-2"><h4 class="font-bold text-xs uppercase mb-2">Abstract</h4>${ab ? `<div class="text-slate-600 text-xs leading-relaxed bg-slate-50 p-4 rounded-lg border text-justify">${esc(ab)}</div>` : `<div class="text-slate-400 text-xs italic bg-slate-50 p-4 rounded-lg text-center">No Abstract</div>`}${rel.length ? `<div class="mt-6"><h4 class="font-bold text-xs uppercase mb-2">Related</h4><div class="space-y-1.5">${rel.map(r => `<div class="p-2 rounded border hover:bg-slate-50 cursor-pointer" onclick="app.detail('${r.id}')"><div class="font-semibold text-[11px]">${esc(r.title)}</div></div>`).join('')}</div></div>` : ''}</div><div><h4 class="font-bold text-xs uppercase mb-2">Authors</h4><div class="flex flex-col gap-1.5">${p.allA.map(a => `<div class="flex items-center gap-2 text-xs p-1.5 rounded-lg border ${a.mem ? 'border-green-200 bg-green-50 cursor-pointer' : 'border-transparent'}" ${a.mem ? `onclick="document.getElementById('detailModal').classList.remove('active');app.profile(app.data.researchers.find(r=>r.id==='${a.id}'))"` : ''}>${a.mem ? '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>' : ''}<span class="truncate">${esc(a.name)}</span></div>`).join('')}</div><div class="mt-6"><h4 class="font-bold text-xs uppercase mb-2">Topics</h4><div class="flex flex-wrap gap-1">${p.topics.map(t => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded border">${esc(t)}</span>`).join('')}</div></div></div></div>` }; if (app.cache.has(p.id)) show(app.cache.get(p.id)); else { try { const d = await fetchJSON(`${CFG.api}/works/${p.id.split('/').pop()}?select=abstract_inverted_index`); show(d?.abstract_inverted_index ? invIdx(d.abstract_inverted_index) : null) } catch { show(null) } } },
+            
+            profile: r => { el('researcherModal').classList.add('active'); const P = app.data.pubs.filter(p => p.memA.some(a => a.id === r.id)).sort((a, b) => b.year - a.year), yc = new Map; P.forEach(p => yc.set(p.year, (yc.get(p.year) || 0) + 1)); const top = [...Object.entries(r.topics)].sort((a, b) => b[1] - a[1]).slice(0, 8); el('researcherContent').innerHTML = `<div class="sticky top-0 bg-white z-10 p-5 border-b border-slate-100"><div class="flex justify-between items-start"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0, 2)}</div><div><h2 class="text-lg font-bold text-slate-800">${esc(r.display_name)}</h2><p class="text-xs text-slate-500">${esc(r.inst)}</p></div></div><button onclick="document.getElementById('researcherModal').classList.remove('active')"><i class="fas fa-times"></i></button></div><div class="grid grid-cols-4 gap-2 mt-4 text-center"><div class="bg-slate-50 p-2 rounded"><span class="block font-bold text-xl">${P.length}</span><span class="text-[9px] uppercase font-bold text-slate-400">Pubs</span></div><div class="bg-slate-50 p-2 rounded"><span class="block font-bold text-xl">${P.reduce((s, p) => s + p.cites, 0)}</span><span class="text-[9px] uppercase font-bold text-slate-400">Citations</span></div><div class="bg-emerald-50 p-2 rounded border border-emerald-100"><span class="block font-bold text-xl text-emerald-700">${r.net_hindex || 0}</span><span class="text-[9px] uppercase font-bold text-emerald-600" title="Internal network h-index">H-Index</span></div><div class="bg-slate-50 p-2 rounded flex flex-col items-center justify-center">${app.spark([...yc.keys()].sort().map(y => yc.get(y)), 60, 18)}<span class="text-[9px] mt-1 font-bold text-slate-400">Trend</span></div></div>${top.length ? `<div class="mt-3"><div class="flex flex-wrap gap-1">${top.map(([t, c]) => `<span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[9px] rounded border border-green-100">${esc(t)}</span>`).join('')}</div></div>` : ''}</div><div class="p-5 space-y-2">${P.slice(0, 15).map(p => `<div class="p-2.5 rounded border hover:bg-slate-50 cursor-pointer" onclick="document.getElementById('researcherModal').classList.remove('active');app.detail('${p.id}')"><div class="font-semibold text-xs mb-1">${esc(p.title)}</div><div class="text-[10px] text-slate-400">${p.year} • ${p.score.toFixed(1)} score • ${p.cites} cites</div></div>`).join('')}</div>` },
+            
+            edgeDetail: d => {
+                const s = d.source.display_name || d.source; const t = d.target.display_name || d.target;
+                el('edgeDetailTitle').innerHTML = `<span class="opacity-60">${esc(s.split(' ').pop())}</span> <i class="fas fa-handshake text-green-600 mx-1"></i> <span class="opacity-60">${esc(t.split(' ').pop())}</span>`;
+                const sharedPubs = app.data.pubs.filter(p => d.p.includes(p.id)).sort((a,b) => b.year - a.year);
+                el('edgeDetailContent').innerHTML = sharedPubs.map(p => app.pubCard(p)).join(''); el('edgeDetailModal').classList.add('active');
+            }, detail: async id => { const p = app.data.pubs.find(x => x.id === id); if (!p) return; el('detailModal').classList.add('active'); const rel = app.data.pubs.filter(r => r.id !== p.id && (r.memA.some(a => p.memA.includes(a)) || r.topics.some(t => p.topics.includes(t)))).sort((a, b) => (b.topics.filter(t => p.topics.includes(t)).length) - (a.topics.filter(t => p.topics.includes(t)).length)).slice(0, 5); const show = ab => { if (ab) app.cache.set(p.id, ab); el('detailContent').innerHTML = `<div class="flex justify-between items-start mb-4 pb-3 border-b"><div class="flex-1"><h2 class="text-lg font-bold pr-8">${esc(p.title)}</h2></div><div class="flex gap-2"><button onclick="app.togBm('${p.id}');app.detail('${p.id}')" class="text-lg ${app.bm.has(p.id) ? 'text-amber-500' : 'text-slate-300'}"><i class="fas fa-bookmark"></i></button><button onclick="document.getElementById('detailModal').classList.remove('active')"><i class="fas fa-times"></i></button></div></div><div class="flex flex-wrap gap-3 text-xs text-slate-500 mb-6 font-medium"><span class="flex items-center gap-1.5"><i class="fas fa-calendar"></i> ${p.year}</span><span class="flex items-center gap-1.5"><i class="fas fa-quote-right"></i> ${p.cites}</span>${p.source ? `<span class="flex items-center gap-1.5"><i class="fas fa-book"></i> ${esc(p.source)}</span>` : ''}${p.doi ? `<button onclick="app.cpD(event, '${jsStr(p.doi)}')" class="text-blue-600 bg-blue-50 px-1.5 rounded">DOI</button>` : ''}</div><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-2"><h4 class="font-bold text-xs uppercase mb-2">Abstract</h4>${ab ? `<div class="text-slate-600 text-xs leading-relaxed bg-slate-50 p-4 rounded-lg border text-justify">${esc(ab)}</div>` : `<div class="text-slate-400 text-xs italic bg-slate-50 p-4 rounded-lg text-center">No Abstract</div>`}${rel.length ? `<div class="mt-6"><h4 class="font-bold text-xs uppercase mb-2">Related</h4><div class="space-y-1.5">${rel.map(r => `<div class="p-2 rounded border hover:bg-slate-50 cursor-pointer" onclick="app.detail('${r.id}')"><div class="font-semibold text-[11px]">${esc(r.title)}</div></div>`).join('')}</div></div>` : ''}</div><div><h4 class="font-bold text-xs uppercase mb-2">Authors</h4><div class="flex flex-col gap-1.5">${p.allA.map(a => `<div class="flex items-center gap-2 text-xs p-1.5 rounded-lg border ${a.mem ? 'border-green-200 bg-green-50 cursor-pointer' : 'border-transparent'}" ${a.mem ? `onclick="document.getElementById('detailModal').classList.remove('active');app.profile(app.data.researchers.find(r=>r.id==='${a.id}'))"` : ''}>${a.mem ? '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>' : ''}<span class="truncate">${esc(a.name)}</span></div>`).join('')}</div><div class="mt-6"><h4 class="font-bold text-xs uppercase mb-2">Topics</h4><div class="flex flex-wrap gap-1">${p.topics.map(t => `<span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded border">${esc(t)}</span>`).join('')}</div></div></div></div>` }; if (app.cache.has(p.id)) show(app.cache.get(p.id)); else { try { const d = await fetchJSON(`${CFG.api}/works/${p.id.split('/').pop()}?select=abstract_inverted_index`); show(d?.abstract_inverted_index ? invIdx(d.abstract_inverted_index) : null) } catch { show(null) } } },
             cite: id => { const p = app.data.pubs.find(x => x.id === id), aa = p.allA.map(a => a.name); el('citationModal').classList.add('active'); el('citeAPA').textContent = `${aa.slice(0, 5).join(', ')}${aa.length > 5 ? ', et al.' : ''} (${p.year}). ${p.title}. ${p.source || 'Journal'}.`; el('citeBib').textContent = `@article{${(aa[0] || 'u').split(' ').pop().toLowerCase().replace(/[^a-z]/g, '')}${p.year}, author={${aa.join(' and ')}}, title={${p.title}}, year={${p.year}}, journal={${p.source || 'Journal'}}}`; el('citeRIS').textContent = `TY  - JOUR\nTI  - ${p.title}\nPY  - ${p.year}\n${aa.map(a => `AU  - ${a}`).join('\n')}\nJO  - ${p.source || ''}\nDO  - ${p.doi || ''}\nER  -` },
             copy: id => { navigator.clipboard.writeText(el(id).textContent); const b = event.currentTarget; b.innerHTML = '<i class="fas fa-check text-green-600"></i>'; setTimeout(() => b.innerHTML = '<i class="fas fa-copy"></i>', 1500) },
             toggleExportMenu: () => { el('exportMenu').classList.toggle('hidden') },
