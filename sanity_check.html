@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fuzzy Logic Sanity Check (Ultra-Fast Batching)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #0f172a; color: #e2e8f0; font-family: system-ui, sans-serif; }
+        .match-good { color: #4ade80; font-weight: bold; } /* Green */
+        .match-ok { color: #facc15; } /* Yellow */
+        .match-bad { color: #f87171; } /* Red */
+        tr { border-bottom: 1px solid #1e293b; }
+        td { padding: 12px; vertical-align: top; }
+        .mono { font-family: monospace; font-size: 0.85rem; color: #94a3b8; }
+    </style>
+</head>
+<body class="p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-white">Fuzzy Resolve Sanity Check</h1>
+                <p class="text-slate-400 text-sm">Processing 280+ members via 15-name OR-piped batches</p>
+            </div>
+            <button onclick="window.RunSanity()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold transition shadow-lg shadow-blue-900/20 active:scale-95">
+                Run Blazing Fast Test
+            </button>
+        </div>
+
+        <div id="status" class="mb-4 text-sm font-bold text-yellow-400">Ready.</div>
+
+        <div class="bg-slate-900 rounded-lg border border-slate-700 overflow-hidden">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-slate-800 text-slate-400 font-bold uppercase text-xs">
+                    <tr>
+                        <th class="p-3">Seed (Supabase)</th>
+                        <th class="p-3">Cleaned Query</th>
+                        <th class="p-3">Top OpenAlex Candidate</th>
+                        <th class="p-3">Details</th>
+                        <th class="p-3 text-right">Score</th>
+                    </tr>
+                </thead>
+                <tbody id="results"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from "./auth.js";
+
+        // 1. CONCURRENCY CONTROLLER (From Benchmark)
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+        const createSemaphore = max => { let r = 0; const q = []; return { acquire: () => new Promise(res => r < max ? (r++, res()) : q.push(res)), release: () => { r--; if (q.length) { r++; q.shift()(); } } }; };
+        const sem = createSemaphore(8); // Max 8 concurrent API calls
+        
+        const fetchJSON = async (u, retries = 3) => {
+            u += (u.includes('?') ? '&' : '?') + 'mailto=benchmark@agripv.org';
+            await sem.acquire();
+            try {
+                for (let i = 0; i < retries; i++) {
+                    try { 
+                        const d = await fetch(u); 
+                        if (d.ok) return await d.json(); 
+                        if (d.status === 429) { await sleep((parseFloat(d.headers.get("Retry-After")||1)*1000)+500); continue; } 
+                        if (d.status < 500) return null; 
+                        await sleep(500*(i+1)); 
+                    } catch(e) { 
+                        if (i===retries-1) return null; await sleep(250); 
+                    }
+                }
+                return null;
+            } finally { sem.release(); }
+        };
+
+        // 2. FUZZY LOGIC ENGINE
+        const fuzzy = (() => {
+            const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[-_.':;‐–—]/g, ' ').replace(/\d+/g, ' ').replace(/\s+/g, ' ').trim();
+
+            const tokenize = s => norm(s).split(/\s+/).filter(t => t.length > 0);
+
+            const levenshtein = (a, b) => {
+                if (!a || !b) return 100; if (a === b) return 0; if (Math.abs(a.length - b.length) > 3) return 100;
+                const m = Array.from({ length: b.length + 1 }, (_, i) => { const r = [i]; for (let j = 1; j <= a.length; j++) r.push(i === 0 ? j : 0); return r; });
+                for (let i = 1; i <= b.length; i++) for (let j = 1; j <= a.length; j++) m[i][j] = b[i-1] === a[j-1] ? m[i-1][j-1] : 1 + Math.min(m[i-1][j-1], m[i][j-1], m[i-1][j]);
+                return m[b.length][a.length];
+            };
+
+            const isUsername = s => { const c = s.trim(); return c.length > 3 && (c.indexOf(' ') === -1 || /[\d_.]/.test(c)); };
+            const parseUsername = s => { const parts = norm(s).split(/\s+/).filter(t => t.length > 1 && !/^\d+$/.test(t)); return parts.length >= 2 ? { first: parts[0], last: parts[parts.length - 1], parts } : { first: null, last: null, parts }; };
+
+            const score = (seedName, seedAff, candName, candInst) => {
+                const sNorm = norm(seedName), cNorm = norm(candName);
+                if (sNorm === cNorm) return 100;
+                const sTokens = tokenize(seedName), cTokens = tokenize(candName);
+                if (!sTokens.length || !cTokens.length) return 0;
+
+                let nameScore = 0;
+
+                if (isUsername(seedName)) {
+                    const u = sNorm.replace(/[\d_.]/g, '');
+                    if (cNorm.includes(u)) nameScore = 60;
+                    if (cTokens.some(t => u.includes(t) && t.length > 3)) nameScore = 70;
+                    const uParts = parseUsername(seedName).parts;
+                    if (uParts.length > 1 && uParts.every(p => cTokens.some(ct => ct.includes(p) || p.includes(ct)))) nameScore = 85;
+                } else {
+                    const sLast = sTokens[sTokens.length - 1], cLast = cTokens[cTokens.length - 1];
+                    const lastMatch = sLast === cLast || levenshtein(sLast, cLast) <= 1 || (sLast.length > 3 && cLast.length > 3 && (sLast.includes(cLast) || cLast.includes(sLast)));
+
+                    if (lastMatch) {
+                        nameScore += 50;
+                        const sFirst = sTokens[0], cFirst = cTokens[0];
+                        if (sFirst && cFirst) {
+                            if (sFirst === cFirst) nameScore += 40;
+                            else if (sFirst[0] === cFirst[0]) nameScore += 25;
+                            else if (levenshtein(sFirst, cFirst) <= 1) nameScore += 35;
+                        }
+                    } else {
+                        if (sTokens.every(st => cTokens.includes(st))) {
+                            nameScore = sTokens.length === 1 ? 60 : 80; // Penalize single-name matches
+                        }
+                    }
+                }
+
+                if (seedAff && candInst) {
+                    const sAff = norm(seedAff), cAff = norm(candInst);
+                    if (sAff && cAff && (sAff.includes(cAff) || cAff.includes(sAff))) nameScore += 10;
+                }
+
+                return Math.min(100, nameScore);
+            };
+
+            return { score, norm, isUsername, parseUsername };
+        })();
+
+        // 3. ULTRA-FAST PIPED BATCH RUNNER
+        window.RunSanity = async () => {
+            const table = document.getElementById('results');
+            const status = document.getElementById('status');
+            const startTime = performance.now();
+            
+            table.innerHTML = '';
+            status.textContent = "Fetching ALL seeds from Supabase...";
+
+            const { data: profiles, error } = await supabase
+                .from("profiles")
+                .select("id,full_name,affiliation")
+                .not("full_name", "is", null);
+
+            if(error) { status.textContent = "Error: " + error.message; return; }
+            if(!profiles || profiles.length === 0) { status.textContent = "No profiles found."; return; }
+
+            // Clean profiles upfront
+            const cleanedProfiles = profiles.map(p => {
+                let qn = p.full_name.replace(/\s*\(.*?\)\s*/g, ' ').trim(); 
+                if (qn.includes('@')) qn = qn.split('@')[0]; 
+                qn = qn.replace(/([a-z])([A-Z])/g, '$1 $2'); 
+                if (/[\._\d-]/.test(qn) && !qn.includes(' ')) {
+                    qn = qn.replace(/[\._-]/g, ' ').replace(/\d+/g, '').trim();
+                }
+                return { ...p, qn };
+            });
+
+            // CHUNK INTO BATCHES OF 15 (The OpenAlex '|' piping trick)
+            const BATCH_SIZE = 15;
+            const chunks = [];
+            for (let i = 0; i < cleanedProfiles.length; i += BATCH_SIZE) {
+                chunks.push(cleanedProfiles.slice(i, i + BATCH_SIZE));
+            }
+
+            status.innerHTML = `Resolving ${cleanedProfiles.length} authors across ${chunks.length} optimized API requests...`;
+
+            // Process all chunks concurrently (governed by semaphore)
+            await Promise.all(chunks.map(async (chunk) => {
+                
+                // Construct the compound query: "Name A|Name B|Name C"
+                const terms = chunk.map(p => {
+                    if (fuzzy.isUsername(p.qn)) {
+                        return fuzzy.parseUsername(p.qn).parts.filter(x => x.length > 2).join(' ');
+                    }
+                    return fuzzy.norm(p.qn).replace(/[^a-z\s-]/g, '');
+                }).filter(n => n.length > 3);
+
+                const uq = [...new Set(terms)].join('|');
+                let apiResults = [];
+
+                // Fetch up to 200 candidates for this entire 15-person chunk in ONE call
+                if (uq) {
+                    const data = await fetchJSON(`https://api.openalex.org/authors?filter=display_name.search:${encodeURIComponent(uq)}&per_page=200&select=id,display_name,last_known_institutions`);
+                    if (data && data.results) apiResults = data.results;
+                }
+
+                // Local Scoring Loop: For every person in the chunk, find their best match from the combined results
+                for (const p of chunk) {
+                    let best = { s: 0, n: '—', i: '—', id: '' };
+                    
+                    for (const c of apiResults) {
+                        const inst = c.last_known_institutions?.[0]?.display_name || '';
+                        const s = fuzzy.score(p.qn, p.affiliation, c.display_name, inst);
+                        if (s > best.s) best = { s, n: c.display_name, i: inst, id: c.id };
+                    }
+
+                    if (apiResults.length === 0) best.n = "0 OpenAlex Results";
+
+                    // Render Row Immediately
+                    const row = document.createElement('tr');
+                    const scoreClass = best.s >= 80 ? 'match-good' : best.s >= 60 ? 'match-ok' : 'match-bad';
+                    
+                    row.innerHTML = `
+                        <td>
+                            <div class="font-bold text-slate-200">${p.full_name}</div>
+                            <div class="text-xs text-slate-500">${p.affiliation || 'No Affiliation'}</div>
+                        </td>
+                        <td class="mono text-blue-300">
+                            ${p.qn}<br>
+                            <span class="text-[10px] text-slate-500">norm: ${fuzzy.norm(p.qn)}</span>
+                        </td>
+                        <td>
+                            <div class="text-slate-200">${best.n}</div>
+                            <div class="text-xs text-slate-500">${best.i !== '—' ? best.i : ''}</div>
+                        </td>
+                        <td class="text-xs text-slate-500">
+                            Seed Last: ${fuzzy.norm(p.qn).split(' ').pop() || 'none'}<br>
+                            Cand Last: ${best.n !== '0 OpenAlex Results' && best.n !== '—' ? fuzzy.norm(best.n).split(' ').pop() : 'none'}
+                        </td>
+                        <td class="text-right font-mono text-lg ${scoreClass}">${best.s}</td>
+                    `;
+                    table.appendChild(row);
+                }
+            }));
+
+            const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+            status.innerHTML = `<span class="text-green-400">Sanity Check Complete. Extracted ${cleanedProfiles.length} profiles via ${chunks.length} piped API requests in ${elapsed}s.</span>`;
+        };
+    </script>
+</body>
+</html>

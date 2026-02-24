@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AgriPV Comprehensive Benchmark</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
+        .stat-card { background: #1e293b; border: 1px solid #334155; padding: 1rem; border-radius: 0.5rem; }
+        .log-entry { font-family: monospace; font-size: 11px; border-bottom: 1px solid #334155; padding: 4px 0; }
+        .log-info { color: #94a3b8; } .log-warn { color: #facc15; } .log-error { color: #f87171; } .log-success { color: #4ade80; }
+        .bar-container { background: #334155; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 4px; }
+        .bar-fill { height: 100%; transition: width 0.3s; }
+        .debug-section { background: #1e293b; border: 1px solid #334155; border-radius: 0.5rem; margin-top: 0; }
+        .debug-body { max-height: 500px; overflow-y: auto; }
+        .debug-row { display: grid; gap: 4px; padding: 4px 12px; border-bottom: 1px solid #1e293b; font-size: 11px; font-family: monospace; }
+        .debug-row:hover { background: #263048; }
+        .debug-row.header { background: #0f172a; font-weight: bold; position: sticky; top: 0; z-index: 1; color: #94a3b8; text-transform: uppercase; font-size: 10px; }
+        .tier-core { color: #4ade80; } .tier-strong { color: #60a5fa; } .tier-related { color: #facc15; } .tier-peripheral { color: #64748b; }
+        .match-fuzzy { color: #4ade80; } .match-rescue { color: #facc15; } .match-none { color: #64748b; }
+        .histogram-bar { background: #334155; height: 20px; display: flex; align-items: center; margin: 1px 0; border-radius: 2px; overflow: hidden; }
+        .histogram-fill { height: 100%; display: flex; align-items: center; padding: 0 6px; font-size: 10px; font-weight: bold; min-width: fit-content; }
+        .tab-btn { padding: 6px 14px; font-size: 11px; border-radius: 4px 4px 0 0; cursor: pointer; border: 1px solid #334155; border-bottom: none; background: #0f172a; color: #64748b; font-weight: 600; }
+        .tab-btn.active { background: #1e293b; color: #e2e8f0; }
+        .tab-content { display: none; } .tab-content.active { display: block; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #0f172a; } ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+    <header class="bg-slate-900 border-b border-slate-700 p-4 flex justify-between items-center shrink-0">
+        <div>
+            <h1 class="font-bold text-lg text-white"><i class="fas fa-server text-blue-500 mr-2"></i>AgriPV Network Benchmark</h1>
+            <p class="text-xs text-slate-400">v13 · Inline Abstracts · Username Cleaning · Author-First Focused</p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="TestSuite.runFuzzyUnitTests()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-xs font-semibold transition-colors">Test Fuzzy</button>
+            <button onclick="TestSuite.runFullBenchmark()" class="px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white rounded text-xs font-semibold shadow-lg shadow-green-900/20 transition-all active:scale-95"><i class="fas fa-play mr-1"></i> Run Benchmark</button>
+        </div>
+    </header>
+    <main class="flex-1 flex overflow-hidden">
+        <div class="w-2/3 p-6 overflow-y-auto" id="mainPanel">
+            <div class="mb-6">
+                <div class="flex justify-between text-xs font-bold text-slate-400 uppercase mb-2"><span>Pipeline Progress</span><span id="progressText">Ready</span></div>
+                <div class="w-full bg-slate-800 rounded-full h-2"><div id="progressBar" class="bg-blue-500 h-2 rounded-full transition-all duration-200" style="width: 0%"></div></div>
+            </div>
+            <div class="grid grid-cols-5 gap-3 mb-6">
+                <div class="stat-card"><div class="text-xs text-slate-400 uppercase font-bold">Total Time</div><div class="text-2xl font-mono font-bold text-white mt-1" id="statTime">0.0s</div></div>
+                <div class="stat-card"><div class="text-xs text-slate-400 uppercase font-bold">API Calls</div><div class="text-2xl font-mono font-bold text-blue-400 mt-1" id="statCalls">0</div><div class="text-[10px] text-green-400 font-bold" id="callsSaved">—</div></div>
+                <div class="stat-card"><div class="text-xs text-slate-400 uppercase font-bold">Raw Works</div><div class="text-2xl font-mono font-bold text-cyan-400 mt-1" id="statWorksRaw">0</div><div class="text-[10px] text-slate-500">before filter</div></div>
+                <div class="stat-card"><div class="text-xs text-slate-400 uppercase font-bold">Final Works</div><div class="text-2xl font-mono font-bold text-green-400 mt-1" id="statWorks">0</div><div class="text-[10px] text-slate-500">after filter</div></div>
+                <div class="stat-card"><div class="text-xs text-slate-400 uppercase font-bold">Resolution</div><div class="text-2xl font-mono font-bold text-purple-400 mt-1" id="statResolved">0/0</div><div class="text-[10px] text-slate-500" id="resPercentage">0%</div></div>
+            </div>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="stat-card"><h3 class="font-bold text-sm mb-4 border-b border-slate-700 pb-2">Phase Timing</h3><div id="phaseMetrics" class="space-y-3"><div class="text-center text-xs text-slate-500 italic">Run benchmark</div></div></div>
+                <div class="stat-card"><h3 class="font-bold text-sm mb-4 border-b border-slate-700 pb-2">Resolution & Discovery</h3>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between border-b border-slate-800 pb-1"><span>1B: Fuzzy Match</span><span id="resFuzzy" class="font-mono text-green-400 font-bold">0</span></div>
+                        <div class="flex justify-between border-b border-slate-800 pb-1"><span>1C: Rescue</span><span id="resRescue" class="font-mono text-yellow-400 font-bold">0</span></div>
+                        <div class="flex justify-between border-b border-slate-800 pb-1 opacity-60"><span>Unresolved</span><span id="resFailed" class="font-mono text-slate-400">0</span></div>
+                        <div class="mt-3 pt-2 border-t border-slate-700 space-y-1 text-[10px]">
+                            <div class="text-slate-400 uppercase font-bold mb-1">Works by Phase:</div>
+                            <div class="flex justify-between"><span>P1 Discovery</span><span id="p1Count" class="font-mono text-slate-300">0</span></div>
+                            <div class="flex justify-between"><span>P2 Author×Keyword</span><span id="p2Count" class="font-mono text-slate-300">+0</span></div>
+                            <div class="flex justify-between border-t border-slate-800 pt-1 mt-1"><span>Removed by Filter</span><span id="filterCount" class="font-mono text-red-400">0</span></div>
+                            <div class="flex justify-between mt-1 pt-1 bg-slate-800 rounded px-1"><span>Inline Abstracts</span><span id="absCount" class="font-mono text-emerald-400 font-bold">0</span></div>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-slate-700"><p id="optimizationTip" class="text-slate-300 italic text-[11px]">Waiting...</p></div>
+                    </div>
+                </div>
+            </div>
+            <div id="debugPanel" class="mt-6 hidden">
+                <div class="flex items-center gap-2 mb-3">
+                    <h2 class="font-bold text-sm text-white"><i class="fas fa-microscope text-purple-400 mr-2"></i>Debug</h2>
+                    <button onclick="DebugPanel.exportCSV()" class="ml-auto px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-[10px] font-semibold"><i class="fas fa-download mr-1"></i>CSV</button>
+                </div>
+                <div class="flex gap-1 mb-0">
+                    <button class="tab-btn active" onclick="DebugPanel.switchTab('authors',this)">Authors</button>
+                    <button class="tab-btn" onclick="DebugPanel.switchTab('works',this)">Works</button>
+                    <button class="tab-btn" onclick="DebugPanel.switchTab('scores',this)">Scores</button>
+                    <button class="tab-btn" onclick="DebugPanel.switchTab('unresolved',this)">Unresolved</button>
+                    <button class="tab-btn" onclick="DebugPanel.switchTab('tiers',this)">Tiers</button>
+                </div>
+                <div id="tab-authors" class="tab-content active debug-section"><div class="debug-body" id="debugAuthors"></div></div>
+                <div id="tab-works" class="tab-content debug-section"><div class="debug-body" id="debugWorks"></div></div>
+                <div id="tab-scores" class="tab-content debug-section"><div class="p-4" id="debugScores"></div></div>
+                <div id="tab-unresolved" class="tab-content debug-section"><div class="debug-body" id="debugUnresolved"></div></div>
+                <div id="tab-tiers" class="tab-content debug-section"><div class="p-4" id="debugTiers"></div></div>
+            </div>
+        </div>
+        <div class="w-1/3 bg-slate-950 border-l border-slate-800 flex flex-col">
+            <div class="p-2 border-b border-slate-800 font-bold text-xs text-slate-500 uppercase flex justify-between items-center h-10 shrink-0"><span>Log</span><button onclick="document.getElementById('consoleLog').innerHTML=''" class="text-slate-500 hover:text-white">Clear</button></div>
+            <div id="consoleLog" class="flex-1 overflow-y-auto p-2 font-mono text-xs"></div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase } from "./auth.js";
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+        const CFG = { api: "https://api.openalex.org", now: new Date().getFullYear(), minRel: 5.0, conc: 8 };
+        let activeAbort = null;
+
+        // ✅ FIX 1: We pull the abstract_inverted_index globally right from the start. No secondary passes.
+        const WORK_FIELDS = 'id,title,publication_year,cited_by_count,type,authorships,concepts,topics,keywords,abstract_inverted_index';
+
+        const Stats = {
+            startTime: 0, apiCalls: 0, totalSeeds: 0, rescueSaved: 0, phases: {},
+            resolutions: { fuzzy: 0, rescue: 0, failed: 0 },
+            worksByPhase: { p1: 0, p2: 0, filtered: 0 },
+            aliasCount: 0, abstractCount: 0,
+            startPhase(n) { this.phases[n] = { start: performance.now(), duration: 0, calls: 0 }; Logger.info(`[PHASE] ${n}`); },
+            endPhase(n) { const p = this.phases[n]; if (!p) return; p.duration = performance.now() - p.start; Logger.success(`[PHASE] ${n} → ${p.duration.toFixed(0)}ms, ${p.calls} calls`); UI.scheduleUpdate(); },
+            reset() { this.startTime = performance.now(); this.apiCalls = 0; this.totalSeeds = 0; this.rescueSaved = 0; this.phases = {}; this.resolutions = { fuzzy: 0, rescue: 0, failed: 0 }; this.worksByPhase = { p1: 0, p2: 0, filtered: 0 }; this.aliasCount = 0; this.abstractCount = 0; }
+        };
+
+        const RX = {
+            explicit: /\b(agri[\s-]?(?:pv|photo)?voltai[ckqs]?s?|agro[\s-]?(?:photo)?voltai[ckqs]?s?|agri[\s-]?pv|agro[\s-]?pv|solar[\s-]?sharing|farming[\s-]?(?:with|under)[\s-]?(?:solar|pv)|photovoltaic[\s-]?greenhouse|greenhouse[\s-]?photovoltaic|range[\s-]?voltaic|ecovoltaic|aqua[\s-]?(?:voltaic|pv))\b/i,
+            solar: /\b(pv|photovoltai[ckqs]?|solar\s*(?:module|panel|array|energy|power|cell|park|installation|tracker|generator))\b/i,
+            agri: /\b(crop|harvest|biomass|agronom|horticultur|viticultur|orchard|vineyard|greenhouse|livestock|pasture|grazing|sheep|cattle|arable|cultivat|irrigation|soil\s*moisture|shade\s*toleran|photosynthe|transpiration|pollinator|forage|silage|hay|food\s*(?:production|security)|aquacultur|silvopastur)\b/i,
+            interaction: /\b(dual[\s-]?use|co[\s-]?locat|land[\s-]?use[\s-]?efficien|\bler\b|land[\s-]?equivalent[\s-]?ratio|shading\s*effect|(?:beneath|under)\s*(?:panels?|arrays?)|inter[\s-]?row|microclimat|light[\s-]?management|\bpar\b|photosynthetical[\s-]?active|(?:food|water)[\s-]?(?:energy|water)[\s-]?(?:water|food)|nexus)\b/i,
+            neg: /\b(cancer|tumor|biomed|patient|surgery|clinic|hospital|medic|therap|gene(?:tic|ome|s)?\b|rna|dna|protein|cell\s*(?:culture|line|signaling)|molecular|disease|syndrome|disorder|morbidity|mortality|epidemi|virus|bacteri|infection|parkinson|alzheimer|stroke|diabetes|insulin|obesity|cardio|respiratory|lewy|dementia|schizo|autism|spin\b|magnetic|galaxy|telescope|neutron|boson|nanotube|graphene|supercapacit|lithium|battery(?!.*(?:solar|pv|storage)))\b/i,
+            prox: /\b(?:solar|pv|photovoltai).{0,60}(?:crop|farm|agri|plant|yield|soil|graz)|(?:crop|farm|agri|plant|yield|soil|graz).{0,60}(?:solar|pv|photovoltai)/i,
+            tech: /\b(bifacial|tracking|inverter|mounting|racking|albedo|ground[\s-]?cover|\bgcr\b|row[\s-]?spacing|tilt[\s-]?angle|elevation|stilt|vertical[\s-]?pv|semi[\s-]?transparent)\b/i
+        };
+
+        const invIdx = i => { if (!i) return ''; const a = []; for (const [w, p] of Object.entries(i)) for (const x of p) a[x] = w; return a.join(' '); };
+
+        const scoreWork = (w, absText) => {
+            let s = 0, why = [];
+            const t = fuzzy.norm(w.title || "");
+            const kw = fuzzy.norm((w.keywords || []).map(k => k.display_name || k.keyword).join(" "));
+            const ab = absText ? fuzzy.norm(absText) : '';
+            const full = `${t} ${kw} ${ab}`;
+            
+            const expT = RX.explicit.test(t), expK = !expT && RX.explicit.test(kw), expA = !expT && !expK && ab && RX.explicit.test(ab);
+            if (expT) { s += 45; why.push('exp-title'); } else if (expK) { s += 30; why.push('exp-kw'); } else if (expA) { s += 20; why.push('exp-abs'); }
+            
+            const hSol = RX.solar.test(full), hAgr = RX.agri.test(full), hInt = RX.interaction.test(full);
+            if (hSol && hAgr) { if (RX.prox.test(t)) { s += 20; why.push('prox-t'); } else if (ab && RX.prox.test(ab)) { s += 12; why.push('prox-a'); } else { s += 5; why.push('s+a'); } if (hInt) { s += 8; why.push('int'); } } else if (hSol && hInt) { s += 5; why.push('s+int'); }
+            
+            if (RX.tech.test(full) && (hSol || expT || expK)) { s += 3; why.push('tech'); }
+            if (w.concepts?.some(c => fuzzy.norm(c.display_name).includes('agrivoltaic') && c.score > 0.4)) { s += 10; why.push('concept'); }
+            
+            s += Math.min(4, Math.log10((w.cited_by_count || 0) + 1) * 1.5);
+            if (w.publication_year >= CFG.now - 2) s += 1;
+            if (RX.neg.test(full) && !expT && !expK) { s -= 30; why.push('neg'); }
+            
+            return { s: Math.max(0, Math.round(s * 10) / 10), why, tier: s >= 35 ? 'Core' : s >= 15 ? 'Strong' : s >= 8 ? 'Related' : 'Peripheral' };
+        };
+
+        const fuzzy = (() => {
+            const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[-_.‐–—]/g, ' ').replace(/\d+/g, ' ').replace(/\s+/g, ' ').trim();
+            const tokenize = s => norm(s).split(/\s+/).filter(t => t.length > 0);
+            const lev = (a, b) => {
+                if (!a || !b) return 100; if (a === b) return 0; if (Math.abs(a.length - b.length) > 2) return 100;
+                const m = Array.from({ length: b.length + 1 }, (_, i) => { const r = [i]; for (let j = 1; j <= a.length; j++) r.push(i === 0 ? j : 0); return r; });
+                for (let i = 1; i <= b.length; i++) for (let j = 1; j <= a.length; j++) m[i][j] = b[i-1] === a[j-1] ? m[i-1][j-1] : 1 + Math.min(m[i-1][j-1], m[i][j-1], m[i-1][j]);
+                return m[b.length][a.length];
+            };
+            const isUsername = s => { const c = s.trim(); return c.length <= 2 || (/[\d_.]/.test(c) && !c.includes(' ')) || (!c.includes(' ') && c === c.toLowerCase() && c.length > 3); };
+            const parseUsername = s => { const parts = norm(s).split(/[\s._-]+/).filter(t => t.length > 1 && !/^\d+$/.test(t)); return parts.length >= 2 ? { first: parts[0], last: parts[parts.length - 1], parts } : { first: null, last: null, parts }; };
+            const buildIndex = (candidates) => { const idx = new Map(); const add = (k, c) => { if (k.length < 2) return; if (!idx.has(k)) idx.set(k, []); idx.get(k).push(c); }; for (const c of candidates) { const tks = tokenize(c.display_name); for (const t of tks) { add(t, c); if (t.includes('-')) for (const p of t.split('-')) add(p, c); } } return idx; };
+            const getCandidates = (seedName, idx) => {
+                const seen = new Set(), result = [];
+                const addU = c => { if (!seen.has(c.id)) { seen.add(c.id); result.push(c); } };
+                let tokens;
+                if (isUsername(seedName)) { const p = parseUsername(seedName); tokens = p.parts.filter(x => x.length >= 3); }
+                else { tokens = tokenize(seedName).filter(t => t.length >= 3); const ex = []; for (const t of tokens) if (t.includes('-')) for (const p of t.split('-')) if (p.length >= 3) ex.push(p); tokens = [...tokens, ...ex]; }
+                for (const token of tokens) { if (idx.has(token)) for (const c of idx.get(token)) addU(c); if (token.length >= 4) for (const [key, cands] of idx) { if (Math.abs(key.length - token.length) > 1 || key === token) continue; if (key[0] !== token[0] && key[key.length-1] !== token[token.length-1]) continue; if (lev(token, key) <= 1) for (const c of cands) addU(c); } }
+                return result;
+            };
+            const samePersonScore = (n1, n2) => {
+                const t1 = tokenize(n1), t2 = tokenize(n2);
+                if (!t1.length || !t2.length) return 0;
+                const l1 = t1[t1.length-1], l2 = t2[t2.length-1];
+                if (l1 !== l2 && lev(l1, l2) > 1) return 0;
+                if (l1.length <= 4 && l1 !== l2) return 0;
+                const f1 = t1[0], f2 = t2[0];
+                if (f1 === f2) return 90;
+                if (f1[0] === f2[0]) { if (f1.length === 1 || f2.length === 1) return 80; if (lev(f1, f2) <= 2) return 85; if (f1.startsWith(f2) || f2.startsWith(f1)) return 80; return 70; }
+                return 0;
+            };
+            const score = (seedName, seedAff, candName, candInst) => {
+                const sN = norm(seedName), cN = norm(candName);
+                if (sN === cN) return 100;
+                const sT = tokenize(seedName), cT = tokenize(candName);
+                if (isUsername(seedName)) {
+                    const p = parseUsername(seedName);
+                    if (p.first && p.last) {
+                        const cL = cT[cT.length-1]||'';
+                        const lOk = cL === p.last || (p.last.length >= 4 && lev(cL, p.last) <= 1);
+                        const lAny = !lOk && cT.some(ct => ct === p.last || (p.last.length >= 4 && lev(ct, p.last) <= 1));
+                        if (!lOk && !lAny) return 0;
+                        let s = lOk ? 50 : 45; const cF = cT[0]||'';
+                        if (p.first === cF) s += 35; else if (p.first.length >= 2 && cF.length >= 2 && lev(p.first, cF) <= 1) s += 30;
+                        else if (p.first[0] === cF[0] && p.first.length <= 2) s += 20; else if (p.first[0] === cF[0]) s += 10; else s -= 5;
+                        if (seedAff && candInst) { const sA = norm(seedAff), cA = norm(candInst); if (sA && cA && (sA.includes(cA) || cA.includes(sA))) s += 8; }
+                        return Math.min(100, Math.max(0, s));
+                    }
+                    if (p.parts.length === 1 && p.parts[0].length >= 5) { const cL = cT[cT.length-1]||''; if (p.parts[0] === cL) return 55; }
+                    return 0;
+                }
+                if (!sT.length || !cT.length) return 0;
+                if (sT.length === 1) { if (sT[0].length < 5) return 0; return sT[0] === cT[cT.length-1] ? 55 : 0; }
+                const sL = sT[sT.length-1], sF = sT[0], cL = cT[cT.length-1], cF = cT[0];
+                const sLF = sL.replace(/-/g,''), cLF = cL.replace(/-/g,'');
+                let ls = 0, matched = false, swapped = false;
+                if (sLF === cLF) { ls = 50; matched = true; } else if (sLF.length >= 4 && lev(sLF, cLF) <= 1) { ls = 45; matched = true; }
+                if (!matched) { const sP = sL.split('-').filter(p=>p.length>=3), cP = cL.split('-').filter(p=>p.length>=3); if (sP.length > 1) { if (sP.every(sp => cT.some(ct => ct === sp || ct.split('-').includes(sp) || (sp.length >= 4 && lev(ct.replace(/-/g,''), sp) <= 1)))) { ls = 47; matched = true; } } if (!matched && cP.length > 1) { if (cP.some(cp => cp === sL || (sL.length >= 4 && lev(cp, sL) <= 1))) { ls = 43; matched = true; } } }
+                if (!matched) { if (sL === cF && sF === cL) return 85; if (norm(sF) === cLF && (sLF === norm(cF) || (sLF.length >= 4 && lev(sLF, norm(cF)) <= 1))) { ls = 48; matched = true; swapped = true; } }
+                if (!matched) return 0;
+                let fs = 0; const sf = swapped ? sL : sF, cf = cF;
+                if (sf === cf) fs = 40; else if (sf.length >= 3 && cf.length >= 3 && lev(sf, cf) <= 1) fs = 35;
+                else if ((sf.length === 1 || cf.length === 1) && sf[0] === cf[0]) { fs = sLF.length <= 5 ? 10 : 18; }
+                else if (sf.length >= 2 && cf.length >= 2 && sf[0] === cf[0] && sf[1] === cf[1]) { fs = sf.length <= 3 || cf.length <= 3 ? 15 : 5; }
+                else if (sf[0] === cf[0]) fs = 3; else fs = -10;
+                let mb = 0; if (sT.length >= 3 && cT.length >= 3) { const sM = sT.slice(1,-1), cM = cT.slice(1,-1); if (sM.some(sm => cM.some(cm => sm === cm))) mb = 5; }
+                let ab = 0; if (seedAff && candInst) { const sA = norm(seedAff), cA = norm(candInst); if (sA && cA && (sA === cA || sA.includes(cA) || cA.includes(sA))) ab = 8; }
+                return Math.min(100, Math.max(0, ls + fs + mb + ab));
+            };
+            return { score, norm, tokenize, isUsername, lev, parseUsername, buildIndex, getCandidates, samePersonScore };
+        })();
+
+        const createSemaphore = max => { let r = 0; const q = []; return { acquire: () => new Promise(res => r < max ? (r++, res()) : q.push(res)), release: () => { r--; if (q.length) { r++; q.shift()(); } } }; };
+        const sem = createSemaphore(CFG.conc);
+        const fetchJSON = async (u, signal, retries = 3) => {
+            Stats.apiCalls++;
+            const ap = Object.keys(Stats.phases).find(k => Stats.phases[k].start > 0 && Stats.phases[k].duration === 0);
+            if (ap) Stats.phases[ap].calls++;
+            const start = performance.now();
+            u += (u.includes('?') ? '&' : '?') + 'mailto=benchmark@agripv.org';
+            await sem.acquire();
+            try {
+                for (let i = 0; i < retries; i++) {
+                    if (signal?.aborted) return null;
+                    try { const d = await fetch(u, { signal }); if (d.ok) { Logger.log(`API ${(performance.now()-start).toFixed(0)}ms ...${u.slice(-55)}`); return await d.json(); } if (d.status === 429) { await sleep((parseFloat(d.headers.get("Retry-After")||1)*1000)+500); continue; } if (d.status < 500) return null; await sleep(500*(i+1)); } catch(e) { if (e.name==='AbortError') return null; if (i===retries-1) return null; await sleep(250); }
+                }
+                return null;
+            } finally { sem.release(); }
+        };
+
+        // ✅ FIX 2: Inline Abstract Parsing. We decode the abstract instantly and score it.
+        const ingestWork = (W, w) => { 
+            if (W.has(w.id)) return false; 
+            
+            let absText = '';
+            if (w.abstract_inverted_index) {
+                absText = invIdx(w.abstract_inverted_index);
+                w._abstract = absText;
+                w._hasAbs = true;
+            } else {
+                w._hasAbs = false;
+            }
+
+            const sc = scoreWork(w, absText); 
+            if (sc.s >= 1) { 
+                W.set(w.id, { ...w, _r: sc.s, _w: sc.why, _t: sc.tier }); 
+                if (w._hasAbs) Stats.abstractCount++;
+                return true; 
+            } 
+            return false; 
+        };
+
+        const paginate = async (W, filter, maxPages, signal, perPage = 200, label = '') => {
+            let cursor = '*', pn = 0, added = 0;
+            while (cursor && pn++ < maxPages) {
+                if (signal?.aborted) return added;
+                const r = await fetchJSON(`${CFG.api}/works?filter=${filter}&per_page=${perPage}&cursor=${encodeURIComponent(cursor)}&sort=cited_by_count:desc&select=${WORK_FIELDS}`, signal);
+                if (!r?.results?.length) break;
+                for (const w of r.results) if (ingestWork(W, w)) added++;
+                if (label) Logger.log(`  ${label} pg${pn}: +${added} (avail: ${r.meta?.count||'?'})`);
+                cursor = r.meta?.next_cursor;
+                if (!cursor || r.results.length < perPage) break;
+                await sleep(15);
+            }
+            return added;
+        };
+
+        const buildAliasMap = (W, candidates) => {
+            const byLast = new Map();
+            for (const c of candidates) { const t = fuzzy.tokenize(c.display_name); if (!t.length) continue; const l = t[t.length-1]; if (!byLast.has(l)) byLast.set(l, []); byLast.get(l).push(c); }
+            const aliasMap = new Map(); let totalAliases = 0;
+            for (const [, group] of byLast) {
+                if (group.length <= 1) continue;
+                const clusters = [];
+                for (let i = 0; i < group.length; i++) for (let j = i + 1; j < group.length; j++) { const sc = fuzzy.samePersonScore(group[i].display_name, group[j].display_name); if (sc >= 70) { let f = false; for (const cl of clusters) { if (cl.has(group[i].id) || cl.has(group[j].id)) { cl.add(group[i].id); cl.add(group[j].id); f = true; break; } } if (!f) clusters.push(new Set([group[i].id, group[j].id])); } }
+                for (const cl of clusters) { if (cl.size <= 1) continue; const ids = [...cl]; const wc = new Map(); for (const id of ids) wc.set(id, 0); for (const [, w] of W) for (const s of (w.authorships||[])) if (s.author?.id && wc.has(s.author.id)) wc.set(s.author.id, wc.get(s.author.id)+1); ids.sort((a,b)=>(wc.get(b)||0)-(wc.get(a)||0)); for (let k=1;k<ids.length;k++){aliasMap.set(ids[k],ids[0]);totalAliases++;} }
+            }
+            return { aliasMap, totalAliases };
+        };
+
+        const normalizeAuthorships = (W, aliasMap) => { for (const [, w] of W) for (const s of (w.authorships||[])) if (s.author?.id && aliasMap.has(s.author.id)) s.author.id = aliasMap.get(s.author.id); };
+
+        const Pipeline = {
+            getSeeds: async signal => {
+                Stats.startPhase('0_Seeds');
+                const { data: P } = await supabase.from("profiles").select("id,full_name,affiliation").not("full_name", "is", null);
+                Stats.endPhase('0_Seeds');
+                Stats.totalSeeds = P.length;
+                return P.map(p => {
+                    // ✅ FIX 3: Robust Cleaning for bad usernames/emails
+                    let qn = p.full_name.replace(/\s*\(.*?\)\s*/g, ' ').trim();
+                    if (qn.includes('@')) qn = qn.split('@')[0]; // strip email domains
+                    
+                    // Convert CamelCase to spaced ("JohnDoe" -> "John Doe")
+                    qn = qn.replace(/([a-z])([A-Z])/g, '$1 $2');
+                    
+                    // Replace dots, underscores, numbers ("john.doe123" -> "john doe")
+                    if (/[\._\d]/.test(qn)) {
+                        qn = qn.replace(/[\._]/g, ' ').replace(/\d+/g, '').trim();
+                    }
+                    
+                    if (qn.length < 3) qn = p.full_name; // fallback if we destroyed it
+                    
+                    return { id: `pending:${p.id}`, display_name: p.full_name, inst: p.affiliation || '', _qn: qn, _seed: p };
+                });
+            },
+
+            run: async (R, signal) => {
+                const W = new Map();
+                const df = `from_publication_date:2000-01-01`;
+
+                // ═══ PHASE 1: Lean, focused discovery ═══
+                Stats.startPhase('1_Discovery');
+                const queries = [
+                    { filter: `default.search:agrivoltaic|agrivoltaics,${df}`, pages: 10, label: 'agrivoltaic' },
+                    { filter: `default.search:agrophotovoltaic|agrophotovoltaics,${df}`, pages: 5, label: 'agrophotovoltaic' },
+                    { filter: `default.search:"agri-PV"|"agro-PV",${df}`, pages: 3, label: 'agri-PV' },
+                    { filter: `default.search:"solar sharing" agriculture,${df}`, pages: 2, label: 'solar-sharing' },
+                    { filter: `default.search:aquavoltaic|rangevoltaic|ecovoltaic,${df}`, pages: 2, label: 'niche' },
+                    { filter: `concepts.wikidata:Q109680063,${df}`, pages: 5, label: 'concept' },
+                    { filter: `default.search:"photovoltaic greenhouse"|"greenhouse photovoltaic",${df}`, pages: 3, label: 'pv-greenhouse' },
+                    { filter: `default.search:"dual-use" photovoltaic agriculture,${df}`, pages: 2, label: 'dual-use' },
+                ];
+                await Promise.all(queries.map(q => paginate(W, q.filter, q.pages, signal, 200, q.label)));
+                Stats.worksByPhase.p1 = W.size;
+                Stats.endPhase('1_Discovery');
+                Logger.info(`Discovery: ${W.size} works`);
+
+                // ═══ Aliases ═══
+                const candMap = new Map();
+                for (const [, w] of W) for (const s of (w.authorships||[])) if (s.author?.id && !candMap.has(s.author.id)) candMap.set(s.author.id, { id: s.author.id, display_name: s.author.display_name||'', institution: s.institutions?.[0]?.display_name||'' });
+                const cands = [...candMap.values()];
+
+                Stats.startPhase('1A_Aliases');
+                const { aliasMap, totalAliases } = buildAliasMap(W, cands);
+                Stats.aliasCount = totalAliases;
+                Logger.info(`Aliases: ${totalAliases} across ${aliasMap.size} IDs`);
+                normalizeAuthorships(W, aliasMap);
+                Stats.endPhase('1A_Aliases');
+
+                // ═══ Fuzzy ═══
+                Stats.startPhase('1B_Fuzzy');
+                const cm2 = new Map();
+                for (const [, w] of W) for (const s of (w.authorships||[])) if (s.author?.id && !cm2.has(s.author.id)) cm2.set(s.author.id, { id: s.author.id, display_name: s.author.display_name||'', institution: s.institutions?.[0]?.display_name||'' });
+                const c2 = [...cm2.values()];
+                const cIdx = fuzzy.buildIndex(c2);
+                Logger.info(`Index: ${cIdx.size} keys, ${c2.length} candidates`);
+
+                const allP = [];
+                for (let si = 0; si < R.length; si++) {
+                    const sn = R[si]._qn || R[si].display_name, sa = R[si]._seed?.affiliation || '';
+                    for (const c of fuzzy.getCandidates(sn, cIdx)) { const sc = fuzzy.score(sn, sa, c.display_name, c.institution); if (sc >= 65) allP.push({ si, cid: c.id, cn: c.display_name, sc }); }
+                }
+                allP.sort((a, b) => b.sc - a.sc);
+                const uSeeds = new Set(), uCands = new Set(), asgn = new Map();
+                for (const p of allP) { if (uSeeds.has(p.si) || uCands.has(p.cid)) continue; uSeeds.add(p.si); uCands.add(p.cid); asgn.set(p.si, p); }
+                for (let si = 0; si < R.length; si++) {
+                    const a = asgn.get(si);
+                    if (a) { R[si].id = a.cid; R[si].display_name = a.cn; R[si]._matchScore = a.sc; R[si]._matchMethod = 'fuzzy'; const ids = new Set([a.cid]); for (const [aid, cid] of aliasMap) if (cid === a.cid) ids.add(aid); R[si]._allIds = [...ids]; Stats.resolutions.fuzzy++; }
+                    else { R[si].id = `local:${R[si]._seed?.id}`; R[si]._matchMethod = 'none'; const pool = fuzzy.getCandidates(R[si]._qn||R[si].display_name, cIdx); let bs = 0, bn = null; for (const c of pool) { const sc = fuzzy.score(R[si]._qn||R[si].display_name, R[si]._seed?.affiliation||'', c.display_name, c.institution); if (sc > bs) { bs = sc; bn = c.display_name; } } R[si]._matchScore = bs; R[si]._bestCandidate = bn; }
+                }
+                Logger.info(`Fuzzy: ${asgn.size}/${R.length}`);
+                Stats.endPhase('1B_Fuzzy');
+
+                // ═══ Rescue ═══
+                Stats.startPhase('1C_Rescue');
+                const missing = R.filter(a => a.id.startsWith('local:') || a.id.startsWith('pending:'));
+                if (missing.length) {
+                    const BATCH = 15, chunks = [];
+                    for (let i = 0; i < missing.length; i += BATCH) chunks.push(missing.slice(i, i + BATCH));
+                    Stats.rescueSaved = missing.length - chunks.length;
+                    const gUsed = new Set(uCands);
+                    await Promise.all(chunks.map(async chunk => {
+                        if (signal?.aborted) return;
+                        const terms = chunk.map(r => { const n = r._qn || r.display_name; if (fuzzy.isUsername(n)) { const p = fuzzy.parseUsername(n); return p.parts.filter(x => x.length > 2).join(' '); } return fuzzy.norm(n).replace(/[^a-z\s-]/g, ''); }).filter(n => n.length > 3);
+                        const uq = [...new Set(terms)].join('|');
+                        if (!uq) { chunk.forEach(r => { if (r._matchMethod !== 'rescue') { r._matchMethod = 'none'; Stats.resolutions.failed++; } }); return; }
+                        const d = await fetchJSON(`${CFG.api}/authors?filter=display_name.search:${encodeURIComponent(uq)}&per_page=200&select=id,display_name,last_known_institutions`, signal);
+                        if (!d?.results) { chunk.forEach(r => { if (r._matchMethod !== 'rescue') { r._matchMethod = 'none'; Stats.resolutions.failed++; } }); return; }
+                        const pairs = [];
+                        for (let ci = 0; ci < chunk.length; ci++) for (const res of d.results) { if (gUsed.has(res.id)) continue; const sc = fuzzy.score(chunk[ci]._qn||chunk[ci].display_name, chunk[ci]._seed?.affiliation||'', res.display_name, res.last_known_institutions?.[0]?.display_name||''); if (sc >= 65) pairs.push({ ci, cid: res.id, cn: res.display_name, sc }); }
+                        pairs.sort((a, b) => b.sc - a.sc);
+                        const uC = new Set(), uS = new Set();
+                        for (const p of pairs) { if (uS.has(p.ci) || uC.has(p.cid) || gUsed.has(p.cid)) continue; uS.add(p.ci); uC.add(p.cid); gUsed.add(p.cid); chunk[p.ci].id = p.cid; chunk[p.ci].display_name = p.cn; chunk[p.ci]._matchScore = p.sc; chunk[p.ci]._matchMethod = 'rescue'; chunk[p.ci]._allIds = [p.cid]; Stats.resolutions.rescue++; }
+                        for (let ci = 0; ci < chunk.length; ci++) { if (!uS.has(ci) && chunk[ci]._matchMethod !== 'rescue') { chunk[ci]._matchMethod = 'none'; Stats.resolutions.failed++; let bs = 0, bn = null; for (const res of d.results) { const sc = fuzzy.score(chunk[ci]._qn||chunk[ci].display_name, chunk[ci]._seed?.affiliation||'', res.display_name, res.last_known_institutions?.[0]?.display_name||''); if (sc > bs) { bs = sc; bn = res.display_name; } } chunk[ci]._matchScore = bs; chunk[ci]._bestCandidate = bn; } }
+                    }));
+                }
+                Stats.endPhase('1C_Rescue');
+                const resolved = R.filter(a => !a.id.startsWith('local:') && !a.id.startsWith('pending:'));
+                Logger.info(`Resolved: ${resolved.length}/${R.length}`);
+
+                // ═══ PHASE 2: Author×Keyword — pulls works AND their abstracts for our seeds ═══
+                Stats.startPhase('2_AuthorKeyword');
+                if (resolved.length) {
+                    const allIds = new Set();
+                    for (const a of resolved) { allIds.add(a.id); if (a._allIds) a._allIds.forEach(id => allIds.add(id)); }
+                    const idList = [...allIds];
+                    Logger.info(`P2: ${idList.length} IDs (${resolved.length} + ${idList.length - resolved.length} aliases)`);
+                    const batches = [];
+                    for (let i = 0; i < idList.length; i += 25) batches.push(idList.slice(i, i + 25).join('|'));
+                    const tasks = batches.map(b => ({ filter: `default.search:agrivoltaic|agrivoltaics|agrophotovoltaic|"agri-PV"|"solar sharing"|solar|photovoltaic,authorships.author.id:${b},${df}`, pages: 3, label: `AK (${b.split('|').length})` }));
+                    const bp2 = W.size;
+                    await Promise.all(tasks.map(t => paginate(W, t.filter, t.pages, signal, 200, t.label)));
+                    normalizeAuthorships(W, aliasMap);
+                    Stats.worksByPhase.p2 = W.size - bp2;
+                    Logger.info(`AK: +${Stats.worksByPhase.p2} (total ${W.size})`);
+                }
+                Stats.endPhase('2_AuthorKeyword');
+
+                // ═══ FILTER ═══
+                const rawSize = W.size;
+let removed = 0, archived = 0;
+
+// Create a fast lookup Set of all our resolved seed author IDs
+const seedAuthorIds = new Set();
+for (const a of resolved) {
+    if (a._allIds) a._allIds.forEach(id => seedAuthorIds.add(id));
+    else seedAuthorIds.add(a.id);
+}
+
+for (const [id, w] of W) { 
+    if (w._r < CFG.minRel) { 
+        // Check if one of our seed authors wrote this low-scoring paper
+        const isSeedWork = w.authorships?.some(s => s.author?.id && seedAuthorIds.has(s.author.id));
+        
+        if (isSeedWork) {
+            w._t = 'Archived';  // It's low relevance, but keep it because a seed author wrote it
+            archived++;
+        } else {
+            W.delete(id);       // It's a low relevance paper from a random person. Delete it.
+            removed++; 
+        }
+    } 
+}
+Stats.worksByPhase.filtered = removed;
+Logger.info(`Filter: ${W.size} kept (${archived} archived), ${removed} removed`);
+
+                // Note: Phase 3 is completely gone! Abstracts were handled inline during ingestion!
+
+                return { works: [...W.values()], rawSize, authors: R, aliasMap };
+            }
+        };
+
+        const DebugPanel = {
+            _data: null,
+            switchTab(n, btn) { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById(`tab-${n}`).classList.add('active'); btn.classList.add('active'); },
+            render(works, authors, aliasMap) {
+                this._data = { works, authors, aliasMap };
+                document.getElementById('debugPanel').classList.remove('hidden');
+                this.renderAuthors(works, authors, aliasMap); this.renderTopWorks(works); this.renderScoreDistribution(works); this.renderUnresolved(authors); this.renderTierBreakdown(works);
+            },
+            renderAuthors(works, authors, aliasMap) {
+                const aw = new Map();
+                for (const w of works) for (const s of (w.authorships||[])) { if (!s.author?.id) continue; const cid = aliasMap?.get(s.author.id) || s.author.id; if (!aw.has(cid)) aw.set(cid, []); aw.get(cid).push(w); }
+                const rows = authors.map(a => {
+                    const res = !a.id.startsWith('local:') && !a.id.startsWith('pending:');
+                    const allIds = res ? (a._allIds || [a.id]) : [];
+                    const wsS = new Set();
+                    for (const aid of allIds) { for (const w of (aw.get(aliasMap?.get(aid)||aid) || [])) wsS.add(w); for (const w of (aw.get(aid) || [])) wsS.add(w); }
+                    const ws = [...wsS]; const ts = ws.reduce((s,w)=>s+(w._r||0),0);
+                    const sorted = [...ws].sort((x,y)=>(y._r||0)-(x._r||0)); const top = sorted[0];
+                    // Add Archived here
+                    const tiers = { Core:0, Strong:0, Related:0, Peripheral:0, Archived:0 }; ws.forEach(w => tiers[w._t||'Peripheral']++);
+                    const wA = ws.filter(w => w._hasAbs).length;
+                    const ac = allIds.length > 1 ? ` (${allIds.length} IDs)` : '';
+                    return { sn: a._seed?.full_name||a.display_name, rn: res?`${a.display_name}${ac}`:'—', m: a._matchMethod||'none', ms: a._matchScore||0, wc: ws.length, ts: ts.toFixed(1), av: ws.length?(ts/ws.length).toFixed(1):'—', tt: top?(top.title||'').slice(0,60):'—', tsc: top?top._r:0, tiers, aff: a._seed?.affiliation||'', ab: wA };
+                }).sort((a,b)=>b.wc-a.wc);
+                
+                // Updated headers to C/S/R/P/A and added the Archived span
+                document.getElementById('debugAuthors').innerHTML = `<div class="debug-row header" style="grid-template-columns:160px 170px 50px 35px 40px 30px 45px 35px 100px 1fr;"><span>Seed</span><span>Resolved</span><span>How</span><span>Sc</span><span>Wks</span><span>Abs</span><span>ΣRel</span><span>Avg</span><span>C/S/R/P/A</span><span>Top Work</span></div>${rows.map(r=>`<div class="debug-row" style="grid-template-columns:160px 170px 50px 35px 40px 30px 45px 35px 100px 1fr;"><span class="text-slate-300 truncate" title="${r.aff}">${r.sn}</span><span class="${r.m==='none'?'text-slate-600':'text-slate-300'} truncate">${r.rn}</span><span class="match-${r.m}">${r.m}</span><span class="${r.ms>=80?'text-green-400':r.ms>=65?'text-yellow-400':'text-red-400'}">${r.ms}</span><span class="${r.wc>0?'text-white font-bold':'text-slate-600'}">${r.wc}</span><span class="${r.ab>0?'text-emerald-400':'text-slate-600'}">${r.ab}</span><span class="text-cyan-400">${r.ts}</span><span class="text-slate-400">${r.av}</span><span><span class="tier-core">${r.tiers.Core}</span>/<span class="tier-strong">${r.tiers.Strong}</span>/<span class="tier-related">${r.tiers.Related}</span>/<span class="tier-peripheral">${r.tiers.Peripheral}</span>/<span class="text-slate-500">${r.tiers.Archived}</span></span><span class="text-slate-500 truncate">${r.tsc>0?`[${r.tsc}] `:''}${r.tt}</span></div>`).join('')}`;
+            },
+            renderTopWorks(works) {
+                const s = [...works].sort((a,b)=>(b._r||0)-(a._r||0)).slice(0,100);
+                document.getElementById('debugWorks').innerHTML = `<div class="debug-row header" style="grid-template-columns:45px 50px 45px 45px 30px 180px 1fr;"><span>Score</span><span>Tier</span><span>Year</span><span>Cited</span><span>Abs</span><span>Signals</span><span>Title</span></div>${s.map(w=>`<div class="debug-row" style="grid-template-columns:45px 50px 45px 45px 30px 180px 1fr;"><span class="font-bold ${w._r>=35?'text-green-400':w._r>=15?'text-blue-400':'text-yellow-400'}">${(w._r||0).toFixed(1)}</span><span class="tier-${(w._t||'peripheral').toLowerCase()}">${w._t||'?'}</span><span class="text-slate-400">${w.publication_year||'?'}</span><span class="text-slate-400">${w.cited_by_count||0}</span><span class="${w._hasAbs?'text-emerald-400':'text-slate-600'}">${w._hasAbs?'✓':'—'}</span><span class="text-slate-500 truncate">${(w._w||[]).join(', ')}</span><span class="text-slate-300 truncate">${w.title||'?'}</span></div>`).join('')}`;
+            },
+            renderScoreDistribution(works) {
+                const bk = {}, lb = ['0-5','5-8','8-15','15-25','25-35','35-45','45-55','55+'], rg = [[0,5],[5,8],[8,15],[15,25],[25,35],[35,45],[45,55],[55,100]];
+                lb.forEach(l => bk[l]=0); for (const w of works) { const s=w._r||0; for (let i=0;i<rg.length;i++) if(s>=rg[i][0]&&s<rg[i][1]){bk[lb[i]]++;break;} }
+                const mx = Math.max(1,...Object.values(bk)), cl = ['#64748b','#64748b','#facc15','#facc15','#60a5fa','#60a5fa','#4ade80','#4ade80'];
+                document.getElementById('debugScores').innerHTML = `<div class="text-xs font-bold text-slate-400 uppercase mb-3">Scores (${works.length})</div>${lb.map((l,i)=>`<div class="flex items-center gap-2 mb-1"><span class="text-[10px] font-mono text-slate-400 w-8 text-right">${l}</span><div class="histogram-bar flex-1"><div class="histogram-fill" style="width:${(bk[l]/mx)*100}%;background:${cl[i]};color:#000">${bk[l]}</div></div></div>`).join('')}`;
+            },
+            renderUnresolved(authors) {
+                const u = authors.filter(a => a._matchMethod==='none'||a.id.startsWith('local:')||a.id.startsWith('pending:')).sort((a,b)=>(b._matchScore||0)-(a._matchScore||0));
+                document.getElementById('debugUnresolved').innerHTML = `<div class="debug-row header" style="grid-template-columns:200px 200px 50px 1fr;"><span>Seed</span><span>Best</span><span>Sc</span><span>Aff</span></div>${u.map(a=>`<div class="debug-row" style="grid-template-columns:200px 200px 50px 1fr;"><span class="text-red-400">${a._seed?.full_name||a.display_name}</span><span class="text-slate-500">${a._bestCandidate||'—'}</span><span class="${(a._matchScore||0)>=50?'text-yellow-400':'text-slate-600'}">${a._matchScore||0}</span><span class="text-slate-600 truncate">${a._seed?.affiliation||'—'}</span></div>`).join('')}<div class="p-3 text-xs text-slate-500">${u.length} unresolved</div>`;
+            },
+            renderTierBreakdown(works) {
+                // Added Archived array here
+                const t = { Core:[], Strong:[], Related:[], Peripheral:[], Archived:[] }; works.forEach(w => t[w._t||'Peripheral'].push(w));
+                // Added Archived color here
+                const tc = { Core:'#4ade80', Strong:'#60a5fa', Related:'#facc15', Peripheral:'#64748b', Archived:'#475569' }, total = works.length||1;
+                const sc = {}; works.forEach(w=>(w._w||[]).forEach(s=>sc[s]=(sc[s]||0)+1)); const ts = Object.entries(sc).sort((a,b)=>b[1]-a[1]).slice(0,12);
+                const absT = works.filter(w => w._hasAbs).length;
+                
+                // Changed grid-cols-4 to grid-cols-5 so they fit horizontally
+                document.getElementById('debugTiers').innerHTML = `<div class="grid grid-cols-5 gap-3 mb-4">${Object.entries(t).map(([n,l])=>`<div class="stat-card !p-3 text-center"><div class="text-3xl font-mono font-bold" style="color:${tc[n]}">${l.length}</div><div class="text-[10px] text-slate-400 uppercase font-bold">${n}</div><div class="text-[10px] text-slate-500">${((l.length/total)*100).toFixed(0)}%</div></div>`).join('')}</div><div class="stat-card !p-3 mb-4"><div class="flex justify-between text-xs"><span class="text-slate-400">Abstract Coverage</span><span class="text-emerald-400 font-bold">${absT}/${works.length} (${((absT/total)*100).toFixed(0)}%)</span></div><div class="bar-container mt-1"><div class="bar-fill bg-emerald-500" style="width:${(absT/total)*100}%"></div></div></div><div class="text-xs font-bold text-slate-400 uppercase mb-2">Signals</div>${ts.map(([s,c])=>`<div class="flex items-center gap-2 mb-1"><span class="text-[10px] font-mono text-slate-400 w-28 truncate text-right">${s}</span><div class="histogram-bar flex-1"><div class="histogram-fill bg-blue-500" style="width:${(c/ts[0][1])*100}%;color:#fff">${c}</div></div></div>`).join('')}<div class="mt-3 text-xs font-bold text-slate-400 uppercase mb-1">Core samples</div>${t.Core.slice(0,8).map(w=>`<div class="text-[11px] text-slate-300 truncate"><span class="text-green-400 font-mono">[${(w._r||0).toFixed(1)}]</span> ${w.title||'?'}</div>`).join('')}`;
+            },
+            exportCSV() {
+                if (!this._data) return; const {works} = this._data;
+                const esc = s => `"${(s||'').replace(/"/g,'""')}"`;
+                const h = 'id,title,year,cited,score,tier,signals,has_abstract,abstract_snippet\n';
+                const r = works.map(w => `${esc(w.id)},${esc(w.title)},${w.publication_year||''},${w.cited_by_count||0},${w._r||0},${esc(w._t||'')},${esc((w._w||[]).join('; '))},${w._hasAbs?'Y':'N'},${esc((w._abstract||'').slice(0,300).replace(/\n/g,' '))}`).join('\n');
+                const b = new Blob([h+r],{type:'text/csv'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`agripv_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+            }
+        };
+        window.DebugPanel = DebugPanel;
+
+        const Logger = (() => {
+            const el = () => document.getElementById('consoleLog');
+            let buf = [], timer = null;
+            const flush = () => { if (!buf.length) return; el().insertAdjacentHTML('afterbegin', buf.join('')); buf = []; timer = null; };
+            const push = h => { buf.push(h); if (!timer) timer = setTimeout(flush, 60); };
+            return { log: m => push(`<div class="log-entry text-slate-500">${m}</div>`), info: m => push(`<div class="log-entry log-info">${m}</div>`), success: m => push(`<div class="log-entry log-success"><i class="fas fa-check"></i> ${m}</div>`), warn: m => push(`<div class="log-entry log-warn"><i class="fas fa-exclamation-triangle"></i> ${m}</div>`), flush };
+        })();
+
+        const UI = {
+            _q: false,
+            scheduleUpdate() { if (this._q) return; this._q = true; requestAnimationFrame(() => { this._q = false; this.update(); }); },
+            update() {
+                const now = performance.now(), el = now - Stats.startTime;
+                document.getElementById('statTime').textContent = (el/1000).toFixed(1)+'s';
+                document.getElementById('statCalls').textContent = Stats.apiCalls;
+                document.getElementById('callsSaved').textContent = `${Stats.aliasCount} aliases · ${Stats.rescueSaved} batched`;
+                document.getElementById('phaseMetrics').innerHTML = Object.entries(Stats.phases).map(([k,v])=>{const d=v.duration||(now-v.start);return`<div class="mb-2"><div class="flex justify-between text-[10px] uppercase font-bold text-slate-400"><span>${k}</span><span>${d.toFixed(0)}ms · ${v.calls}</span></div><div class="bar-container"><div class="bar-fill bg-blue-500" style="width:${Math.min(100,(d/el)*100)}%"></div></div></div>`;}).join('');
+                const res = Stats.resolutions.fuzzy+Stats.resolutions.rescue, tot = Stats.totalSeeds||1;
+                document.getElementById('statResolved').textContent = `${res}/${tot}`;
+                document.getElementById('resPercentage').textContent = `${((res/tot)*100).toFixed(0)}%`;
+                document.getElementById('resFuzzy').textContent = Stats.resolutions.fuzzy;
+                document.getElementById('resRescue').textContent = Stats.resolutions.rescue;
+                document.getElementById('resFailed').textContent = Stats.resolutions.failed;
+                document.getElementById('p1Count').textContent = Stats.worksByPhase.p1;
+                document.getElementById('p2Count').textContent = `+${Stats.worksByPhase.p2}`;
+                document.getElementById('filterCount').textContent = Stats.worksByPhase.filtered;
+                document.getElementById('absCount').textContent = Stats.abstractCount;
+                const tip = document.getElementById('optimizationTip');
+                const cps = el>0?(Stats.apiCalls/(el/1000)).toFixed(1):'0';
+                tip.textContent = `${res>tot*0.4?'✅':'⚠️'} ${cps} calls/s · ${Stats.apiCalls} total · ${Stats.aliasCount} aliases · ${Stats.abstractCount} abs`;
+            },
+            setProgress: (p,t) => { document.getElementById('progressBar').style.width=p+'%'; document.getElementById('progressText').textContent=t; }
+        };
+
+        window.TestSuite = {
+            runFuzzyUnitTests: () => {
+                Logger.info("═══ Fuzzy v13 Tests ═══");
+                const tests = [
+                    { a:"John Doe", b:"John Doe", min:95 }, { a:"Greg Barron-Gafford", b:"Greg A. Barron-Gafford", min:65 },
+                    { a:"Murat Kacira", b:"Murat Kaçıra", min:80 }, { a:"Rodrigo Palma", b:"Pedro M. Rodrigo", max:10 },
+                    { a:"Mariela Villarreal Brito", b:"M.C. Brito", max:55 }, { a:"michael.schmidt", b:"M. Schmid", max:60 },
+                ];
+                let p = 0, t = 0;
+                for (const x of tests) { t++; const s = fuzzy.score(x.a,"",x.b,""); const ok = x.min!==undefined?s>=x.min:s<=x.max; (ok?Logger.success:Logger.warn)(`${ok?'✓':'✗'} "${x.a}" ↔ "${x.b}" → ${s}`); if(ok)p++; }
+                Logger.info(`${p}/${t}`); Logger.flush();
+            },
+            runFullBenchmark: async () => {
+                if (activeAbort) activeAbort.abort();
+                activeAbort = new AbortController();
+                const signal = activeAbort.signal;
+                Stats.reset();
+                document.getElementById('consoleLog').innerHTML = '';
+                document.getElementById('debugPanel').classList.add('hidden');
+                ['statWorks','statWorksRaw'].forEach(id => document.getElementById(id).textContent = '0');
+                UI.setProgress(5, "Seeds...");
+                const R = await Pipeline.getSeeds(signal);
+                if (signal.aborted) return;
+                UI.setProgress(10, "Discovery...");
+                const { works, rawSize, authors, aliasMap } = await Pipeline.run(R, signal);
+                if (signal.aborted) return;
+                document.getElementById('statWorksRaw').textContent = rawSize;
+                document.getElementById('statWorks').textContent = works.length;
+                UI.setProgress(95, "Rendering...");
+                UI.update(); await sleep(50);
+                DebugPanel.render(works, authors, aliasMap);
+                UI.setProgress(100, "Done");
+                UI.update(); Logger.flush();
+            }
+        };
+    </script>
+</body>
+</html>
