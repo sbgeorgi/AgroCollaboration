@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriPV | Algorithmic Query Optimizer V8</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:,">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8 flex justify-between items-end">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fas fa-bullseye text-emerald-600"></i> Query Optimizer V8 <span class="text-xs text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full ml-2 font-bold uppercase tracking-wider">Seed Resolution Target</span>
+                </h1>
+                <p class="text-sm text-slate-500 mt-1">Testing queries against YOUR actual Supabase profiles using the Fuzzy Match algorithm.</p>
+            </div>
+            <button id="startBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold shadow-sm transition-colors">
+                <i class="fas fa-play mr-2"></i> Run Seed Resolution Test
+            </button>
+        </header>
+
+        <!-- Metrics Dashboard -->
+        <div class="grid grid-cols-5 gap-4 mb-8">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Supabase Seeds</div>
+                <div id="metric-seeds" class="text-2xl font-black text-slate-800">0</div>
+            </div>
+            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-sm">
+                <div class="text-[10px] font-bold text-emerald-700 uppercase mb-1" title="How many of your users were successfully found in OpenAlex">Seeds Resolved</div>
+                <div id="metric-resolved" class="text-2xl font-black text-emerald-600">0</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Valid Papers</div>
+                <div id="metric-valid" class="text-2xl font-black text-slate-600">0</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">API Calls Made</div>
+                <div id="metric-calls" class="text-2xl font-black text-blue-600">0</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Execution Time</div>
+                <div id="metric-time" class="text-2xl font-black text-slate-600">0.0s</div>
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-slate-100 border-b border-slate-200">
+                    <tr>
+                        <th class="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase">Query Strategy</th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase">API Calls</th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase">Valid Papers</th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-emerald-600 uppercase" title="How many NEW Supabase members this query found">Net-New Seeds Resolved</th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body" class="divide-y divide-slate-100">
+                    <tr><td colspan="5" class="py-8 text-center text-slate-400 text-sm">Click "Run Test" to load Supabase profiles and test queries.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        // 1. IMPORT SUPABASE
+        let supabaseSeeds = [];
+        try {
+            const module = await import('./auth.js');
+            const supabase = module.supabase;
+            if (supabase) {
+                const { data } = await supabase.from("profiles").select("id,full_name,affiliation").not("full_name", "is", null);
+                if (data) supabaseSeeds = data;
+                console.log("Loaded Seeds from Supabase:", supabaseSeeds.length);
+            }
+        } catch (e) {
+            console.error("Failed to load auth.js. Using mock fallback.", e);
+            alert("Could not load auth.js. Using a mock list of 5 researchers to demonstrate.");
+            supabaseSeeds = [
+                { full_name: "Greg Barron-Gafford", affiliation: "University of Arizona" },
+                { full_name: "Christian Dupraz", affiliation: "INRAE" },
+                { full_name: "Stefano Amaducci", affiliation: "Università Cattolica del Sacro Cuore" },
+                { full_name: "Majbauddin Hasan", affiliation: "" },
+                { full_name: "Max Trommsdorff", affiliation: "Fraunhofer ISE" }
+            ];
+        }
+
+        const API_BASE = "https://api.openalex.org/works";
+        const EMAIL = "research-tool@agripv.org";
+        const SELECT_FIELDS = "id,title,publication_year,keywords,abstract_inverted_index,authorships"; 
+        
+        const createSemaphore = max => { let r = 0; const q = []; return { acquire: () => new Promise(res => r < max ? (r++, res()) : q.push(res)), release: () => { r--; if (q.length) { r++; q.shift()(); } } }; };
+        const sem = createSemaphore(8); 
+
+        // 2. THE EXACT FUZZY LOGIC FROM YOUR MAIN SCRIPT
+        const fuzzy = (() => {
+            const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[-_.':;‐–—]/g, ' ').replace(/\d+/g, ' ').replace(/\s+/g, ' ').trim();
+            const tokenize = s => norm(s).split(/\s+/).filter(t => t.length > 0);
+            const levenshtein = (a, b) => { if (!a || !b) return 100; if (a === b) return 0; if (Math.abs(a.length - b.length) > 3) return 100; const matrix = []; for (let i = 0; i <= b.length; i++) matrix[i] = [i]; for (let j = 0; j <= a.length; j++) matrix[0][j] = j; for (let i = 1; i <= b.length; i++) { for (let j = 1; j <= a.length; j++) { if (b.charAt(i - 1) == a.charAt(j - 1)) matrix[i][j] = matrix[i - 1][j - 1]; else matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)); } } return matrix[b.length][a.length]; };
+            const isUsername = s => { const c = s.trim(); return c.length > 3 && (c.indexOf(' ') === -1 || /[\d_.]/.test(c)); };
+            const parseUsername = s => { const parts = norm(s).split(/\s+/).filter(t => t.length > 1 && !/^\d+$/.test(t)); return parts.length >= 2 ? { first: parts[0], last: parts[parts.length - 1], parts } : { first: null, last: null, parts }; };
+
+            const score = (seedName, seedAff, candName, candInstitution) => {
+                const sNorm = norm(seedName); const cNorm = norm(candName);
+                if (sNorm === cNorm) return 100;
+                const sTokens = tokenize(seedName); const cTokens = tokenize(candName);
+                if (!sTokens.length || !cTokens.length) return 0;
+                let nameScore = 0;
+
+                if (isUsername(seedName)) {
+                    const u = sNorm.replace(/[\d_.]/g, '');
+                    if (cNorm.includes(u)) nameScore = 60;
+                    if (cTokens.some(t => u.includes(t) && t.length > 3)) nameScore = 70;
+                    const uParts = seedName.toLowerCase().replace(/\d+/g, '').split(/[._\-]/).filter(p => p.length > 2);
+                    if (uParts.length > 1 && uParts.every(p => cTokens.some(ct => ct.includes(p) || p.includes(ct)))) nameScore = 85;
+                } else {
+                    const sLast = sTokens[sTokens.length - 1]; const cLast = cTokens[cTokens.length - 1];
+                    const lastMatch = sLast === cLast || levenshtein(sLast, cLast) <= 1 || (sLast.length > 3 && cLast.length > 3 && (sLast.includes(cLast) || cLast.includes(sLast)));
+                    if (lastMatch) {
+                        nameScore += 50;
+                        const sFirst = sTokens[0]; const cFirst = cTokens[0];
+                        if (sFirst && cFirst) {
+                            if (sFirst === cFirst) nameScore += 40;
+                            else if (sFirst[0] === cFirst[0]) nameScore += 25;
+                            else if (levenshtein(sFirst, cFirst) <= 1) nameScore += 35;
+                        }
+                    } else {
+                        const allSeedInCand = sTokens.every(st => cTokens.includes(st));
+                        if (allSeedInCand && sTokens.length > 1) nameScore = 80;
+                    }
+                }
+                if (seedAff && candInstitution) {
+                    const sAff = norm(seedAff); const cAff = norm(candInstitution);
+                    if (sAff && cAff && (sAff.includes(cAff) || cAff.includes(sAff))) nameScore += 10;
+                }
+                return Math.min(100, nameScore);
+            };
+            return { score, norm, tokenize, isUsername, parseUsername };
+        })();
+
+        // Regex logic
+        const CFG = { now: new Date().getFullYear(), minRel: 1.0 };
+        const normText = fuzzy.norm;
+        const invIdx = i => { if (!i) return ''; const a = []; for (const [w, p] of Object.entries(i)) for (const x of p) a[x] = w; return a.join(' '); };
+
+        const RX = {
+            explicit: /\b(agri[\s-]?(?:pv|photo)?voltai[ckqs]?s?|agro[\s-]?(?:photo)?voltai[ckqs]?s?|agri[\s-]?pv|agro[\s-]?pv|solar[\s-]?sharing|farming[\s-]?(?:with|under)[\s-]?(?:solar|pv)|photovoltaic[\s-]?greenhouse|greenhouse[\s-]?photovoltaic|range[\s-]?voltaic|ecovoltaic|aqua[\s-]?(?:voltaic|pv))\b/i,
+            solar: /\b(pv|photovoltai[ckqs]?|solar\s*(?:module|panel|array|energy|power|cell|park|installation|tracker|generator))\b/i,
+            agri: /\b(crop|harvest|biomass|agronom|horticultur|viticultur|orchard|vineyard|greenhouse|livestock|pasture|grazing|sheep|cattle|arable|cultivat|irrigation|soil\s*moisture|shade\s*toleran|photosynthe|transpiration|pollinator|forage|silage|hay|food\s*(?:production|security)|aquacultur|silvopastur)\b/i,
+            interaction: /\b(dual[\s-]?use|co[\s-]?locat|land[\s-]?use[\s-]?efficien|\bler\b|land[\s-]?equivalent[\s-]?ratio|shading\s*effect|(?:beneath|under)\s*(?:panels?|arrays?)|inter[\s-]?row|microclimat|light[\s-]?management|\bpar\b|photosynthetical[\s-]?active|(?:food|water)[\s-]?(?:energy|water)[\s-]?(?:water|food)|nexus)\b/i,
+            neg: /\b(cancer|tumor|biomed|patient|surgery|clinic|hospital|medic|therap|gene(?:tic|ome|s)?\b|rna|dna|protein|cell\s*(?:culture|line|signaling)|molecular|disease|syndrome|disorder|morbidity|mortality|epidemi|virus|bacteri|infection|parkinson|alzheimer|stroke|diabetes|insulin|obesity|cardio|respiratory|lewy|dementia|schizo|autism|spin\b|magnetic|galaxy|telescope|neutron|boson|nanotube|graphene|supercapacit|lithium|battery(?!.*(?:solar|pv|storage)))\b/i,
+            prox: /\b(?:solar|pv|photovoltai).{0,60}(?:crop|farm|agri|plant|yield|soil|graz)|(?:crop|farm|agri|plant|yield|soil|graz).{0,60}(?:solar|pv|photovoltai)/i,
+            tech: /\b(bifacial|tracking|inverter|mounting|racking|albedo|ground[\s-]?cover|\bgcr\b|row[\s-]?spacing|tilt[\s-]?angle|elevation|stilt|vertical[\s-]?pv|semi[\s-]?transparent)\b/i
+        };
+
+        const scoreWork = (w, absText) => {
+            let s = 0;
+            const t = normText(w.title || "");
+            const kw = normText((w.keywords || []).map(k => k.display_name || k.keyword).join(" "));
+            const ab = absText ? normText(absText) : '';
+            const full = `${t} ${kw} ${ab}`;
+
+            const expT = RX.explicit.test(t), expK = !expT && RX.explicit.test(kw), expA = !expT && !expK && ab && RX.explicit.test(ab);
+            if (expT) s += 45; else if (expK) s += 30; else if (expA) s += 20; 
+
+            const hSol = RX.solar.test(full), hAgr = RX.agri.test(full), hInt = RX.interaction.test(full);
+            if (hSol && hAgr) { 
+                if (RX.prox.test(t)) s += 20; else if (ab && RX.prox.test(ab)) s += 12; else s += 5; 
+                if (hInt) s += 8; 
+            } else if (hSol && hInt) { s += 5; }
+
+            if (RX.tech.test(full) && (hSol || expT || expK)) s += 3;
+            if (RX.neg.test(full) && !expT && !expK) s -= 30; 
+
+            return Math.max(0, Math.round(s * 10) / 10);
+        };
+
+        let globalApiCalls = 0;
+        let globalValidPapers = new Map();
+        let globalResolvedSeeds = new Set(); // THE FINAL METRIC
+
+        // ==========================================
+        // V8 QUERIES (De-compressed + Edge Cases)
+        // ==========================================
+        const START_YEAR = "2000-01-01";
+        
+        const QUERIES = [
+            // Your Original Script Queries
+            { filter: `default.search:agrivoltaic|agrivoltaics,from_publication_date:${START_YEAR}`, pages: 12, label: 'Orig: agrivoltaic' },
+            { filter: `default.search:agrophotovoltaic|agrophotovoltaics,from_publication_date:${START_YEAR}`, pages: 5, label: 'Orig: agrophotovoltaic' },
+            { filter: `default.search:"agri-PV"|"agro-PV",from_publication_date:${START_YEAR}`, pages: 4, label: 'Orig: agri-PV' },
+            { filter: `default.search:"solar sharing" agriculture,from_publication_date:${START_YEAR}`, pages: 3, label: 'Orig: solar sharing' },
+            { filter: `default.search:aquavoltaic|rangevoltaic|ecovoltaic,from_publication_date:${START_YEAR}`, pages: 2, label: 'Orig: niche' },
+            { filter: `concepts.wikidata:Q109680063,from_publication_date:${START_YEAR}`, pages: 5, label: 'Orig: Wikidata Concept' },
+            { filter: `default.search:"photovoltaic greenhouse"|"greenhouse photovoltaic",from_publication_date:${START_YEAR}`, pages: 3, label: 'Orig: PV greenhouse' },
+            { filter: `default.search:"dual-use" photovoltaic agriculture,from_publication_date:${START_YEAR}`, pages: 3, label: 'Orig: dual-use' },
+            
+            // Edge-Case Hunters
+            { 
+                filter: `title.search:tomato|wheat|maize|lettuce|grape|vineyard|orchard|potato|soybean|sheep|cattle|grazing|pasture|pollinator,default.search:photovoltaic|solar|pv|"solar farm",from_publication_date:${START_YEAR}`, 
+                pages: 5, 
+                label: 'Edge: Anchored Flora/Fauna' 
+            },
+            { 
+                filter: `title.search:crop|yield|plant|biomass|agriculture,default.search:solar|photovoltaic,default.search:microclimate|"shading effect"|"soil moisture",from_publication_date:${START_YEAR}`, 
+                pages: 5, 
+                label: 'Edge: Anchored Microclimate' 
+            }
+        ];
+
+        const fetchPage = async (url) => {
+            await sem.acquire();
+            globalApiCalls++;
+            document.getElementById('metric-calls').innerText = globalApiCalls;
+            try {
+                const res = await fetch(url);
+                if (res.ok) return await res.json();
+                if (res.status === 429) { await new Promise(r => setTimeout(r, 2000)); return await fetchPage(url); }
+            } finally { sem.release(); }
+            return null;
+        };
+
+        const runQuery = async (queryConfig, uiRow) => {
+            let cursor = '*';
+            let pagesFetched = 0;
+            let validForQuery = 0;
+            let newSeedsResolved = 0;
+
+            while (cursor && pagesFetched < queryConfig.pages) {
+                const url = `${API_BASE}?filter=${queryConfig.filter}&per_page=200&cursor=${encodeURIComponent(cursor)}&select=${SELECT_FIELDS}&mailto=${EMAIL}`;
+                uiRow.cells[4].innerHTML = `<i class="fas fa-spinner fa-spin text-emerald-500"></i> Page ${pagesFetched + 1}...`;
+                
+                const data = await fetchPage(url);
+                if (!data || !data.results || data.results.length === 0) break;
+
+                pagesFetched++;
+
+                for (const paper of data.results) {
+                    const absText = paper.abstract_inverted_index ? invIdx(paper.abstract_inverted_index) : '';
+                    const score = scoreWork(paper, absText);
+                    
+                    if (score >= CFG.minRel) {
+                        if (!globalValidPapers.has(paper.id)) {
+                            globalValidPapers.set(paper.id, paper);
+                            validForQuery++;
+                        }
+                        
+                        // RESOLVE SEEDS
+                        if (paper.authorships) {
+                            for (const authorship of paper.authorships) {
+                                const authorName = authorship.author?.display_name;
+                                const authorInst = authorship.institutions?.[0]?.display_name || "";
+                                
+                                if (authorName) {
+                                    for (const seed of supabaseSeeds) {
+                                        if (!globalResolvedSeeds.has(seed.id || seed.full_name)) {
+                                            // Format seed name same as your app
+                                            let qn = seed.full_name;
+                                            if (/[\._\d-]/.test(qn) && !qn.includes(' ')) {
+                                                qn = qn.replace(/[\._-]/g, ' ').replace(/\d+/g, '').trim();
+                                            }
+                                            
+                                            const matchScore = fuzzy.score(qn, seed.affiliation || "", authorName, authorInst);
+                                            if (matchScore >= 65) {
+                                                globalResolvedSeeds.add(seed.id || seed.full_name);
+                                                newSeedsResolved++;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                uiRow.cells[1].innerText = `${pagesFetched} / ${queryConfig.pages}`;
+                uiRow.cells[2].innerText = validForQuery;
+                uiRow.cells[3].innerHTML = `<span class="font-bold text-emerald-600">+${newSeedsResolved} Seeds</span>`;
+                
+                document.getElementById('metric-valid').innerText = globalValidPapers.size;
+                document.getElementById('metric-resolved').innerText = globalResolvedSeeds.size;
+
+                cursor = data.meta?.next_cursor;
+                if (!cursor || data.results.length < 200) break; 
+            }
+
+            let statusHTML = `<i class="fas fa-check-circle text-green-500"></i> Done`;
+            if (pagesFetched === queryConfig.pages) {
+                statusHTML = `<i class="fas fa-exclamation-triangle text-amber-500"></i> Truncated`;
+            }
+
+            uiRow.cells[4].innerHTML = statusHTML;
+        };
+
+        const runOptimizer = async () => {
+            document.getElementById('metric-seeds').innerText = supabaseSeeds.length;
+            if (supabaseSeeds.length === 0) {
+                alert("No seeds loaded. Please check your auth.js connection.");
+                return;
+            }
+
+            const startBtn = document.getElementById('startBtn');
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Running...';
+            
+            globalApiCalls = 0;
+            globalValidPapers.clear();
+            globalResolvedSeeds.clear();
+            const startTime = performance.now();
+            
+            const tbody = document.getElementById('results-body');
+            tbody.innerHTML = '';
+            
+            for (let i = 0; i < QUERIES.length; i++) {
+                const q = QUERIES[i];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-xs text-slate-800">${q.label}</td>
+                    <td class="py-3 px-4 font-mono text-xs text-slate-500">0 / ${q.pages}</td>
+                    <td class="py-3 px-4 font-mono text-xs text-slate-500">0</td>
+                    <td class="py-3 px-4 font-mono text-xs text-emerald-600">0</td>
+                    <td class="py-3 px-4 text-xs text-slate-400">Waiting...</td>
+                `;
+                tbody.appendChild(tr);
+
+                await runQuery(q, tr);
+                document.getElementById('metric-time').innerText = ((performance.now() - startTime) / 1000).toFixed(1) + 's';
+            }
+
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-play mr-2"></i> Run Test Again';
+        };
+
+        document.getElementById('startBtn').addEventListener('click', runOptimizer);
+    </script>
+</body>
+</html>

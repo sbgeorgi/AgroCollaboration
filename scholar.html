@@ -351,6 +351,7 @@
 
         input[type=range] {
             -webkit-appearance: none;
+            appearance: none;
             background: 0 0
         }
 
@@ -912,23 +913,17 @@
                     class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
             </div>
             <div class="space-y-4 text-xs text-slate-600 leading-relaxed">
-
-                <!-- Activity Ring Explanation -->
                 <div class="flex gap-4 items-start bg-slate-50 p-3 rounded-lg border border-slate-100">
                     <div class="shrink-0 text-center w-16">
-                        <!-- CSS-only representation of the ring for the legend -->
                         <div
                             class="w-10 h-10 rounded-full relative mx-auto flex items-center justify-center bg-blue-500 text-white font-bold text-[8px] shadow-sm">
                             <svg class="absolute inset-0 w-full h-full -m-1" viewBox="0 0 36 36"
                                 style="transform: rotate(-90deg); overflow: visible;">
-                                <!-- Old year arc (light) -->
                                 <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                     fill="none" stroke="#dcfce7" stroke-width="3" stroke-dasharray="20, 100" />
-                                <!-- Mid year arc (medium) -->
                                 <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                     fill="none" stroke="#4ade80" stroke-width="3" stroke-dasharray="30, 100"
                                     stroke-dashoffset="-25" />
-                                <!-- Recent year arc (dark) -->
                                 <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                     fill="none" stroke="#15803d" stroke-width="3" stroke-dasharray="40, 100"
                                     stroke-dashoffset="-60" />
@@ -1065,17 +1060,13 @@
         };
 
         const fuzzy = (() => {
-            // 1. Helpers
             const norm = s => (s || '').toLowerCase()
                 .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                // FIX: Added Unicode dashes (‐–—) to the regex below
                 .replace(/[-_.':;‐–—]/g, ' ')
                 .replace(/\d+/g, ' ')
                 .replace(/\s+/g, ' ')
                 .trim();
 
-            // FIX: Changed filter to > 0. Removing single chars (like "A.") hurts scoring 
-            // when comparing "Greg A." to "Greg".
             const tokenize = s => norm(s).split(/\s+/).filter(t => t.length > 0);
 
             const levenshtein = (a, b) => {
@@ -1095,7 +1086,6 @@
             };
 
             const isUsername = s => {
-                // FIX: More robust username check that handles "greg-barron" (no spaces) as a username
                 const c = s.trim();
                 return c.length > 3 && (c.indexOf(' ') === -1 || /[\d_.]/.test(c));
             };
@@ -1105,7 +1095,6 @@
                 return parts.length >= 2 ? { first: parts[0], last: parts[parts.length - 1], parts } : { first: null, last: null, parts };
             };
 
-            // 2. Indexing
             const buildIndex = (candidates) => {
                 const idx = new Map();
                 const add = (k, c) => { if (k.length < 2) return; if (!idx.has(k)) idx.set(k, []); idx.get(k).push(c); };
@@ -1113,7 +1102,6 @@
                     const tks = tokenize(c.display_name);
                     for (const t of tks) {
                         add(t, c);
-                        // Note: t will never include '-' here due to norm(), so splitting by '-' is redundant
                     }
                 }
                 return idx;
@@ -1128,14 +1116,12 @@
                     const p = parseUsername(seedName);
                     tokens = p.parts.filter(x => x.length >= 3);
                 } else {
-                    // FIX: Don't filter out length > 3 strictly, allows matching strict short names
                     tokens = tokenize(seedName).filter(t => t.length >= 2);
                 }
 
                 for (const token of tokens) {
                     if (idx.has(token)) for (const c of idx.get(token)) addU(c);
 
-                    // Fuzzy lookup for index keys
                     if (token.length >= 4) for (const [key, cands] of idx) {
                         if (Math.abs(key.length - token.length) > 1) continue;
                         if (key === token) continue;
@@ -1145,13 +1131,11 @@
                 return result;
             };
 
-            // 3. Logic: Same Person
             const samePersonScore = (n1, n2) => {
                 const t1 = tokenize(n1), t2 = tokenize(n2);
                 if (!t1.length || !t2.length) return 0;
                 const l1 = t1[t1.length - 1], l2 = t2[t2.length - 1];
 
-                // FIX: Allow one last name to be contained in the other (Barron vs Barron-Gafford)
                 const lastMatch = l1 === l2 || levenshtein(l1, l2) <= 1 || (l1.length > 3 && l2.length > 3 && (l1.includes(l2) || l2.includes(l1)));
 
                 if (!lastMatch) return 0;
@@ -1167,7 +1151,6 @@
                 return 0;
             };
 
-            // 4. Logic: Profile Matching
             const score = (seedName, seedAff, candName, candInstitution) => {
                 const sNorm = norm(seedName);
                 const cNorm = norm(candName);
@@ -1176,26 +1159,19 @@
                 const sTokens = tokenize(seedName);
                 const cTokens = tokenize(candName);
 
-                // Safety check for empty tokens
                 if (!sTokens.length || !cTokens.length) return 0;
 
                 let nameScore = 0;
 
                 if (isUsername(seedName)) {
-                    // Username Logic (Preserved your logic, just updated cleaning via norm)
                     const u = sNorm.replace(/[\d_.]/g, '');
                     if (cNorm.includes(u)) nameScore = 60;
                     if (cTokens.some(t => u.includes(t) && t.length > 3)) nameScore = 70;
                     const uParts = seedName.toLowerCase().replace(/\d+/g, '').split(/[._\-]/).filter(p => p.length > 2);
                     if (uParts.length > 1 && uParts.every(p => cTokens.some(ct => ct.includes(p) || p.includes(ct)))) nameScore = 85;
                 } else {
-                    // Full Name Logic
                     const sLast = sTokens[sTokens.length - 1];
                     const cLast = cTokens[cTokens.length - 1];
-
-                    // FIX: Relaxed Last Name match
-                    // 1. Exact or Levenshtein
-                    // 2. OR one is part of the other (handles "Barron" vs "Barron-Gafford" mismatch)
                     const lastMatch = sLast === cLast || levenshtein(sLast, cLast) <= 1 || (sLast.length > 3 && cLast.length > 3 && (sLast.includes(cLast) || cLast.includes(sLast)));
 
                     if (lastMatch) {
@@ -1204,12 +1180,10 @@
                         const cFirst = cTokens[0];
                         if (sFirst && cFirst) {
                             if (sFirst === cFirst) nameScore += 40;
-                            else if (sFirst[0] === cFirst[0]) nameScore += 25; // Bumped this slightly
+                            else if (sFirst[0] === cFirst[0]) nameScore += 25;
                             else if (levenshtein(sFirst, cFirst) <= 1) nameScore += 35;
                         }
                     } else {
-                        // Fallback: Check if ALL seed tokens exist in candidate tokens (ignoring order)
-                        // Useful for "Barron-Gafford, Greg" vs "Greg Barron-Gafford"
                         const allSeedInCand = sTokens.every(st => cTokens.includes(st));
                         if (allSeedInCand && sTokens.length > 1) nameScore = 80;
                     }
@@ -1304,11 +1278,9 @@
                 this.transform = { x: 0, y: 0, k: 1 };
                 this._last = 0;
             }
-            // --- FIX START: Added this method ---
             setTransform(t) {
                 this.transform = t;
             }
-            // --- FIX END ---
             setLinks(links) {
                 this.particles = links.flatMap(link =>
                     Array.from({ length: Math.min(Math.max(1, link.w), 5) }, () => ({
@@ -1353,10 +1325,7 @@
         }
 
         const buildEgoMiniSVG = (cId, adj, nodes, links, max = 10) => {
-            // --- FIX START: Convert Set to Array using spread syntax [...] before slicing ---
             const neighbors = [...(adj.get(cId) || [])].slice(0, max);
-            // --- FIX END ---
-
             const center = nodes.get(cId);
             if (!neighbors.length || !center) return '';
             const cx = 90, cy = 70, r = 45;
@@ -1604,7 +1573,130 @@
             state: { filters: { q: '', topics: new Set, insts: new Set, yFrom: null, yTo: null, minRel: CFG.defMin, bm: false, co: null, author: null }, page: 1, sort: 'recent', graph: { cluster: true, labels: true, particles: true, layout: 'force' }, last: [], sel: new Set, cmp: [], mode: 'paginated', dark: localStorage.getItem('agripv_dark') === '1', hm: true, view: 'both' },
             d3: {}, col: new Map, bm: new Set(JSON.parse(localStorage.getItem('agripv_bookmarks') || '[]')), cache: new Map, particles: null, constellationSim: null, minimapScale: 0.1,
             centralities: null, bibliometrics: null, topicBursts: null, sleepingBeauties: null,
-            init: async () => { app.ui(); app.gr(); app.dark(); app.initKeyboardShortcuts(); el('bookmarkCount').textContent = app.bm.size; app.restoreFromURL(); const pg = (p, t) => { el('loadingProgress').style.width = p + '%'; el('loadingStatus').textContent = t }; try { pg(5, "Fetching network members..."); const { data: P } = await supabase.from("profiles").select("id,full_name,work_email,affiliation").not("full_name", "is", null); if (!P?.length) throw "No members"; const hx = P.map(p => p.id).sort().join('|'), c = Storage.get(CFG.key); if (Storage.get(CFG.key + "_hash") === hx && c) { pg(85, "Loading from cache..."); app.restore(c) } else { pg(10, "Resolving profiles..."); const R = await app.resolve(P, pg); pg(30, "Discovering publications..."); const W = await app.discoverWorks(R, pg); app.build(R, W); Storage.set(CFG.key + "_hash", hx); Storage.set(CFG.key, app.pack()) } pg(95, "Computing analytics..."); app.computeAdvancedMetrics(); pg(100, "Done"); setTimeout(() => { el('loadingOverlay').classList.add('hidden'); app.render(); setTimeout(app.fitGraph, 400) }, 450) } catch (e) { console.error(e); alert("Failed to load data.") } },
+            init: async () => {
+                app.ui(); app.gr(); app.dark(); app.initKeyboardShortcuts();
+                el('bookmarkCount').textContent = app.bm.size;
+                app.restoreFromURL();
+
+                const pg = (p, t) => { el('loadingProgress').style.width = p + '%'; el('loadingStatus').textContent = t };
+
+                try {
+                    pg(5, "Fetching network members...");
+                    const { data: P } = await supabase.from("profiles").select("id,full_name,work_email,affiliation").not("full_name", "is", null);
+                    if (!P?.length) throw "No members";
+
+                    const hx = P.map(p => p.id).sort().join('|');
+                    const c = Storage.get(CFG.key);
+                    const cachedHash = Storage.get(CFG.key + "_hash");
+
+                    if (cachedHash === hx && c) {
+                        pg(85, "Loading from cache...");
+                        app.restore(c);
+                    } else if (c) {
+                        pg(10, "Updating from cache...");
+                        app.restore(c);
+
+                        const existingIds = new Set(app.data.researchers.map(r => r._seedId).filter(Boolean));
+                        const addedP = P.filter(p => !existingIds.has(p.id));
+                        const rosterIds = new Set(P.map(p => p.id));
+                        const removedR = app.data.researchers.filter(r => r._seedId && !rosterIds.has(r._seedId));
+
+                        if (addedP.length > 0 || removedR.length > 0) {
+                            if (addedP.length > 0) {
+                                pg(20, `Resolving ${addedP.length} new members...`);
+                                const newR = await app.resolve(addedP, pg);
+                                pg(40, `Discovering works for new members...`);
+                                const newW = await app.discoverWorks(newR, pg, true);
+
+                                pg(80, "Merging new data...");
+                                app.data.researchers.push(...newR);
+                                const rM = new Map(app.data.researchers.map(r => [r.id, r]));
+                                const oldPubsMap = new Map(app.data.pubs.map(p => [p.id, p]));
+
+                                newW.forEach(w => {
+                                    let ts = (w.topics || []).filter(t => (t.score || 0) >= 0.25).map(t => t.display_name).slice(0, 7);
+                                    if (!ts.length) ts = (w.concepts || []).filter(c => (c.score || 0) > 0.55 && (c.level || 0) > 0 && !TOPIC_BLOCK.has(norm(c.display_name))).map(c => c.display_name).slice(0, 7);
+                                    const cts = ts.filter(t => !TOPIC_NEG.has(norm(t)));
+                                    if (!cts.length && ts.length) return;
+                                    if (w._hasAbs) app.cache.set(w.id, w._abstract);
+
+                                    const memA = (w.authorships || []).filter(a => rM.has(a.author?.id)).map(a => rM.get(a.author.id));
+                                    if (!memA.length && w._t !== 'Archived') return;
+
+                                    if (oldPubsMap.has(w.id)) {
+                                        const oldPub = oldPubsMap.get(w.id);
+                                        oldPub.memA = memA;
+                                        oldPub.allA = (w.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, mem: rM.has(a.author?.id) }));
+                                    } else {
+                                        app.data.pubs.push({
+                                            id: w.id, title: w.title, year: w.publication_year, cites: w.cited_by_count || 0,
+                                            doi: w.doi, url: w.primary_location?.landing_page_url || w.doi || w.primary_location?.pdf_url,
+                                            source: w.primary_location?.source?.display_name, oa: w.open_access?.is_oa, type: w.type,
+                                            score: w._r || 0, why: w._w || [], tier: w._t || 'Weak', topics: cts,
+                                            allA: (w.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, mem: rM.has(a.author?.id) })), memA
+                                        });
+                                    }
+                                });
+                            }
+
+                            pg(85, "Recomputing network...");
+                            app.data.researchers = app.data.researchers.filter(r => !r._seedId || rosterIds.has(r._seedId));
+                            const rMFinal = new Map(app.data.researchers.map(r => [r.id, r]));
+
+                            app.data.pubs.forEach(p => {
+                                p.memA = p.memA.filter(r => !r._seedId || rosterIds.has(r._seedId));
+                                p.allA.forEach(a => { if (a.mem && !rMFinal.has(a.id)) a.mem = false; });
+                            });
+                            app.data.pubs = app.data.pubs.filter(p => p.memA.length > 0 || p.tier === 'Archived');
+
+                            app.data.researchers.forEach(r => { r.net_works = 0; r.net_cited = 0; r.topics = {}; });
+                            app.data.topics = new Map();
+
+                            app.data.pubs.forEach(p => {
+                                p.memA.forEach(r => {
+                                    r.net_works++;
+                                    r.net_cited += (p.cites || 0);
+                                    p.topics.forEach(t => {
+                                        r.topics[t] = (r.topics[t] || 0) + 1;
+                                        app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1);
+                                    });
+                                });
+                            });
+
+                            app.data.researchers = app.data.researchers.filter(r => app.data.pubs.some(p => p.memA.includes(r)));
+                            app.buildGraph();
+
+                            Storage.set(CFG.key + "_hash", hx);
+                            Storage.set(CFG.key, app.pack());
+
+                        } else {
+                            Storage.set(CFG.key + "_hash", hx);
+                        }
+                    } else {
+                        pg(10, "Resolving profiles...");
+                        const R = await app.resolve(P, pg);
+                        pg(30, "Discovering publications...");
+                        const W = await app.discoverWorks(R, pg);
+                        app.build(R, W);
+                        Storage.set(CFG.key + "_hash", hx);
+                        Storage.set(CFG.key, app.pack());
+                    }
+
+                    pg(95, "Computing analytics...");
+                    app.computeAdvancedMetrics();
+
+                    pg(100, "Done");
+                    setTimeout(() => {
+                        el('loadingOverlay').classList.add('hidden');
+                        app.render();
+                        setTimeout(app.fitGraph, 400);
+                    }, 450);
+
+                } catch (e) {
+                    console.error(e);
+                    alert("Failed to load data.");
+                }
+            },
 
             initKeyboardShortcuts: () => {
                 document.addEventListener('keydown', e => {
@@ -1653,7 +1745,7 @@
                     if (params.minRel) { app.state.filters.minRel = params.minRel; el('minRelevance').value = params.minRel; el('valMinRel').textContent = params.minRel.toFixed(1); }
                     if (params.sort) { app.state.sort = params.sort; el('sortSelect').value = params.sort; }
                     if (params.view) app.state.view = params.view;
-                } catch { /* ignore invalid hash */ }
+                } catch { }
             },
 
             shareView: () => {
@@ -1804,18 +1896,13 @@
                 pg(5, `Preparing ${P.length} seed profiles...`);
                 return P.map(p => {
                     let qn = p.full_name;
-
-                    // FIX: More aggressive cleaning. 
-                    // If it looks like a username OR contains standard separators, clean it to spaces
-                    // This ensures "greg.barron" and "greg-barron" both become "greg barron"
                     if (/[\._\d-]/.test(qn) && !qn.includes(' ')) {
                         qn = qn.replace(/[\._-]/g, ' ').replace(/\d+/g, '').trim();
                     }
-
                     const inst = getInst(p.affiliation);
-
                     return {
                         id: `pending:${p.id}`,
+                        _seedId: p.id,
                         display_name: p.full_name,
                         inst,
                         color: app.gCol(inst),
@@ -1827,68 +1914,70 @@
                 });
             },
 
-            discoverWorks: async (R, pg) => {
+            discoverWorks: async (R, pg, isIncremental = false) => {
                 const W = new Map();
                 const df = `from_publication_date:2000-01-01`;
 
-                pg(10, 'Phase 1: Discovery...');
-                const queries = [
-                    { filter: `default.search:agrivoltaic|agrivoltaics,${df}`, pages: 10, label: 'agrivoltaic' },
-                    { filter: `default.search:agrophotovoltaic|agrophotovoltaics,${df}`, pages: 5, label: 'agrophotovoltaic' },
-                    { filter: `default.search:"agri-PV"|"agro-PV",${df}`, pages: 3, label: 'agri-PV' },
-                    { filter: `default.search:"solar sharing" agriculture,${df}`, pages: 2, label: 'solar-sharing' },
-                    { filter: `default.search:aquavoltaic|rangevoltaic|ecovoltaic,${df}`, pages: 2, label: 'niche' },
-                    { filter: `concepts.wikidata:Q109680063,${df}`, pages: 5, label: 'concept' },
-                    { filter: `default.search:"photovoltaic greenhouse"|"greenhouse photovoltaic",${df}`, pages: 3, label: 'pv-greenhouse' },
-                    { filter: `default.search:"dual-use" photovoltaic agriculture,${df}`, pages: 2, label: 'dual-use' },
-                ];
-                // These run concurrently
-                await Promise.all(queries.map(q => paginate(W, q.filter, q.pages, q.label)));
+                let aliasMap = new Map();
+                let uCands = new Set();
 
-                pg(30, 'Phase 1A: Resolving Aliases...');
-                const candMap = new Map();
-                for (const [, w] of W) for (const s of (w.authorships || [])) if (s.author?.id && !candMap.has(s.author.id)) candMap.set(s.author.id, { id: s.author.id, display_name: s.author.display_name || '', institution: s.institutions?.[0]?.display_name || '' });
-                const cands = [...candMap.values()];
-                const { aliasMap } = buildAliasMap(W, cands);
-                normalizeAuthorships(W, aliasMap);
+                if (!isIncremental) {
+                    pg(10, 'Phase 1: Discovery...');
+                    const queries = [
+                        { filter: `default.search:agrivoltaic|agrivoltaics,${df}`, pages: 10, label: 'agrivoltaic' },
+                        { filter: `default.search:agrophotovoltaic|agrophotovoltaics,${df}`, pages: 5, label: 'agrophotovoltaic' },
+                        { filter: `default.search:"agri-PV"|"agro-PV",${df}`, pages: 3, label: 'agri-PV' },
+                        { filter: `default.search:"solar sharing" agriculture,${df}`, pages: 2, label: 'solar-sharing' },
+                        { filter: `default.search:aquavoltaic|rangevoltaic|ecovoltaic,${df}`, pages: 2, label: 'niche' },
+                        { filter: `concepts.wikidata:Q109680063,${df}`, pages: 5, label: 'concept' },
+                        { filter: `default.search:"photovoltaic greenhouse"|"greenhouse photovoltaic",${df}`, pages: 3, label: 'pv-greenhouse' },
+                        { filter: `default.search:"dual-use" photovoltaic agriculture,${df}`, pages: 2, label: 'dual-use' },
+                    ];
+                    await Promise.all(queries.map(q => paginate(W, q.filter, q.pages, q.label)));
 
-                pg(40, 'Phase 1B: Fuzzy Matching Seeds...');
-                const cm2 = new Map();
-                for (const [, w] of W) for (const s of (w.authorships || [])) if (s.author?.id && !cm2.has(s.author.id)) cm2.set(s.author.id, { id: s.author.id, display_name: s.author.display_name || '', institution: s.institutions?.[0]?.display_name || '' });
-                const c2 = [...cm2.values()];
-                const cIdx = fuzzy.buildIndex(c2);
+                    pg(30, 'Phase 1A: Resolving Aliases...');
+                    const candMap = new Map();
+                    for (const [, w] of W) for (const s of (w.authorships || [])) if (s.author?.id && !candMap.has(s.author.id)) candMap.set(s.author.id, { id: s.author.id, display_name: s.author.display_name || '', institution: s.institutions?.[0]?.display_name || '' });
+                    const cands = [...candMap.values()];
+                    const { aliasMap: aMap } = buildAliasMap(W, cands);
+                    aliasMap = aMap;
+                    normalizeAuthorships(W, aliasMap);
 
-                const allP = [];
-                for (let si = 0; si < R.length; si++) {
-                    const sn = R[si]._qn || R[si].display_name, sa = R[si]._seed?.affiliation || '';
-                    for (const c of fuzzy.getCandidates(sn, cIdx)) { const sc = fuzzy.score(sn, sa, c.display_name, c.institution); if (sc >= 65) allP.push({ si, cid: c.id, cn: c.display_name, institution: c.institution, sc }); }
-                }
-                allP.sort((a, b) => b.sc - a.sc);
-                const uSeeds = new Set(), uCands = new Set(), asgn = new Map();
-                for (const p of allP) { if (uSeeds.has(p.si) || uCands.has(p.cid)) continue; uSeeds.add(p.si); uCands.add(p.cid); asgn.set(p.si, p); }
-                for (let si = 0; si < R.length; si++) {
-                    const a = asgn.get(si);
-                    if (a) {
-                        R[si].id = a.cid;
-                        R[si].display_name = a.cn;
-                        // FIX: Update affiliation from OpenAlex match
-                        if (a.institution) R[si].inst = getInst(a.institution);
+                    pg(40, 'Phase 1B: Fuzzy Matching Seeds...');
+                    const cm2 = new Map();
+                    for (const [, w] of W) for (const s of (w.authorships || [])) if (s.author?.id && !cm2.has(s.author.id)) cm2.set(s.author.id, { id: s.author.id, display_name: s.author.display_name || '', institution: s.institutions?.[0]?.display_name || '' });
+                    const c2 = [...cm2.values()];
+                    const cIdx = fuzzy.buildIndex(c2);
 
-                        R[si]._matchScore = a.sc;
-                        R[si]._matchMethod = 'fuzzy';
-                        const ids = new Set([a.cid]); for (const [aid, cid] of aliasMap) if (cid === a.cid) ids.add(aid); R[si]._allIds = [...ids];
+                    const allP = [];
+                    for (let si = 0; si < R.length; si++) {
+                        const sn = R[si]._qn || R[si].display_name, sa = R[si]._seed?.affiliation || '';
+                        for (const c of fuzzy.getCandidates(sn, cIdx)) { const sc = fuzzy.score(sn, sa, c.display_name, c.institution); if (sc >= 65) allP.push({ si, cid: c.id, cn: c.display_name, institution: c.institution, sc }); }
                     }
-                    else { R[si].id = `local:${R[si]._seed?.id}`; R[si]._matchMethod = 'none'; }
+                    allP.sort((a, b) => b.sc - a.sc);
+                    const uSeeds = new Set(), asgn = new Map();
+                    for (const p of allP) { if (uSeeds.has(p.si) || uCands.has(p.cid)) continue; uSeeds.add(p.si); uCands.add(p.cid); asgn.set(p.si, p); }
+                    for (let si = 0; si < R.length; si++) {
+                        const a = asgn.get(si);
+                        if (a) {
+                            R[si].id = a.cid;
+                            R[si].display_name = a.cn;
+                            if (a.institution) R[si].inst = getInst(a.institution);
+                            R[si]._matchScore = a.sc;
+                            R[si]._matchMethod = 'fuzzy';
+                            const ids = new Set([a.cid]); for (const [aid, cid] of aliasMap) if (cid === a.cid) ids.add(aid); R[si]._allIds = [...ids];
+                        }
+                        else { R[si].id = `local:${R[si]._seed?.id}`; R[si]._matchMethod = 'none'; }
+                    }
                 }
 
-                pg(50, 'Phase 1C: Rescuing Missing Profiles...');
+                pg(50, isIncremental ? 'Phase 1: Locating New Profiles...' : 'Phase 1C: Rescuing Missing Profiles...');
                 const missing = R.filter(a => a.id.startsWith('local:') || a.id.startsWith('pending:'));
                 if (missing.length) {
                     const BATCH = 15, chunks = [];
                     for (let i = 0; i < missing.length; i += BATCH) chunks.push(missing.slice(i, i + BATCH));
                     const gUsed = new Set(uCands);
 
-                    // Concurrent batches for rescue
                     await Promise.all(chunks.map(async chunk => {
                         const terms = chunk.map(r => { const n = r._qn || r.display_name; if (fuzzy.isUsername(n)) { const p = fuzzy.parseUsername(n); return p.parts.filter(x => x.length > 2).join(' '); } return fuzzy.norm(n).replace(/[^a-z\s-]/g, ''); }).filter(n => n.length > 3);
                         const uq = [...new Set(terms)].join('|');
@@ -1904,9 +1993,7 @@
                             uS.add(p.ci); uC.add(p.cid); gUsed.add(p.cid);
                             chunk[p.ci].id = p.cid;
                             chunk[p.ci].display_name = p.cn;
-                            // FIX: Update affiliation from OpenAlex rescue
                             if (p.inst) chunk[p.ci].inst = getInst(p.inst);
-
                             chunk[p.ci]._matchScore = p.sc;
                             chunk[p.ci]._matchMethod = 'rescue';
                             chunk[p.ci]._allIds = [p.cid];
@@ -1921,16 +2008,15 @@
                     for (const a of resolved) { allIds.add(a.id); if (a._allIds) a._allIds.forEach(id => allIds.add(id)); }
                     const idList = [...allIds];
                     const batches = [];
-                    // Batch size of 25 is safe for OpenAlex URL length limits
                     for (let i = 0; i < idList.length; i += 25) batches.push(idList.slice(i, i + 25).join('|'));
 
                     const tasks = batches.map(b => ({ filter: `default.search:agrivoltaic|agrivoltaics|agrophotovoltaic|"agri-PV"|"solar sharing"|solar|photovoltaic,authorships.author.id:${b},${df}`, pages: 3, label: `AK (${b.split('|').length})` }));
 
-                    // FIX: Ensure this is concurrent using Promise.all
-                    // This fires all batch requests simultaneously (throttled by the semaphore in fetchJSON)
                     await Promise.all(tasks.map(t => paginate(W, t.filter, t.pages, t.label)));
 
-                    normalizeAuthorships(W, aliasMap);
+                    if (!isIncremental) {
+                        normalizeAuthorships(W, aliasMap);
+                    }
                 }
 
                 pg(90, 'Filtering low relevance works...');
@@ -1964,7 +2050,7 @@
                 const rM = new Map(R.map(r => [r.id, r]));
                 app.data.pubs = P.map(p => {
                     const m = (p.authorships || []).filter(a => rM.has(a.author?.id)).map(a => rM.get(a.author.id));
-                    if (!m.length && p._t !== 'Archived') return null; // keep if archived works are fine, but basically we want works with members
+                    if (!m.length && p._t !== 'Archived') return null;
                     let ts = (p.topics || []).filter(t => (t.score || 0) >= 0.25).map(t => t.display_name).slice(0, 7);
                     if (!ts.length) ts = (p.concepts || []).filter(c => (c.score || 0) > 0.55 && (c.level || 0) > 0 && !TOPIC_BLOCK.has(norm(c.display_name))).map(c => c.display_name).slice(0, 7);
                     const cts = ts.filter(t => !TOPIC_NEG.has(norm(t)));
@@ -1974,7 +2060,7 @@
                         cts.forEach(t => { r.topics[t] = (r.topics[t] || 0) + 1; app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1) })
                     });
                     if (!cts.length && ts.length) return null;
-                    if (p._hasAbs) app.cache.set(p.id, p._abstract); // Store abstract into cache instantly
+                    if (p._hasAbs) app.cache.set(p.id, p._abstract);
                     return {
                         id: p.id, title: p.title, year: p.publication_year, cites: p.cited_by_count || 0,
                         doi: p.doi, url: p.primary_location?.landing_page_url || p.doi || p.primary_location?.pdf_url,
@@ -1995,8 +2081,8 @@
                 });
                 app.data.graph = { nodes: app.data.researchers.map(r => ({ ...r, deg: D.get(r.id) || 0, rad: clamp(10 + Math.sqrt(r.net_works || 0) * 3 + Math.sqrt(D.get(r.id) || 0) * 1.5, 10, 30) })), links: [...L.values()] }
             },
-            pack: () => { const D = { t: [], s: [] }, gx = (a, v) => { if (!v) return -1; let i = a.indexOf(v); return i === -1 ? (a.push(v), a.length - 1) : i }; return { r: app.data.researchers.map(r => ({ id: r.id, n: r.display_name, i: r.inst, nw: r.net_works, nc: r.net_cited, nh: r.net_hindex, t: Object.keys(r.topics).map(t => gx(D.t, t)), d: r.deg })), p: app.data.pubs.map(p => ({ id: p.id, t: p.title, y: p.year, c: p.cites, d: p.doi, u: p.url, s: gx(D.s, p.source), oa: p.oa ? 1 : 0, r: p.score, w: p.why, ti: p.tier === 'Core' ? 3 : (p.tier === 'Strong' ? 2 : 1), tp: p.topics.map(t => gx(D.t, t)), aa: p.allA.slice(0, 10).map(a => a.name), ma: p.memA.map(m => m.id) })), D } },
-            restore: c => { const D = c.D || { t: [], s: [] }; app.data.researchers = c.r.map(r => ({ id: r.id, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, net_hindex: r.nh || 0, topics: (r.t || []).reduce((a, i) => { if (D.t[i]) a[D.t[i]] = 1; return a }, {}), deg: r.deg || 0, color: app.gCol(r.i) })); const rM = new Map(app.data.researchers.map(r => [r.id, r])); app.data.pubs = c.p.map(p => { const m = (p.ma || []).map(i => rM.get(i)).filter(Boolean), rt = (p.tp || []).map(i => D.t[i]).filter(Boolean), ct = rt.filter(t => !TOPIC_NEG.has(norm(t))); if (!ct.length && rt.length) return null; return { id: p.id, title: p.t, year: p.y, cites: p.c, doi: p.d, url: p.u, source: typeof p.s === 'number' ? D.s[p.s] : p.s, oa: !!p.oa, type: p.ty, score: p.r, why: p.w || [], tier: p.ti === 3 ? 'Core' : (p.ti === 2 ? 'Strong' : 'Weak'), topics: ct, allA: (p.aa || []).map(n => { const f = m.find(z => z.display_name === n); return { name: n, id: f ? f.id : null, mem: !!f } }), memA: m } }).filter(Boolean); app.data.topics = new Map; app.data.pubs.forEach(p => p.topics.forEach(t => app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1))); app.buildGraph() },
+            pack: () => { const D = { t: [], s: [] }, gx = (a, v) => { if (!v) return -1; let i = a.indexOf(v); return i === -1 ? (a.push(v), a.length - 1) : i }; return { r: app.data.researchers.map(r => ({ id: r.id, si: r._seedId, n: r.display_name, i: r.inst, nw: r.net_works, nc: r.net_cited, nh: r.net_hindex, t: Object.keys(r.topics).map(t => gx(D.t, t)), d: r.deg })), p: app.data.pubs.map(p => ({ id: p.id, t: p.title, y: p.year, c: p.cites, d: p.doi, u: p.url, s: gx(D.s, p.source), oa: p.oa ? 1 : 0, r: p.score, w: p.why, ti: p.tier === 'Core' ? 3 : (p.tier === 'Strong' ? 2 : 1), tp: p.topics.map(t => gx(D.t, t)), aa: p.allA.slice(0, 10).map(a => a.name), ma: p.memA.map(m => m.id) })), D } },
+            restore: c => { const D = c.D || { t: [], s: [] }; app.data.researchers = c.r.map(r => ({ id: r.id, _seedId: r.si, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, net_hindex: r.nh || 0, topics: (r.t || []).reduce((a, i) => { if (D.t[i]) a[D.t[i]] = 1; return a }, {}), deg: r.deg || 0, color: app.gCol(r.i) })); const rM = new Map(app.data.researchers.map(r => [r.id, r])); app.data.pubs = c.p.map(p => { const m = (p.ma || []).map(i => rM.get(i)).filter(Boolean), rt = (p.tp || []).map(i => D.t[i]).filter(Boolean), ct = rt.filter(t => !TOPIC_NEG.has(norm(t))); if (!ct.length && rt.length) return null; return { id: p.id, title: p.t, year: p.y, cites: p.c, doi: p.d, url: p.u, source: typeof p.s === 'number' ? D.s[p.s] : p.s, oa: !!p.oa, type: p.ty, score: p.r, why: p.w || [], tier: p.ti === 3 ? 'Core' : (p.ti === 2 ? 'Strong' : 'Weak'), topics: ct, allA: (p.aa || []).map(n => { const f = m.find(z => z.display_name === n); return { name: n, id: f ? f.id : null, mem: !!f } }), memA: m } }).filter(Boolean); app.data.topics = new Map; app.data.pubs.forEach(p => p.topics.forEach(t => app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1))); app.buildGraph() },
             gCol: i => { if (!app.col.has(i)) app.col.set(i, COLORS[app.col.size % COLORS.length]); return app.col.get(i) },
             spark: (d, w = 48, h = 16) => { const m = Math.max(...d, 1), pts = d.map((v, i) => `${(i / (d.length - 1)) * w},${h - (v / m) * (h - 2) - 1}`).join(' '); return `<svg class="sparkline-container" width="${w}" height="${h}"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="${pts}"/></svg>` },
             render: () => {
@@ -2014,7 +2100,6 @@
 
                 const am = new Set(F.flatMap(p => p.memA.map(a => a.id))), yc = new Map, cc = new Map; F.forEach(p => { if (p.year) { yc.set(p.year, (yc.get(p.year) || 0) + 1); cc.set(p.year, (cc.get(p.year) || 0) + p.cites) } }); const yrs = [...yc.keys()].sort((a, b) => a - b);
 
-                // Enhanced stats without H-Index and Price%
                 el('statsGrid').innerHTML = [
                     ['MEMBERS', am.size],
                     ['WORKS', F.length, yrs.map(y => yc.get(y))],
@@ -2120,7 +2205,7 @@
                 app.d3.sim.force('x', null).force('y', null);
 
                 if (layout === 'radial') {
-                    const sorted = [...nodes].sort((a, b) => b.deg - a.deg);
+                    const sorted = [...nodes].sort((a,b) => b.deg - a.deg);
                     const center = sorted[0];
                     const rings = new Map();
                     const adj = new Map();
@@ -2289,7 +2374,6 @@
             profile: r => {
                 el('researcherModal').classList.add('active');
 
-                // FIX: Sort descending by citations (most relevant/impactful first), then score
                 const P = app.data.pubs
                     .filter(p => p.memA.some(a => a.id === r.id))
                     .sort((a, b) => b.score - a.score || b.cites - a.cites);
@@ -2297,8 +2381,6 @@
                 const yc = new Map; P.forEach(p => yc.set(p.year, (yc.get(p.year) || 0) + 1)); const top = [...Object.entries(r.topics)].sort((a, b) => b[1] - a[1]).slice(0, 8);
                 const cent = app.centralities ? app.centralities.get(r.id) : null;
                 const vel = r._velocity || {};
-
-                // ... (rest of the profile HTML generation remains the same)
 
                 el('researcherContent').innerHTML = `<div class="sticky top-0 bg-white z-10 p-5 border-b border-slate-100"><div class="flex justify-between items-start"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0, 2)}</div><div><h2 class="text-lg font-bold text-slate-800">${esc(r.display_name)}</h2><p class="text-xs text-slate-500">${esc(r.inst)}</p>${vel.trend ? `<p class="text-[9px] mt-0.5 ${vel.trend === 'accelerating' ? 'text-green-600' : vel.trend === 'decelerating' ? 'text-red-500' : 'text-slate-400'}">${vel.trend === 'accelerating' ? '🚀 Accelerating' : vel.trend === 'decelerating' ? '📉 Decelerating' : '➡️ Stable'} · ${vel.velocity?.toFixed(1) || 0} papers/yr${vel.streak > 2 ? ` · 🔥 ${vel.streak}yr streak` : ''}</p>` : ''}</div></div><button onclick="document.getElementById('researcherModal').classList.remove('active')"><i class="fas fa-times"></i></button></div><div class="grid grid-cols-4 gap-2 mt-4 text-center"><div class="bg-slate-50 p-2 rounded"><span class="block font-bold text-xl">${P.length}</span><span class="text-[9px] uppercase font-bold text-slate-400">Pubs</span></div><div class="bg-slate-50 p-2 rounded"><span class="block font-bold text-xl">${P.reduce((s, p) => s + p.cites, 0)}</span><span class="text-[9px] uppercase font-bold text-slate-400">Citations</span></div><div class="bg-emerald-50 p-2 rounded border border-emerald-100"><span class="block font-bold text-xl text-emerald-700">${r.net_hindex || 0}</span><span class="text-[9px] uppercase font-bold text-emerald-600" title="Internal network h-index">H-Index</span></div><div class="bg-slate-50 p-2 rounded flex flex-col items-center justify-center">${app.spark([...yc.keys()].sort().map(y => yc.get(y)), 60, 18)}<span class="text-[9px] mt-1 font-bold text-slate-400">Trend</span></div></div>
     ${cent ? `<div class="mt-3 bg-slate-50 rounded-lg p-3"><h4 class="text-[9px] font-bold text-slate-400 uppercase mb-2">Network Centrality</h4><div class="grid grid-cols-4 gap-2">${[{ label: 'Betweenness', val: cent.betweenness, desc: 'Bridge connector', color: 'blue' }, { label: 'PageRank', val: cent.pagerank, desc: 'Scholarly influence', color: 'purple' }, { label: 'Eigenvector', val: cent.eigenvector, desc: 'Connected influence', color: 'cyan' }, { label: 'Brokerage', val: cent.brokerage, desc: 'Structural holes', color: 'amber' }].map(m => `<div class="text-center"><div class="relative w-10 h-10 mx-auto mb-1"><svg viewBox="0 0 36 36" class="w-10 h-10"><path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" stroke-width="3"/><path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${m.color === 'blue' ? '#3b82f6' : m.color === 'purple' ? '#8b5cf6' : m.color === 'cyan' ? '#06b6d4' : '#f59e0b'}" stroke-width="3" stroke-dasharray="${(m.val * 100).toFixed(0)}, 100" stroke-linecap="round"/></svg><div class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-slate-700">${(m.val * 100).toFixed(0)}</div></div><div class="text-[8px] font-semibold text-slate-600">${m.label}</div><div class="text-[7px] text-slate-400">${m.desc}</div></div>`).join('')}</div></div>` : ''}
