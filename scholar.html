@@ -1203,14 +1203,30 @@
         const norm = fuzzy.norm;
 
         const RX = {
+            // "Explicit" remains the same (high value buzzwords)
             explicit: /\b(agri[\s-]?(?:pv|photo)?voltai[ckqs]?s?|agro[\s-]?(?:photo)?voltai[ckqs]?s?|agri[\s-]?pv|agro[\s-]?pv|solar[\s-]?sharing|farming[\s-]?(?:with|under)[\s-]?(?:solar|pv)|photovoltaic[\s-]?greenhouse|greenhouse[\s-]?photovoltaic|range[\s-]?voltaic|ecovoltaic|aqua[\s-]?(?:voltaic|pv))\b/i,
-            solar: /\b(pv|photovoltai[ckqs]?|solar\s*(?:module|panel|array|energy|power|cell|park|installation|tracker|generator))\b/i,
-            agri: /\b(crop|harvest|biomass|agronom|horticultur|viticultur|orchard|vineyard|greenhouse|livestock|pasture|grazing|sheep|cattle|arable|cultivat|irrigation|soil\s*moisture|shade\s*toleran|photosynthe|transpiration|pollinator|forage|silage|hay|food\s*(?:production|security)|aquacultur|silvopastur)\b/i,
-            interaction: /\b(dual[\s-]?use|co[\s-]?locat|land[\s-]?use[\s-]?efficien|\bler\b|land[\s-]?equivalent[\s-]?ratio|shading\s*effect|(?:beneath|under)\s*(?:panels?|arrays?)|inter[\s-]?row|microclimat|light[\s-]?management|\bpar\b|photosynthetical[\s-]?active|(?:food|water)[\s-]?(?:energy|water)[\s-]?(?:water|food)|nexus)\b/i,
+            
+            // Expanded Solar terms
+            solar: /\b(pv|photovoltai[ckqs]?|solar\s*(?:module|panel|array|farm|park|field|energy|power|cell|installation|tracker|generator))\b/i,
+            
+            // Expanded Agri terms to include vegetation management and specific crops/animals
+            agri: /\b(crop|harvest|biomass|agronom|horticultur|viticultur|orchard|vineyard|greenhouse|arable|cultivat|irrigation|soil\s*moisture|shade\s*toleran|photosynthe|transpiration|pollinator|forage|silage|hay|food\s*(?:production|security)|aquacultur|silvopastur|vegetation\s*management|land\s*management)\b/i,
+            
+            // NEW: Specific Livestock/Grazing terms (High signal when paired with solar)
+            livestock: /\b(sheep|cattle|lamb|livestock|pasture|grazing|herd|animal\s*welfare|wool|dairy|cow|goat)\b/i,
+
+            // Expanded Interaction terms
+            interaction: /\b(dual[\s-]?use|co[\s-]?locat|land[\s-]?use[\s-]?efficien|\bler\b|land[\s-]?equivalent[\s-]?ratio|shading\s*effect|(?:beneath|under|between)\s*(?:panels?|arrays?|rows?)|inter[\s-]?row|microclimat|light[\s-]?management|\bpar\b|photosynthetical[\s-]?active|(?:food|water)[\s-]?(?:energy|water)[\s-]?(?:water|food)|nexus|synerg)\b/i,
+            
+            // Existing Negatives
             neg: /\b(cancer|tumor|biomed|patient|surgery|clinic|hospital|medic|therap|gene(?:tic|ome|s)?\b|rna|dna|protein|cell\s*(?:culture|line|signaling)|molecular|disease|syndrome|disorder|morbidity|mortality|epidemi|virus|bacteri|infection|parkinson|alzheimer|stroke|diabetes|insulin|obesity|cardio|respiratory|lewy|dementia|schizo|autism|spin\b|magnetic|galaxy|telescope|neutron|boson|nanotube|graphene|supercapacit|lithium|battery(?!.*(?:solar|pv|storage)))\b/i,
-            prox: /\b(?:solar|pv|photovoltai).{0,60}(?:crop|farm|agri|plant|yield|soil|graz)|(?:crop|farm|agri|plant|yield|soil|graz).{0,60}(?:solar|pv|photovoltai)/i,
+            
+            // Expanded Proximity check
+            prox: /\b(?:solar|pv|photovoltai).{0,80}(?:crop|farm|agri|plant|yield|soil|graz|sheep|pasture|vegetation)|(?:crop|farm|agri|plant|yield|soil|graz|sheep|pasture|vegetation).{0,80}(?:solar|pv|photovoltai)/i,
+            
             tech: /\b(bifacial|tracking|inverter|mounting|racking|albedo|ground[\s-]?cover|\bgcr\b|row[\s-]?spacing|tilt[\s-]?angle|elevation|stilt|vertical[\s-]?pv|semi[\s-]?transparent)\b/i
         };
+
 
         const TOPIC_NEG = new Set([
             "parkinson's disease mechanisms and treatments", "air quality and health impacts", "global health care issues", "climate change and health impacts", "global public health policies and epidemiology", "global maternal and child health", "neurological diseases and metabolism", "health disparities and outcomes", "genetic associations and epidemiology", "nuclear receptors and signaling", "covid-19 epidemiological studies", "cellular transport and secretion", "autism spectrum disorder research", "sars-cov-2 and covid-19 research", "sphingolipid metabolism and signaling", "neurological disorders and treatments", "advanced sensor and energy harvesting materials", "dielectric materials and actuators", "advanced materials and mechanics", "atmospheric chemistry and aerosols", "air quality monitoring and forecasting", "geology and paleoclimatology research", "genetics and neurodevelopmental disorders", "lysosomal storage disorders research", "antibiotic resistance in bacteria", "genomic variations and chromosomal abnormalities", "genomics and rare diseases", "dementia and cognitive impairment research", "sars-cov-2 detection and testing", "healthcare cost, quality, practices", "rna regulation and disease", "liver disease diagnosis and treatment", "epigenetics and dna methylation", "genetic syndromes and imprinting", "supercapacitor materials and fabrication", "carbon nanotubes in composites", "graphene research and applications", "genomics and phylogenetic studies", "mxene and max phase materials", "child nutrition and water access", "liver disease and transplantation", "microbial community ecology and physiology", "alzheimer's disease research and treatments", "genetic neurodegenerative diseases", "rna and protein synthesis mechanisms", "rna research and splicing", "diabetes, cardiovascular risks, and lipoproteins", "health systems, economic evaluations, quality of life", "cryospheric studies and observations", "rna modifications and cancer", "antibiotic use and resistance", "nutritional studies and diet", "alcohol consumption and health effects", "smoking behavior and cessation", "endoplasmic reticulum stress and disease", "aeolian processes and effects", "energy harvesting in wireless networks", "health, environment, cognitive aging", "healthcare systems and reforms"
@@ -1236,21 +1252,75 @@
             const ab = absText ? fuzzy.norm(absText) : '';
             const full = `${t} ${kw} ${ab}`;
 
+            // 1. Check for Explicit Agrivoltaic Terms (The "Buzzwords")
             const expT = RX.explicit.test(t), expK = !expT && RX.explicit.test(kw), expA = !expT && !expK && ab && RX.explicit.test(ab);
-            if (expT) { s += 45; why.push('exp-title'); } else if (expK) { s += 30; why.push('exp-kw'); } else if (expA) { s += 20; why.push('exp-abs'); }
+            
+            if (expT) { s += 45; why.push('exp-title'); } 
+            else if (expK) { s += 30; why.push('exp-kw'); } 
+            else if (expA) { s += 20; why.push('exp-abs'); }
 
-            const hSol = RX.solar.test(full), hAgr = RX.agri.test(full), hInt = RX.interaction.test(full);
-            if (hSol && hAgr) { if (RX.prox.test(t)) { s += 20; why.push('prox-t'); } else if (ab && RX.prox.test(ab)) { s += 12; why.push('prox-a'); } else { s += 5; why.push('s+a'); } if (hInt) { s += 8; why.push('int'); } } else if (hSol && hInt) { s += 5; why.push('s+int'); }
+            // 2. The "Implicit" Intersection Logic (Solar + Agri/Livestock)
+            const hSol = RX.solar.test(full);
+            const hAgr = RX.agri.test(full);
+            const hLive = RX.livestock.test(full); // Check for sheep, grazing, etc.
+            const hInt = RX.interaction.test(full);
 
+            // Scoping specifically to Title for strong signal
+            const tSol = RX.solar.test(t);
+            const tAgr = RX.agri.test(t);
+            const tLive = RX.livestock.test(t);
+
+            if (hSol) {
+                // CASE A: Solar + Livestock (e.g., "Sheep grazing under solar panels")
+                if (tSol && tLive) {
+                    s += 35; why.push('title-solar+livestock'); // High score even without "agrivoltaics" keyword
+                } else if (hLive && RX.prox.test(full)) {
+                    s += 20; why.push('prox-solar+livestock');
+                }
+
+                // CASE B: Solar + Agriculture/Vegetation (e.g., "Vegetation management in solar parks")
+                else if (tSol && tAgr) {
+                    // Check for specificity to avoid "Solar pumps for irrigation" (unless interaction is present)
+                    if (hInt || t.includes('vegetation') || t.includes('management')) {
+                         s += 25; why.push('title-solar+agri-mgmt');
+                    } else {
+                         s += 15; why.push('title-solar+agri');
+                    }
+                }
+
+                // CASE C: Abstract mentions intersection
+                else if (hSol && (hAgr || hLive)) { 
+                    if (RX.prox.test(t)) { s += 20; why.push('prox-t'); } 
+                    else if (ab && RX.prox.test(ab)) { s += 12; why.push('prox-a'); } 
+                    else if (hInt) { s += 10; why.push('solar+agri+interact'); }
+                    else { s += 4; why.push('s+a-weak'); } 
+                }
+            }
+
+            // 3. Technical Boosters
             if (RX.tech.test(full) && (hSol || expT || expK)) { s += 3; why.push('tech'); }
+            
+            // 4. OpenAlex Concepts
             if (w.concepts?.some(c => fuzzy.norm(c.display_name).includes('agrivoltaic') && c.score > 0.4)) { s += 10; why.push('concept'); }
 
-            s += Math.min(4, Math.log10((w.cited_by_count || 0) + 1) * 1.5);
-            if (w.publication_year >= CFG.now - 2) s += 1;
-            if (RX.neg.test(full) && !expT && !expK) { s -= 30; why.push('neg'); }
-            if ((w.topics || []).length > 0 && !(w.topics || []).some(tp => (tp.score || 0) >= 0.25 && !TOPIC_NEG.has(fuzzy.norm(tp.display_name)))) { s = 0; why.push('neg-topic-only'); }
+            // 5. Impact Bonus (Citations & Recency)
+            s += Math.min(5, Math.log10((w.cited_by_count || 0) + 1) * 2);
+            if (w.publication_year >= CFG.now - 2) s += 2;
 
-            return { s: Math.max(0, Math.round(s * 10) / 10), why, tier: s >= 35 ? 'Core' : s >= 15 ? 'Strong' : s >= 8 ? 'Related' : 'Peripheral' };
+            // 6. Negative filtering (Medical/Physics noise)
+            // We trust the score if it has explicit terms or strong Title intersection
+            const isStrongContext = expT || expK || (tSol && tLive) || (tSol && tAgr && hInt);
+            
+            if (RX.neg.test(full) && !isStrongContext) { 
+                s -= 30; why.push('neg'); 
+            }
+            
+            if ((w.topics || []).length > 0 && !(w.topics || []).some(tp => (tp.score || 0) >= 0.25 && !TOPIC_NEG.has(fuzzy.norm(tp.display_name)))) { 
+                // Only nuke score if we didn't find a strong title match
+                if (!isStrongContext) { s = 0; why.push('neg-topic-only'); }
+            }
+
+            return { s: Math.max(0, Math.round(s * 10) / 10), why, tier: s >= 30 ? 'Core' : s >= 15 ? 'Strong' : s >= 8 ? 'Related' : 'Peripheral' };
         };
 
         const computeHullPath = (points, pad = 24) => {
@@ -1534,6 +1604,13 @@
 
             const sc = scoreWork(w, absText);
             if (sc.s >= 1) {
+                // MEMORY OPTIMIZATION: Only keep the abstract in RAM if relevance > 5
+                if (sc.s <= 5) {
+                    delete w._abstract;
+                    delete w.abstract_inverted_index;
+                    w._hasAbs = false;
+                }
+
                 W.set(w.id, { ...w, _r: sc.s, _w: sc.why, _t: sc.tier });
                 return true;
             }
@@ -1543,7 +1620,7 @@
         const paginate = async (W, filter, maxPages, label = '') => {
             let cursor = '*', pn = 0, added = 0;
             while (cursor && pn++ < maxPages) {
-                const r = await fetchJSON(`${CFG.api}/works?filter=${filter}&per_page=200&cursor=${encodeURIComponent(cursor)}&sort=cited_by_count:desc&select=${WORK_FIELDS}`);
+                const r = await fetchJSON(`${CFG.api}/works?filter=${filter}&per_page=200&cursor=${encodeURIComponent(cursor)}&select=${WORK_FIELDS}`);
                 if (!r?.results?.length) break;
                 for (const w of r.results) if (ingestWork(W, w)) added++;
                 cursor = r.meta?.next_cursor;
@@ -2019,12 +2096,46 @@
                     }
                 }
 
-                pg(90, 'Filtering low relevance works...');
+                pg(85, 'Phase 3: Identifying high-impact authors for deep fetch...');
                 const seedAuthorIds = new Set();
                 for (const a of resolved) {
                     if (a._allIds) a._allIds.forEach(id => seedAuthorIds.add(id));
                     else seedAuthorIds.add(a.id);
                 }
+
+                // 1. Find our internal network authors with at least one paper > 10 relevance
+                const topAuthors = new Set();
+                for (const [id, w] of W) {
+                    if (w._r > 10) {
+                        w.authorships?.forEach(s => {
+                            if (s.author?.id && seedAuthorIds.has(s.author.id)) {
+                                topAuthors.add(s.author.id);
+                            }
+                        });
+                    }
+                }
+
+                // 2. Parallelized fetch to get all works for these top authors
+                if (topAuthors.size > 0) {
+                    pg(88, `Fetching complete portfolios for ${topAuthors.size} top authors...`);
+                    
+                    const deepTasks = [...topAuthors].map(authorId => ({
+                        // Notice the lack of keyword filters here—we want EVERYTHING they wrote
+                        filter: `authorships.author.id:${authorId},${df}`, 
+                        pages: 10, // Max 2,000 papers per top author
+                        label: `DeepFetch (${authorId})`
+                    }));
+
+                    // Run the fetch in parallel (managed by the semaphore limits)
+                    await Promise.all(deepTasks.map(t => paginate(W, t.filter, t.pages, t.label)));
+
+                    // Re-normalize in case new co-authors share known aliases
+                    if (!isIncremental) {
+                        normalizeAuthorships(W, aliasMap);
+                    }
+                }
+
+                pg(92, 'Filtering low relevance works...');
                 for (const [id, w] of W) {
                     if (w._r < CFG.minRel) {
                         const isSeedWork = w.authorships?.some(s => s.author?.id && seedAuthorIds.has(s.author.id));
@@ -2205,7 +2316,7 @@
                 app.d3.sim.force('x', null).force('y', null);
 
                 if (layout === 'radial') {
-                    const sorted = [...nodes].sort((a,b) => b.deg - a.deg);
+                    const sorted = [...nodes].sort((a, b) => b.deg - a.deg);
                     const center = sorted[0];
                     const rings = new Map();
                     const adj = new Map();
