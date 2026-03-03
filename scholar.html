@@ -1206,17 +1206,17 @@
             // "Explicit" remains the same (high value buzzwords)
             explicit: /\b(agri[\s-]?(?:pv|photo)?voltai[ckqs]?s?|agro[\s-]?(?:photo)?voltai[ckqs]?s?|agri[\s-]?pv|agro[\s-]?pv|solar[\s-]?sharing|farming[\s-]?(?:with|under)[\s-]?(?:solar|pv)|photovoltaic[\s-]?greenhouse|greenhouse[\s-]?photovoltaic|range[\s-]?voltaic|ecovoltaic|aqua[\s-]?(?:voltaic|pv))\b/i,
             
-            // Expanded Solar terms
-            solar: /\b(pv|photovoltai[ckqs]?|solar\s*(?:module|panel|array|farm|park|field|energy|power|cell|installation|tracker|generator))\b/i,
+            // EXPANDED: Added policy/infrastructure terms (development, project, facility, site)
+            solar: /\b(pv|photovoltai[ckqs]?|solar\s*(?:module|panel|array|farm|park|field|energy|power|cell|installation|tracker|generator|development|project|facility|site|infrastructure))\b/i,
             
-            // Expanded Agri terms to include vegetation management and specific crops/animals
-            agri: /\b(crop|harvest|biomass|agronom|horticultur|viticultur|orchard|vineyard|greenhouse|arable|cultivat|irrigation|soil\s*moisture|shade\s*toleran|photosynthe|transpiration|pollinator|forage|silage|hay|food\s*(?:production|security)|aquacultur|silvopastur|vegetation\s*management|land\s*management)\b/i,
+            // EXPANDED: Safely added root words (agricultur*, farm, farming, farmland, farmer)
+            agri: /\b(agricultur[a-z]*|farm(?:ing|land|ers?)?|crop|harvest|biomass|agronom|horticultur|viticultur|orchard|vineyard|greenhouse|arable|cultivat|irrigation|soil\s*moisture|shade\s*toleran|photosynthe|transpiration|pollinator|forage|silage|hay|food\s*(?:production|security)|aquacultur|silvopastur|vegetation\s*management|land\s*management)\b/i,
             
-            // NEW: Specific Livestock/Grazing terms (High signal when paired with solar)
+            // Specific Livestock/Grazing terms
             livestock: /\b(sheep|cattle|lamb|livestock|pasture|grazing|herd|animal\s*welfare|wool|dairy|cow|goat)\b/i,
 
-            // Expanded Interaction terms
-            interaction: /\b(dual[\s-]?use|co[\s-]?locat|land[\s-]?use[\s-]?efficien|\bler\b|land[\s-]?equivalent[\s-]?ratio|shading\s*effect|(?:beneath|under|between)\s*(?:panels?|arrays?|rows?)|inter[\s-]?row|microclimat|light[\s-]?management|\bpar\b|photosynthetical[\s-]?active|(?:food|water)[\s-]?(?:energy|water)[\s-]?(?:water|food)|nexus|synerg)\b/i,
+            // EXPANDED: Added "land use conflict/competition" for policy papers
+            interaction: /\b(dual[\s-]?use|co[\s-]?locat|land[\s-]?use[\s-]?(?:efficien|conflict|competition)?|\bler\b|land[\s-]?equivalent[\s-]?ratio|shading\s*effect|(?:beneath|under|between)\s*(?:panels?|arrays?|rows?)|inter[\s-]?row|microclimat|light[\s-]?management|\bpar\b|photosynthetical[\s-]?active|(?:food|water)[\s-]?(?:energy|water)[\s-]?(?:water|food)|nexus|synerg)\b/i,
             
             // Existing Negatives
             neg: /\b(cancer|tumor|biomed|patient|surgery|clinic|hospital|medic|therap|gene(?:tic|ome|s)?\b|rna|dna|protein|cell\s*(?:culture|line|signaling)|molecular|disease|syndrome|disorder|morbidity|mortality|epidemi|virus|bacteri|infection|parkinson|alzheimer|stroke|diabetes|insulin|obesity|cardio|respiratory|lewy|dementia|schizo|autism|spin\b|magnetic|galaxy|telescope|neutron|boson|nanotube|graphene|supercapacit|lithium|battery(?!.*(?:solar|pv|storage)))\b/i,
