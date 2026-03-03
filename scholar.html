@@ -1033,7 +1033,7 @@
             clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
         const COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4", "#ec4899", "#6366f1", "#84cc16", "#f97316", "#64748b", "#14b8a6"],
-            CFG = { api: "https://api.openalex.org", key: "asf_network_v18", now: new Date().getFullYear(), minRel: 5.0, cap: 50, conc: 8, defMin: 10.0 },
+            CFG = { api: "https://api.openalex.org", key: "asf_network_v21", now: new Date().getFullYear(), minRel: 5.0, cap: 50, conc: 8, defMin: 10.0 },
             INST_MAP = [['arizona', 'Univ. of Arizona'], ['unam', 'UNAM'], ['nacional autonoma', 'UNAM'], ['chile', 'Univ. de Chile'], ['fraunhofer', 'Fraunhofer ISE'], ['wageningen', 'Wageningen UR'], ['nrel', 'NREL'], ['davis', 'UC Davis'], ['umass', 'UMass Amherst'], ['massachusetts', 'UMass Amherst']],
             TOPIC_BLOCK = new Set(["medicine", "physics", "materials science", "computer science", "chemistry", "biology", "mathematics", "philosophy", "art", "psychology", "geology", "sociology"]);
 
@@ -1151,51 +1151,105 @@
                 return 0;
             };
 
-            const score = (seedName, seedAff, candName, candInstitution) => {
+            // NEW: Added isNicheContext flag
+            const score = (seedName, seedAff, candName, candInstitution, candPoolSize = 10, isNicheContext = false) => {
                 const sNorm = norm(seedName);
                 const cNorm = norm(candName);
-                if (sNorm === cNorm) return 100;
 
                 const sTokens = tokenize(seedName);
                 const cTokens = tokenize(candName);
 
                 if (!sTokens.length || !cTokens.length) return 0;
 
+                // RULE 1: Ban Single-Word Seed Matches
+                if (sTokens.length === 1 && !isUsername(seedName)) {
+                     return cTokens.length === 1 && levenshtein(sNorm, cNorm) <= 1 ? 95 : 0;
+                }
+
                 let nameScore = 0;
 
+                // RULE 2: Strict Username Matching
                 if (isUsername(seedName)) {
-                    const u = sNorm.replace(/[\d_.]/g, '');
-                    if (cNorm.includes(u)) nameScore = 60;
-                    if (cTokens.some(t => u.includes(t) && t.length > 3)) nameScore = 70;
-                    const uParts = seedName.toLowerCase().replace(/\d+/g, '').split(/[._\-]/).filter(p => p.length > 2);
-                    if (uParts.length > 1 && uParts.every(p => cTokens.some(ct => ct.includes(p) || p.includes(ct)))) nameScore = 85;
-                } else {
+                    const u = sNorm.replace(/[\d_.]/g, ''); 
+                    if (u.length > 3) {
+                        const firstInit = u.charAt(0);
+                        const possibleLastName = u.substring(1);
+                        const candFirstInit = cTokens[0].charAt(0);
+                        const candLastToken = cTokens[cTokens.length - 1];
+                        
+                        if (firstInit === candFirstInit && (candLastToken === possibleLastName || levenshtein(candLastToken, possibleLastName) <= 1)) {
+                            nameScore = 95; 
+                        } else if (cNorm.includes(u)) {
+                            nameScore = 60; 
+                        }
+                    }
+                } 
+                // RULE 3: Normal Name Matching
+                else {
+                    const sFirst = sTokens[0];
                     const sLast = sTokens[sTokens.length - 1];
+                    const cFirst = cTokens[0];
                     const cLast = cTokens[cTokens.length - 1];
-                    const lastMatch = sLast === cLast || levenshtein(sLast, cLast) <= 1 || (sLast.length > 3 && cLast.length > 3 && (sLast.includes(cLast) || cLast.includes(sLast)));
+
+                    const lastMatch = sLast === cLast || levenshtein(sLast, cLast) <= 1;
+                    const lastInCand = cTokens.includes(sLast);
 
                     if (lastMatch) {
-                        nameScore += 50;
-                        const sFirst = sTokens[0];
-                        const cFirst = cTokens[0];
-                        if (sFirst && cFirst) {
-                            if (sFirst === cFirst) nameScore += 40;
-                            else if (sFirst[0] === cFirst[0]) nameScore += 25;
-                            else if (levenshtein(sFirst, cFirst) <= 1) nameScore += 35;
+                        nameScore += 60;
+                    } else if (lastInCand) {
+                        nameScore += 40;
+                    }
+
+                    if (nameScore > 0) {
+                        if (sFirst === cFirst) nameScore += 40;
+                        else if (levenshtein(sFirst, cFirst) <= 2) nameScore += 30; 
+                        else if (sFirst.charAt(0) === cFirst.charAt(0)) nameScore += 25; 
+                    }
+                }
+                
+                if (sNorm === cNorm && nameScore > 0) {
+                    nameScore = 100;
+                }
+
+                // RULE 4: Institution Validation Penalty & "No Inst" Safeguard
+                const sAff = seedAff ? norm(seedAff) : '';
+                const cAff = candInstitution ? norm(candInstitution) : '';
+                const genericAffs = ['no inst', 'other', 'independiente', 'independent', ''];
+                
+                const hasSeedAff = !genericAffs.includes(sAff);
+                const hasCandAff = !genericAffs.includes(cAff);
+                
+                // If we are in Phase 1B (Niche Context), we trust the topic filter.
+                // We only care about collision risk in the global Phase 1C search.
+                const isGenericName = !isNicheContext && sTokens.length <= 2 && !isUsername(seedName) && candPoolSize > 3;
+
+                if (nameScore > 0) {
+                    if (hasSeedAff && hasCandAff) {
+                        const genericInstWords = new Set(['universidad', 'university', 'instituto', 'institute', 'department', 'departamento', 'hospital', 'center', 'centro', 'national', 'nacional', 'school', 'college', 'de', 'del', 'la', 'the', 'and', 'for', 'of', 'las', 'los', 'state', 'estado', 'autonomous', 'autonoma', 'research', 'investigacion']);
+                        const affTokens = tokenize(sAff).filter(t => t.length > 2 && !genericInstWords.has(t));
+                        
+                        let instMatch = false;
+                        if (affTokens.length > 0) {
+                            for (const t of affTokens) {
+                                if (cAff.includes(t)) { instMatch = true; break; }
+                            }
+                        } else {
+                            instMatch = levenshtein(sAff, cAff) <= 3 || cAff.includes(sAff) || sAff.includes(cAff);
                         }
-                    } else {
-                        const allSeedInCand = sTokens.every(st => cTokens.includes(st));
-                        if (allSeedInCand && sTokens.length > 1) nameScore = 80;
+                        
+                        if (instMatch) {
+                            nameScore += 15; 
+                        } else if (!isNicheContext) {
+                            // Only apply the brutal penalty if we are searching globally
+                            nameScore -= 30; 
+                        }
+                    } else if (isGenericName && (!hasSeedAff || !hasCandAff)) {
+                        // High collision risk + Missing Institution = Capped Score (Rejected)
+                        nameScore = Math.min(nameScore, 80);
                     }
                 }
 
-                if (seedAff && candInstitution) {
-                    const sAff = norm(seedAff);
-                    const cAff = norm(candInstitution);
-                    if (sAff && cAff && (sAff.includes(cAff) || cAff.includes(sAff))) nameScore += 10;
-                }
-
-                return Math.min(100, nameScore);
+                return Math.max(0, Math.min(100, nameScore));
             };
 
             return { score, norm, tokenize, isUsername, levenshtein, samePersonScore, buildIndex, getCandidates, parseUsername };
@@ -1205,25 +1259,25 @@
         const RX = {
             // "Explicit" remains the same (high value buzzwords)
             explicit: /\b(agri[\s-]?(?:pv|photo)?voltai[ckqs]?s?|agro[\s-]?(?:photo)?voltai[ckqs]?s?|agri[\s-]?pv|agro[\s-]?pv|solar[\s-]?sharing|farming[\s-]?(?:with|under)[\s-]?(?:solar|pv)|photovoltaic[\s-]?greenhouse|greenhouse[\s-]?photovoltaic|range[\s-]?voltaic|ecovoltaic|aqua[\s-]?(?:voltaic|pv))\b/i,
-            
+
             // EXPANDED: Added policy/infrastructure terms (development, project, facility, site)
             solar: /\b(pv|photovoltai[ckqs]?|solar\s*(?:module|panel|array|farm|park|field|energy|power|cell|installation|tracker|generator|development|project|facility|site|infrastructure))\b/i,
-            
+
             // EXPANDED: Safely added root words (agricultur*, farm, farming, farmland, farmer)
             agri: /\b(agricultur[a-z]*|farm(?:ing|land|ers?)?|crop|harvest|biomass|agronom|horticultur|viticultur|orchard|vineyard|greenhouse|arable|cultivat|irrigation|soil\s*moisture|shade\s*toleran|photosynthe|transpiration|pollinator|forage|silage|hay|food\s*(?:production|security)|aquacultur|silvopastur|vegetation\s*management|land\s*management)\b/i,
-            
+
             // Specific Livestock/Grazing terms
             livestock: /\b(sheep|cattle|lamb|livestock|pasture|grazing|herd|animal\s*welfare|wool|dairy|cow|goat)\b/i,
 
             // EXPANDED: Added "land use conflict/competition" for policy papers
             interaction: /\b(dual[\s-]?use|co[\s-]?locat|land[\s-]?use[\s-]?(?:efficien|conflict|competition)?|\bler\b|land[\s-]?equivalent[\s-]?ratio|shading\s*effect|(?:beneath|under|between)\s*(?:panels?|arrays?|rows?)|inter[\s-]?row|microclimat|light[\s-]?management|\bpar\b|photosynthetical[\s-]?active|(?:food|water)[\s-]?(?:energy|water)[\s-]?(?:water|food)|nexus|synerg)\b/i,
-            
+
             // Existing Negatives
             neg: /\b(cancer|tumor|biomed|patient|surgery|clinic|hospital|medic|therap|gene(?:tic|ome|s)?\b|rna|dna|protein|cell\s*(?:culture|line|signaling)|molecular|disease|syndrome|disorder|morbidity|mortality|epidemi|virus|bacteri|infection|parkinson|alzheimer|stroke|diabetes|insulin|obesity|cardio|respiratory|lewy|dementia|schizo|autism|spin\b|magnetic|galaxy|telescope|neutron|boson|nanotube|graphene|supercapacit|lithium|battery(?!.*(?:solar|pv|storage)))\b/i,
-            
+
             // Expanded Proximity check
             prox: /\b(?:solar|pv|photovoltai).{0,80}(?:crop|farm|agri|plant|yield|soil|graz|sheep|pasture|vegetation)|(?:crop|farm|agri|plant|yield|soil|graz|sheep|pasture|vegetation).{0,80}(?:solar|pv|photovoltai)/i,
-            
+
             tech: /\b(bifacial|tracking|inverter|mounting|racking|albedo|ground[\s-]?cover|\bgcr\b|row[\s-]?spacing|tilt[\s-]?angle|elevation|stilt|vertical[\s-]?pv|semi[\s-]?transparent)\b/i
         };
 
@@ -1246,108 +1300,108 @@
         };
 
         const scoreWork = (w, absText) => {
-    let s = 0, why = [];
-    const t = fuzzy.norm(w.title || "");
-    const kw = fuzzy.norm((w.keywords || []).map(k => k.display_name || k.keyword).join(" "));
-    const ab = absText ? fuzzy.norm(absText) : '';
-    const full = `${t} ${kw} ${ab}`;
+            let s = 0, why = [];
+            const t = fuzzy.norm(w.title || "");
+            const kw = fuzzy.norm((w.keywords || []).map(k => k.display_name || k.keyword).join(" "));
+            const ab = absText ? fuzzy.norm(absText) : '';
+            const full = `${t} ${kw} ${ab}`;
 
-    // --- 1. EXPLICIT SIGNAL STACKING ---
-    // Instead of else-if, we stack them. This is how we reach the high scores (50-70) 
-    // seen on the extreme left of the distribution chart for the very best papers.
-    const expT = RX.explicit.test(t);
-    const expK = RX.explicit.test(kw);
-    const expA = ab && RX.explicit.test(ab);
-    
-    if (expT) { s += 35; why.push('exp-title'); } 
-    if (expK) { s += 20; why.push('exp-kw'); } 
-    if (expA) { s += 15; why.push('exp-abs'); }
+            // --- 1. EXPLICIT SIGNAL STACKING ---
+            // Instead of else-if, we stack them. This is how we reach the high scores (50-70) 
+            // seen on the extreme left of the distribution chart for the very best papers.
+            const expT = RX.explicit.test(t);
+            const expK = RX.explicit.test(kw);
+            const expA = ab && RX.explicit.test(ab);
 
-    // --- 2. IMPLICIT INTERSECTION LOGIC ---
-    const hSol = RX.solar.test(full);
-    const hAgr = RX.agri.test(full);
-    const hLive = RX.livestock.test(full);
-    const hInt = RX.interaction.test(full);
+            if (expT) { s += 35; why.push('exp-title'); }
+            if (expK) { s += 20; why.push('exp-kw'); }
+            if (expA) { s += 15; why.push('exp-abs'); }
 
-    const tSol = RX.solar.test(t);
-    const tAgr = RX.agri.test(t);
-    const tLive = RX.livestock.test(t);
+            // --- 2. IMPLICIT INTERSECTION LOGIC ---
+            const hSol = RX.solar.test(full);
+            const hAgr = RX.agri.test(full);
+            const hLive = RX.livestock.test(full);
+            const hInt = RX.interaction.test(full);
 
-    let implicitScore = 0;
+            const tSol = RX.solar.test(t);
+            const tAgr = RX.agri.test(t);
+            const tLive = RX.livestock.test(t);
 
-    if (hSol) {
-        // CASE A: Solar + Livestock
-        if (tSol && tLive) {
-            implicitScore += 30; why.push('t-sol+live');
-        } else if (hLive && RX.prox.test(full)) {
-            implicitScore += 15; why.push('prox-sol+live');
-        }
-        // CASE B: Solar + Agriculture
-        else if (tSol && tAgr) {
-            if (hInt || t.includes('vegetation') || t.includes('management')) {
-                 implicitScore += 25; why.push('t-sol+agri-mgmt');
-            } else {
-                 implicitScore += 15; why.push('t-sol+agri');
+            let implicitScore = 0;
+
+            if (hSol) {
+                // CASE A: Solar + Livestock
+                if (tSol && tLive) {
+                    implicitScore += 30; why.push('t-sol+live');
+                } else if (hLive && RX.prox.test(full)) {
+                    implicitScore += 15; why.push('prox-sol+live');
+                }
+                // CASE B: Solar + Agriculture
+                else if (tSol && tAgr) {
+                    if (hInt || t.includes('vegetation') || t.includes('management')) {
+                        implicitScore += 25; why.push('t-sol+agri-mgmt');
+                    } else {
+                        implicitScore += 15; why.push('t-sol+agri');
+                    }
+                }
+                // CASE C: Abstract Intersections
+                else if (hSol && (hAgr || hLive)) {
+                    if (RX.prox.test(t)) { implicitScore += 18; why.push('prox-t'); }
+                    else if (ab && RX.prox.test(ab)) { implicitScore += 12; why.push('prox-a'); }
+                    else if (hInt) { implicitScore += 10; why.push('sol+agri+interact'); }
+                    else { implicitScore += 5; why.push('weak-overlap'); }
+                }
             }
-        }
-        // CASE C: Abstract Intersections
-        else if (hSol && (hAgr || hLive)) { 
-            if (RX.prox.test(t)) { implicitScore += 18; why.push('prox-t'); } 
-            else if (ab && RX.prox.test(ab)) { implicitScore += 12; why.push('prox-a'); } 
-            else if (hInt) { implicitScore += 10; why.push('sol+agri+interact'); }
-            else { implicitScore += 5; why.push('weak-overlap'); } 
-        }
-    }
 
-    // --- MULTIPLICATIVE BOOSTING ---
-    // If they have strong interaction terms, multiply the implicit score to create the "elbow" of the chart
-    if (implicitScore > 0 && hInt) {
-        implicitScore = Math.round(implicitScore * 1.3);
-        why.push('interact-boost');
-    }
-    
-    // Only apply implicit score if we didn't already max out on explicit buzzwords
-    // to prevent runaway scores > 100.
-    if (s < 35) {
-        s += implicitScore;
-    }
+            // --- MULTIPLICATIVE BOOSTING ---
+            // If they have strong interaction terms, multiply the implicit score to create the "elbow" of the chart
+            if (implicitScore > 0 && hInt) {
+                implicitScore = Math.round(implicitScore * 1.3);
+                why.push('interact-boost');
+            }
 
-    // --- 3. TECHNICAL & CONCEPTS BOOSTERS ---
-    if (RX.tech.test(full) && (hSol || expT || expK)) { s += 5; why.push('tech'); }
-    if (w.concepts?.some(c => fuzzy.norm(c.display_name).includes('agrivoltaic') && c.score > 0.4)) { 
-        s += 10; why.push('openalex-concept'); 
-    }
+            // Only apply implicit score if we didn't already max out on explicit buzzwords
+            // to prevent runaway scores > 100.
+            if (s < 35) {
+                s += implicitScore;
+            }
 
-    // NOTE: Removed citation/recency logic. Authority should be orthogonal to Relevance!
-    // Sort by relevance tier FIRST, then by citations SECOND in your UI.
+            // --- 3. TECHNICAL & CONCEPTS BOOSTERS ---
+            if (RX.tech.test(full) && (hSol || expT || expK)) { s += 5; why.push('tech'); }
+            if (w.concepts?.some(c => fuzzy.norm(c.display_name).includes('agrivoltaic') && c.score > 0.4)) {
+                s += 10; why.push('openalex-concept');
+            }
 
-    // --- 4. NEGATIVE FILTERING ---
-    // "isStrongContext" dictates if we trust the paper despite medical/physics words.
-    const isStrongContext = (s >= 35) || (tSol && tLive) || (tSol && tAgr && hInt);
-    
-    if (!isStrongContext) {
-        const hasNegWords = RX.neg.test(full);
-        const hasBadTopic = (w.topics || []).length > 0 && !(w.topics || []).some(tp => (tp.score || 0) >= 0.25 && !TOPIC_NEG.has(fuzzy.norm(tp.display_name)));
+            // NOTE: Removed citation/recency logic. Authority should be orthogonal to Relevance!
+            // Sort by relevance tier FIRST, then by citations SECOND in your UI.
 
-        if (hasNegWords || hasBadTopic) {
-            // Instead of a harsh -30 subtraction, we severely decay the score.
-            // This groups noise nicely in the 0-4 range (the very end of your long tail)
-            s = Math.round(s * 0.2); 
-            why.push('decay-neg-context');
-        }
-    }
+            // --- 4. NEGATIVE FILTERING ---
+            // "isStrongContext" dictates if we trust the paper despite medical/physics words.
+            const isStrongContext = (s >= 35) || (tSol && tLive) || (tSol && tAgr && hInt);
 
-    // Cap the score safely at ~80 to match your chart's max X-axis behavior
-    s = Math.min(80, Math.max(0, Math.round(s * 10) / 10));
+            if (!isStrongContext) {
+                const hasNegWords = RX.neg.test(full);
+                const hasBadTopic = (w.topics || []).length > 0 && !(w.topics || []).some(tp => (tp.score || 0) >= 0.25 && !TOPIC_NEG.has(fuzzy.norm(tp.display_name)));
 
-    return { 
-        s: s, 
-        why: why, 
-        // Note: For true "relative %" tiering, you should do this in a post-processing map 
-        // across the whole array of results. But as a fallback heuristic based on this curve:
-        tier: s >= 45 ? 'Core' : s >= 20 ? 'Strong' : s >= 8 ? 'Related' : 'Peripheral' 
-    };
-};
+                if (hasNegWords || hasBadTopic) {
+                    // Instead of a harsh -30 subtraction, we severely decay the score.
+                    // This groups noise nicely in the 0-4 range (the very end of your long tail)
+                    s = Math.round(s * 0.2);
+                    why.push('decay-neg-context');
+                }
+            }
+
+            // Cap the score safely at ~80 to match your chart's max X-axis behavior
+            s = Math.min(80, Math.max(0, Math.round(s * 10) / 10));
+
+            return {
+                s: s,
+                why: why,
+                // Note: For true "relative %" tiering, you should do this in a post-processing map 
+                // across the whole array of results. But as a fallback heuristic based on this curve:
+                tier: s >= 45 ? 'Core' : s >= 20 ? 'Strong' : s >= 8 ? 'Related' : 'Peripheral'
+            };
+        };
 
         const computeHullPath = (points, pad = 24) => {
             if (points.length < 3) {
@@ -1629,11 +1683,11 @@
             }
 
             const sc = scoreWork(w, absText);
-            
+
             // REMOVED THE GATEKEEPER: We no longer wrap this in `if (sc.s >= 1)`
             // We want to keep everything, but aggressively strip RAM-heavy text
             // from peripheral papers (score <= 5)
-            
+
             if (sc.s <= 5) {
                 delete w._abstract;
                 delete w.abstract_inverted_index;
@@ -2037,7 +2091,11 @@
                         { filter: `default.search:"photovoltaic greenhouse"|"greenhouse photovoltaic",${df}`, pages: 3, label: 'pv-greenhouse' },
                         { filter: `default.search:"dual-use" photovoltaic agriculture,${df}`, pages: 2, label: 'dual-use' },
                     ];
-                    await Promise.all(queries.map(q => paginate(W, q.filter, q.pages, q.label)));
+
+                    // CHUNKING FIX: Send max 2 heavy text searches at a time
+                    for (let i = 0; i < queries.length; i += 2) {
+                        await Promise.all(queries.slice(i, i + 2).map(q => paginate(W, q.filter, q.pages, q.label)));
+                    }
 
                     pg(30, 'Phase 1A: Resolving Aliases...');
                     const candMap = new Map();
@@ -2047,7 +2105,7 @@
                     aliasMap = aMap;
                     normalizeAuthorships(W, aliasMap);
 
-                    pg(40, 'Phase 1B: Fuzzy Matching Seeds...');
+                    pg(40, 'Phase 1B: Strict Matching Seeds...');
                     const cm2 = new Map();
                     for (const [, w] of W) for (const s of (w.authorships || [])) if (s.author?.id && !cm2.has(s.author.id)) cm2.set(s.author.id, { id: s.author.id, display_name: s.author.display_name || '', institution: s.institutions?.[0]?.display_name || '' });
                     const c2 = [...cm2.values()];
@@ -2056,11 +2114,28 @@
                     const allP = [];
                     for (let si = 0; si < R.length; si++) {
                         const sn = R[si]._qn || R[si].display_name, sa = R[si]._seed?.affiliation || '';
-                        for (const c of fuzzy.getCandidates(sn, cIdx)) { const sc = fuzzy.score(sn, sa, c.display_name, c.institution); if (sc >= 65) allP.push({ si, cid: c.id, cn: c.display_name, institution: c.institution, sc }); }
+                        const candidates = fuzzy.getCandidates(sn, cIdx);
+                        const poolSize = candidates.length;
+
+                        for (const c of candidates) { 
+                            // Phase 1B is NICHE context: pass TRUE at the end
+                            const sc = fuzzy.score(sn, sa, c.display_name, c.institution, poolSize, true); 
+                            if (sc >= 85) { 
+                                console.log(`[Phase 1B Match] Score: ${sc} | Pool: ${poolSize} | Supabase: "${sn}" (${sa || 'No Inst'}) ---> OpenAlex: "${c.display_name}" (${c.institution || 'No Inst'})`);
+                                allP.push({ si, cid: c.id, cn: c.display_name, institution: c.institution, sc }); 
+                            } 
+                        }
                     }
                     allP.sort((a, b) => b.sc - a.sc);
+                    
                     const uSeeds = new Set(), asgn = new Map();
-                    for (const p of allP) { if (uSeeds.has(p.si) || uCands.has(p.cid)) continue; uSeeds.add(p.si); uCands.add(p.cid); asgn.set(p.si, p); }
+                    for (const p of allP) { 
+                        if (uSeeds.has(p.si) || uCands.has(p.cid)) continue; 
+                        uSeeds.add(p.si); 
+                        uCands.add(p.cid); 
+                        asgn.set(p.si, p); 
+                    }
+                    
                     for (let si = 0; si < R.length; si++) {
                         const a = asgn.get(si);
                         if (a) {
@@ -2069,11 +2144,17 @@
                             if (a.institution) R[si].inst = getInst(a.institution);
                             R[si]._matchScore = a.sc;
                             R[si]._matchMethod = 'fuzzy';
-                            const ids = new Set([a.cid]); for (const [aid, cid] of aliasMap) if (cid === a.cid) ids.add(aid); R[si]._allIds = [...ids];
+                            const ids = new Set([a.cid]); 
+                            for (const [aid, cid] of aliasMap) if (cid === a.cid) ids.add(aid); 
+                            R[si]._allIds = [...ids];
                         }
-                        else { R[si].id = `local:${R[si]._seed?.id}`; R[si]._matchMethod = 'none'; }
+                        else { 
+                            R[si].id = `local:${R[si]._seed?.id}`; 
+                            R[si]._matchMethod = 'none'; 
+                        }
                     }
-                }
+
+                } // End of if (!isIncremental)
 
                 pg(50, isIncremental ? 'Phase 1: Locating New Profiles...' : 'Phase 1C: Rescuing Missing Profiles...');
                 const missing = R.filter(a => a.id.startsWith('local:') || a.id.startsWith('pending:'));
@@ -2088,8 +2169,37 @@
                         if (!uq) return;
                         const d = await fetchJSON(`${CFG.api}/authors?filter=display_name.search:${encodeURIComponent(uq)}&per_page=200&select=id,display_name,last_known_institutions`);
                         if (!d?.results) return;
+                        
+                        const candCounts = new Map();
+                        for (let ci = 0; ci < chunk.length; ci++) {
+                            const sbName = chunk[ci]._qn || chunk[ci].display_name;
+                            const sLast = fuzzy.tokenize(sbName).pop() || '';
+                            const count = d.results.filter(r => fuzzy.norm(r.display_name).includes(sLast)).length;
+                            candCounts.set(ci, count);
+                        }
+
                         const pairs = [];
-                        for (let ci = 0; ci < chunk.length; ci++) for (const res of d.results) { if (gUsed.has(res.id)) continue; const sc = fuzzy.score(chunk[ci]._qn || chunk[ci].display_name, chunk[ci]._seed?.affiliation || '', res.display_name, res.last_known_institutions?.[0]?.display_name || ''); if (sc >= 65) pairs.push({ ci, cid: res.id, cn: res.display_name, inst: res.last_known_institutions?.[0]?.display_name, sc }); }
+                        for (let ci = 0; ci < chunk.length; ci++) {
+                            const sbName = chunk[ci]._qn || chunk[ci].display_name;
+                            const sbInst = chunk[ci]._seed?.affiliation || '';
+                            const poolSize = candCounts.get(ci);
+
+                            for (const res of d.results) { 
+                                if (gUsed.has(res.id)) continue; 
+                                
+                                const oaName = res.display_name;
+                                const oaInst = res.last_known_institutions?.[0]?.display_name || '';
+                                
+                                // Phase 1C is GLOBAL context: pass FALSE at the end
+                                const sc = fuzzy.score(sbName, sbInst, oaName, oaInst, poolSize, false); 
+                                
+                                if (sc >= 85) { 
+                                    console.log(`[Phase 1C Rescue] Score: ${sc} | Pool: ${poolSize} | Supabase: "${sbName}" (${sbInst || 'No Inst'}) ---> OpenAlex API: "${oaName}" (${oaInst || 'No Inst'})`);
+                                    pairs.push({ ci, cid: res.id, cn: res.display_name, inst: oaInst, sc }); 
+                                } 
+                            }
+                        }
+                        
                         pairs.sort((a, b) => b.sc - a.sc);
                         const uC = new Set(), uS = new Set();
                         for (const p of pairs) {
@@ -2145,10 +2255,10 @@
                 // 2. Parallelized fetch to get all works for these top authors
                 if (topAuthors.size > 0) {
                     pg(88, `Fetching complete portfolios for ${topAuthors.size} top authors...`);
-                    
+
                     const deepTasks = [...topAuthors].map(authorId => ({
                         // Notice the lack of keyword filters here—we want EVERYTHING they wrote
-                        filter: `authorships.author.id:${authorId},${df}`, 
+                        filter: `authorships.author.id:${authorId},${df}`,
                         pages: 10, // Max 2,000 papers per top author
                         label: `DeepFetch (${authorId})`
                     }));
@@ -2222,8 +2332,12 @@
             pack: () => { const D = { t: [], s: [] }, gx = (a, v) => { if (!v) return -1; let i = a.indexOf(v); return i === -1 ? (a.push(v), a.length - 1) : i }; return { r: app.data.researchers.map(r => ({ id: r.id, si: r._seedId, n: r.display_name, i: r.inst, nw: r.net_works, nc: r.net_cited, nh: r.net_hindex, t: Object.keys(r.topics).map(t => gx(D.t, t)), d: r.deg })), p: app.data.pubs.map(p => ({ id: p.id, t: p.title, y: p.year, c: p.cites, d: p.doi, u: p.url, s: gx(D.s, p.source), oa: p.oa ? 1 : 0, r: p.score, w: p.why, ti: p.tier === 'Core' ? 3 : (p.tier === 'Strong' ? 2 : 1), tp: p.topics.map(t => gx(D.t, t)), aa: p.allA.slice(0, 10).map(a => a.name), ma: p.memA.map(m => m.id) })), D } },
             restore: c => { const D = c.D || { t: [], s: [] }; app.data.researchers = c.r.map(r => ({ id: r.id, _seedId: r.si, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, net_hindex: r.nh || 0, topics: (r.t || []).reduce((a, i) => { if (D.t[i]) a[D.t[i]] = 1; return a }, {}), deg: r.deg || 0, color: app.gCol(r.i) })); const rM = new Map(app.data.researchers.map(r => [r.id, r])); app.data.pubs = c.p.map(p => { const m = (p.ma || []).map(i => rM.get(i)).filter(Boolean), rt = (p.tp || []).map(i => D.t[i]).filter(Boolean), ct = rt.filter(t => !TOPIC_NEG.has(norm(t))); if (!ct.length && rt.length) return null; return { id: p.id, title: p.t, year: p.y, cites: p.c, doi: p.d, url: p.u, source: typeof p.s === 'number' ? D.s[p.s] : p.s, oa: !!p.oa, type: p.ty, score: p.r, why: p.w || [], tier: p.ti === 3 ? 'Core' : (p.ti === 2 ? 'Strong' : 'Weak'), topics: ct, allA: (p.aa || []).map(n => { const f = m.find(z => z.display_name === n); return { name: n, id: f ? f.id : null, mem: !!f } }), memA: m } }).filter(Boolean); app.data.topics = new Map; app.data.pubs.forEach(p => p.topics.forEach(t => app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1))); app.buildGraph() },
             gCol: i => { if (!app.col.has(i)) app.col.set(i, COLORS[app.col.size % COLORS.length]); return app.col.get(i) },
-            spark: (d, w = 48, h = 16) => { const m = Math.max(...d, 1), pts = d.map((v, i) => `${(i / (d.length - 1)) * w},${h - (v / m) * (h - 2) - 1}`).join(' '); return `<svg class="sparkline-container" width="${w}" height="${h}"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="${pts}"/></svg>` },
-            render: () => {
+            spark: (d, w = 48, h = 16) => {
+                const m = Math.max(...d, 1);
+                // FIX: Safely handle arrays with only 1 item to prevent NaN
+                const pts = d.map((v, i) => `${(d.length > 1 ? i / (d.length - 1) : 0.5) * w},${h - (v / m) * (h - 2) - 1}`).join(' ');
+                return `<svg class="sparkline-container" width="${w}" height="${h}"><polyline fill="none" stroke="#16a34a" stroke-width="1.5" points="${pts}"/></svg>`
+            }, render: () => {
                 const { q, topics: T, insts: I, yFrom: yf, yTo: yt, minRel: mr, bm: bo, co, author } = app.state.filters, ql = norm(q);
 
                 let F_timeUnfiltered = app.data.pubs.filter(p => p.score >= mr && (!I.size || p.memA.some(a => I.has(a.inst))) && (!T.size || p.topics.some(t => T.has(t))) && (!bo || app.bm.has(p.id)));
