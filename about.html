@@ -13,9 +13,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -51,17 +49,11 @@
 
 <body class="text-slate-800 flex flex-col h-full overflow-hidden font-sans bg-slate-50">
 
-  <!-- Note: Global Header/Nav injected by layout.js -->
-
   <!-- ================= MAIN CONTENT CONTAINER ================= -->
-  <!-- Flex Column + Overflow Hidden ensures body never scrolls, only inner div does -->
   <main class="flex-1 relative overflow-hidden flex flex-col bg-dot-pattern">
 
-    <!-- PAGE HEADER: Flex-none ensures it keeps its height. h-auto allows text wrapping if needed. -->
-    <div
-      class="flex-none px-8 py-4 flex flex-col md:flex-row gap-2 justify-between items-center z-20 bg-white border-b border-gray-200 shadow-sm min-h-[4rem] h-auto shrink-0">
-
-      <!-- Left Side -->
+    <!-- PAGE HEADER -->
+    <div class="flex-none px-8 py-4 flex flex-col md:flex-row gap-2 justify-between items-center z-20 bg-white border-b border-gray-200 shadow-sm min-h-[4rem] h-auto shrink-0">
       <div class="flex items-center h-full">
         <h2 class="font-bold text-xl text-slate-900 tracking-tight" data-i18n="about_page.title">
           About the Seminar
@@ -71,20 +63,14 @@
           Overview
         </span>
       </div>
-
-      <!-- Right Side -->
       <div class="hidden md:flex gap-2">
-        <span
-          class="px-3 py-1 bg-slate-50 border border-gray-200 rounded text-[10px] font-bold text-slate-400 uppercase tracking-wide"
-          data-i18n="about_page.badge">Bilingual Series</span>
+        <span class="px-3 py-1 bg-slate-50 border border-gray-200 rounded text-[10px] font-bold text-slate-400 uppercase tracking-wide" data-i18n="about_page.badge">Bilingual Series</span>
       </div>
     </div>
 
     <!-- SCROLLABLE CONTENT AREA -->
-    <!-- flex-1 fills remaining height exactly. min-h-0 prevents flex overflow bugs. -->
     <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4">
 
-      <!-- Content Wrapper: w-full for 100% width. pb-24 ensures footer doesn't overlap content at bottom. -->
       <div class="w-full mx-auto pb-24">
 
         <!-- Main Card -->
@@ -97,11 +83,16 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
             <div class="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent"></div>
             <div class="absolute bottom-5 left-6 md:left-10 text-white">
+              
+              <!-- DYNAMIC HERO TITLE -->
               <h1 class="font-display font-bold text-3xl tracking-tight mb-1 drop-shadow-md text-white"
-                data-i18n="about_page.hero_title">
+                data-copy-key="about_hero_title" data-i18n="about_page.hero_title">
                 Bridging Research
               </h1>
-              <p class="text-sm opacity-90 font-medium drop-shadow-sm tracking-wide" data-i18n="about_page.hero_sub">
+              
+              <!-- DYNAMIC HERO SUBTITLE -->
+              <p class="text-sm opacity-90 font-medium drop-shadow-sm tracking-wide" 
+                 data-copy-key="about_hero_sub" data-i18n="about_page.hero_sub">
                 Agrivoltaics across the Americas
               </p>
             </div>
@@ -110,75 +101,18 @@
           <!-- Content Text Area -->
           <div class="p-6 md:p-10 w-full">
 
-            <!-- English Content -->
-            <div class="prose w-full animate-fade-in" data-lang-content="en">
-              <h2 class="mt-0">What is Agrivoltaics?</h2>
-              <p>
-                Agrivoltaics is the integration of solar photovoltaics with agricultural production in the same space.
-                Agrivoltaics is a highly diverse field that can include energy production from household to utility
-                scale, and agricultural production from horticulture to field crops to livestock and more. Topics
-                covered in this seminar series will include agrivoltaic system design, crop yield and responses,
-                business models, community engagement, governance and legal frameworks, and much more.
-              </p>
+            <!-- DYNAMIC BODY CONTENT -->
+            <!-- The animate-fade-in class makes it appear smoothly once loaded -->
+            <div class="prose w-full animate-fade-in" data-copy-key="about_body">
+                
+                <!-- Skeleton Loader (Visible only on very first load before cache exists) -->
+                <div class="animate-pulse space-y-4">
+                    <div class="h-4 bg-slate-100 rounded w-3/4"></div>
+                    <div class="h-4 bg-slate-100 rounded w-full"></div>
+                    <div class="h-4 bg-slate-100 rounded w-5/6"></div>
+                    <div class="h-32 bg-slate-50 rounded w-full mt-6"></div>
+                </div>
 
-              <h2>Attend the seminars:</h2>
-              <p>
-                To attend the seminars, simply
-                <a href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" target="_blank"
-                  rel="noopener noreferrer">register here</a>
-                and you will receive the zoom meeting link to your email. This link will work for all future seminars,
-                so you only need to register once.
-              </p>
-
-              <h2>Join the community:</h2>
-              <p>
-                To access past talks, see presentation materials or discuss topics in the forum, join the
-                Agrovoltaicos sin Fronteras community.
-              </p>
-
-              <h2>Contact Us:</h2>
-              <p class="mb-0">
-                Agrovoltaicos sin Fronteras is hosted by the Alliance for Agrivoltaics in Latin America (AAL), the
-                Mexican Agrivoltaics Network (RAMe), the National Autonomous University of Mexico (UNAM) and the
-                University of Arizona (UA). For more information, please contact us at
-                <a href="mailto:info@avsinfronteras.org">info@avsinfronteras.org</a>
-              </p>
-            </div>
-
-            <!-- Spanish Content -->
-            <div class="prose w-full hidden animate-fade-in" data-lang-content="es">
-              <h2 class="mt-0">¿Qué son los Agrovoltaicos?</h2>
-              <p>
-                Los Agrovoltaicos son la integración de la energía solar fotovoltaica con la producción agrícola en un
-                mismo espacio. Es un campo muy diverso que abarca la producción de energía desde el hogar hasta la
-                escala de servicios públicos, y la producción agrícola desde la horticultura hasta los cultivos
-                extensivos, la ganadería y más. Los temas que se abordarán en esta serie de seminarios incluirán el
-                diseño de sistemas agrovoltaicos, el rendimiento y las respuestas de los cultivos, los modelos de
-                negocio, la participación comunitaria, la gobernanza y los marcos legales, y mucho más.
-              </p>
-
-              <h2>Asista a los seminarios:</h2>
-              <p>
-                Para asistir a los seminarios, simplemente
-                <a href="https://arizona.zoom.us/meeting/register/rFJXhrYpQL2Vcw30vlxwyA" target="_blank"
-                  rel="noopener noreferrer">regístrese aquí</a>
-                y recibirá el enlace de la reunión de Zoom en su correo electrónico. Este enlace funcionará para todos
-                los seminarios futuros, por lo que solo necesita registrarse una vez.
-              </p>
-
-              <h2>Únase a la comunidad:</h2>
-              <p>
-                Para acceder a charlas anteriores, ver los materiales de las presentaciones o discutir temas en el
-                foro, únase a la comunidad Agrovoltaicos sin Fronteras.
-              </p>
-
-              <h2>Contáctenos:</h2>
-              <p class="mb-0">
-                Agrovoltaicos sin Fronteras esta organizado por la Alianza Agrivoltaica Latinoamericana (AAL), la Red
-                Agrovoltaica Mexicana (RAMe), la Universidad Nacional Autónoma de México (UNAM) y la Universidad de
-                Arizona (UA). Para más información, contáctenos en <a
-                  href="mailto:info@avsinfronteras.org">info@avsinfronteras.org</a>
-              </p>
             </div>
 
           </div>
@@ -191,7 +125,8 @@
   <script type="module">
     import { renderLayout } from './layout.js';
     import { authState, initAuth, signOut } from './auth.js';
-    import { initSharedUI, renderHeader, applyI18n, tr, $$, show, hide, getAvatarUrl, $ } from './ui.js';
+    import { initSharedUI, renderHeader, applyI18n, tr, show, hide, getAvatarUrl, $ } from './ui.js';
+    import { loadAndApplyCopy } from './copy.js';
 
     renderLayout('about');
 
@@ -222,17 +157,19 @@
       }
     };
 
-    function applyPageI18n() {
+    async function applyPageI18n() {
+      // 1. Apply hardcoded nav/header translations
       applyI18n(t, state.language);
+      
+      // 2. Adjust Language Switcher UI in Header
       const s = document.querySelector('#langSwitchDesktop div:last-child');
       if (s) {
         s.style.transform = state.language === 'es' ? 'translateX(100%)' : 'translateX(0)';
         s.innerText = state.language.toUpperCase();
       }
-      $$("[data-lang-content]").forEach(el => {
-        if (el.dataset.langContent === state.language) show(el);
-        else hide(el);
-      });
+
+      // 3. Fetch & Apply Dynamic Database Content (with caching)
+      await loadAndApplyCopy('about', state.language);
     }
 
     function handleLangSwitch() {
@@ -245,6 +182,9 @@
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
       lucide.createIcons();
 
+      // FIRE COPY LOAD IMMEDIATELY FOR SPEED
+      applyPageI18n();
+
       document.addEventListener('click', e => {
         if (e.target.closest('#btnProfile') || e.target.closest('#userName') ||
           e.target.closest('#mobileProfileBtn') || e.target.closest('#mobileUserName')) {
@@ -255,17 +195,16 @@
       await initAuth({
         onAuthReady: () => {
           renderHeader(authState, t, state.language);
-          if (authState.profile?.avatar_url) {
-            getAvatarUrl(authState.profile.avatar_url).then(url => {
-              const img = $('#userAvatar');
-              if (url && img) { img.src = url; show(img); hide($('#userInitial')); }
-            });
-          }
         },
-        onAuthChange: () => renderHeader(authState, t, state.language)
+        onAuthChange: async () => {
+          renderHeader(authState, t, state.language);
+          if (authState.profile?.avatar_url) {
+            const url = await getAvatarUrl(authState.profile.avatar_url);
+            const img = $('#userAvatar');
+            if (url && img) { img.src = url; show(img); hide($('#userInitial')); }
+          }
+        }
       });
-
-      applyPageI18n();
     })();
   </script>
 

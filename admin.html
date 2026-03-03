@@ -159,146 +159,198 @@
           </div>
         </div>
 
-        <!-- Dashboard Grid -->
-        <div id="admin" class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full pb-6 hidden">
+        <!-- Admin Wrapper -->
+        <div id="adminWrapper" class="h-full pb-6 hidden flex-col">
 
-          <!-- LEFT PANEL: TOOLS & FORM -->
-          <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 overflow-hidden h-full">
-            <div
-              class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm flex flex-col overflow-hidden h-full">
-              
-              <!-- === UPDATED HEADER WITH EXPORT BUTTON === -->
-              <div class="p-5 border-b border-gray-100 bg-white/50 sticky top-0 z-10 flex items-center justify-between">
-                <h2 class="font-display font-bold text-xl text-slate-800 flex items-center gap-2">
-                  <i data-lucide="settings-2" class="w-5 h-5 text-brand-600"></i>
-                  <span data-i18n="admin.title">Organizer Tools</span>
-                </h2>
-                <!-- New Download CSV Button -->
-                <button id="btnExportCsv" title="Download User List CSV" class="p-2 bg-white border border-gray-200 rounded-lg text-slate-500 hover:text-brand-600 hover:border-brand-200 hover:bg-brand-50 transition-all shadow-sm">
-                   <i data-lucide="download" class="w-4 h-4"></i>
-                </button>
-              </div>
+          <!-- TAB NAVIGATION -->
+          <div class="flex gap-2 sm:gap-6 border-b border-gray-200 mb-6 shrink-0 overflow-x-auto no-scrollbar">
+            <button
+              class="tab-btn active px-2 sm:px-4 py-3 font-bold text-brand-600 border-b-2 border-brand-600 whitespace-nowrap transition-colors"
+              data-target="tab-schedule">
+              <i data-lucide="calendar" class="w-4 h-4 inline-block mr-1 mb-0.5"></i> Schedule
+            </button>
+            <button
+              class="tab-btn px-2 sm:px-4 py-3 font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-800 whitespace-nowrap transition-colors"
+              data-target="tab-membership">
+              <i data-lucide="users" class="w-4 h-4 inline-block mr-1 mb-0.5"></i> Membership
+            </button>
+            <button
+              class="tab-btn px-2 sm:px-4 py-3 font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-800 whitespace-nowrap transition-colors"
+              data-target="tab-copy">
+              <i data-lucide="file-text" class="w-4 h-4 inline-block mr-1 mb-0.5"></i> Copy Editor
+            </button>
+          </div>
 
-              <div class="overflow-y-auto custom-scrollbar p-5 flex-1">
-                <form id="createEventForm" class="space-y-6">
-                  <!-- Banner Management Card -->
-                  <div class="bg-brand-50/50 border border-brand-100 rounded-xl p-4">
-                    <div class="flex items-center justify-between mb-3">
-                      <div class="flex items-center gap-2 text-brand-800 font-bold text-xs uppercase tracking-wider">
-                        <i data-lucide="megaphone" class="w-3 h-3"></i> Announcement Banner
-                      </div>
-                      <span id="bannerStatusText"
-                        class="text-[10px] font-bold px-2 py-0.5 bg-white rounded text-slate-500 border border-brand-100">Inactive</span>
-                    </div>
-                    <div class="space-y-3">
-                      <input id="bannerTextEn" class="input-field bg-white" placeholder="Banner Text (EN)...">
-                      <input id="bannerTextEs" class="input-field bg-white" placeholder="Banner Text (ES)...">
-                      <div class="flex flex-wrap gap-2 items-center pt-2">
-                        <button type="button" id="saveBannerBtn"
-                          class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">Save
-                          & Activate</button>
-                        <button type="button" id="clearBannerBtn"
-                          class="px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-slate-600 text-xs font-bold rounded-lg transition-colors">Deactivate</button>
-                      </div>
-                    </div>
-                  </div>
+          <!-- TAB CONTENT: Schedule -->
+          <div id="tab-schedule" class="tab-pane active grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
+            <!-- LEFT PANEL: TOOLS & FORM -->
+            <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 overflow-hidden h-full">
+              <div
+                class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm flex flex-col overflow-hidden h-full">
 
-                  <!-- Event Fields -->
-                  <div class="space-y-4">
-                    <div class="grid grid-cols-1 gap-4">
-                      <div><label class="label-text" data-i18n="event.title_en">Title (EN)</label><input id="titleEn"
-                          class="input-field" required /></div>
-                      <div><label class="label-text" data-i18n="event.title_es">Title (ES)</label><input id="titleEs"
-                          class="input-field" /></div>
-                    </div>
-                    
-                    <!-- Description EN Editor -->
-                    <div>
-                      <label class="label-text" data-i18n="event.desc_en">Description (EN)</label>
-                      <div class="editor-wrapper">
-                        <div id="editorDescEn"></div>
+                <div
+                  class="p-5 border-b border-gray-100 bg-white/50 sticky top-0 z-10 flex items-center justify-between">
+                  <h2 class="font-display font-bold text-xl text-slate-800 flex items-center gap-2">
+                    <i data-lucide="settings-2" class="w-5 h-5 text-brand-600"></i>
+                    <span data-i18n="admin.title">Organizer Tools</span>
+                  </h2>
+                </div>
+
+                <div class="overflow-y-auto custom-scrollbar p-5 flex-1">
+                  <form id="createEventForm" class="space-y-6">
+                    <!-- Banner Management Card -->
+                    <div class="bg-brand-50/50 border border-brand-100 rounded-xl p-4">
+                      <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2 text-brand-800 font-bold text-xs uppercase tracking-wider">
+                          <i data-lucide="megaphone" class="w-3 h-3"></i> Announcement Banner
+                        </div>
+                        <span id="bannerStatusText"
+                          class="text-[10px] font-bold px-2 py-0.5 bg-white rounded text-slate-500 border border-brand-100">Inactive</span>
                       </div>
-                    </div>
-                    
-                    <!-- Description ES Editor -->
-                    <div>
-                      <label class="label-text" data-i18n="event.desc_es">Description (ES)</label>
-                      <div class="editor-wrapper">
-                        <div id="editorDescEs"></div>
+                      <div class="space-y-3">
+                        <input id="bannerTextEn" class="input-field bg-white" placeholder="Banner Text (EN)...">
+                        <input id="bannerTextEs" class="input-field bg-white" placeholder="Banner Text (ES)...">
+                        <div class="flex flex-wrap gap-2 items-center pt-2">
+                          <button type="button" id="saveBannerBtn"
+                            class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">Save
+                            & Activate</button>
+                          <button type="button" id="clearBannerBtn"
+                            class="px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-slate-600 text-xs font-bold rounded-lg transition-colors">Deactivate</button>
+                        </div>
                       </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                      <div><label class="label-text" data-i18n="event.start">Start</label><input id="startTime"
-                          type="text" class="input-field" placeholder="mm/dd/yyyy --:--" required /></div>
-                      <div><label class="label-text" data-i18n="event.end">End</label><input id="endTime" type="text"
-                          class="input-field" placeholder="mm/dd/yyyy --:--" /></div>
-                    </div>
+                    <!-- Event Fields -->
+                    <div class="space-y-4">
+                      <div class="grid grid-cols-1 gap-4">
+                        <div><label class="label-text" data-i18n="event.title_en">Title (EN)</label><input id="titleEn"
+                            class="input-field" required /></div>
+                        <div><label class="label-text" data-i18n="event.title_es">Title (ES)</label><input id="titleEs"
+                            class="input-field" /></div>
+                      </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                      <!-- Description EN Editor -->
                       <div>
-                        <label class="label-text" data-i18n="event.lang">Language</label>
-                        <select id="eventLang" class="input-field cursor-pointer">
-                          <option value="bi">Bilingual</option>
-                          <option value="en">English</option>
-                          <option value="es">Español</option>
-                        </select>
+                        <label class="label-text" data-i18n="event.desc_en">Description (EN)</label>
+                        <div class="editor-wrapper">
+                          <div id="editorDescEn"></div>
+                        </div>
                       </div>
-                      <div><label class="label-text" data-i18n="event.host">Host Org</label><input id="hostOrg"
-                          class="input-field" placeholder="e.g. UNAM" /></div>
-                    </div>
 
-                    <div class="space-y-3">
-                      <div><label class="label-text" data-i18n="event.zoom">Zoom URL</label><input id="zoomUrl"
-                          type="url" class="input-field" /></div>
-                      <div><label class="label-text" data-i18n="event.recording_url">Recording URL</label><input
-                          id="recordingUrl" type="url" class="input-field" /></div>
-                      <div><label class="label-text" data-i18n="tags.label">Tags</label><input id="tags"
-                          class="input-field" data-i18n-placeholder="tags.placeholder" /></div>
-                    </div>
-
-                    <!-- Speakers Section -->
-                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                      <div class="flex justify-between items-center mb-3">
-                        <label class="label-text mb-0" data-i18n="speakers.title">Speakers</label>
-                        <button type="button" id="addSpeakerBtn"
-                          class="text-xs font-bold text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-2 py-1 rounded transition-colors"
-                          data-i18n="speakers.add">+ Add</button>
+                      <!-- Description ES Editor -->
+                      <div>
+                        <label class="label-text" data-i18n="event.desc_es">Description (ES)</label>
+                        <div class="editor-wrapper">
+                          <div id="editorDescEs"></div>
+                        </div>
                       </div>
-                      <div id="speakersContainer" class="space-y-3"></div>
-                    </div>
 
-                    <div id="slotConflicts" class="text-xs text-orange-600 font-medium space-y-1"></div>
-                  </div>
-                </form>
+                      <div class="grid grid-cols-2 gap-4">
+                        <div><label class="label-text" data-i18n="event.start">Start</label><input id="startTime"
+                            type="text" class="input-field" placeholder="mm/dd/yyyy --:--" required /></div>
+                        <div><label class="label-text" data-i18n="event.end">End</label><input id="endTime" type="text"
+                            class="input-field" placeholder="mm/dd/yyyy --:--" /></div>
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <label class="label-text" data-i18n="event.lang">Language</label>
+                          <select id="eventLang" class="input-field cursor-pointer">
+                            <option value="bi">Bilingual</option>
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                          </select>
+                        </div>
+                        <div><label class="label-text" data-i18n="event.host">Host Org</label><input id="hostOrg"
+                            class="input-field" placeholder="e.g. UNAM" /></div>
+                      </div>
+
+                      <div class="space-y-3">
+                        <div><label class="label-text" data-i18n="event.zoom">Zoom URL</label><input id="zoomUrl"
+                            type="url" class="input-field" /></div>
+                        <div><label class="label-text" data-i18n="event.recording_url">Recording URL</label><input
+                            id="recordingUrl" type="url" class="input-field" /></div>
+                        <div><label class="label-text" data-i18n="tags.label">Tags</label><input id="tags"
+                            class="input-field" data-i18n-placeholder="tags.placeholder" /></div>
+                      </div>
+
+                      <!-- Speakers Section -->
+                      <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                        <div class="flex justify-between items-center mb-3">
+                          <label class="label-text mb-0" data-i18n="speakers.title">Speakers</label>
+                          <button type="button" id="addSpeakerBtn"
+                            class="text-xs font-bold text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-2 py-1 rounded transition-colors"
+                            data-i18n="speakers.add">+ Add</button>
+                        </div>
+                        <div id="speakersContainer" class="space-y-3"></div>
+                      </div>
+
+                      <div id="slotConflicts" class="text-xs text-orange-600 font-medium space-y-1"></div>
+                    </div>
+                  </form>
+                </div>
+                <div class="p-4 border-t border-gray-100 bg-gray-50">
+                  <button type="submit" form="createEventForm"
+                    class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-brand-500/20 hover:shadow-xl hover:shadow-brand-500/30 transition-all flex justify-center items-center gap-2"
+                    data-i18n="event.create">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Event
+                  </button>
+                </div>
               </div>
-              <div class="p-4 border-t border-gray-100 bg-gray-50">
-                <button type="submit" form="createEventForm"
-                  class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-brand-500/20 hover:shadow-xl hover:shadow-brand-500/30 transition-all flex justify-center items-center gap-2"
-                  data-i18n="event.create">
-                  <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Event
-                </button>
+            </div>
+
+            <!-- RIGHT PANEL: CALENDAR -->
+            <div class="lg:col-span-8 xl:col-span-9 h-full">
+              <div
+                class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm h-full flex flex-col overflow-hidden">
+                <div
+                  class="p-4 border-b border-gray-100 flex items-center justify-between gap-4 bg-white/50 sticky top-0 z-10">
+                  <h2 class="font-display font-bold text-xl text-slate-800" data-i18n="calendar.title">Event Calendar
+                  </h2>
+                  <div class="relative w-64">
+                    <i data-lucide="filter" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input id="tagFilterInput"
+                      class="w-full pl-9 pr-4 py-2 bg-[var(--bg-input)] border border-transparent hover:bg-white focus:bg-white focus:border-[var(--color-brand)] rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-brand-light)] outline-none transition-all"
+                      data-i18n-placeholder="tags.filter">
+                  </div>
+                </div>
+                <div class="flex-1 p-4 bg-white/50 min-h-[500px]">
+                  <div id="calendar" class="h-full"></div>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- RIGHT PANEL: CALENDAR -->
-          <div class="lg:col-span-8 xl:col-span-9 h-full">
-            <div
-              class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm h-full flex flex-col overflow-hidden">
-              <div
-                class="p-4 border-b border-gray-100 flex items-center justify-between gap-4 bg-white/50 sticky top-0 z-10">
-                <h2 class="font-display font-bold text-xl text-slate-800" data-i18n="calendar.title">Event Calendar</h2>
-                <div class="relative w-64">
-                  <i data-lucide="filter" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                  <input id="tagFilterInput"
-                    class="w-full pl-9 pr-4 py-2 bg-[var(--bg-input)] border border-transparent hover:bg-white focus:bg-white focus:border-[var(--color-brand)] rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-brand-light)] outline-none transition-all"
-                    data-i18n-placeholder="tags.filter">
-                </div>
-              </div>
-              <div class="flex-1 p-4 bg-white/50 min-h-[500px]">
-                <div id="calendar" class="h-full"></div>
-              </div>
+          <!-- TAB CONTENT: Membership -->
+          <div id="tab-membership"
+            class="tab-pane hidden flex-1 bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden flex-col">
+            <div class="p-5 border-b border-gray-100 bg-white/50 flex items-center justify-between sticky top-0 z-10">
+              <h2 class="font-display font-bold text-xl text-slate-800 flex items-center gap-2">
+                <i data-lucide="users" class="w-5 h-5 text-brand-600"></i>
+                Network Members
+              </h2>
+              <!-- Download CSV Button Moved Here -->
+              <button id="btnExportCsv" title="Download User List CSV"
+                class="p-2 bg-white border border-gray-200 rounded-lg text-slate-500 hover:text-brand-600 hover:border-brand-200 hover:bg-brand-50 transition-all shadow-sm">
+                <i data-lucide="download" class="w-4 h-4"></i> Download CSV
+              </button>
+            </div>
+            <div id="membershipContainer" class="p-0 overflow-y-auto custom-scrollbar flex-1 relative bg-white">
+              <!-- Injected by membership.js -->
+            </div>
+          </div>
+
+          <!-- TAB CONTENT: Copy Editor -->
+          <div id="tab-copy"
+            class="tab-pane hidden flex-1 bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden flex-col">
+            <div class="p-5 border-b border-gray-100 bg-white/50 flex items-center justify-between sticky top-0 z-10">
+              <h2 class="font-display font-bold text-xl text-slate-800 flex items-center gap-2">
+                <i data-lucide="file-text" class="w-5 h-5 text-brand-600"></i>
+                Website Copy Editor
+              </h2>
+            </div>
+            <div id="copyContainer" class="p-5 overflow-y-auto custom-scrollbar flex-1 relative bg-slate-50/50">
+              <!-- Injected by copy.js -->
             </div>
           </div>
 
@@ -405,6 +457,8 @@
     import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, setFlash, escapeHtml, getAvatarUrl } from './ui.js';
+    import { renderMembershipTab } from './membership.js';
+    import { renderCopyTab } from './copy.js';
 
     // Inject Layout logic (Handles Header/Footer and active states)
     renderLayout('admin');
@@ -485,7 +539,7 @@
       const toolbarOptions = [
         ['bold', 'italic', 'underline'],        // toggled buttons
         [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
         ['link', 'clean']                                         // remove formatting button
       ];
 
@@ -520,7 +574,7 @@
     const exportUsersCsv = async () => {
       const btn = $('#btnExportCsv');
       const originalHtml = btn.innerHTML;
-      
+
       try {
         btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
         lucide.createIcons();
@@ -537,20 +591,20 @@
         // Convert JSON to CSV
         const headers = ['email', 'full_name', 'username', 'role'];
         const csvContent = [
-            headers.join(','), // Header row
-            ...data.map(row => headers.map(fieldName => {
-                const val = row[fieldName] || '';
-                // Handle commas/quotes inside data
-                return `"${String(val).replace(/"/g, '""')}"`;
-            }).join(','))
+          headers.join(','), // Header row
+          ...data.map(row => headers.map(fieldName => {
+            const val = row[fieldName] || '';
+            // Handle commas/quotes inside data
+            return `"${String(val).replace(/"/g, '""')}"`;
+          }).join(','))
         ].join('\n');
 
         // Trigger Download
-        const blob = new Blob(["\uFEFF"+csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM for Excel UTF-8
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM for Excel UTF-8
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);
-        link.setAttribute("download", `users_export_${new Date().toISOString().slice(0,10)}.csv`);
+        link.setAttribute("download", `users_export_${new Date().toISOString().slice(0, 10)}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -565,56 +619,71 @@
     };
 
     const checkAccess = async () => {
-      const isAllowed = ["organizer", "admin"].includes(authState.profile?.role);
-      if (isAllowed) {
-        $('#admin').classList.remove('hidden');
+    const isAllowed = ["organizer", "admin"].includes(authState.profile?.role);
+    if (isAllowed) {
+        $('#adminWrapper').classList.remove('hidden');
+        $('#adminWrapper').classList.add('flex');
         $('#accessDenied').classList.add('hidden');
 
-        // Initialize Editors
+        // Initialize Quill Editors
         state.quillEditors.createEn = initQuill('#editorDescEn');
         state.quillEditors.createEs = initQuill('#editorDescEs');
         state.quillEditors.editEn = initQuill('#editEditorDescEn');
         state.quillEditors.editEs = initQuill('#editEditorDescEs');
 
-        // Load data
+        // Load schedule data
         await loadProfiles();
         await loadBanner();
         renderSpeakerFields('speakersContainer');
 
         if (!state.calendar) initializeCalendar();
         await loadEvents();
-        
-        // Attach Export Listener here since button is now visible
+
+        // Attach Export Listener
         $('#btnExportCsv')?.addEventListener('click', exportUsersCsv);
 
-      } else {
-        $('#admin').classList.add('hidden');
+        // Render other tabs (these run in background, don't block)
+        try {
+            await renderMembershipTab('membershipContainer', authState);
+        } catch (err) {
+            console.error('Membership tab error:', err);
+        }
+
+        try {
+            await renderCopyTab('copyContainer', authState);
+        } catch (err) {
+            console.error('Copy tab error:', err);
+        }
+
+    } else {
+        $('#adminWrapper').classList.add('hidden');
+        $('#adminWrapper').classList.remove('flex');
         $('#accessDenied').classList.remove('hidden');
-      }
-    };
+    }
+};
 
     const loadProfiles = async () => {
       const { data, error } = await supabase.from('profiles').select('id, full_name, affiliation').order('full_name');
-      if (error) { 
-        setFlash(tr(t, state.language, 'errors.load_profiles'), 3000); 
-        state.profiles = []; 
-      } else { 
-        state.profiles = data || []; 
-        
+      if (error) {
+        setFlash(tr(t, state.language, 'errors.load_profiles'), 3000);
+        state.profiles = [];
+      } else {
+        state.profiles = data || [];
+
         // Populate Datalists for Dropdown + Typing
         const dlProfiles = document.getElementById('dl-profiles');
         const dlAffiliations = document.getElementById('dl-affiliations');
-        
+
         // 1. All Profiles
         dlProfiles.innerHTML = state.profiles
-            .map(p => `<option value="${escapeHtml(p.full_name)}">`)
-            .join('');
+          .map(p => `<option value="${escapeHtml(p.full_name)}">`)
+          .join('');
 
         // 2. Unique Affiliations
         const uniqueAffiliations = [...new Set(state.profiles.map(p => p.affiliation).filter(Boolean))].sort();
         dlAffiliations.innerHTML = uniqueAffiliations
-            .map(aff => `<option value="${escapeHtml(aff)}">`)
-            .join('');
+          .map(aff => `<option value="${escapeHtml(aff)}">`)
+          .join('');
       }
     };
 
@@ -622,12 +691,12 @@
       const container = $(`#${containerId}`);
       const row = document.createElement('div');
       row.className = 'speaker-row flex flex-col gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm mb-3 transition-all hover:shadow-md';
-      
+
       // Determine profile name for the search box if a profile_id exists
       let profileNameVal = "";
       if (speaker.profile_id) {
-          const matched = state.profiles.find(p => p.id === speaker.profile_id);
-          if (matched) profileNameVal = matched.full_name;
+        const matched = state.profiles.find(p => p.id === speaker.profile_id);
+        if (matched) profileNameVal = matched.full_name;
       }
 
       row.innerHTML = `
@@ -676,37 +745,37 @@
 
     // Logic to autopopulate Affiliation and Name when a profile is selected
     const setupSpeakerAutofill = (containerId) => {
-        const container = $(`#${containerId}`);
-        container.addEventListener('input', (e) => {
-            // Check if input event came from the profile search box
-            if (e.target.matches('.speaker-profile-search')) {
-                const searchVal = e.target.value;
-                const row = e.target.closest('.speaker-row');
-                const idInput = row.querySelector('.speaker-profile-id');
-                const nameInput = row.querySelector('.speaker-name');
-                const affiliationInput = row.querySelector('.speaker-affiliation');
+      const container = $(`#${containerId}`);
+      container.addEventListener('input', (e) => {
+        // Check if input event came from the profile search box
+        if (e.target.matches('.speaker-profile-search')) {
+          const searchVal = e.target.value;
+          const row = e.target.closest('.speaker-row');
+          const idInput = row.querySelector('.speaker-profile-id');
+          const nameInput = row.querySelector('.speaker-name');
+          const affiliationInput = row.querySelector('.speaker-affiliation');
 
-                // Find profile by exact name match from datalist
-                const profile = state.profiles.find(p => p.full_name === searchVal);
+          // Find profile by exact name match from datalist
+          const profile = state.profiles.find(p => p.full_name === searchVal);
 
-                if (profile) {
-                    // Match found: Link ID
-                    idInput.value = profile.id;
-                    
-                    // Autopopulate Name if empty or if user is searching to link
-                    // (Use the profile name to ensure consistency)
-                    nameInput.value = profile.full_name;
+          if (profile) {
+            // Match found: Link ID
+            idInput.value = profile.id;
 
-                    // Autopopulate Affiliation
-                    if (profile.affiliation) {
-                        affiliationInput.value = profile.affiliation;
-                    }
-                } else {
-                    // No match (user typing custom name or hasn't finished typing)
-                    idInput.value = '';
-                }
+            // Autopopulate Name if empty or if user is searching to link
+            // (Use the profile name to ensure consistency)
+            nameInput.value = profile.full_name;
+
+            // Autopopulate Affiliation
+            if (profile.affiliation) {
+              affiliationInput.value = profile.affiliation;
             }
-        });
+          } else {
+            // No match (user typing custom name or hasn't finished typing)
+            idInput.value = '';
+          }
+        }
+      });
     };
 
     // Initialize Autofill Listeners
@@ -770,7 +839,7 @@
       $("#editEventId").value = String(ev.id);
       $("#editTitleEn").value = ev.title_en || "";
       $("#editTitleEs").value = ev.title_es || "";
-      
+
       // Populate Editors
       state.quillEditors.editEn.root.innerHTML = ev.description_en || "";
       state.quillEditors.editEs.root.innerHTML = ev.description_es || "";
@@ -884,7 +953,7 @@
       }
       setFlash("Event created!");
       $("#createEventForm").reset();
-      
+
       // Reset editors
       state.quillEditors.createEn.setContents([]);
       state.quillEditors.createEs.setContents([]);
@@ -920,6 +989,45 @@
     };
 
     // --- LISTENERS ---
+
+    // --- TAB SWITCHING ---
+    // --- TAB SWITCHING ---
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Deactivate all buttons
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('active', 'text-brand-600', 'border-brand-600');
+            b.classList.add('text-slate-500', 'border-transparent');
+        });
+
+        // Activate clicked button
+        btn.classList.add('active', 'text-brand-600', 'border-brand-600');
+        btn.classList.remove('text-slate-500', 'border-transparent');
+
+        // Hide all panes
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+            pane.classList.add('hidden');
+            pane.classList.remove('flex', 'grid');
+        });
+
+        // Show target
+        const targetId = btn.dataset.target;
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.classList.remove('hidden');
+            // Schedule uses CSS grid layout, others use flex
+            target.classList.add(targetId === 'tab-schedule' ? 'grid' : 'flex');
+
+            // FullCalendar needs a size recalc after being hidden
+            if (targetId === 'tab-schedule' && state.calendar) {
+                setTimeout(() => state.calendar.updateSize(), 50);
+            }
+        }
+    });
+});
+
+
+
     const setupDateTime = (s, e) => {
       const hf = (el) => el.type = 'datetime-local';
       const hb = (el) => { if (!el.value) el.type = 'text' };
