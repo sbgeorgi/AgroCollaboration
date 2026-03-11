@@ -1033,7 +1033,7 @@
             clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
         const COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4", "#ec4899", "#6366f1", "#84cc16", "#f97316", "#64748b", "#14b8a6"],
-            CFG = { api: "https://api.openalex.org", key: "asf_network_v21", now: new Date().getFullYear(), minRel: 5.0, cap: 50, conc: 8, defMin: 10.0 },
+            CFG = { api: "https://api.openalex.org", key: "asf_network_v23", now: new Date().getFullYear(), minRel: 5.0, cap: 50, conc: 8, defMin: 10.0 },
             INST_MAP = [['arizona', 'Univ. of Arizona'], ['unam', 'UNAM'], ['nacional autonoma', 'UNAM'], ['chile', 'Univ. de Chile'], ['fraunhofer', 'Fraunhofer ISE'], ['wageningen', 'Wageningen UR'], ['nrel', 'NREL'], ['davis', 'UC Davis'], ['umass', 'UMass Amherst'], ['massachusetts', 'UMass Amherst']],
             TOPIC_BLOCK = new Set(["medicine", "physics", "materials science", "computer science", "chemistry", "biology", "mathematics", "philosophy", "art", "psychology", "geology", "sociology"]);
 
@@ -2156,18 +2156,32 @@
 
                 } // End of if (!isIncremental)
 
-                pg(50, isIncremental ? 'Phase 1: Locating New Profiles...' : 'Phase 1C: Rescuing Missing Profiles...');
+                pg(50, isIncremental ? 'Phase 1: Locating New Profiles...' : 'Phase 1C: Concept-Bounded Rescue...');
                 const missing = R.filter(a => a.id.startsWith('local:') || a.id.startsWith('pending:'));
                 if (missing.length) {
                     const BATCH = 15, chunks = [];
                     for (let i = 0; i < missing.length; i += BATCH) chunks.push(missing.slice(i, i + BATCH));
                     const gUsed = new Set(uCands);
 
+                    // Domain concepts to validate the author's lifelong research profile
+                    const positiveConcepts = /\b(agri|solar|photovoltaic|crop|plant|ecol|sustainab|environment|farm|energy|water|soil|botan|horticultur|geograph|agronom|climate)\b/i;
+                    const negativeConcepts = /\b(medicin|surg|nurs|psych|astron|quant|particle|law|art|history|literature|cancer|clinic|syndrome|disease)\b/i;
+
                     await Promise.all(chunks.map(async chunk => {
-                        const terms = chunk.map(r => { const n = r._qn || r.display_name; if (fuzzy.isUsername(n)) { const p = fuzzy.parseUsername(n); return p.parts.filter(x => x.length > 2).join(' '); } return fuzzy.norm(n).replace(/[^a-z\s-]/g, ''); }).filter(n => n.length > 3);
+                        const terms = chunk.map(r => { 
+                            const n = r._qn || r.display_name; 
+                            if (fuzzy.isUsername(n)) { 
+                                const p = fuzzy.parseUsername(n); 
+                                return p.parts.filter(x => x.length > 2).join(' '); 
+                            } 
+                            return fuzzy.norm(n).replace(/[^a-z\s-]/g, ''); 
+                        }).filter(n => n.length > 3);
+                        
                         const uq = [...new Set(terms)].join('|');
                         if (!uq) return;
-                        const d = await fetchJSON(`${CFG.api}/authors?filter=display_name.search:${encodeURIComponent(uq)}&per_page=200&select=id,display_name,last_known_institutions`);
+                        
+                        // NEW: Select 'x_concepts' to peek at their publication history topics
+                        const d = await fetchJSON(`${CFG.api}/authors?filter=display_name.search:${encodeURIComponent(uq)}&per_page=200&select=id,display_name,last_known_institutions,x_concepts`);
                         if (!d?.results) return;
                         
                         const candCounts = new Map();
@@ -2190,12 +2204,29 @@
                                 const oaName = res.display_name;
                                 const oaInst = res.last_known_institutions?.[0]?.display_name || '';
                                 
-                                // Phase 1C is GLOBAL context: pass FALSE at the end
-                                const sc = fuzzy.score(sbName, sbInst, oaName, oaInst, poolSize, false); 
+                                // Profile Validation via Concepts
+                                const concepts = res.x_concepts || [];
+                                const topConcepts = concepts.slice(0, 10).map(c => c.display_name);
+                                const topConceptStr = topConcepts.join(' ');
                                 
-                                if (sc >= 85) { 
-                                    console.log(`[Phase 1C Rescue] Score: ${sc} | Pool: ${poolSize} | Supabase: "${sbName}" (${sbInst || 'No Inst'}) ---> OpenAlex API: "${oaName}" (${oaInst || 'No Inst'})`);
-                                    pairs.push({ ci, cid: res.id, cn: res.display_name, inst: oaInst, sc }); 
+                                const hasPositiveContext = positiveConcepts.test(topConceptStr);
+                                const hasNegativeContext = negativeConcepts.test(topConceptStr);
+                                
+                                // If they are clearly a doctor or astronomer, skip them entirely
+                                if (hasNegativeContext && !hasPositiveContext) continue;
+
+                                // If they publish in our domain, we grant them "Niche Context" status
+                                // This tells the fuzzy matcher: "Don't penalize them if institutions are missing/different, we know they are in our field!"
+                                const isNiche = hasPositiveContext; 
+                                
+                                const sc = fuzzy.score(sbName, sbInst, oaName, oaInst, poolSize, isNiche); 
+                                
+                                // We can safely use a lower threshold (80) because we validated their concepts
+                                if (sc >= 80) { 
+                                    console.log(`[Phase 1C Rescue] Score: ${sc} | Domain Validated: ${isNiche} | "${sbName}" ---> "${oaName}" [Top Concepts: ${topConcepts.slice(0,3).join(', ')}]`);
+                                    
+                                    // Give a slight score bump to authors who were positively validated
+                                    pairs.push({ ci, cid: res.id, cn: res.display_name, inst: oaInst, sc: sc + (isNiche ? 10 : 0) }); 
                                 } 
                             }
                         }
@@ -2209,7 +2240,7 @@
                             chunk[p.ci].display_name = p.cn;
                             if (p.inst) chunk[p.ci].inst = getInst(p.inst);
                             chunk[p.ci]._matchScore = p.sc;
-                            chunk[p.ci]._matchMethod = 'rescue';
+                            chunk[p.ci]._matchMethod = 'concept_rescue';
                             chunk[p.ci]._allIds = [p.cid];
                         }
                     }));
