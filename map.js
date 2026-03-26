@@ -512,7 +512,11 @@ function renderTable() {
   const { key, order } = state.sort;
   const sorted = [...state.mapPoints].sort((a, b) => {
     let va = a[key] ?? '', vb = b[key] ?? '';
-    if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    
+    // FIX: Check 'va' and 'vb' independently to prevent crashing on mixed types (Numbers vs Nulls)
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    
     if (va < vb) return order === 'asc' ? -1 : 1;
     if (va > vb) return order === 'asc' ? 1 : -1;
     return 0;
