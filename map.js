@@ -253,7 +253,10 @@ function renderMarkers() {
       .on('click', (e) => {
         L.DomEvent.stopPropagation(e);
         openViewPanel(p);
-        map.flyTo([p.latitude, p.longitude], Math.max(map.getZoom(), 8));
+        // CHANGED: Use flyTo with zoom level 14 for a smooth, close zoom
+        map.flyTo([p.latitude, p.longitude], 14, {
+            duration: 1.5 // makes the animation take 1.5 seconds
+        });
       });
   });
 }
@@ -561,7 +564,13 @@ function wireMapUI() {
     const r = e.target.closest('tr');
     if (r) {
        const pt = state.mapPoints.find(p => String(p.id) === String(r.dataset.id));
-       if (pt) openViewPanel(pt);
+       if (pt) {
+           openViewPanel(pt);
+           // ADDED: Make the map fly to the point when the table row is clicked
+           map.flyTo([pt.latitude, pt.longitude], 14, {
+               duration: 1.5
+           });
+       }
     }
   });
 
