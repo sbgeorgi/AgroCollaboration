@@ -254,7 +254,7 @@ function renderMarkers() {
         L.DomEvent.stopPropagation(e);
         openViewPanel(p);
         // CHANGED: Use flyTo with zoom level 14 for a smooth, close zoom
-        map.flyTo([p.latitude, p.longitude], 16, {
+        map.flyTo([p.latitude, p.longitude], 18, {
             duration: 1.5 // makes the animation take 1.5 seconds
         });
       });
@@ -567,7 +567,7 @@ function wireMapUI() {
        if (pt) {
            openViewPanel(pt);
            // ADDED: Make the map fly to the point when the table row is clicked
-           map.flyTo([pt.latitude, pt.longitude], 16, {
+           map.flyTo([pt.latitude, pt.longitude], 18, {
                duration: 1.5
            });
        }

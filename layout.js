@@ -4,14 +4,13 @@ import { $ } from './ui.js';
 export function renderLayout(activePage) {
   const app = document.querySelector('body');
   
-  // 1. Navigation Data - Added Scholar with beta flag
+  // 1. Navigation Data - Using 'badge' property instead of just 'beta'
   const navLinks = [
     { key: 'schedule', href: 'index.html', label: 'nav.schedule', text: 'Schedule' },
     { key: 'archive',  href: 'archive.html', label: 'nav.archive', text: 'Archive' },
-    // NEW SCHOLAR LINK WITH BETA FLAG
-    { key: 'scholar',  href: 'scholar.html', label: 'nav.scholar', text: 'Scholar', beta: true }, 
+    { key: 'scholar',  href: 'scholar.html', label: 'nav.scholar', text: 'Scholar', badge: 'beta' }, 
     { key: 'network',  href: 'network.html', label: 'nav.network', text: 'Network' },
-    { key: 'map',      href: 'map.html',     label: 'nav.map', text: 'Map' },
+    { key: 'map',      href: 'map.html',     label: 'nav.map', text: 'Map', badge: 'updated' },
     { 
       key: 'about_group', 
       label: 'nav.about', 
@@ -24,10 +23,22 @@ export function renderLayout(activePage) {
     },
   ];
 
-  // Helper for Beta Badge
-  const getBadge = (isBeta) => isBeta 
-    ? `<span style="font-size: 0.55rem; padding: 2px 5px; border-radius: 99px; background: #dbeafe; color: #1e40af; margin-left: 6px; vertical-align: middle; font-weight: 800; letter-spacing: 0.05em; transform: translateY(-1px); display: inline-block;">BETA</span>` 
-    : '';
+  // Helper for Badges (Supports multiple types/colors)
+  const getBadge = (badgeType) => {
+    if (!badgeType) return '';
+    
+    // Default to blue (Beta)
+    let bg = '#dbeafe', color = '#1e40af', text = 'BETA'; 
+    
+    // Change to green theme for 'Updated'
+    if (badgeType === 'updated') {
+      bg = '#dcfce7'; // Tailwind green-100
+      color = '#166534'; // Tailwind green-800
+      text = 'UPDATED';
+    }
+
+    return `<span style="font-size: 0.55rem; padding: 2px 5px; border-radius: 99px; background: ${bg}; color: ${color}; margin-left: 6px; vertical-align: middle; font-weight: 800; letter-spacing: 0.05em; transform: translateY(-1px); display: inline-block;">${text}</span>`;
+  };
 
   // 2. DESKTOP NAV HTML
   const navItemsHtml = navLinks.map(link => {
@@ -53,10 +64,6 @@ export function renderLayout(activePage) {
           </a>`;
       }).join('');
 
-      // HOTFIX APPLIED BELOW:
-      // 1. Changed 'mt-2' to 'pt-2' on the outer div (Creates invisible bridge)
-      // 2. Removed visual classes (bg-white, shadow, border, etc) from outer div
-      // 3. Added a new inner div to hold those visual classes
       return `
         <div class="relative group z-50" style="display:flex; align-items:center;">
           <button class="${baseClass}${activeClass} flex items-center gap-1 cursor-pointer" style="background:none; border:none; padding:4px 0; font-family:inherit;" aria-expanded="false">
@@ -74,10 +81,10 @@ export function renderLayout(activePage) {
         </div>
       `;
     } else {
-      // ADDED: Badge injection
+      // CHANGED: Pass link.badge instead of link.beta
       return `<a href="${link.href}" class="${baseClass}${activeClass}" style="display:flex; align-items:center;">
         <span data-i18n="${link.label}">${link.text}</span>
-        ${getBadge(link.beta)}
+        ${getBadge(link.badge)}
       </a>`;
     }
   }).join('');
@@ -85,7 +92,7 @@ export function renderLayout(activePage) {
   // 3. MOBILE NAV LINKS HTML
   const mobileNavHtml = navLinks.map(link => {
     
-    const createMobileLink = (key, href, label, text, isSubItem = false, isBeta = false) => {
+    const createMobileLink = (key, href, label, text, isSubItem = false, badgeType = null) => {
       const isActive = key === activePage;
       const activeClass = isActive ? " active" : "";
       
@@ -93,14 +100,14 @@ export function renderLayout(activePage) {
         ? "font-size: 1rem; padding-left: 32px; opacity: 0.9; background: transparent;" 
         : "";
       
-      // ADDED: Badge injection for mobile
+      // CHANGED: Pass badgeType here
       return `
         <a href="${href}" 
            class="link${activeClass}" 
            style="${subItemStyle}; display:flex; align-items:center;"
            data-i18n="${label}">
           <span>${text}</span>
-          ${getBadge(isBeta)}
+          ${getBadge(badgeType)}
         </a>`;
     };
 
@@ -116,7 +123,8 @@ export function renderLayout(activePage) {
       return groupLabel + childrenHtml;
     }
     
-    return createMobileLink(link.key, link.href, link.label, link.text, false, link.beta);
+    // CHANGED: pass link.badge
+    return createMobileLink(link.key, link.href, link.label, link.text, false, link.badge);
   }).join('');
 
   // 4. HEADER TEMPLATE (unchanged context, just variables)
