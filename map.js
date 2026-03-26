@@ -598,7 +598,9 @@ export function initMap() {
 
   const base = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', { maxZoom: 20, attribution: 'CARTO' });
   const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' });
-  base.addTo(map);
+  
+  // CHANGED: Add the satellite layer by default instead
+  sat.addTo(map);
 
   // Simplified Custom Controls
   const createCtrl = (pos, html, click) => {
