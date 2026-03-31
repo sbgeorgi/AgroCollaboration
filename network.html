@@ -63,6 +63,113 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
         #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* ── Treemap styles ── */
+        .treemap-container {
+            position: absolute; inset: 0; overflow: hidden;
+        }
+        .treemap-group-tile {
+            position: absolute; overflow: hidden; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.4);
+            cursor: pointer; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+            display: flex; flex-direction: column;
+            background-blend-mode: overlay;
+        }
+        .treemap-group-tile:hover {
+            box-shadow: 0 12px 30px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1);
+            transform: translateY(-2px) scale(1.005);
+            z-index: 10;
+            border-color: rgba(255,255,255,0.9);
+        }
+        .treemap-group-header {
+            padding: 8px 12px; background: rgba(255,255,255,0.85); backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0; min-height: 32px; z-index: 2;
+        }
+        .treemap-group-header-name {
+            font-size: 12px; font-weight: 700; color: #1e293b;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-width: calc(100% - 40px);
+        }
+        .treemap-group-header-count {
+            font-size: 11px; font-weight: 700; color: #64748b;
+            background: #f1f5f9; padding: 2px 8px; border-radius: 9999px;
+            flex-shrink: 0; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .treemap-members-area {
+            flex: 1; position: relative; overflow: hidden;
+        }
+        .treemap-member-tile {
+            position: absolute; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.25);
+            background: radial-gradient(circle at top left, rgba(255,255,255,0.2), rgba(0,0,0,0.1));
+        }
+        .treemap-member-tile:hover {
+            transform: scale(1.04);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.8);
+            z-index: 50;
+        }
+        .treemap-avatar-wrap {
+            border-radius: 50%; overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.9);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            flex-shrink: 0; background: #f8fafc;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .treemap-avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .treemap-member-initials {
+            font-weight: 800; color: #475569;
+            pointer-events: none;
+        }
+        .treemap-global-tooltip {
+            position: fixed; pointer-events: none; z-index: 10000;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
+            color: white; padding: 10px 14px; border-radius: 10px;
+            font-size: 11px; box-shadow: 0 12px 30px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.1);
+            opacity: 0; transform: translateY(8px) scale(0.95); transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 220px;
+        }
+        .treemap-global-tooltip.visible {
+            opacity: 1; transform: translateY(0) scale(1);
+        }
+        .treemap-breadcrumb {
+            position: absolute; top: 12px; left: 12px; z-index: 50;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .treemap-breadcrumb-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px; font-size: 12px; font-weight: 700;
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(4px);
+            border: 1px solid #e2e8f0; border-radius: 8px;
+            color: #475569; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.2s;
+        }
+        .treemap-breadcrumb-btn:hover {
+            background: #fff; border-color: #cbd5e1; transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        .treemap-zoom-overview {
+            position: absolute; top: 8px; right: 8px; z-index: 50;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .treemap-zoom-btn {
+            width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+            background: white; border: 1px solid #e2e8f0; border-radius: 6px;
+            color: #475569; cursor: pointer; font-size: 16px; font-weight: 700;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: background 0.15s;
+        }
+        .treemap-zoom-btn:hover { background: #f8fafc; }
+        .treemap-empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; color: #94a3b8; font-size: 14px; gap: 8px;
+        }
     </style>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -158,14 +265,15 @@
                         <svg class="network-connections" id="networkConnections"></svg>
                         <div id="networkNodes"></div>
                     </div>
-                    <div class="absolute top-4 left-4 flex gap-2 z-40">
+                    <div id="treemapRoot" class="treemap-container" style="display:none;"></div>
+                    <div class="absolute top-4 left-4 flex gap-2 z-40" id="topLeftControls">
                         <button id="viewToggleBtn" class="flex items-center gap-2 px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
                             <i data-lucide="share-2" class="w-4 h-4 text-brand-500"></i>
                             <span id="viewModeText" data-i18n="switchNet">Switch to Network</span>
                         </button>
                     </div>
-                    <div class="absolute top-4 right-4 flex gap-2 z-40">
-                        <div class="flex items-center gap-2 bg-white/90 backdrop-blur border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm text-xs text-slate-600 font-medium">
+                    <div class="absolute top-4 right-4 flex gap-2 z-40" id="topRightControls">
+                        <div id="hoverHint" class="flex items-center gap-2 bg-white/90 backdrop-blur border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm text-xs text-slate-600 font-medium">
                             <i data-lucide="scan-search" class="w-4 h-4 text-brand-500"></i>
                             <span data-i18n="hoverMagnify">Hover to Magnify</span>
                         </div>
@@ -181,7 +289,6 @@
                                 <tr>
                                     <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="name" data-i18n="tblName">Name</th>
                                     <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="affiliation" data-i18n="tblAff">Affiliation</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden lg:table-cell" data-sort="interests" data-i18n="tblInterests">Interests</th>
                                     <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="role" data-i18n="tblRole">Role</th>
                                     <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="country" data-i18n="tblCountry">Country</th>
                                     <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors text-right" data-sort="connections" data-i18n="tblConn">Connections</th>
@@ -204,8 +311,8 @@
         renderLayout('network');
 
         const t = {
-            en: { auth: { signin: "Sign in", signout: "Sign out" }, nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" }, pageTitle: "Member Network", optimizing: "Optimizing Layout...", signinPrompt: "Sign in to visualize connections.", signinBtn: "Sign In", explore: "Explore Network", searchPlaceholder: "Search people, orgs...", groupBy: "Group Nodes By", optOrg: "Organization", optCountry: "Country", allEvents: "All Events", allCountries: "All Countries", roleAll: "All Roles", roleSpeakers: "Speakers", roleHosts: "Hosts", interests: "Interests & Tags", clear: "Clear", statMembers: "Members", statConnections: "Connections", statOrgs: "Orgs", statEvents: "Events", switchNet: "Switch to Network", switchBub: "Switch to Bubbles", hoverMagnify: "Hover to Magnify", resetView: "Reset View", tblName: "Name", tblAff: "Affiliation / Institution", tblInterests: "Interests", tblRole: "Role", tblCountry: "Country", tblConn: "Connections", legendMember: "Member", legendOrg: "Organization", legendAff: "Affiliation / Group", legendCollab: "Collaborator", legendTrack: "Drag vertical track" },
-            es: { auth: { signin: "Ingresar", signout: "Salir" }, nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" }, pageTitle: "Red de Miembros", optimizing: "Optimizando Diseño...", signinPrompt: "Inicia sesión para visualizar conexiones.", signinBtn: "Ingresar", explore: "Explorar Red", searchPlaceholder: "Buscar personas, orgs...", groupBy: "Agrupar Nodos Por", optOrg: "Organización", optCountry: "País", allEvents: "Todos los Eventos", allCountries: "Todos los Países", roleAll: "Todos", roleSpeakers: "Ponentes", roleHosts: "Organizadores", interests: "Intereses y Etiquetas", clear: "Limpiar", statMembers: "Miembros", statConnections: "Conexiones", statOrgs: "Orgs", statEvents: "Eventos", switchNet: "Cambiar a Red", switchBub: "Cambiar a Burbujas", hoverMagnify: "Hover para Ampliar", resetView: "Reiniciar Vista", tblName: "Nombre", tblAff: "Afiliación / Institución", tblInterests: "Intereses", tblRole: "Rol", tblCountry: "País", tblConn: "Conexiones", legendMember: "Miembro", legendOrg: "Organización", legendAff: "Afiliación / Grupo", legendCollab: "Colaborador", legendTrack: "Arrastrar pista vertical" }
+            en: { auth: { signin: "Sign in", signout: "Sign out" }, nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" }, pageTitle: "Member Network", optimizing: "Optimizing Layout...", signinPrompt: "Sign in to visualize connections.", signinBtn: "Sign In", explore: "Explore Network", searchPlaceholder: "Search people, orgs...", groupBy: "Group Nodes By", optOrg: "Organization", optCountry: "Country", allEvents: "All Events", allCountries: "All Countries", roleAll: "All Roles", roleSpeakers: "Speakers", roleHosts: "Hosts", interests: "Interests & Tags", clear: "Clear", statMembers: "Members", statConnections: "Connections", statOrgs: "Orgs", statEvents: "Events", switchNet: "Switch to Treemap", switchBub: "Switch to Bubbles", hoverMagnify: "Hover to Magnify", resetView: "Reset View", tblName: "Name", tblAff: "Affiliation / Institution", tblInterests: "Interests", tblRole: "Role", tblCountry: "Country", tblConn: "Connections", legendMember: "Member", legendOrg: "Organization", legendAff: "Affiliation / Group", legendCollab: "Collaborator", legendTrack: "Drag vertical track", treemapBack: "← Back to Overview", treemapClickDrill: "Click a group to explore members", treemapMembers: "members" },
+            es: { auth: { signin: "Ingresar", signout: "Salir" }, nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" }, pageTitle: "Red de Miembros", optimizing: "Optimizando Diseño...", signinPrompt: "Inicia sesión para visualizar conexiones.", signinBtn: "Ingresar", explore: "Explorar Red", searchPlaceholder: "Buscar personas, orgs...", groupBy: "Agrupar Nodos Por", optOrg: "Organización", optCountry: "País", allEvents: "Todos los Eventos", allCountries: "Todos los Países", roleAll: "Todos", roleSpeakers: "Ponentes", roleHosts: "Organizadores", interests: "Intereses y Etiquetas", clear: "Limpiar", statMembers: "Miembros", statConnections: "Conexiones", statOrgs: "Orgs", statEvents: "Eventos", switchNet: "Cambiar a Treemap", switchBub: "Cambiar a Burbujas", hoverMagnify: "Hover para Ampliar", resetView: "Reiniciar Vista", tblName: "Nombre", tblAff: "Afiliación / Institución", tblInterests: "Intereses", tblRole: "Rol", tblCountry: "País", tblConn: "Conexiones", legendMember: "Miembro", legendOrg: "Organización", legendAff: "Afiliación / Grupo", legendCollab: "Colaborador", legendTrack: "Arrastrar pista vertical", treemapBack: "← Volver a Vista General", treemapClickDrill: "Haz clic en un grupo para explorar", treemapMembers: "miembros" }
         };
 
         const state = {
@@ -216,6 +323,7 @@
             roleFilter: "all", eventFilterId: "all", countryFilterId: "all", groupBy: "affiliation",
             searchQuery: "", selectedTags: new Set(), lang: localStorage.getItem("lang") || "en",
             isDragging: false, viewMode: 'bubble', currentGroupBaseScale: 1,
+            treemapDrilledGroup: null,
             countries: { "US": "United States", "MX": "Mexico", "CA": "Canada", "CO": "Colombia", "BR": "Brazil", "CL": "Chile", "AR": "Argentina", "PE": "Peru", "ES": "Spain", "FR": "France", "DE": "Germany", "BE": "Belgium", "NL": "Netherlands", "IT": "Italy", "UK": "UK", "GB": "UK", "IN": "India", "CN": "China", "AU": "Australia" }
         };
 
@@ -223,12 +331,401 @@
         const highlight = (text, q) => q && text ? (text+"").replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "ig"), '<span class="bg-yellow-100 text-yellow-800 px-0.5 rounded">$1</span>') : (text || "");
         const debounce = (fn, ms = 200) => { let t = null; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
         const stringToColor = str => `hsl(${Math.abs(str.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % 360}, 55%, 75%)`;
+        const stringToColorDark = str => `hsl(${Math.abs(str.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % 360}, 45%, 55%)`;
+
+        /* ─────────────────────────────────────────────
+           SQUARIFIED TREEMAP LAYOUT ALGORITHM
+           ─────────────────────────────────────────────*/
+        function squarify(items, x, y, w, h) {
+            if (!items.length || w <= 0 || h <= 0) return [];
+            const total = items.reduce((s, it) => s + it.value, 0);
+            if (total <= 0) return [];
+            const rects = [];
+            const scaled = items.map(it => ({ ...it, area: (it.value / total) * w * h }));
+            let remaining = scaled.slice();
+            let cx = x, cy = y, cw = w, ch = h;
+
+            function worst(row, sideLen) {
+                if (!row.length) return Infinity;
+                const s = row.reduce((a, r) => a + r.area, 0);
+                const s2 = s * s;
+                const side2 = sideLen * sideLen;
+                let maxA = -Infinity, minA = Infinity;
+                for (const r of row) {
+                    if (r.area > maxA) maxA = r.area;
+                    if (r.area < minA) minA = r.area;
+                }
+                return Math.max((side2 * maxA) / s2, s2 / (side2 * minA));
+            }
+
+            function layoutRow(row, sideLen, vertical) {
+                const totalArea = row.reduce((a, r) => a + r.area, 0);
+                const thickness = totalArea / sideLen;
+                let offset = 0;
+                for (const r of row) {
+                    const len = r.area / thickness;
+                    if (vertical) {
+                        rects.push({ ...r, rx: cx, ry: cy + offset, rw: thickness, rh: len });
+                    } else {
+                        rects.push({ ...r, rx: cx + offset, ry: cy, rw: len, rh: thickness });
+                    }
+                    offset += len;
+                }
+                if (vertical) {
+                    cx += thickness;
+                    cw -= thickness;
+                } else {
+                    cy += thickness;
+                    ch -= thickness;
+                }
+            }
+
+            while (remaining.length > 0) {
+                const vertical = ch <= cw;
+                const sideLen = vertical ? ch : cw;
+                if (sideLen <= 0) break;
+                let row = [remaining[0]];
+                let restIdx = 1;
+                let currentWorst = worst(row, sideLen);
+                while (restIdx < remaining.length) {
+                    const next = remaining[restIdx];
+                    const trial = [...row, next];
+                    const trialWorst = worst(trial, sideLen);
+                    if (trialWorst <= currentWorst) {
+                        row = trial;
+                        currentWorst = trialWorst;
+                        restIdx++;
+                    } else {
+                        break;
+                    }
+                }
+                layoutRow(row, sideLen, vertical);
+                remaining = remaining.slice(restIdx);
+            }
+            return rects;
+        }
+
+        /* ─────────────────────────────────────────────
+           TREEMAP RENDERING
+           ─────────────────────────────────────────────*/
+        function setupGlobalTooltip() {
+            let tt = document.getElementById('treemap-global-tooltip');
+            if (!tt) {
+                tt = document.createElement('div');
+                tt.id = 'treemap-global-tooltip';
+                tt.className = 'treemap-global-tooltip';
+                document.body.appendChild(tt);
+            }
+            return tt;
+        }
+
+        function createMemberBento(mr, member, tt) {
+            const mtile = document.createElement('div');
+            mtile.className = 'treemap-member-tile';
+            mtile.style.left = `${mr.rx + 2}px`;
+            mtile.style.top = `${mr.ry + 2}px`;
+            mtile.style.width = `${mr.rw - 1}px`;
+            mtile.style.height = `${mr.rh - 1}px`;
+            mtile.style.backgroundColor = stringToColorDark(member.full_name || 'M');
+            
+            // Bento logic: Adaptive sizing based on aspect ratio
+            const minDim = Math.min(mr.rw, mr.rh);
+            const avSize = clamp(minDim * 0.6, 16, 80);
+            
+            const isWide = mr.rw > mr.rh * 1.5 && mr.rw > 100;
+            const isTall = mr.rh > mr.rw * 1.5 && mr.rh > 100;
+            
+            mtile.style.flexDirection = isTall ? 'column' : 'row';
+            mtile.style.gap = (avSize >= 24 && (isWide || isTall)) ? '12px' : '4px';
+
+            if (minDim > 20) {
+                const avWrap = document.createElement('div');
+                avWrap.className = 'treemap-avatar-wrap';
+                avWrap.style.width = `${avSize}px`;
+                avWrap.style.height = `${avSize}px`;
+
+                if (member.avatar_url) {
+                    const img = document.createElement('img');
+                    img.loading = 'lazy';
+                    img.alt = member.full_name || '';
+                    img.src = member.avatar_url;
+                    getAvatarUrl(member.avatar_url).then(u => { if (u) img.src = u; });
+                    avWrap.appendChild(img);
+                } else {
+                    const initials = document.createElement('span');
+                    initials.className = 'treemap-member-initials';
+                    initials.style.fontSize = `${clamp(avSize * 0.35, 8, 28)}px`;
+                    initials.textContent = (member.full_name || 'M').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+                    avWrap.appendChild(initials);
+                }
+                mtile.appendChild(avWrap);
+
+                // Add text dynamically if there's enough room (The 1-person fix)
+                if ((isWide && mr.rw > avSize + 80) || (isTall && mr.rh > avSize + 50)) {
+                    const textWrap = document.createElement('div');
+                    textWrap.style.display = 'flex';
+                    textWrap.style.flexDirection = 'column';
+                    textWrap.style.alignItems = isTall ? 'center' : 'flex-start';
+                    textWrap.style.overflow = 'hidden';
+                    textWrap.style.color = 'white';
+                    textWrap.style.textShadow = '0 1px 3px rgba(0,0,0,0.6)';
+                    textWrap.style.flex = '1';
+                    textWrap.style.minWidth = '0';
+                    if (isTall) textWrap.style.textAlign = 'center';
+                    
+                    const nameEl = document.createElement('div');
+                    nameEl.style.fontSize = clamp(avSize * 0.25, 10, 15) + 'px';
+                    nameEl.style.fontWeight = '700';
+                    nameEl.style.whiteSpace = 'nowrap';
+                    nameEl.style.textOverflow = 'ellipsis';
+                    nameEl.style.overflow = 'hidden';
+                    nameEl.style.maxWidth = '100%';
+                    nameEl.textContent = member.full_name;
+                    textWrap.appendChild(nameEl);
+                    
+                    if (member.affiliation && (isTall ? mr.rh > avSize + 70 : mr.rw > avSize + 140)) {
+                        const affEl = document.createElement('div');
+                        affEl.style.fontSize = clamp(avSize * 0.18, 9, 12) + 'px';
+                        affEl.style.opacity = '0.9';
+                        affEl.style.whiteSpace = 'nowrap';
+                        affEl.style.textOverflow = 'ellipsis';
+                        affEl.style.overflow = 'hidden';
+                        affEl.style.maxWidth = '100%';
+                        affEl.textContent = member.affiliation;
+                        textWrap.appendChild(affEl);
+                    }
+                    mtile.appendChild(textWrap);
+                }
+            }
+
+            // High-fidelity Global Tooltip Handlers
+            mtile.onmouseenter = (e) => {
+                const rect = mtile.getBoundingClientRect();
+                tt.innerHTML = `
+                    <div style="font-weight:700;font-size:13px;margin-bottom:2px">${member.full_name || 'Member'}</div>
+                    ${member.affiliation ? `<div style="font-size:10px;opacity:0.85;margin-bottom:2px">${member.affiliation}</div>` : ''}
+                    ${member.role ? `<div style="font-size:9px;opacity:0.7;text-transform:uppercase;letter-spacing:0.5px">Role: ${member.role}</div>` : ''}
+                `;
+                tt.style.left = Math.max(10, rect.left + (rect.width / 2) - (tt.offsetWidth / 2)) + 'px';
+                tt.style.top = Math.max(10, rect.top - tt.offsetHeight - 12) + 'px';
+                tt.classList.add('visible');
+            };
+            mtile.onmouseleave = () => tt.classList.remove('visible');
+            mtile.onclick = (e) => {
+                e.stopPropagation();
+                tt.classList.remove('visible');
+                openProfileModal(member);
+            };
+
+            return mtile;
+        }
+
+        function renderTreemap(members) {
+            const root = document.getElementById('treemapRoot');
+            root.innerHTML = '';
+            const containerW = root.offsetWidth || root.parentElement.offsetWidth;
+            const containerH = root.offsetHeight || root.parentElement.offsetHeight;
+            if (containerW <= 0 || containerH <= 0) return;
+
+            const l = t[state.lang] || t.en;
+            const byGroup = new Map();
+            const tt = setupGlobalTooltip();
+            
+            members.forEach(m => {
+                if (!m.affiliation || !m.affiliation.trim()) return;
+                const key = state.groupBy === 'country'
+                    ? (m.country ? (state.countries[m.country] || m.country) : "Unknown")
+                    : m.affiliation.trim();
+                if (!byGroup.has(key)) byGroup.set(key, []);
+                byGroup.get(key).push(m);
+            });
+
+            const groups = Array.from(byGroup.entries())
+                .map(([name, list]) => ({ name, list, value: list.length }))
+                .sort((a, b) => b.value - a.value);
+
+            if (groups.length === 0) {
+                root.innerHTML = `<div class="treemap-empty-state"><i data-lucide="users" class="w-10 h-10"></i><span>No members match filters</span></div>`;
+                if (window.lucide) window.lucide.createIcons();
+                return;
+            }
+
+            const padding = 6;
+            const groupRects = squarify(groups, padding, padding, containerW - padding * 2, containerH - padding * 2);
+
+            if (state.treemapDrilledGroup) {
+                const drilled = groupRects.find(r => r.name === state.treemapDrilledGroup);
+                if (drilled) {
+                    renderTreemapDrillDown(root, drilled, containerW, containerH, l, tt);
+                } else {
+                    state.treemapDrilledGroup = null;
+                    renderTreemapOverview(root, groupRects, l, tt);
+                }
+            } else {
+                renderTreemapOverview(root, groupRects, l, tt);
+            }
+
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function renderTreemapOverview(root, groupRects, l, tt) {
+            const frag = document.createDocumentFragment();
+
+            const hint = document.createElement('div');
+            hint.className = 'absolute bottom-4 left-1/2 -translate-x-1/2 z-50 text-[11px] font-bold text-slate-500 bg-white/95 backdrop-blur px-4 py-2 rounded-full border border-gray-200 shadow-lg pointer-events-none transition-opacity duration-300';
+            hint.textContent = l.treemapClickDrill || 'Click a group to explore members';
+            frag.appendChild(hint);
+
+            groupRects.forEach(rect => {
+                const tile = document.createElement('div');
+                tile.className = 'treemap-group-tile';
+                tile.style.left = `${rect.rx}px`;
+                tile.style.top = `${rect.ry}px`;
+                tile.style.width = `${rect.rw}px`;
+                tile.style.height = `${rect.rh}px`;
+                tile.style.backgroundColor = stringToColor(rect.name);
+
+                const isSmall = rect.rw < 100 || rect.rh < 70;
+                const isTiny = rect.rw < 50 || rect.rh < 40;
+
+                if (!isTiny) {
+                    const header = document.createElement('div');
+                    header.className = 'treemap-group-header';
+                    if (isSmall) {
+                        header.style.padding = '4px 8px';
+                        header.style.minHeight = '24px';
+                    }
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'treemap-group-header-name';
+                    nameSpan.textContent = rect.name;
+                    if (isSmall) nameSpan.style.fontSize = '10px';
+                    header.appendChild(nameSpan);
+                    
+                    const countSpan = document.createElement('span');
+                    countSpan.className = 'treemap-group-header-count';
+                    countSpan.textContent = rect.list.length;
+                    if (isSmall) { countSpan.style.fontSize = '9px'; countSpan.style.padding = '1px 5px'; }
+                    header.appendChild(countSpan);
+                    tile.appendChild(header);
+                }
+
+                const membersArea = document.createElement('div');
+                membersArea.className = 'treemap-members-area';
+                tile.appendChild(membersArea);
+
+                if (!isTiny && rect.rh > 50) {
+                    const headerH = isTiny ? 0 : (isSmall ? 24 : 32);
+                    const innerW = rect.rw - 4;
+                    const innerH = rect.rh - headerH - 4;
+                    if (innerW > 20 && innerH > 20) {
+                        const maxShow = Math.min(rect.list.length, 30);
+                        const memberItems = rect.list.slice(0, maxShow).map(m => ({ member: m, value: 1 }));
+                        const memberRects = squarify(memberItems, 0, 0, innerW, innerH);
+                        
+                        memberRects.forEach(mr => {
+                            const mtile = createMemberBento(mr, mr.member, tt);
+                            membersArea.appendChild(mtile);
+                        });
+
+                        if (rect.list.length > maxShow) {
+                            const moreLabel = document.createElement('div');
+                            moreLabel.style.cssText = 'position:absolute;bottom:4px;right:6px;font-size:10px;font-weight:800;color:white;text-shadow:0 1px 4px rgba(0,0,0,0.6);pointer-events:none;z-index:10;';
+                            moreLabel.textContent = `+${rect.list.length - maxShow}`;
+                            membersArea.appendChild(moreLabel);
+                        }
+                    }
+                }
+
+                tile.onclick = () => {
+                    tt.classList.remove('visible');
+                    state.treemapDrilledGroup = rect.name;
+                    const list = getFiltered();
+                    renderTreemap(list);
+                };
+                tile.title = `${rect.name} — ${rect.list.length} ${l.treemapMembers || 'members'}`;
+
+                frag.appendChild(tile);
+            });
+            root.appendChild(frag);
+        }
+
+        function renderTreemapDrillDown(root, groupRect, containerW, containerH, l, tt) {
+            const frag = document.createDocumentFragment();
+
+            const breadcrumb = document.createElement('div');
+            breadcrumb.className = 'treemap-breadcrumb';
+            const backBtn = document.createElement('button');
+            backBtn.className = 'treemap-breadcrumb-btn';
+            backBtn.innerHTML = `<i data-lucide="arrow-left" class="w-4 h-4"></i> ${l.treemapBack || 'Overview'}`;
+            backBtn.onclick = () => {
+                tt.classList.remove('visible');
+                state.treemapDrilledGroup = null;
+                const list = getFiltered();
+                renderTreemap(list);
+            };
+            breadcrumb.appendChild(backBtn);
+            
+            const groupLabel = document.createElement('span');
+            groupLabel.className = 'treemap-breadcrumb-btn';
+            groupLabel.style.cssText = 'cursor:default;background:' + stringToColor(groupRect.name) + ';border-color:' + stringToColor(groupRect.name) + ';color:rgba(0,0,0,0.8);text-shadow:0 1px 0 rgba(255,255,255,0.3);';
+            groupLabel.textContent = `${groupRect.name} (${groupRect.list.length})`;
+            breadcrumb.appendChild(groupLabel);
+            frag.appendChild(breadcrumb);
+
+            const padding = 12;
+            const topOffset = 50;
+            const areaW = containerW - padding * 2;
+            const areaH = containerH - topOffset - padding;
+
+            if (areaW <= 0 || areaH <= 0) { root.appendChild(frag); return; }
+
+            const memberItems = groupRect.list
+                .sort((a, b) => {
+                    const ca = state.connections.filter(c => c.source === a.id || c.target === a.id).length;
+                    const cb = state.connections.filter(c => c.source === b.id || c.target === b.id).length;
+                    return cb - ca;
+                })
+                .map(m => ({ member: m, value: 1 }));
+
+            const memberRects = squarify(memberItems, padding, topOffset, areaW, areaH);
+
+            memberRects.forEach(mr => {
+                const mtile = createMemberBento(mr, mr.member, tt);
+                
+                // Enhance drill-down styling specifically
+                mtile.style.borderRadius = '12px';
+                mtile.style.border = '1px solid rgba(255,255,255,0.4)';
+                mtile.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.2)';
+                
+                const minDim = Math.min(mr.rw, mr.rh);
+                const avSize = clamp(minDim * 0.6, 16, 80);
+
+                const connCount = state.connections.filter(c => c.source === mr.member.id || c.target === mr.member.id).length;
+                if (connCount > 0 && mr.rw > 45 && mr.rh > 45) {
+                    const badge = document.createElement('div');
+                    badge.style.cssText = 'position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:9999px;pointer-events:none;box-shadow:0 2px 4px rgba(0,0,0,0.2);';
+                    badge.textContent = `${connCount} 🔗`;
+                    mtile.appendChild(badge);
+                }
+
+                if (state.isSpeaker.has(mr.member.id) && mr.rw > 45 && mr.rh > 45) {
+                    const speakerBadge = document.createElement('div');
+                    speakerBadge.style.cssText = 'position:absolute;top:6px;right:6px;background:rgba(245,158,11,0.9);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;pointer-events:none;box-shadow:0 2px 4px rgba(0,0,0,0.2);';
+                    speakerBadge.textContent = '🎤';
+                    mtile.appendChild(speakerBadge);
+                }
+
+                frag.appendChild(mtile);
+            });
+            root.appendChild(frag);
+        }
 
         function applyLocalTranslations() {
             const l = t[state.lang] || t.en;
             document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.dataset.i18n; if (l[key]) el.innerText = l[key]; });
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const key = el.dataset.i18nPlaceholder; if (l[key]) el.placeholder = l[key]; });
-            const btnLabel = document.getElementById('viewModeText'); if (btnLabel) btnLabel.innerText = state.viewMode === 'network' ? l.switchBub : l.switchNet;
+            const btnLabel = document.getElementById('viewModeText');
+            if (btnLabel) btnLabel.innerText = state.viewMode === 'network' ? l.switchBub : l.switchNet;
             applyI18n(t, state.lang); populateDropdowns();
             const list = getFiltered(); renderTable(list); if(list.length > 0) renderGraph(list);
         }
@@ -254,7 +751,7 @@
             state.members = profiles.data || [];
             (events.data || []).forEach(e => state.eventsById.set(e.id, e));
             (speakers.data || []).forEach(s => { if (s.profile_id) { state.isSpeaker.add(s.profile_id); if (!state.speakersByProfileId.has(s.profile_id)) state.speakersByProfileId.set(s.profile_id, new Set()); state.speakersByProfileId.get(s.profile_id).add(s.event_id); }});
-            
+
             const processedConns = new Set(), conns = [];
             state.members.forEach(m => {
                 state.profileById.set(m.id, m);
@@ -295,171 +792,126 @@
         document.addEventListener('remTag', e => { state.selectedTags.delete(e.detail); onFiltersChanged(); });
 
         function calculatePositions(members) {
-            const byGroup = new Map(), dockMembers = [];
-            const dockKeys = ["Unaffiliated", "Independent", "Consultant", "Unknown Location", "Unknown", ""];
+            const byGroup = new Map();
             members.forEach(m => {
-                const key = state.groupBy === 'country' ? (m.country ? (state.countries[m.country] || m.country) : "Unknown") : (m.affiliation?.trim() || "Unaffiliated");
-                if (dockKeys.some(k => k.toLowerCase() === key.toLowerCase())) { if (state.viewMode !== 'bubble') dockMembers.push(m); }
-                else { if (!byGroup.has(key)) byGroup.set(key, []); byGroup.get(key).push(m); }
+                if (!m.affiliation || !m.affiliation.trim()) return; 
+                const key = state.groupBy === 'country' 
+                    ? (m.country ? (state.countries[m.country] || m.country) : "Unknown") 
+                    : m.affiliation.trim();
+                if (!byGroup.has(key)) byGroup.set(key, []);
+                byGroup.get(key).push(m);
             });
 
-            if (state.viewMode === 'bubble') {
-                const container = $('#network-container'), clusters = [];
-                const aspectRatio = Math.max(1.8, (container.offsetWidth || 800) / (container.offsetHeight || 600));
-                let totalMemberCount = 0;
-                for (const [name, list] of byGroup.entries()) { totalMemberCount += list.length; clusters.push({ name, list, count: list.length }); }
-                clusters.sort((a, b) => b.count - a.count);
-                const pos = new Map(), areaPerMember = (container.offsetWidth * container.offsetHeight * 0.95) / Math.max(totalMemberCount, 1);
-                const memberRadius = Math.max(22, Math.min(32, Math.sqrt(areaPerMember / Math.PI) * 0.45));
-                const packed = clusters.map(c => ({ ...c, radius: Math.max(70, Math.sqrt(c.count * Math.PI * (memberRadius + 12)**2 * 3.5 / Math.PI) * 1.1), x: 0, y: 0 }));
-                
-                if (packed.length > 0) {
-                    for (let i = 1; i < packed.length; i++) {
-                        const cur = packed[i];
-                        let bestDist = Infinity, bestX = 0, bestY = 0;
-                        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 45) {
-                            for (let dist = 0; dist < 4000; dist += 25) {
-                                const tx = Math.cos(angle) * dist * aspectRatio, ty = Math.sin(angle) * dist;
-                                let valid = true;
-                                for (let j = 0; j < i; j++) {
-                                    const other = packed[j], minDist = cur.radius + other.radius + 60;
-                                    if ((tx - other.x)**2 + (ty - other.y)**2 < minDist**2) { valid = false; break; }
-                                }
-                                if (valid) { const d = Math.sqrt((tx/aspectRatio)**2 + ty**2); if (d < bestDist) { bestDist = d; bestX = tx; bestY = ty; } }
-                            }
-                        }
-                        cur.x = bestX; cur.y = bestY;
-                    }
-                }
-                packed.forEach(c => {
-                    pos.set(`group-${c.name}`, { x: c.x, y: c.y, r: c.radius });
-                    if (c.list.length === 1) pos.set(c.list[0].id, { x: c.x, y: c.y });
-                    else {
-                        const ga = Math.PI * (3 - Math.sqrt(5)), maxR = c.radius - memberRadius - 20;
-                        c.list.forEach((m, i) => { const a = i * ga, r = maxR * Math.sqrt(i / c.count); pos.set(m.id, { x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r }); });
-                    }
-                });
-                return { pos, clusters: packed, mode: 'bubble', memberRadius };
-            }
+            const container = $('#network-container'), clusters = [];
+            const aspectRatio = Math.max(1.8, (container.offsetWidth || 800) / (container.offsetHeight || 600));
+            let totalMemberCount = 0;
+            for (const [name, list] of byGroup.entries()) { totalMemberCount += list.length; clusters.push({ name, list, count: list.length }); }
+            clusters.sort((a, b) => b.count - a.count);
+            const pos = new Map(), areaPerMember = (container.offsetWidth * container.offsetHeight * 0.95) / Math.max(totalMemberCount, 1);
+            const memberRadius = Math.max(22, Math.min(32, Math.sqrt(areaPerMember / Math.PI) * 0.45));
+            const packed = clusters.map(c => ({ ...c, radius: Math.max(70, Math.sqrt(c.count * Math.PI * (memberRadius + 12)**2 * 3.5 / Math.PI) * 1.1), x: 0, y: 0 }));
 
-            const clusters = [];
-            let totalStageArea = 0;
-            for (const [name, list] of byGroup.entries()) {
-                const ringR = Math.max(160, (list.length * 55) / (2 * Math.PI));
-                const size = (ringR * 2) + 200; totalStageArea += size * size;
-                clusters.push({ name, list, ringR, size });
-            }
-            clusters.sort((a, b) => b.list.length - a.list.length);
-            const TARGET_ROW_WIDTH = Math.sqrt(totalStageArea * 3.5) + 500, GAP = 220;
-            const pos = new Map();
-            let rowX = 0, rowY = 0, rowItems = [], maxH = 0, minStageX = 0;
-            const flushRow = () => {
-                let startX = -((rowX - GAP) / 2);
-                if (startX < minStageX) minStageX = startX;
-                rowItems.forEach(c => {
-                    const cx = startX + (c.size / 2), cy = rowY + (c.size / 2);
-                    pos.set(`group-${c.name}`, { x: cx, y: cy });
-                    if (c.list.length) {
-                        const step = (Math.PI * 2) / c.list.length;
-                        c.list.forEach((m, i) => { const a = step * i, r = c.ringR + (i % 2 === 0 ? 0 : 50); pos.set(m.id, { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }); });
+            if (packed.length > 0) {
+                for (let i = 1; i < packed.length; i++) {
+                    const cur = packed[i];
+                    let bestDist = Infinity, bestX = 0, bestY = 0;
+                    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 45) {
+                        for (let dist = 0; dist < 4000; dist += 25) {
+                            const tx = Math.cos(angle) * dist * aspectRatio, ty = Math.sin(angle) * dist;
+                            let valid = true;
+                            for (let j = 0; j < i; j++) {
+                                const other = packed[j], minDist = cur.radius + other.radius + 60;
+                                if ((tx - other.x)**2 + (ty - other.y)**2 < minDist**2) { valid = false; break; }
+                            }
+                            if (valid) { const d = Math.sqrt((tx/aspectRatio)**2 + ty**2); if (d < bestDist) { bestDist = d; bestX = tx; bestY = ty; } }
+                        }
                     }
-                    startX += c.size + GAP;
-                });
-                rowY += maxH + GAP; rowX = 0; rowItems = []; maxH = 0;
-            };
-            clusters.forEach(c => { if (rowX + c.size > TARGET_ROW_WIDTH && rowItems.length) flushRow(); rowItems.push(c); rowX += c.size + GAP; maxH = Math.max(maxH, c.size); });
-            if (rowItems.length) flushRow();
-            for (const p of pos.values()) p.y -= rowY / 2;
-            const dockX = (minStageX || -900) - 800, dockH = dockMembers.length * 40;
-            dockMembers.sort((a,b)=>(a.full_name||"").localeCompare(b.full_name||"")).forEach((m, i) => pos.set(m.id, { x: dockX, y: (i * 40) - (dockH / 2) }));
-            return { pos, clusters, dockX, dockYMin: -(dockH/2), dockYMax: dockH/2, mode: 'network' };
+                    cur.x = bestX; cur.y = bestY;
+                }
+            }
+            packed.forEach(c => {
+                pos.set(`group-${c.name}`, { x: c.x, y: c.y, r: c.radius });
+                if (c.list.length === 1) pos.set(c.list[0].id, { x: c.x, y: c.y });
+                else {
+                    const ga = Math.PI * (3 - Math.sqrt(5)), maxR = c.radius - memberRadius - 20;
+                    c.list.forEach((m, i) => { const a = i * ga, r = maxR * Math.sqrt(i / c.count); pos.set(m.id, { x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r }); });
+                }
+            });
+            return { pos, clusters: packed, mode: 'bubble', memberRadius };
         }
 
         function renderGraph(members) {
             const c = $('#network-container'), svg = $('#networkConnections'), nodes = $('#networkNodes');
+            const treemapRoot = $('#treemapRoot');
             if (!c.offsetWidth) return;
+
+            if (state.viewMode === 'network') {
+                svg.innerHTML = '';
+                nodes.innerHTML = '';
+                $('#networkCanvas').style.display = 'none';
+                treemapRoot.style.display = 'block';
+                $('#hoverHint').style.display = 'none';
+                const l = t[state.lang] || t.en;
+                $('#legendContainer').innerHTML = `<div class="flex items-center gap-3 bg-white/95 backdrop-blur px-4 py-2.5 rounded-xl border border-gray-200 shadow-md text-[11px] font-bold text-slate-700"><div class="flex items-center gap-2"><div class="w-4 h-4 rounded-md" style="background:${stringToColor('Sample')}; border: 1px solid rgba(0,0,0,0.1);"></div><span>${l.legendAff || 'Group'}</span></div><div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full" style="background:${stringToColorDark('Sample')}; border: 1px solid rgba(0,0,0,0.2);"></div><span>${l.legendMember || 'Member'}</span></div></div>`;
+                renderTreemap(members);
+                state.cachedNodes = [];
+                return;
+            }
+
+            // Bubble mode
+            treemapRoot.style.display = 'none';
+            treemapRoot.innerHTML = '';
+            $('#networkCanvas').style.display = '';
+            $('#hoverHint').style.display = '';
+
             const layout = calculatePositions(members);
             state.positions = layout.pos; svg.innerHTML = ''; nodes.innerHTML = '';
             const l = t[state.lang] || t.en, frag = document.createDocumentFragment();
 
-            if (state.viewMode === 'bubble') {
-                $('#legendContainer').innerHTML = `<div class="flex items-center gap-3 bg-white/90 backdrop-blur p-3 rounded-xl border border-gray-200 shadow-sm text-[11px] font-medium text-slate-600"><div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 border-2 border-white shadow-sm"></div><span>${l.legendOrg}</span></div><div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-white border-2 border-brand-400 shadow-sm"></div><span>${l.legendMember}</span></div></div>`;
-                layout.clusters.forEach(cluster => {
-                    const p = state.positions.get(`group-${cluster.name}`); if (!p) return;
-                    const el = document.createElement('div');
-                    el.className = 'network-node group-node bubble-group';
-                    el.dataset.x = p.x; el.dataset.y = p.y; el.dataset.type = 'group';
-                    el.style.width = el.style.height = `${p.r * 2}px`; el.style.backgroundColor = stringToColor(cluster.name);
-                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
-                    el.onclick = e => { e.stopPropagation(); $('#searchInput').value = cluster.name; onFiltersChanged(); };
-                    frag.appendChild(el);
-                    const lbl = document.createElement('div');
-                    lbl.className = 'network-node pointer-events-none z-30';
-                    lbl.dataset.x = p.x; lbl.dataset.y = p.y - p.r; lbl.dataset.type = 'group-label';
-                    lbl.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px) translateZ(0)`;
-                    lbl.innerHTML = `<div class="flex flex-col items-center"><span class="px-6 py-2.5 bg-white/95 backdrop-blur shadow-xl border border-gray-200 rounded-full text-lg font-extrabold text-slate-900 whitespace-nowrap ring-1 ring-black/5" style="max-width: 400px; overflow: hidden; text-overflow: ellipsis;">${cluster.name}</span></div>`;
-                    frag.appendChild(lbl);
-                });
-                members.forEach(m => {
-                    const p = state.positions.get(m.id); if (!p) return;
-                    const el = document.createElement('div');
-                    el.className = 'network-node member-node bubble-member group/bub';
-                    el.dataset.x = p.x; el.dataset.y = p.y;
-                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
-                    const size = (layout.memberRadius || 20) * 2;
-                    el.innerHTML = `<div class="rounded-full bg-white flex items-center justify-center shadow-md border-2 border-white overflow-hidden cursor-pointer relative" style="width: ${size}px; height: ${size}px;">${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : `<span class="text-xs font-bold text-brand-600">${(m.full_name||'M')[0]}</span>`}</div><div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 backdrop-blur text-white text-[11px] py-1.5 px-3 rounded-lg opacity-0 group-hover/bub:opacity-100 pointer-events-none transition-opacity duration-200 z-[100] shadow-xl border border-white/10"><div class="font-bold">${m.full_name}</div>${m.affiliation ? `<div class="text-slate-300 text-[9px] font-medium">${m.affiliation}</div>` : ''}<div class="absolute -top-1 left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-slate-900/90"></div></div>`;
-                    if (m.avatar_url) getAvatarUrl(m.avatar_url).then(u => { const img = el.querySelector('img'); if (img && u) img.src = u; });
-                    el.onclick = e => { e.stopPropagation(); openProfileModal(m); };
-                    frag.appendChild(el);
-                });
-                nodes.appendChild(frag);
-            } else {
-                $('#legendContainer').innerHTML = `<div class="flex flex-col gap-1.5 bg-white/80 backdrop-blur p-2 rounded-lg border border-gray-100 shadow-sm text-[10px] font-medium text-slate-600"><div class="flex items-center gap-2"><div class="w-6 h-0.5 bg-slate-300 opacity-50"></div><span>${l.legendAff}</span></div><div class="flex items-center gap-2"><div class="w-6 h-0.5 bg-amber-500 opacity-60"></div><span>${l.legendCollab}</span></div><div class="flex items-center gap-2"><div class="w-1 h-4 bg-slate-300 opacity-50 rounded-full mx-2"></div><span>${l.legendTrack}</span></div></div>`;
-                let paths = '';
-                if (layout.dockYMin !== undefined) paths += `<path d="M ${layout.dockX + 120} ${layout.dockYMin - 50} L ${layout.dockX + 120} ${layout.dockYMax + 50}" class="dock-track" />`;
-                members.forEach(m => {
-                    const mp = state.positions.get(m.id), gp = state.positions.get(`group-${state.groupBy === 'country' ? (m.country ? (state.countries[m.country] || m.country) : "Unknown") : (m.affiliation?.trim() || "Unaffiliated")}`);
-                    if (mp && gp) paths += `<path d="M ${mp.x} ${mp.y} L ${gp.x} ${gp.y}" class="network-edge"/>`;
-                });
-                state.connections.forEach(conn => {
-                    const p1 = state.positions.get(conn.source), p2 = state.positions.get(conn.target);
-                    if (p1 && p2) paths += `<path d="M ${p1.x} ${p1.y} Q ${(p1.x+p2.x)/2} ${(p1.y+p2.y)/2 - 25} ${p2.x} ${p2.y}" class="collab-edge"/>`;
-                });
-                svg.innerHTML = paths;
-                layout.clusters.forEach(cluster => {
-                    const p = state.positions.get(`group-${cluster.name}`); if (!p) return;
-                    const lbl = document.createElement('div');
-                    lbl.className = 'network-node pointer-events-none z-30';
-                    lbl.dataset.x = p.x; lbl.dataset.y = p.y - p.r; lbl.dataset.type = 'group-label';
-                    lbl.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px) translateZ(0)`;
-                    lbl.innerHTML = `<div class="flex flex-col items-center"><span class="px-8 py-3.5 bg-white/95 backdrop-blur shadow-xl border border-gray-200 rounded-full text-2xl font-extrabold text-slate-900 whitespace-nowrap ring-1 ring-black/5" style="max-width: 500px; overflow: hidden; text-overflow: ellipsis;">${cluster.name}</span></div>`;
-                    frag.appendChild(lbl);
-                });
-                members.forEach(m => {
-                    const p = state.positions.get(m.id); if (!p) return;
-                    const el = document.createElement('div');
-                    el.className = 'network-node member-node';
-                    el.dataset.x = p.x; el.dataset.y = p.y;
-                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
-                    el.innerHTML = `<div class="node-pill flex items-center gap-3 pl-1 pr-4 py-1 bg-white border border-gray-200 rounded-full shadow-sm transition-all duration-200 min-w-[150px] group-hover:border-brand-400 group-hover:shadow-md group-hover:ring-2 group-hover:ring-brand-100"><div class="node-avatar w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center text-xs font-bold overflow-hidden shrink-0 ring-2 ring-white shadow-sm">${(m.full_name||'M')[0].toUpperCase()}</div><div class="min-w-0"><span class="node-name text-xs font-bold text-slate-700 leading-tight block truncate">${m.full_name||'Member'}</span><span class="node-affiliation text-[9px] text-slate-400 leading-tight truncate max-w-[120px] block mt-0.5">${m.affiliation || '—'}</span></div></div>`;
-                    if (m.avatar_url) getAvatarUrl(m.avatar_url).then(u => { const img = el.querySelector('.node-avatar'); if (img && u) img.innerHTML = `<img src="${u}" class="w-full h-full object-cover">` });
-                    el.onclick = e => { e.stopPropagation(); openProfileModal(m); };
-                    frag.appendChild(el);
-                });
-                nodes.appendChild(frag);
-            }
+            $('#legendContainer').innerHTML = `<div class="flex items-center gap-3 bg-white/90 backdrop-blur p-3 rounded-xl border border-gray-200 shadow-sm text-[11px] font-medium text-slate-600"><div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 border-2 border-white shadow-sm"></div><span>${l.legendOrg}</span></div><div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-white border-2 border-brand-400 shadow-sm"></div><span>${l.legendMember}</span></div></div>`;
+            layout.clusters.forEach(cluster => {
+                const p = state.positions.get(`group-${cluster.name}`); if (!p) return;
+                const el = document.createElement('div');
+                el.className = 'network-node group-node bubble-group';
+                el.dataset.x = p.x; el.dataset.y = p.y; el.dataset.type = 'group';
+                el.style.width = el.style.height = `${p.r * 2}px`; el.style.backgroundColor = stringToColor(cluster.name);
+                el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
+                el.onclick = e => { e.stopPropagation(); $('#searchInput').value = cluster.name; onFiltersChanged(); };
+                frag.appendChild(el);
+                const lbl = document.createElement('div');
+                lbl.className = 'network-node pointer-events-none z-30';
+                lbl.dataset.x = p.x; lbl.dataset.y = p.y - p.r; lbl.dataset.type = 'group-label';
+                lbl.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px) translateZ(0)`;
+                lbl.innerHTML = `<div class="flex flex-col items-center"><span class="px-6 py-2.5 bg-white/95 backdrop-blur shadow-xl border border-gray-200 rounded-full text-lg font-extrabold text-slate-900 whitespace-nowrap ring-1 ring-black/5" style="max-width: 400px; overflow: hidden; text-overflow: ellipsis;">${cluster.name}</span></div>`;
+                frag.appendChild(lbl);
+            });
+            members.forEach(m => {
+                const p = state.positions.get(m.id); if (!p) return;
+                const el = document.createElement('div');
+                el.className = 'network-node member-node bubble-member group/bub';
+                el.dataset.x = p.x; el.dataset.y = p.y;
+                el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
+                const size = (layout.memberRadius || 20) * 2;
+                el.innerHTML = `<div class="rounded-full bg-white flex items-center justify-center shadow-md border-2 border-white overflow-hidden cursor-pointer relative" style="width: ${size}px; height: ${size}px;">${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : `<span class="text-xs font-bold text-brand-600">${(m.full_name||'M')[0]}</span>`}</div><div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 backdrop-blur text-white text-[11px] py-1.5 px-3 rounded-lg opacity-0 group-hover/bub:opacity-100 pointer-events-none transition-opacity duration-200 z-[100] shadow-xl border border-white/10"><div class="font-bold">${m.full_name}</div>${m.affiliation ? `<div class="text-slate-300 text-[9px] font-medium">${m.affiliation}</div>` : ''}<div class="absolute -top-1 left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-slate-900/90"></div></div>`;
+                if (m.avatar_url) getAvatarUrl(m.avatar_url).then(u => { const img = el.querySelector('img'); if (img && u) img.src = u; });
+                el.onclick = e => { e.stopPropagation(); openProfileModal(m); };
+                frag.appendChild(el);
+            });
+            nodes.appendChild(frag);
+
             state.cachedNodes = Array.from(nodes.children).filter(n => n.classList.contains('network-node'));
             if (window.lucide) window.lucide.createIcons();
             fitGraph();
         }
 
         function fitGraph() {
+            if (state.viewMode === 'network') return;
             const pts = Array.from(state.positions.values()).filter(p => !isNaN(p.x));
             if (!pts.length) return;
             let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
             pts.forEach(p => { const r = p.r||0; minX=Math.min(minX,p.x-r); maxX=Math.max(maxX,p.x+r); minY=Math.min(minY,p.y-r); maxY=Math.max(maxY,p.y+r); });
-            const padding = state.viewMode === 'bubble' ? 150 : 500;
-            const scale = Math.min($('#network-container').offsetWidth/(maxX-minX+padding), $('#network-container').offsetHeight/(maxY-minY+padding), state.viewMode === 'bubble' ? 1.0 : 1.2);
+            const padding = 150;
+            const scale = Math.min($('#network-container').offsetWidth/(maxX-minX+padding), $('#network-container').offsetHeight/(maxY-minY+padding), 1.0);
             if (isFinite(scale) && scale > 0) {
                 state.zoom = scale; state.panOffset.x = ($('#network-container').offsetWidth/2) - ((minX+maxX)/2)*scale; state.panOffset.y = ($('#network-container').offsetHeight/2) - ((minY+maxY)/2)*scale;
                 updateTransform();
@@ -467,39 +919,34 @@
         }
 
         function updateTransform() {
+            if (state.viewMode === 'network') return;
             $('#networkCanvas').style.transform = `translate(${state.panOffset.x}px, ${state.panOffset.y}px) scale(${state.zoom})`;
-            state.currentGroupBaseScale = state.viewMode === 'bubble' ? 1 : clamp((1/Math.max(0.2,state.zoom))*0.7, 1, 3.5);
-            if (state.viewMode !== 'bubble') {
-                const s = state.currentGroupBaseScale;
-                state.cachedNodes.forEach(n => { if (n.dataset.type === 'group' && !n.classList.contains('magnified')) n.style.transform = `translate(-50%, -50%) translate(${n.dataset.x}px, ${n.dataset.y}px) scale(${s}) translateZ(0)`; });
-            }
         }
 
         let mousePos = { x: 0, y: 0 }, visualRafId = null, transformRafId = null, wheelRafId = null, pendingWheelScale = 1;
-        
+
         function updateVisuals() {
-            if (state.isDragging) { visualRafId = null; return; }
-            const rSq = 62500, maxScale = state.viewMode === 'bubble' ? 2.0 : 4.0, groupBase = state.currentGroupBaseScale;
+            if (state.isDragging || state.viewMode === 'network') { visualRafId = null; return; }
+            const rSq = 62500, maxScale = 2.0;
             let nearest = null, minDSq = Infinity;
-            
+
             for (let i = 0, len = state.cachedNodes.length; i < len; i++) {
                 const node = state.cachedNodes[i];
                 if (node.dataset.type === 'group-label') continue;
                 const isGroup = node.dataset.type === 'group';
-                if (state.viewMode === 'bubble' && isGroup) continue;
-                
+                if (isGroup) continue;
+
                 const wx = parseFloat(node.dataset.x), wy = parseFloat(node.dataset.y);
                 const dx = ((wx * state.zoom) + state.panOffset.x) - mousePos.x, dy = ((wy * state.zoom) + state.panOffset.y) - mousePos.y;
                 const distSq = dx * dx + dy * dy;
-                const baseScale = (!state.viewMode && isGroup) ? groupBase : 1;
 
                 if (distSq < rSq) {
                     const factor = 1 - (Math.sqrt(distSq) / 250);
                     if (!node.classList.contains('is-interacting')) node.classList.add('is-interacting');
-                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale + ((factor * factor * factor) * (maxScale - 1))}) translateZ(0)`;
+                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${1 + ((factor * factor * factor) * (maxScale - 1))}) translateZ(0)`;
                     if (distSq < minDSq) { minDSq = distSq; nearest = node; }
                 } else if (node.classList.contains('is-interacting')) {
-                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale}) translateZ(0)`;
+                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(1) translateZ(0)`;
                     node.classList.remove('is-interacting', 'magnified');
                 }
                 if (node !== nearest) node.classList.remove('magnified');
@@ -510,12 +957,10 @@
 
         function resetMagnification() {
             if (visualRafId) { cancelAnimationFrame(visualRafId); visualRafId = null; }
-            const groupBase = state.currentGroupBaseScale;
             state.cachedNodes.forEach(node => {
-                if (state.viewMode === 'bubble' && node.classList.contains('bubble-group')) return;
+                if (node.classList.contains('bubble-group')) return;
                 if (node.dataset.type === 'group-label') return;
-                const base = (state.viewMode !== 'bubble' && node.dataset.type === 'group') ? groupBase : 1;
-                node.style.transform = `translate(-50%, -50%) translate(${node.dataset.x}px, ${node.dataset.y}px) scale(${base}) translateZ(0)`;
+                node.style.transform = `translate(-50%, -50%) translate(${node.dataset.x}px, ${node.dataset.y}px) scale(1) translateZ(0)`;
                 node.classList.remove('magnified', 'is-interacting');
             });
         }
@@ -536,7 +981,7 @@
             $$('th[data-i18n]').forEach(th => { const key = th.dataset.i18n; if (l[key]) th.innerText = l[key]; });
             $('#members-table-body').innerHTML = list.map(m => {
                 const n = m.full_name || 'Member', c = state.connections.filter(x => x.source === m.id || x.target === m.id).length;
-                return `<tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="document.dispatchEvent(new CustomEvent('openProfile',{detail:'${m.id}'}))"><td class="py-2.5 px-6 border-b border-gray-50 font-medium text-slate-900"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden text-xs text-slate-500 font-bold shrink-0 ring-1 ring-gray-100">${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : n[0].toUpperCase()}</div><span>${highlight(n, state.searchQuery)}</span></div></td><td class="py-2.5 px-6 border-b border-gray-50 text-slate-500">${highlight(m.affiliation || '—', state.searchQuery)}</td><td class="py-2.5 px-6 border-b border-gray-50 text-slate-400 truncate max-w-xs hidden lg:table-cell">${m.fields_of_study || '—'}</td><td class="py-2.5 px-6 border-b border-gray-50 text-slate-500"><span class="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-600">${m.role ? m.role.charAt(0).toUpperCase()+m.role.slice(1) : 'Member'}</span></td><td class="py-2.5 px-6 border-b border-gray-50 text-slate-500">${m.country ? (state.countries[m.country] || m.country) : '—'}</td><td class="py-2.5 px-6 border-b border-gray-50 text-right"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-600">${c}</span></td></tr>`;
+                return `<tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="document.dispatchEvent(new CustomEvent('openProfile',{detail:'${m.id}'}))"><td class="py-2.5 px-6 border-b border-gray-50 font-medium text-slate-900"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden text-xs text-slate-500 font-bold shrink-0 ring-1 ring-gray-100">${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : n[0].toUpperCase()}</div><span>${highlight(n, state.searchQuery)}</span></div></td><td class="py-2.5 px-6 border-b border-gray-50 text-slate-500">${highlight(m.affiliation || '—', state.searchQuery)}</td><td class="py-2.5 px-6 border-b border-gray-50 text-slate-500"><span class="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-600">${m.role ? m.role.charAt(0).toUpperCase()+m.role.slice(1) : 'Member'}</span></td><td class="py-2.5 px-6 border-b border-gray-50 text-slate-500">${m.country ? (state.countries[m.country] || m.country) : '—'}</td><td class="py-2.5 px-6 border-b border-gray-50 text-right"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-600">${c}</span></td></tr>`;
             }).join('');
             list.forEach(m => { if (m.avatar_url && !m.avatar_url.startsWith('http')) getAvatarUrl(m.avatar_url).then(u => { const img = document.querySelector(`tr[onclick*="${m.id}"] img`); if (img && u) img.src = u; }); });
         }
@@ -544,6 +989,7 @@
 
         function onFiltersChanged() {
             state.searchQuery = $('#searchInput').value; populateTagFilters();
+            state.treemapDrilledGroup = null;
             const list = getFiltered(); renderTable(list); renderGraph(list);
         }
 
@@ -553,14 +999,14 @@
 
             const resizer = document.getElementById('dragHandle'), topEl = document.getElementById('network-container'), container = document.getElementById('right-column');
             let startY, startH;
-            const stopDrag = () => { document.documentElement.removeEventListener('mousemove', doDrag); document.documentElement.removeEventListener('mouseup', stopDrag); resizer.classList.remove('dragging'); document.body.style.cursor = ''; topEl.style.pointerEvents = 'auto'; fitGraph(); };
-            const doDrag = e => { const h = startH + (e.clientY - startY); if (h > 200 && h < container.offsetHeight - 200) { topEl.style.height = `${h}px`; requestAnimationFrame(fitGraph); } };
+            const stopDrag = () => { document.documentElement.removeEventListener('mousemove', doDrag); document.documentElement.removeEventListener('mouseup', stopDrag); resizer.classList.remove('dragging'); document.body.style.cursor = ''; topEl.style.pointerEvents = 'auto'; if (state.viewMode === 'bubble') fitGraph(); else { const list = getFiltered(); renderTreemap(list); } };
+            const doDrag = e => { const h = startH + (e.clientY - startY); if (h > 200 && h < container.offsetHeight - 200) { topEl.style.height = `${h}px`; if (state.viewMode === 'bubble') requestAnimationFrame(fitGraph); } };
             resizer.addEventListener('mousedown', e => { e.preventDefault(); startY = e.clientY; startH = parseInt(getComputedStyle(topEl).height, 10); document.documentElement.addEventListener('mousemove', doDrag); document.documentElement.addEventListener('mouseup', stopDrag); resizer.classList.add('dragging'); document.body.style.cursor = 'row-resize'; topEl.style.pointerEvents = 'none'; });
 
             document.addEventListener('click', e => { if (e.target.closest('#btnProfile') || e.target.closest('#userName')) window.location.href = 'profile.html'; });
             $$('[data-role]').forEach(b => b.onclick = e => { $$('[data-role]').forEach(x => x.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"); e.target.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white"; state.roleFilter = e.target.dataset.role; onFiltersChanged(); });
             $$('th[data-sort]').forEach(th => th.onclick = () => { const k = th.dataset.sort; state.sort.dir = (state.sort.key === k && state.sort.dir === 'asc') ? 'desc' : 'asc'; state.sort.key = k; $$('th[data-sort]').forEach(h => h.className = "py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"); th.className = `py-3 px-6 text-[11px] font-bold text-brand-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors sort-${state.sort.dir}`; onFiltersChanged(); });
-            
+
             $('#groupByFilter').onchange = e => { state.groupBy = e.target.value; onFiltersChanged(); };
             $('#eventFilter').onchange = e => { state.eventFilterId = e.target.value; onFiltersChanged(); };
             $('#countryFilter').onchange = e => { state.countryFilterId = e.target.value; onFiltersChanged(); };
@@ -570,6 +1016,9 @@
             $('#viewToggleBtn').onclick = () => {
                 const btn = $('#viewToggleBtn'), icon = btn.querySelector('i');
                 state.viewMode = state.viewMode === 'network' ? 'bubble' : 'network';
+                state.treemapDrilledGroup = null;
+                const tt = document.getElementById('treemap-global-tooltip');
+                if(tt) tt.classList.remove('visible');
                 $('#viewModeText').innerText = state.viewMode === 'network' ? (t[state.lang]||t.en).switchBub : (t[state.lang]||t.en).switchNet;
                 if (icon) icon.setAttribute('data-lucide', state.viewMode === 'network' ? 'layout-grid' : 'share-2');
                 state.zoom = 1; state.panOffset = { x: 0, y: 0 };
@@ -579,6 +1028,7 @@
 
             $('#resetViewBtn').onclick = () => {
                 state.searchQuery = ''; state.groupBy = 'affiliation'; state.eventFilterId = state.countryFilterId = state.roleFilter = 'all'; state.selectedTags.clear(); state.sort = { key: "connections", dir: "desc" };
+                state.treemapDrilledGroup = null;
                 $('#searchInput').value = ''; $('#groupByFilter').value = 'affiliation'; $('#eventFilter').value = $('#countryFilter').value = 'all';
                 $$('[data-role]').forEach(x => x.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"); $('[data-role="all"]').className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white";
                 $$('th[data-sort]').forEach(h => h.className = "py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"); $('th[data-sort="connections"]').className = "py-3 px-6 text-[11px] font-bold text-brand-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors sort-desc";
@@ -589,6 +1039,7 @@
             let sx=0, sy=0, suppressClick=false, dragMoved=false, dsX=0, dsY=0;
             cv.addEventListener('click', e => { if (suppressClick) { e.preventDefault(); e.stopImmediatePropagation(); suppressClick = false; } }, true);
             cv.onmousemove = e => {
+                if (state.viewMode === 'network') return;
                 if (state.isDragging) {
                     if (!dragMoved && ((e.clientX - dsX)**2 + (e.clientY - dsY)**2) > 16) dragMoved = true;
                     state.panOffset.x = e.clientX - sx; state.panOffset.y = e.clientY - sy;
@@ -598,28 +1049,31 @@
                     if (!visualRafId) visualRafId = requestAnimationFrame(updateVisuals);
                 }
             };
-            cv.onmouseleave = () => resetMagnification();
+            cv.onmouseleave = () => { if (state.viewMode !== 'network') resetMagnification(); };
             cv.onmousedown = e => {
+                if (state.viewMode === 'network') return;
                 const node = e.target.closest('.network-node');
-                if (!node || (state.viewMode === 'bubble' && node.dataset.type === 'group')) {
+                if (!node || node.dataset.type === 'group') {
                     state.isDragging = true; dragMoved = false; dsX = e.clientX; dsY = e.clientY;
                     sx = e.clientX - state.panOffset.x; sy = e.clientY - state.panOffset.y;
                     cv.style.cursor = 'grabbing'; resetMagnification();
                 }
             };
-            window.onmouseup = () => { if (state.isDragging && dragMoved) suppressClick = true; state.isDragging = false; cv.style.cursor = 'grab'; };
+            window.onmouseup = () => { if (state.isDragging && dragMoved) suppressClick = true; state.isDragging = false; cv.style.cursor = state.viewMode === 'network' ? 'default' : 'grab'; };
             cv.onwheel = e => {
+                if (state.viewMode === 'network') return;
                 e.preventDefault(); pendingWheelScale *= (e.deltaY > 0 ? 0.9 : 1.1);
-                if (!wheelRafId) wheelRafId = requestAnimationFrame(() => { state.zoom = clamp(state.zoom * pendingWheelScale, 0.1, 5); pendingWheelScale = 1; updateTransform(); if (state.viewMode !== 'bubble') resetMagnification(); wheelRafId = null; });
+                if (!wheelRafId) wheelRafId = requestAnimationFrame(() => { state.zoom = clamp(state.zoom * pendingWheelScale, 0.1, 5); pendingWheelScale = 1; updateTransform(); wheelRafId = null; });
             };
             cv.ontouchstart = e => {
+                if (state.viewMode === 'network') return;
                 const node = e.target.closest('.network-node');
-                if (!node || (state.viewMode === 'bubble' && node.dataset.type === 'group')) {
+                if (!node || node.dataset.type === 'group') {
                     state.isDragging = true; dragMoved = false; dsX = e.touches[0].clientX; dsY = e.touches[0].clientY;
                     sx = e.touches[0].clientX - state.panOffset.x; sy = e.touches[0].clientY - state.panOffset.y;
                 }
             };
-            cv.ontouchmove = e => { if (state.isDragging) { e.preventDefault(); if (!dragMoved && ((e.touches[0].clientX - dsX)**2 + (e.touches[0].clientY - dsY)**2) > 16) dragMoved = true; state.panOffset.x = e.touches[0].clientX - sx; state.panOffset.y = e.touches[0].clientY - sy; if (!transformRafId) transformRafId = requestAnimationFrame(() => { updateTransform(); transformRafId = null; }); } };
+            cv.ontouchmove = e => { if (state.viewMode === 'network') return; if (state.isDragging) { e.preventDefault(); if (!dragMoved && ((e.touches[0].clientX - dsX)**2 + (e.touches[0].clientY - dsY)**2) > 16) dragMoved = true; state.panOffset.x = e.touches[0].clientX - sx; state.panOffset.y = e.touches[0].clientY - sy; if (!transformRafId) transformRafId = requestAnimationFrame(() => { updateTransform(); transformRafId = null; }); } };
             cv.ontouchend = () => { if (state.isDragging && dragMoved) suppressClick = true; state.isDragging = false; };
 
             if (window.lucide) window.lucide.createIcons();
