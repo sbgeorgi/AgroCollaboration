@@ -14,6 +14,7 @@ const memberState = {
     roleFilter: 'all',
     affiliationFilter: 'all',
     countryFilter: 'all',
+    quickFilter: 'all', // 'all' | 'new_this_month' | 'new_this_week' | 'no_affiliation' | 'no_country' | 'incomplete_profile' | 'with_website' | 'with_scholar'
     sortField: 'full_name',
     sortDir: 'asc',
     page: 1,
@@ -24,10 +25,101 @@ const memberState = {
 };
 
 // ==========================================
+// QUICK FILTER DEFINITIONS
+// ==========================================
+const QUICK_FILTERS = [
+    {
+        id: 'all',
+        label: 'All Members',
+        icon: 'users',
+        color: 'slate',
+        predicate: () => true,
+    },
+    {
+        id: 'new_this_week',
+        label: 'New This Week',
+        icon: 'sparkles',
+        color: 'amber',
+        predicate: (p) => {
+            if (!p.created_at) return false;
+            const d = new Date();
+            d.setDate(d.getDate() - 7);
+            d.setHours(0, 0, 0, 0);
+            return new Date(p.created_at) >= d;
+        },
+    },
+    {
+        id: 'new_this_month',
+        label: 'New This Month',
+        icon: 'calendar-plus',
+        color: 'emerald',
+        predicate: (p) => {
+            if (!p.created_at) return false;
+            const d = new Date();
+            d.setDate(1);
+            d.setHours(0, 0, 0, 0);
+            return new Date(p.created_at) >= d;
+        },
+    },
+    {
+        id: 'no_affiliation',
+        label: 'No Affiliation',
+        icon: 'building-x',
+        color: 'orange',
+        predicate: (p) => !p.affiliation || p.affiliation.trim() === '',
+    },
+    {
+        id: 'no_country',
+        label: 'No Country',
+        icon: 'map-pin-off',
+        color: 'rose',
+        predicate: (p) => !p.country || p.country.trim() === '',
+    },
+    {
+        id: 'incomplete_profile',
+        label: 'Incomplete Profile',
+        icon: 'user-x',
+        color: 'red',
+        predicate: (p) =>
+            !p.affiliation || !p.country || !p.description || !p.department,
+    },
+    {
+        id: 'with_website',
+        label: 'Has Website',
+        icon: 'globe',
+        color: 'indigo',
+        predicate: (p) =>
+            !!(p.personal_website || p.professional_website),
+    },
+    {
+        id: 'with_scholar',
+        label: 'Has Scholar',
+        icon: 'graduation-cap',
+        color: 'violet',
+        predicate: (p) => !!p.google_scholar,
+    },
+];
+
+function getQuickFilterDef(id) {
+    return QUICK_FILTERS.find(f => f.id === id) || QUICK_FILTERS[0];
+}
+
+// Color maps for quick filter pills
+const QF_COLOR = {
+    slate:   { pill: 'bg-slate-100 text-slate-700 border-slate-200',   active: 'bg-slate-700 text-white border-slate-700',   dot: 'bg-slate-400'  },
+    amber:   { pill: 'bg-amber-50 text-amber-700 border-amber-200',    active: 'bg-amber-500 text-white border-amber-500',    dot: 'bg-amber-400'  },
+    emerald: { pill: 'bg-emerald-50 text-emerald-700 border-emerald-200', active: 'bg-emerald-600 text-white border-emerald-600', dot: 'bg-emerald-400' },
+    orange:  { pill: 'bg-orange-50 text-orange-700 border-orange-200', active: 'bg-orange-500 text-white border-orange-500', dot: 'bg-orange-400'  },
+    rose:    { pill: 'bg-rose-50 text-rose-700 border-rose-200',       active: 'bg-rose-500 text-white border-rose-500',     dot: 'bg-rose-400'   },
+    red:     { pill: 'bg-red-50 text-red-700 border-red-200',          active: 'bg-red-600 text-white border-red-600',       dot: 'bg-red-400'    },
+    indigo:  { pill: 'bg-indigo-50 text-indigo-700 border-indigo-200', active: 'bg-indigo-600 text-white border-indigo-600', dot: 'bg-indigo-400'  },
+    violet:  { pill: 'bg-violet-50 text-violet-700 border-violet-200', active: 'bg-violet-600 text-white border-violet-600', dot: 'bg-violet-400'  },
+};
+
+// ==========================================
 // DATA LOADING
 // ==========================================
 async function loadProfiles() {
-    // Determine the current user's ID for safety checks
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
         if (!memberState.currentAuthState) memberState.currentAuthState = {};
@@ -50,7 +142,13 @@ async function loadProfiles() {
 function applyFilters() {
     let results = [...memberState.profiles];
 
-    // Text search (name, email, affiliation, department, fields)
+    // Quick filter
+    if (memberState.quickFilter !== 'all') {
+        const def = getQuickFilterDef(memberState.quickFilter);
+        if (def) results = results.filter(def.predicate);
+    }
+
+    // Text search
     if (memberState.searchQuery) {
         const q = memberState.searchQuery.toLowerCase();
         results = results.filter(p =>
@@ -85,21 +183,18 @@ function applyFilters() {
     results.sort((a, b) => {
         let aVal = a[field] || '';
         let bVal = b[field] || '';
-        
-        // Handle Date sorting
+
         if (field === 'created_at' || field === 'updated_at') {
             aVal = new Date(aVal || 0).getTime();
             bVal = new Date(bVal || 0).getTime();
             return (aVal - bVal) * dir;
         }
-        
-        // Handle String sorting
+
         return String(aVal).localeCompare(String(bVal), undefined, { sensitivity: 'base' }) * dir;
     });
 
     memberState.filtered = results;
 
-    // Reset to page 1 if current page exceeds total
     const totalPages = Math.max(1, Math.ceil(results.length / memberState.pageSize));
     if (memberState.page > totalPages) memberState.page = 1;
 }
@@ -147,6 +242,69 @@ function getStats() {
     return { total, roles, countries: countries.size, affiliations: affiliations.size, newThisMonth };
 }
 
+// Count how many profiles match each quick filter (applied on top of role/country/search but independently of quick filter itself)
+function getQuickFilterCounts() {
+    // Base set: apply text search + role + country filters only
+    let base = [...memberState.profiles];
+
+    if (memberState.searchQuery) {
+        const q = memberState.searchQuery.toLowerCase();
+        base = base.filter(p =>
+            (p.full_name || '').toLowerCase().includes(q) ||
+            (p.work_email || '').toLowerCase().includes(q) ||
+            (p.username || '').toLowerCase().includes(q) ||
+            (p.affiliation || '').toLowerCase().includes(q) ||
+            (p.department || '').toLowerCase().includes(q) ||
+            (p.fields_of_study || '').toLowerCase().includes(q) ||
+            (p.country || '').toLowerCase().includes(q)
+        );
+    }
+    if (memberState.roleFilter !== 'all') {
+        base = base.filter(p => p.role === memberState.roleFilter);
+    }
+    if (memberState.countryFilter !== 'all') {
+        base = base.filter(p => (p.country || '') === memberState.countryFilter);
+    }
+
+    const counts = {};
+    QUICK_FILTERS.forEach(f => {
+        counts[f.id] = f.id === 'all' ? base.length : base.filter(f.predicate).length;
+    });
+    return counts;
+}
+
+// ==========================================
+// QUICK FILTER BAR RENDERER
+// ==========================================
+function renderQuickFilterBar(counts) {
+    return `
+        <div class="flex-none px-4 pt-3 pb-0 bg-white border-b border-gray-100 z-20">
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-3">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-1 shrink-0">Quick&nbsp;Filter</span>
+                ${QUICK_FILTERS.map(f => {
+                    const isActive = memberState.quickFilter === f.id;
+                    const c = QF_COLOR[f.color];
+                    const count = counts[f.id] ?? 0;
+                    const dimmed = count === 0 && !isActive ? 'opacity-40' : '';
+                    return `
+                        <button
+                            class="quick-filter-btn shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-semibold transition-all select-none whitespace-nowrap
+                                ${isActive ? c.active : c.pill} ${dimmed}"
+                            data-qf="${f.id}"
+                            title="${f.label}"
+                        >
+                            <i data-lucide="${f.icon}" class="w-3 h-3 shrink-0"></i>
+                            ${f.label}
+                            <span class="ml-0.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold
+                                ${isActive ? 'bg-white/25 text-white' : `${c.dot.replace('bg-', 'bg-opacity-20 bg-')} ${c.pill.split(' ').find(x => x.startsWith('text-'))}`}">
+                                ${count}
+                            </span>
+                        </button>`;
+                }).join('')}
+            </div>
+        </div>`;
+}
+
 // ==========================================
 // MAIN RENDER FUNCTION
 // ==========================================
@@ -155,15 +313,17 @@ function render() {
     if (!container) return;
 
     const stats = getStats();
+    const qfCounts = getQuickFilterCounts();
     const pageSlice = getPageSlice();
     const totalPages = getTotalPages();
     const allSelected = pageSlice.length > 0 && pageSlice.every(p => memberState.selected.has(p.id));
     const someSelected = memberState.selected.size > 0;
     const isSelf = (id) => id === memberState.currentAuthState?.profile?.id;
+    const activeQF = getQuickFilterDef(memberState.quickFilter);
 
     container.innerHTML = `
         <div class="flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
-            
+
             <!-- 1. Stats Bar (Compact) -->
             <div class="flex-none px-5 py-3 border-b border-gray-100 bg-slate-50/50 flex flex-wrap gap-4 md:gap-8 items-center justify-between text-xs">
                 <div class="flex items-center gap-6 overflow-x-auto no-scrollbar">
@@ -173,22 +333,31 @@ function render() {
                     ${statItem('globe', 'Countries', stats.countries, 'text-indigo-600')}
                     ${statItem('zap', 'New', stats.newThisMonth, 'text-amber-600')}
                 </div>
-                <div class="hidden md:block text-slate-400">
+                <div class="hidden md:flex items-center gap-2 text-slate-400">
+                    ${memberState.quickFilter !== 'all' ? `
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-semibold border border-slate-200">
+                            <i data-lucide="${activeQF.icon}" class="w-3 h-3"></i>
+                            ${activeQF.label}
+                        </span>
+                        <span class="text-slate-300">·</span>` : ''}
                     <span class="font-medium text-slate-600">${memberState.filtered.length}</span> matches found
                 </div>
             </div>
 
-            <!-- 2. Toolbar & Filters -->
+            <!-- 2. Quick Filter Bar -->
+            ${renderQuickFilterBar(qfCounts)}
+
+            <!-- 3. Toolbar & Filters -->
             <div class="flex-none p-4 border-b border-gray-100 bg-white z-20">
                 <div class="flex flex-col lg:flex-row gap-3 justify-between">
-                    
+
                     <!-- Search & Filter Group -->
                     <div class="flex flex-1 flex-col sm:flex-row gap-2">
                         <!-- Search -->
                         <div class="relative flex-1 min-w-[200px]">
                             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                            <input id="memberSearch" type="text" 
-                                class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none transition-all placeholder:text-slate-400" 
+                            <input id="memberSearch" type="text"
+                                class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none transition-all placeholder:text-slate-400"
                                 placeholder="Search members..."
                                 value="${escapeHtml(memberState.searchQuery)}">
                             ${memberState.searchQuery ? `<button id="clearSearch" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-3 h-3"></i></button>` : ''}
@@ -207,9 +376,10 @@ function render() {
                             ${getUniqueCountries().map(c => `<option value="${escapeHtml(c)}" ${memberState.countryFilter === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
                         </select>
 
-                        ${hasActiveFilters() ? 
-                            `<button id="resetFilters" class="px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 whitespace-nowrap">
-                                Reset
+                        ${hasActiveFilters() ?
+                            `<button id="resetFilters" class="px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 whitespace-nowrap flex items-center gap-1.5">
+                                <i data-lucide="filter-x" class="w-3.5 h-3.5"></i>
+                                Reset All
                             </button>` : ''
                         }
                     </div>
@@ -228,6 +398,14 @@ function render() {
                     </div>
                 </div>
 
+                <!-- Active Quick Filter indicator inside toolbar (mobile-friendly) -->
+                ${memberState.quickFilter !== 'all' ? `
+                <div class="mt-2 flex items-center gap-2 text-xs text-slate-500 md:hidden">
+                    <i data-lucide="${activeQF.icon}" class="w-3.5 h-3.5 text-slate-400"></i>
+                    <span>Filtered by <strong class="text-slate-700">${activeQF.label}</strong></span>
+                    <button id="clearQuickFilter" class="ml-auto text-red-500 hover:text-red-700 font-medium">Clear</button>
+                </div>` : ''}
+
                 <!-- Bulk Actions Context Bar -->
                 ${someSelected ? `
                 <div class="mt-3 flex items-center gap-3 px-3 py-2 bg-brand-50 border border-brand-100 rounded-lg animate-in fade-in slide-in-from-top-1">
@@ -243,17 +421,17 @@ function render() {
                 </div>` : ''}
             </div>
 
-            <!-- 3. Scrollable Content Area -->
+            <!-- 4. Scrollable Content Area -->
             <div class="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/30 relative">
                 ${memberState.filtered.length === 0 ? renderEmptyState() :
                   memberState.viewMode === 'table' ? renderTable(pageSlice, allSelected, isSelf) :
                   renderGrid(pageSlice, isSelf)}
             </div>
 
-            <!-- 4. Footer / Pagination -->
+            <!-- 5. Footer / Pagination -->
             <div class="flex-none px-4 py-3 border-t border-gray-200 bg-white flex items-center justify-between z-20">
                 <div class="text-xs text-slate-500">
-                    Showing <span class="font-semibold text-slate-700">${((memberState.page - 1) * memberState.pageSize) + 1}-${Math.min(memberState.page * memberState.pageSize, memberState.filtered.length)}</span> of ${memberState.filtered.length}
+                    Showing <span class="font-semibold text-slate-700">${memberState.filtered.length === 0 ? 0 : ((memberState.page - 1) * memberState.pageSize) + 1}-${Math.min(memberState.page * memberState.pageSize, memberState.filtered.length)}</span> of ${memberState.filtered.length}
                 </div>
                 ${totalPages > 1 ? renderPagination(totalPages) : ''}
                 <select id="pageSize" class="ml-2 text-xs border-gray-200 rounded-lg text-slate-500 focus:ring-0">
@@ -263,7 +441,7 @@ function render() {
                 </select>
             </div>
 
-            <!-- 5. Slide-over Detail Drawer -->
+            <!-- 6. Slide-over Detail Drawer -->
             <div id="memberDrawer" class="absolute inset-0 z-50 pointer-events-none overflow-hidden hidden">
                 <div id="drawerBackdrop" class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm opacity-0 transition-opacity duration-300 pointer-events-auto"></div>
                 <div id="drawerPanel" class="absolute top-2 bottom-2 right-2 w-full max-w-md bg-white rounded-xl shadow-2xl transform translate-x-[110%] transition-transform duration-300 ease-out flex flex-col pointer-events-auto border border-gray-100">
@@ -287,16 +465,28 @@ function statItem(icon, label, value, color) {
 }
 
 function renderEmptyState() {
+    const activeQF = getQuickFilterDef(memberState.quickFilter);
+    const isQFActive = memberState.quickFilter !== 'all';
+
     return `
         <div class="flex flex-col items-center justify-center h-full min-h-[300px] text-center p-8">
             <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                <i data-lucide="search-x" class="w-8 h-8 text-slate-400"></i>
+                <i data-lucide="${isQFActive ? activeQF.icon : 'search-x'}" class="w-8 h-8 text-slate-400"></i>
             </div>
             <h3 class="text-slate-800 font-bold mb-1">No members found</h3>
-            <p class="text-slate-500 text-sm max-w-xs mx-auto mb-4">We couldn't find any members matching your current filters.</p>
-            <button id="emptyResetBtn" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm transition-all">
-                Clear Filters
-            </button>
+            <p class="text-slate-500 text-sm max-w-xs mx-auto mb-4">
+                ${isQFActive
+                    ? `No members match the <strong class="text-slate-700">${activeQF.label}</strong> filter with your current search.`
+                    : "We couldn't find any members matching your current filters."}
+            </p>
+            <div class="flex flex-wrap gap-2 justify-center">
+                ${isQFActive ? `<button id="emptyResetQF" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm transition-all flex items-center gap-2">
+                    <i data-lucide="${activeQF.icon}" class="w-4 h-4"></i> Clear Quick Filter
+                </button>` : ''}
+                <button id="emptyResetBtn" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm transition-all">
+                    Clear All Filters
+                </button>
+            </div>
         </div>`;
 }
 
@@ -306,9 +496,17 @@ function renderEmptyState() {
 function renderTable(profiles, allSelected, isSelf) {
     const sortIcon = (field) => {
         if (memberState.sortField !== field) return `<i data-lucide="arrow-up-down" class="w-3 h-3 opacity-20 group-hover:opacity-50 ml-1"></i>`;
-        return memberState.sortDir === 'asc' 
-            ? `<i data-lucide="arrow-up" class="w-3 h-3 text-brand-600 ml-1"></i>` 
+        return memberState.sortDir === 'asc'
+            ? `<i data-lucide="arrow-up" class="w-3 h-3 text-brand-600 ml-1"></i>`
             : `<i data-lucide="arrow-down" class="w-3 h-3 text-brand-600 ml-1"></i>`;
+    };
+
+    const isNewThisWeek = (p) => {
+        if (!p.created_at) return false;
+        const d = new Date();
+        d.setDate(d.getDate() - 7);
+        d.setHours(0, 0, 0, 0);
+        return new Date(p.created_at) >= d;
     };
 
     return `
@@ -330,6 +528,9 @@ function renderTable(profiles, allSelected, isSelf) {
                 <th class="px-4 py-3 border-b border-gray-100 cursor-pointer group hover:bg-slate-50 transition-colors select-none" data-sort="role">
                     <div class="flex items-center">Role ${sortIcon('role')}</div>
                 </th>
+                <th class="px-4 py-3 border-b border-gray-100 hidden xl:table-cell cursor-pointer group hover:bg-slate-50 transition-colors select-none" data-sort="created_at">
+                    <div class="flex items-center">Joined ${sortIcon('created_at')}</div>
+                </th>
                 <th class="px-4 py-3 border-b border-gray-100 text-right w-20">Actions</th>
             </tr>
         </thead>
@@ -338,25 +539,30 @@ function renderTable(profiles, allSelected, isSelf) {
                 const self = isSelf(p.id);
                 const isSelected = memberState.selected.has(p.id);
                 const initials = (p.full_name || 'U').substring(0,2).toUpperCase();
-                
+                const brandNew = isNewThisWeek(p);
+
                 return `
                 <tr class="group hover:bg-slate-50 transition-colors ${isSelected ? 'bg-brand-50/40' : ''}">
                     <td class="px-4 py-3">
-                        <input type="checkbox" class="member-cb rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer" 
+                        <input type="checkbox" class="member-cb rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
                             data-id="${p.id}" ${isSelected ? 'checked' : ''} ${self ? 'disabled' : ''}>
                     </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-100 flex items-center justify-center text-slate-500 text-xs font-bold overflow-hidden flex-shrink-0">
-                                ${p.avatar_url ? `<img src="${escapeHtml(p.avatar_url)}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
-                                <span class="${p.avatar_url ? 'hidden' : 'flex'} w-full h-full items-center justify-center">${initials}</span>
+                            <div class="relative w-9 h-9 flex-shrink-0">
+                                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-100 flex items-center justify-center text-slate-500 text-xs font-bold overflow-hidden">
+                                    ${p.avatar_url ? `<img src="${escapeHtml(p.avatar_url)}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+                                    <span class="${p.avatar_url ? 'hidden' : 'flex'} w-full h-full items-center justify-center">${initials}</span>
+                                </div>
+                                ${brandNew ? `<span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-amber-400 border-2 border-white" title="New this week"></span>` : ''}
                             </div>
                             <div class="min-w-0">
                                 <div class="font-medium text-slate-900 truncate flex items-center gap-2">
                                     <button class="view-detail hover:text-brand-600 hover:underline text-left truncate" data-id="${p.id}">
                                         ${escapeHtml(p.full_name || 'Unnamed Member')}
                                     </button>
-                                    ${self ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">YOU</span>' : ''}
+                                    ${self ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 shrink-0">YOU</span>' : ''}
+                                    ${brandNew && !self ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 shrink-0">NEW</span>' : ''}
                                 </div>
                                 <div class="text-xs text-slate-400 truncate">${escapeHtml(p.work_email || p.username || '')}</div>
                             </div>
@@ -370,7 +576,7 @@ function renderTable(profiles, allSelected, isSelf) {
                         ${p.country ? `<span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-50 border border-gray-100 text-xs text-slate-600">${escapeHtml(p.country)}</span>` : '<span class="text-slate-300">—</span>'}
                     </td>
                     <td class="px-4 py-3">
-                        ${self ? 
+                        ${self ?
                             `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize border ${getRoleBadgeClass(p.role)}">${p.role}</span>` :
                             `<select class="role-select bg-transparent text-xs font-medium capitalize border-0 border-b border-transparent hover:border-gray-300 focus:border-brand-500 focus:ring-0 cursor-pointer py-1 pr-6 pl-0 transition-colors ${getRoleTextColor(p.role)}" data-id="${p.id}">
                                 <option value="member" ${p.role === 'member' ? 'selected' : ''}>Member</option>
@@ -378,6 +584,11 @@ function renderTable(profiles, allSelected, isSelf) {
                                 <option value="admin" ${p.role === 'admin' ? 'selected' : ''}>Admin</option>
                             </select>`
                         }
+                    </td>
+                    <td class="px-4 py-3 hidden xl:table-cell">
+                        <span class="text-xs text-slate-400" title="${p.created_at ? new Date(p.created_at).toLocaleString() : ''}">
+                            ${p.created_at ? formatRelativeDate(p.created_at) : '—'}
+                        </span>
                     </td>
                     <td class="px-4 py-3 text-right">
                         <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -399,35 +610,50 @@ function renderTable(profiles, allSelected, isSelf) {
 // GRID VIEW
 // ==========================================
 function renderGrid(profiles, isSelf) {
+    const isNewThisWeek = (p) => {
+        if (!p.created_at) return false;
+        const d = new Date();
+        d.setDate(d.getDate() - 7);
+        d.setHours(0, 0, 0, 0);
+        return new Date(p.created_at) >= d;
+    };
+
     return `
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
         ${profiles.map(p => {
             const self = isSelf(p.id);
             const isSelected = memberState.selected.has(p.id);
             const initials = (p.full_name || 'U').substring(0,2).toUpperCase();
-            
+            const brandNew = isNewThisWeek(p);
+
             return `
             <div class="bg-white rounded-xl border ${isSelected ? 'border-brand-300 ring-1 ring-brand-300' : 'border-gray-200'} shadow-sm hover:shadow-md transition-all group relative overflow-hidden flex flex-col">
+                ${brandNew ? `<div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400"></div>` : ''}
                 <div class="absolute top-3 left-3 z-10">
-                    <input type="checkbox" class="member-cb rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity ${isSelected ? '!opacity-100' : ''}" 
+                    <input type="checkbox" class="member-cb rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity ${isSelected ? '!opacity-100' : ''}"
                         data-id="${p.id}" ${isSelected ? 'checked' : ''} ${self ? 'disabled' : ''}>
                 </div>
-                
+                ${brandNew ? `<div class="absolute top-3 right-3 z-10 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-400 text-white shadow-sm">NEW</div>` : ''}
+
                 <div class="p-5 flex flex-col items-center text-center flex-1 cursor-pointer view-detail" data-id="${p.id}">
-                    <div class="w-16 h-16 rounded-full bg-slate-100 border-2 border-white shadow-sm mb-3 flex items-center justify-center overflow-hidden text-lg font-bold text-slate-500">
-                         ${p.avatar_url ? `<img src="${escapeHtml(p.avatar_url)}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
-                         <span class="${p.avatar_url ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-br from-slate-50 to-slate-200">${initials}</span>
+                    <div class="relative w-16 h-16 mb-3">
+                        <div class="w-16 h-16 rounded-full bg-slate-100 border-2 border-white shadow-sm flex items-center justify-center overflow-hidden text-lg font-bold text-slate-500">
+                             ${p.avatar_url ? `<img src="${escapeHtml(p.avatar_url)}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+                             <span class="${p.avatar_url ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-br from-slate-50 to-slate-200">${initials}</span>
+                        </div>
+                        ${brandNew ? `<span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-amber-400 border-2 border-white"></span>` : ''}
                     </div>
-                    
+
                     <h3 class="font-bold text-slate-900 line-clamp-1 text-sm">${escapeHtml(p.full_name || 'Unnamed')}</h3>
-                    <p class="text-xs text-slate-500 mb-3 line-clamp-1">${escapeHtml(p.affiliation || '')}</p>
-                    
+                    <p class="text-xs text-slate-500 mb-1 line-clamp-1">${escapeHtml(p.affiliation || '')}</p>
+                    ${p.created_at ? `<p class="text-[10px] text-slate-400 mb-2">${formatRelativeDate(p.created_at)}</p>` : '<div class="mb-3"></div>'}
+
                     <div class="mt-auto flex flex-wrap gap-2 justify-center">
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${getRoleBadgeClass(p.role)} uppercase tracking-wider">${p.role}</span>
                         ${p.country ? `<span class="px-2 py-0.5 rounded text-[10px] bg-slate-50 border border-slate-200 text-slate-600">${escapeHtml(p.country)}</span>` : ''}
                     </div>
                 </div>
-                
+
                 ${!self ? `
                 <div class="border-t border-gray-100 flex divide-x divide-gray-100 bg-slate-50/50">
                     <button class="view-detail flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-white hover:text-brand-600 transition-colors" data-id="${p.id}">View</button>
@@ -457,13 +683,28 @@ function getRoleTextColor(role) {
     }
 }
 
+function formatRelativeDate(dateStr) {
+    if (!dateStr) return '';
+    const now = new Date();
+    const d = new Date(dateStr);
+    const diffMs = now - d;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
+    return `${Math.floor(diffDays / 365)}y ago`;
+}
+
 function renderPagination(totalPages) {
     return `
         <div class="flex items-center gap-1">
             <button id="prevPage" class="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 disabled:opacity-30" ${memberState.page === 1 ? 'disabled' : ''}>
                 <i data-lucide="chevron-left" class="w-4 h-4"></i>
             </button>
-            <span class="text-xs font-medium text-slate-600 px-2">Page ${memberState.page}</span>
+            <span class="text-xs font-medium text-slate-600 px-2">Page ${memberState.page} of ${totalPages}</span>
             <button id="nextPage" class="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 disabled:opacity-30" ${memberState.page === totalPages ? 'disabled' : ''}>
                 <i data-lucide="chevron-right" class="w-4 h-4"></i>
             </button>
@@ -481,8 +722,15 @@ function openDrawer(profileId) {
     const initials = (p.full_name || 'U').substring(0,2).toUpperCase();
     const isSelf = p.id === memberState.currentAuthState?.profile?.id;
 
+    const isNewThisWeek = (() => {
+        if (!p.created_at) return false;
+        const d = new Date();
+        d.setDate(d.getDate() - 7);
+        d.setHours(0, 0, 0, 0);
+        return new Date(p.created_at) >= d;
+    })();
+
     drawer.classList.remove('hidden');
-    // Allow reflow
     setTimeout(() => {
         backdrop.classList.remove('opacity-0');
         panel.classList.remove('translate-x-[110%]');
@@ -491,14 +739,20 @@ function openDrawer(profileId) {
     panel.innerHTML = `
         <div class="flex-none p-5 border-b border-gray-100 flex items-start justify-between bg-slate-50/50">
             <div class="flex gap-4">
-                <div class="w-14 h-14 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center overflow-hidden text-xl font-bold text-slate-400">
-                    ${p.avatar_url ? `<img src="${escapeHtml(p.avatar_url)}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
-                    <span class="${p.avatar_url ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-slate-100">${initials}</span>
+                <div class="relative w-14 h-14 flex-shrink-0">
+                    <div class="w-14 h-14 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center overflow-hidden text-xl font-bold text-slate-400">
+                        ${p.avatar_url ? `<img src="${escapeHtml(p.avatar_url)}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+                        <span class="${p.avatar_url ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-slate-100">${initials}</span>
+                    </div>
+                    ${isNewThisWeek ? `<span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-amber-400 border-2 border-white" title="New this week"></span>` : ''}
                 </div>
                 <div>
-                    <h3 class="font-bold text-lg text-slate-800 leading-tight">${escapeHtml(p.full_name || 'Unnamed')}</h3>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="font-bold text-lg text-slate-800 leading-tight">${escapeHtml(p.full_name || 'Unnamed')}</h3>
+                        ${isNewThisWeek ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">NEW</span>` : ''}
+                    </div>
                     <p class="text-sm text-slate-500 mb-1">${escapeHtml(p.affiliation || 'No affiliation')}</p>
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 flex-wrap">
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${getRoleBadgeClass(p.role)} uppercase tracking-wider">${p.role}</span>
                         ${p.country ? `<span class="px-2 py-0.5 rounded text-[10px] bg-white border border-gray-200 text-slate-600 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> ${escapeHtml(p.country)}</span>` : ''}
                     </div>
@@ -508,26 +762,27 @@ function openDrawer(profileId) {
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </div>
-        
+
         <div class="flex-1 overflow-y-auto p-6 space-y-6">
             ${isSelf ? `<div class="p-3 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-800 flex items-start gap-2">
                 <i data-lucide="info" class="w-4 h-4 mt-0.5 shrink-0"></i>
                 This is your public profile information. Go to your settings to edit this data.
             </div>` : ''}
-            
+
             <div class="space-y-4">
                 ${drawerItem('mail', 'Email', p.work_email || p.username || '—', true)}
                 ${drawerItem('building', 'Department', p.department)}
                 ${drawerItem('book-open', 'Fields of Study', p.fields_of_study)}
                 ${drawerItem('globe', 'Languages', p.preferred_language)}
-                
+                ${drawerItem('calendar', 'Member Since', p.created_at ? new Date(p.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : null)}
+
                 <div>
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Bio / Description</div>
                     <div class="text-sm text-slate-600 leading-relaxed p-3 bg-slate-50 rounded-lg border border-gray-100">
                         ${escapeHtml(p.description || 'No description provided.')}
                     </div>
                 </div>
-                
+
                 <div>
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Links</div>
                     <div class="flex flex-wrap gap-2">
@@ -537,21 +792,23 @@ function openDrawer(profileId) {
                         ${!p.personal_website && !p.professional_website && !p.google_scholar ? '<span class="text-sm text-slate-400 italic">No links available</span>' : ''}
                     </div>
                 </div>
+
+                <!-- Profile Completeness -->
+                ${renderProfileCompleteness(p)}
             </div>
         </div>
 
         ${!isSelf ? `
         <div class="flex-none p-4 border-t border-gray-100 bg-slate-50 flex justify-between items-center">
             <div class="text-xs text-slate-400">
-                Member since ${new Date(p.created_at || Date.now()).toLocaleDateString()}
+                Joined ${formatRelativeDate(p.created_at)}
             </div>
             <button id="drawerDeleteBtn" class="px-4 py-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center gap-2" data-id="${p.id}" data-name="${escapeHtml(p.full_name)}">
                 <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Member
             </button>
         </div>` : ''}
     `;
-    
-    // Drawer specific listeners
+
     document.getElementById('closeDrawer').onclick = closeDrawer;
     if (document.getElementById('drawerDeleteBtn')) {
         document.getElementById('drawerDeleteBtn').onclick = (e) => {
@@ -563,11 +820,46 @@ function openDrawer(profileId) {
     if (window.lucide) lucide.createIcons();
 }
 
+function renderProfileCompleteness(p) {
+    const fields = [
+        { key: 'affiliation', label: 'Affiliation' },
+        { key: 'department', label: 'Department' },
+        { key: 'country', label: 'Country' },
+        { key: 'description', label: 'Bio' },
+        { key: 'fields_of_study', label: 'Fields of Study' },
+        { key: 'preferred_language', label: 'Language' },
+    ];
+    const filled = fields.filter(f => p[f.key] && String(p[f.key]).trim() !== '').length;
+    const pct = Math.round((filled / fields.length) * 100);
+    const color = pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-400' : 'bg-red-400';
+    const textColor = pct >= 80 ? 'text-emerald-700' : pct >= 50 ? 'text-amber-700' : 'text-red-700';
+
+    return `
+        <div>
+            <div class="flex items-center justify-between mb-1.5">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Profile Completeness</div>
+                <span class="text-xs font-bold ${textColor}">${pct}%</span>
+            </div>
+            <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div class="${color} h-full rounded-full transition-all" style="width: ${pct}%"></div>
+            </div>
+            <div class="mt-2 flex flex-wrap gap-1.5">
+                ${fields.map(f => {
+                    const ok = p[f.key] && String(p[f.key]).trim() !== '';
+                    return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${ok ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}">
+                        <i data-lucide="${ok ? 'check' : 'x'}" class="w-2.5 h-2.5"></i> ${f.label}
+                    </span>`;
+                }).join('')}
+            </div>
+        </div>
+    `;
+}
+
 function closeDrawer() {
     const drawer = document.getElementById('memberDrawer');
     const backdrop = document.getElementById('drawerBackdrop');
     const panel = document.getElementById('drawerPanel');
-    
+
     backdrop.classList.add('opacity-0');
     panel.classList.add('translate-x-[110%]');
     setTimeout(() => {
@@ -600,7 +892,6 @@ function drawerLink(url, label) {
 async function deleteUser(uid, name) {
     if (!confirm(`Are you sure you want to remove ${name}? This action cannot be undone.`)) return;
 
-    // Use RPC if available, or direct delete
     const { error } = await supabase.from('profiles').delete().eq('id', uid);
 
     if (error) {
@@ -618,14 +909,13 @@ async function deleteUser(uid, name) {
 async function updateUserRole(uid, newRole, selectElem) {
     selectElem.disabled = true;
     const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', uid);
-    
+
     if (error) {
         setFlash('Failed to update role', 3000);
-        selectElem.value = memberState.profiles.find(p => p.id === uid).role; // revert
+        selectElem.value = memberState.profiles.find(p => p.id === uid).role;
     } else {
         const p = memberState.profiles.find(p => p.id === uid);
         if (p) p.role = newRole;
-        // Don't full re-render to keep UI stable, just update state
         selectElem.className = selectElem.className.replace(/text-\w+-\d+/, getRoleTextColor(newRole));
         setFlash('Role updated');
     }
@@ -637,7 +927,7 @@ async function updateUserRole(uid, newRole, selectElem) {
 // ==========================================
 function attachListeners() {
     const container = document.getElementById(memberState.containerId);
-    
+
     // Debounced Search
     let timeout;
     container.querySelector('#memberSearch')?.addEventListener('input', (e) => {
@@ -652,6 +942,30 @@ function attachListeners() {
 
     container.querySelector('#clearSearch')?.addEventListener('click', () => {
         memberState.searchQuery = '';
+        applyFilters();
+        render();
+    });
+
+    // Quick Filter Pills
+    container.querySelectorAll('.quick-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const qf = btn.dataset.qf;
+            // Toggle off if already active (except 'all')
+            if (memberState.quickFilter === qf && qf !== 'all') {
+                memberState.quickFilter = 'all';
+            } else {
+                memberState.quickFilter = qf;
+            }
+            memberState.page = 1;
+            applyFilters();
+            render();
+        });
+    });
+
+    // Clear quick filter from mobile bar
+    container.querySelector('#clearQuickFilter')?.addEventListener('click', () => {
+        memberState.quickFilter = 'all';
+        memberState.page = 1;
         applyFilters();
         render();
     });
@@ -671,14 +985,22 @@ function attachListeners() {
         memberState.searchQuery = '';
         memberState.roleFilter = 'all';
         memberState.countryFilter = 'all';
+        memberState.quickFilter = 'all';
         applyFilters();
         render();
     });
-    
+
     container.querySelector('#emptyResetBtn')?.addEventListener('click', () => {
         memberState.searchQuery = '';
         memberState.roleFilter = 'all';
         memberState.countryFilter = 'all';
+        memberState.quickFilter = 'all';
+        applyFilters();
+        render();
+    });
+
+    container.querySelector('#emptyResetQF')?.addEventListener('click', () => {
+        memberState.quickFilter = 'all';
         applyFilters();
         render();
     });
@@ -753,11 +1075,11 @@ function attachListeners() {
             e.stopPropagation();
             updateUserRole(e.target.dataset.id, e.target.value, e.target);
         });
-        sel.addEventListener('click', e => e.stopPropagation()); // prevent row click
+        sel.addEventListener('click', e => e.stopPropagation());
     });
 
     container.querySelectorAll('.view-detail').forEach(el => {
-        el.addEventListener('click', (e) => {
+        el.addEventListener('click', () => {
             openDrawer(el.dataset.id);
         });
     });
@@ -786,7 +1108,10 @@ function attachListeners() {
 }
 
 function hasActiveFilters() {
-    return memberState.searchQuery || memberState.roleFilter !== 'all' || memberState.countryFilter !== 'all';
+    return memberState.searchQuery ||
+        memberState.roleFilter !== 'all' ||
+        memberState.countryFilter !== 'all' ||
+        memberState.quickFilter !== 'all';
 }
 
 // ==========================================
@@ -796,7 +1121,7 @@ export async function renderMembershipTab(containerId, authState) {
     memberState.containerId = containerId;
     memberState.currentAuthState = authState;
     const container = document.getElementById(containerId);
-    
+
     container.innerHTML = `
         <div class="flex flex-col items-center justify-center h-96 gap-4 text-slate-400">
             <div class="w-8 h-8 border-2 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
