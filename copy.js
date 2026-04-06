@@ -60,11 +60,13 @@ export async function loadCommitteeGrid(containerId, lang) {
             const theme = getThemeClasses(m.color_theme || 'purple');
             const desc = lang === 'es' ? (m.description_es || m.description_en) : m.description_en;
             const role = lang === 'es' ? (m.role_es || m.role_en) : m.role_en;
+            const imgUrl = m.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.name || 'M')}&background=random&size=200`;
+
             return `
             <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl ${theme.border} transition-all duration-300 min-h-[140px]">
                 <div class="w-1.5 ${theme.bar} flex-shrink-0"></div>
                 <div class="w-24 sm:w-32 h-full relative overflow-hidden flex-shrink-0 bg-gray-100">
-                    <img src="${m.image_url}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=random'">
+                    <img src="${imgUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(m.name || 'M')}&background=random'">
                 </div>
                 <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
                     <div class="absolute top-3 right-3">
@@ -75,7 +77,7 @@ export async function loadCommitteeGrid(containerId, lang) {
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider truncate mb-1">${m.institution || ''}</p>
                         <p class="text-xs font-medium text-slate-500 mb-2">${role}</p>
                     </div>
-                    <div class="text-sm text-slate-600 line-clamp-2 prose prose-sm leading-snug">${desc}</div>
+                    <div class="text-sm text-slate-600 line-clamp-2 prose prose-sm leading-snug">${desc || ''}</div>
                 </div>
             </div>`;
         }).join('');
@@ -92,25 +94,52 @@ export async function loadOrgGrid(containerId, lang) {
     if (!container) return;
     
     const render = (list) => {
+        const countBadge = document.getElementById('org-count-badge');
+        if (countBadge) countBadge.textContent = `${list.length} Partners`;
+
         container.innerHTML = list.map(org => {
             const theme = getThemeClasses(org.color_theme);
             const desc = lang === 'es' ? (org.description_es || org.description_en) : org.description_en;
+            const bgImg = org.image_url || 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&q=80&w=800';
+            const logoImg = org.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(org.acronym || 'ORG')}&background=random`;
+
+            // Redesigned Card: Removed constrained heights on the image wrapper so it stretches full-height
             return `
-            <a href="${org.url}" target="_blank" class="group relative flex flex-col sm:flex-row bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-2xl ${theme.border} hover:-translate-y-1 transition-all duration-300 h-full">
-                <div class="h-1.5 w-full sm:w-1.5 sm:h-auto ${theme.bar} flex-shrink-0"></div>
-                <div class="w-full h-48 sm:w-56 relative overflow-hidden flex-shrink-0 bg-slate-50">
-                    <img src="${org.image_url}" class="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" loading="lazy">
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
+            <a href="${org.url || '#'}" target="_blank" class="group relative flex flex-col sm:flex-row bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 h-full">
+                
+                <!-- Accent Sidebar Line -->
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 ${theme.bar} z-10 hidden sm:block"></div>
+                <div class="absolute top-0 left-0 right-0 h-1.5 ${theme.bar} z-10 sm:hidden"></div>
+
+                <!-- Fully stretched background image on the left -->
+                <div class="w-full sm:w-2/5 md:w-1/3 relative overflow-hidden bg-slate-100 flex-shrink-0 min-h-[180px]">
+                    <img src="${bgImg}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
                 </div>
-                <div class="flex-1 p-6 flex flex-col justify-center relative bg-white">
-                    <div class="absolute top-4 right-4 w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-100 p-1">
-                        <img src="${org.logo_url}" class="w-full h-full object-contain" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(org.acronym || 'ORG')}&background=random'">
+
+                <!-- Card Content on the right -->
+                <div class="flex-1 p-6 sm:p-8 flex flex-col relative sm:pl-10">
+                    
+                    <!-- Desktop Logo Overlay -->
+                    <div class="absolute top-6 right-6 w-14 h-14 bg-white rounded-xl shadow-sm border border-gray-100 p-2 items-center justify-center hidden sm:flex">
+                        <img src="${logoImg}" class="max-w-full max-h-full object-contain" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(org.acronym || 'ORG')}&background=random'">
                     </div>
-                    <div class="pr-12 mb-3">
-                        <h3 class="font-display font-bold text-xl text-slate-900 leading-tight ${theme.text} transition-colors">${org.name}</h3>
-                        <span class="inline-block mt-1 px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-500 uppercase">${org.acronym || 'ORG'}</span>
+
+                    <div class="pr-0 sm:pr-16 mb-4">
+                        <h3 class="font-display font-bold text-xl md:text-2xl text-slate-900 leading-tight mb-2 ${theme.text} transition-colors">${org.name || 'Organization'}</h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wide">
+                            ${org.acronym || 'ORG'}
+                        </span>
                     </div>
-                    <div class="text-sm text-slate-600 line-clamp-3 prose prose-sm">${desc}</div>
+
+                    <!-- Mobile Logo Inline -->
+                    <div class="sm:hidden mb-4 w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-100 p-1.5">
+                        <img src="${logoImg}" class="w-full h-full object-contain" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(org.acronym || 'ORG')}&background=random'">
+                    </div>
+
+                    <!-- Flexible description to fill remaining space -->
+                    <div class="text-sm text-slate-600 prose prose-sm max-w-none flex-1">
+                        ${desc || ''}
+                    </div>
                 </div>
             </a>`;
         }).join('');
@@ -124,7 +153,7 @@ export async function loadOrgGrid(containerId, lang) {
 
 
 // ==========================================
-// PART 2: ADMIN UI & IMAGE HELPERS
+// PART 2: ADMIN UI & IMAGE COMPRESSION HELPERS
 // ==========================================
 
 const quillRegistry = new Map();
@@ -160,7 +189,47 @@ const ORG_KEY_PREFIXES = ['network_org', 'network_partner', 'network_collab'];
 function copyBelongsToCommittee(item) { return COMMITTEE_KEY_PREFIXES.some(p => item.id.startsWith(p)); }
 function copyBelongsToOrgs(item) { return ORG_KEY_PREFIXES.some(p => item.id.startsWith(p)); }
 
-// -- IMAGE UPLOAD HELPERS --
+// -- CLIENT SIDE IMAGE COMPRESSOR --
+// This strictly prevents "exceeded maximum allowed size" errors.
+async function compressImage(file, maxWidth = 1200) {
+    if (!file.type.startsWith('image/')) return file;
+    
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = event => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                canvas.toBlob((blob) => {
+                    const newFileName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+                    const newFile = new File([blob], newFileName, {
+                        type: 'image/jpeg',
+                        lastModified: Date.now(),
+                    });
+                    resolve(newFile);
+                }, 'image/jpeg', 0.85); // 85% quality avoids massive file sizes
+            };
+            img.onerror = () => resolve(file);
+        };
+        reader.onerror = () => resolve(file);
+    });
+}
+
 function setupImageUploader(panel, type, id) {
     const input = panel.querySelector(`#${type}-input-${id}`);
     const preview = panel.querySelector(`#${type}-preview-${id}`);
@@ -193,11 +262,15 @@ async function processImageUpload(panel, type, id, folder) {
     let finalUrl = hiddenUrl ? hiddenUrl.value : '';
 
     if (input && input.files && input.files.length > 0) {
-        const file = input.files[0];
-        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        let originalFile = input.files[0];
         
-        // FIX: RLS Policy Bypass - Attach User ID
+        // Dynamically set compression size based on where it's going
+        const maxWidth = folder === 'organizations' ? 1600 : 800;
+        const file = await compressImage(originalFile, maxWidth);
+
+        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
         const userId = globalAuthState?.session?.user?.id;
+        
         if (!userId) {
             setFlash("Authentication error. Cannot upload.", 3000);
             return finalUrl;
@@ -658,7 +731,7 @@ async function saveCopyCard(id, panel) {
 
 
 // ==========================================
-// COMMITTEE ADMIN (WITH IMAGE UPLOADS)
+// COMMITTEE ADMIN (WITH COMPRESSION UPLOAD)
 // ==========================================
 
 let committeeData = [];
@@ -919,7 +992,7 @@ async function deleteMember(id) {
 
 
 // ==========================================
-// ORGANIZATIONS ADMIN (WITH IMAGE UPLOADS)
+// ORGANIZATIONS ADMIN (WITH COMPRESSION UPLOAD)
 // ==========================================
 
 let orgsData = [];

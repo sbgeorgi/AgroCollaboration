@@ -13,33 +13,42 @@
     <script src="theme.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style type="text/tailwindcss">
-        @layer utilities { .bg-dot-pattern { background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 24px 24px; } .text-pretty { text-wrap: pretty; } }
-        .org-img { transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1); }
-        .group:hover .org-img { transform: scale(1.05); }
+        @layer utilities { 
+            .bg-dot-pattern { background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 24px 24px; } 
+            .text-pretty { text-wrap: pretty; } 
+        }
     </style>
 </head>
 
 <body class="text-slate-800 flex flex-col h-full overflow-hidden font-sans bg-slate-50">
     <main class="flex-1 relative overflow-hidden flex flex-col bg-dot-pattern">
+        
+        <!-- Header -->
         <div class="flex-none px-6 py-4 md:px-8 flex flex-col md:flex-row gap-2 justify-between items-center z-20 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm min-h-[4rem]">
             <div class="flex items-center h-full">
-                <h2 class="font-bold text-xl text-slate-900 tracking-tight" data-i18n="orgs.title">Partner Organizations</h2>
+                <h2 class="font-bold text-xl text-slate-900 tracking-tight" data-copy-key="network_title" data-i18n="orgs.title">Partner Organizations</h2>
                 <div class="h-5 w-px bg-slate-300 mx-4 hidden sm:block"></div>
-                <span class="font-bold text-xs text-slate-400 uppercase tracking-[0.15em] hidden sm:block" data-i18n="orgs.breadcrumb">Research Network</span>
+                <span class="font-bold text-xs text-slate-400 uppercase tracking-[0.15em] hidden sm:block" data-copy-key="network_breadcrumb" data-i18n="orgs.breadcrumb">Research Network</span>
             </div>
             <div class="hidden md:flex gap-2">
-                <span class="px-3 py-1 bg-slate-50 border border-gray-200 rounded-full text-[10px] font-bold text-slate-400 uppercase tracking-wide">4 Partners</span>
+                <span id="org-count-badge" class="px-3 py-1 bg-slate-50 border border-gray-200 rounded-full text-[10px] font-bold text-slate-400 uppercase tracking-wide">Partners</span>
             </div>
         </div>
 
         <div class="flex-1 p-4 md:p-6 min-h-0 overflow-y-auto overflow-x-hidden scroll-smooth">
-            <!-- Container for Dynamic Orgs -->
-            <div id="orgs-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full max-w-[1920px] mx-auto pb-10 min-h-full auto-rows-fr">
-                <!-- Skeleton -->
-                <div class="animate-pulse bg-white rounded-2xl border border-gray-200 h-64 w-full"></div>
-                <div class="animate-pulse bg-white rounded-2xl border border-gray-200 h-64 w-full"></div>
-                <div class="animate-pulse bg-white rounded-2xl border border-gray-200 h-64 w-full"></div>
-                <div class="animate-pulse bg-white rounded-2xl border border-gray-200 h-64 w-full"></div>
+            <!-- Container for Dynamic Orgs (Items stretch automatically in this grid) -->
+            <div id="orgs-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-6 w-full max-w-[1920px] mx-auto pb-10 min-h-full items-stretch">
+                
+                <!-- Loading Skeletons -->
+                <div class="animate-pulse flex flex-col sm:flex-row bg-white rounded-2xl border border-gray-200 h-64 w-full overflow-hidden shadow-sm">
+                    <div class="w-full sm:w-2/5 bg-gray-200 h-48 sm:h-full"></div>
+                    <div class="flex-1 p-6 space-y-4"><div class="h-6 bg-gray-200 rounded w-1/2"></div><div class="h-4 bg-gray-200 rounded w-1/4"></div><div class="space-y-2 pt-4"><div class="h-3 bg-gray-200 rounded"></div><div class="h-3 bg-gray-200 rounded w-5/6"></div></div></div>
+                </div>
+                <div class="animate-pulse flex flex-col sm:flex-row bg-white rounded-2xl border border-gray-200 h-64 w-full overflow-hidden shadow-sm">
+                    <div class="w-full sm:w-2/5 bg-gray-200 h-48 sm:h-full"></div>
+                    <div class="flex-1 p-6 space-y-4"><div class="h-6 bg-gray-200 rounded w-1/2"></div><div class="h-4 bg-gray-200 rounded w-1/4"></div><div class="space-y-2 pt-4"><div class="h-3 bg-gray-200 rounded"></div><div class="h-3 bg-gray-200 rounded w-5/6"></div></div></div>
+                </div>
+
             </div>
         </div>
     </main>
@@ -48,15 +57,19 @@
         import { renderLayout } from './layout.js';
         import { authState, initAuth, signOut } from './auth.js';
         import { initSharedUI, renderHeader, applyI18n, getAvatarUrl, show, hide, $ } from './ui.js';
-        import { loadOrgGrid } from './copy.js';
+        import { loadOrgGrid, loadAndApplyCopy } from './copy.js';
 
         renderLayout('organizations');
 
         const state = { language: localStorage.getItem("lang") || "en" };
-        const t = { en: { orgs: { title: "Partner Organizations", breadcrumb: "Research Network" } }, es: { orgs: { title: "Organizaciones Asociadas", breadcrumb: "Red de Investigación" } } };
+        const t = { 
+            en: { orgs: { title: "Partner Organizations", breadcrumb: "Research Network" } }, 
+            es: { orgs: { title: "Organizaciones Asociadas", breadcrumb: "Red de Investigación" } } 
+        };
 
         async function applyPageI18n() {
             applyI18n(t, state.language);
+            await loadAndApplyCopy('network', state.language);
             await loadOrgGrid('orgs-grid', state.language);
         }
 
@@ -70,7 +83,7 @@
             initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
             lucide.createIcons();
 
-            applyPageI18n(); // Load immediately
+            applyPageI18n(); // Load content immediately
 
             document.addEventListener('click', e => {
                 if (e.target.closest('#btnProfile') || e.target.closest('#userName') || e.target.closest('#mobileProfileBtn') || e.target.closest('#mobileUserName')) {
