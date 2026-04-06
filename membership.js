@@ -49,18 +49,18 @@ const QUICK_FILTERS = [
         },
     },
     {
-        id: 'new_this_month',
-        label: 'New This Month',
-        icon: 'calendar-plus',
-        color: 'emerald',
-        predicate: (p) => {
-            if (!p.created_at) return false;
-            const d = new Date();
-            d.setDate(1);
-            d.setHours(0, 0, 0, 0);
-            return new Date(p.created_at) >= d;
-        },
+    id: 'new_this_month',
+    label: 'New - 30 Days',
+    icon: 'calendar-plus',
+    color: 'emerald',
+    predicate: (p) => {
+        if (!p.created_at) return false;
+        const d = new Date();
+        d.setDate(d.getDate() - 30);
+        d.setHours(0, 0, 0, 0);
+        return new Date(p.created_at) >= d;
     },
+},
     {
         id: 'no_affiliation',
         label: 'No Affiliation',
