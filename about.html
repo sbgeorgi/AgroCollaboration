@@ -55,16 +55,19 @@
     <!-- PAGE HEADER -->
     <div class="flex-none px-8 py-4 flex flex-col md:flex-row gap-2 justify-between items-center z-20 bg-white border-b border-gray-200 shadow-sm min-h-[4rem] h-auto shrink-0">
       <div class="flex items-center h-full">
-        <h2 class="font-bold text-xl text-slate-900 tracking-tight" data-i18n="about_page.title">
+        <!-- Replaced data-i18n with data-copy-key to prevent conflicts -->
+        <h2 class="font-bold text-xl text-slate-900 tracking-tight" data-copy-key="about_title">
           About the Seminar
         </h2>
         <div class="h-5 w-px bg-slate-300 mx-4"></div>
-        <span class="font-bold text-xs text-slate-400 uppercase tracking-[0.15em]" data-i18n="about_page.subtitle">
+        <span class="font-bold text-xs text-slate-400 uppercase tracking-[0.15em]" data-copy-key="about_subtitle">
           Overview
         </span>
       </div>
       <div class="hidden md:flex gap-2">
-        <span class="px-3 py-1 bg-slate-50 border border-gray-200 rounded text-[10px] font-bold text-slate-400 uppercase tracking-wide" data-i18n="about_page.badge">Bilingual Series</span>
+        <span class="px-3 py-1 bg-slate-50 border border-gray-200 rounded text-[10px] font-bold text-slate-400 uppercase tracking-wide" data-copy-key="about_badge">
+          Bilingual Series
+        </span>
       </div>
     </div>
 
@@ -85,14 +88,14 @@
             <div class="absolute bottom-5 left-6 md:left-10 text-white">
               
               <!-- DYNAMIC HERO TITLE -->
-              <h1 class="font-display font-bold text-3xl tracking-tight mb-1 drop-shadow-md text-white"
-                data-copy-key="about_hero_title" data-i18n="about_page.hero_title">
+              <!-- Removed data-i18n -->
+              <h1 class="font-display font-bold text-3xl tracking-tight mb-1 drop-shadow-md text-white" data-copy-key="about_hero_title">
                 Bridging Research
               </h1>
               
               <!-- DYNAMIC HERO SUBTITLE -->
-              <p class="text-sm opacity-90 font-medium drop-shadow-sm tracking-wide" 
-                 data-copy-key="about_hero_sub" data-i18n="about_page.hero_sub">
+              <!-- Removed data-i18n -->
+              <p class="text-sm opacity-90 font-medium drop-shadow-sm tracking-wide" data-copy-key="about_hero_sub">
                 Agrivoltaics across the Americas
               </p>
             </div>
@@ -102,17 +105,14 @@
           <div class="p-6 md:p-10 w-full">
 
             <!-- DYNAMIC BODY CONTENT -->
-            <!-- The animate-fade-in class makes it appear smoothly once loaded -->
             <div class="prose w-full animate-fade-in" data-copy-key="about_body">
-                
-                <!-- Skeleton Loader (Visible only on very first load before cache exists) -->
+                <!-- Skeleton Loader -->
                 <div class="animate-pulse space-y-4">
                     <div class="h-4 bg-slate-100 rounded w-3/4"></div>
                     <div class="h-4 bg-slate-100 rounded w-full"></div>
                     <div class="h-4 bg-slate-100 rounded w-5/6"></div>
                     <div class="h-32 bg-slate-50 rounded w-full mt-6"></div>
                 </div>
-
             </div>
 
           </div>
@@ -132,28 +132,15 @@
 
     const state = { language: localStorage.getItem("lang") || "en" };
 
+    // Cleaned up the 't' object. The about_page text is now exclusively handled by Supabase site_copy
     const t = {
       en: {
         nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
-        auth: { signin: "Sign in", signout: "Sign out" },
-        about_page: {
-          title: "About the Seminar",
-          subtitle: "Overview",
-          badge: "Bilingual Series",
-          hero_title: "Bridging Research",
-          hero_sub: "Agrivoltaics across the Americas"
-        }
+        auth: { signin: "Sign in", signout: "Sign out" }
       },
       es: {
         nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" },
-        auth: { signin: "Ingresar", signout: "Salir" },
-        about_page: {
-          title: "Sobre el Seminario",
-          subtitle: "Resumen",
-          badge: "Serie Bilingüe",
-          hero_title: "Uniendo Investigación",
-          hero_sub: "Agrovoltaica en las Américas"
-        }
+        auth: { signin: "Ingresar", signout: "Salir" }
       }
     };
 
