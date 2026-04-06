@@ -64,39 +64,43 @@
         }
         #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-        /* ── Treemap styles ── */
+        /* ── Treemap Advanced Styles ── */
+        @keyframes treemapPop {
+            0% { opacity: 0; transform: scale(0.96); }
+            100% { opacity: 1; transform: scale(1); }
+        }
         .treemap-container {
             position: absolute; inset: 0; overflow: hidden;
+            background: #f8fafc;
         }
         .treemap-group-tile {
             position: absolute; overflow: hidden; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.4);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.4);
-            cursor: pointer; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.9);
+            cursor: pointer; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex; flex-direction: column;
-            background-blend-mode: overlay;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            animation: treemapPop 0.4s ease-out backwards;
         }
         .treemap-group-tile:hover {
-            box-shadow: 0 12px 30px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1);
-            transform: translateY(-2px) scale(1.005);
-            z-index: 10;
-            border-color: rgba(255,255,255,0.9);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            border-color: rgba(99,102,241,0.8);
+            z-index: 10; transform: translateY(-2px);
         }
         .treemap-group-header {
-            padding: 8px 12px; background: rgba(255,255,255,0.85); backdrop-filter: blur(8px);
-            border-bottom: 1px solid rgba(0,0,0,0.06);
+            padding: 8px 12px; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
             display: flex; align-items: center; justify-content: space-between;
-            flex-shrink: 0; min-height: 32px; z-index: 2;
+            flex-shrink: 0; min-height: 32px; z-index: 20;
         }
         .treemap-group-header-name {
-            font-size: 12px; font-weight: 700; color: #1e293b;
+            font-size: 12px; font-weight: 800; color: #0f172a;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            max-width: calc(100% - 40px);
+            max-width: calc(100% - 40px); letter-spacing: -0.01em;
         }
         .treemap-group-header-count {
-            font-size: 11px; font-weight: 700; color: #64748b;
-            background: #f1f5f9; padding: 2px 8px; border-radius: 9999px;
-            flex-shrink: 0; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+            font-size: 10px; font-weight: 800; color: #4f46e5;
+            background: #e0e7ff; padding: 2px 8px; border-radius: 9999px;
+            flex-shrink: 0;
         }
         .treemap-members-area {
             flex: 1; position: relative; overflow: hidden;
@@ -104,72 +108,75 @@
         .treemap-member-tile {
             position: absolute; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255,255,255,0.25);
-            background: radial-gradient(circle at top left, rgba(255,255,255,0.2), rgba(0,0,0,0.1));
+            cursor: pointer; transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.4);
+            animation: treemapPop 0.4s ease-out backwards;
         }
         .treemap-member-tile:hover {
             transform: scale(1.04);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.8);
-            z-index: 50;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            z-index: 50; border-color: rgba(255,255,255,0.9);
+            border-radius: 8px;
         }
-        .treemap-avatar-wrap {
-            border-radius: 50%; overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.9);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            flex-shrink: 0; background: #f8fafc;
-            display: flex; align-items: center; justify-content: center;
-            position: relative;
+        /* Smart Content Classes */
+        .treemap-ambient-bg {
+            position: absolute; inset: -20%; background-size: cover; background-position: center;
+            filter: blur(20px) brightness(0.85); opacity: 0.7; z-index: 0; pointer-events: none;
+            transition: opacity 0.2s;
         }
-        .treemap-avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .treemap-member-initials {
-            font-weight: 800; color: #475569;
-            pointer-events: none;
+        .treemap-member-tile:hover .treemap-ambient-bg { opacity: 0.9; filter: blur(15px) brightness(0.75); }
+        .treemap-smart-wrapper {
+            position: absolute; inset: 0; z-index: 10; display: flex;
+            align-items: center; justify-content: center; padding: 10%; gap: 12px;
+            box-sizing: border-box; pointer-events: none;
         }
-        .treemap-global-tooltip {
-            position: fixed; pointer-events: none; z-index: 10000;
-            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
-            color: white; padding: 10px 14px; border-radius: 10px;
-            font-size: 11px; box-shadow: 0 12px 30px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.1);
-            opacity: 0; transform: translateY(8px) scale(0.95); transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            max-width: 220px;
+        .treemap-smart-avatar {
+            border-radius: 50%; object-fit: cover; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.9); flex-shrink: 0; background: #f1f5f9;
         }
-        .treemap-global-tooltip.visible {
-            opacity: 1; transform: translateY(0) scale(1);
+        .treemap-smart-initials {
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: white; background: rgba(0,0,0,0.3);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(4px); flex-shrink: 0;
         }
-        .treemap-breadcrumb {
-            position: absolute; top: 12px; left: 12px; z-index: 50;
-            display: flex; align-items: center; gap: 6px;
+        .treemap-smart-text {
+            display: flex; flex-direction: column; overflow: hidden; color: white;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.8);
         }
+        .treemap-smart-name { font-weight: 800; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .treemap-smart-role { font-weight: 600; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+        
+        /* Fallback elements */
+        .treemap-member-avatar-full { width: 100%; height: 100%; object-fit: cover; }
+        .treemap-member-initials-full { font-weight: 800; color: rgba(255,255,255,0.95); text-shadow: 0 2px 4px rgba(0,0,0,0.5); pointer-events: none; }
+        
+        .treemap-member-tooltip {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            padding: 8px 8px 6px; opacity: 0; transition: opacity 0.2s;
+            pointer-events: none; z-index: 20;
+        }
+        .treemap-member-tile:hover .treemap-member-tooltip { opacity: 1; }
+        .treemap-member-tooltip-name { font-size: 10px; font-weight: 800; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+        .treemap-member-tooltip-aff { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; margin-top: 1px; }
+        
+        .treemap-badge {
+            position: absolute; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.2);
+            color: white; font-weight: 800; border-radius: 9999px; pointer-events: none; z-index: 30;
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .treemap-badge-speaker { background: rgba(245,158,11,0.9); border-color: rgba(255,255,255,0.4); }
+        
+        .treemap-breadcrumb { position: absolute; top: 12px; left: 12px; z-index: 50; display: flex; align-items: center; gap: 6px; }
         .treemap-breadcrumb-btn {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 6px 12px; font-size: 12px; font-weight: 700;
-            background: rgba(255,255,255,0.95); backdrop-filter: blur(4px);
-            border: 1px solid #e2e8f0; border-radius: 8px;
-            color: #475569; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 12px; font-weight: 800;
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border: 1px solid #e2e8f0; border-radius: 8px;
+            color: #1e293b; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: all 0.2s;
         }
-        .treemap-breadcrumb-btn:hover {
-            background: #fff; border-color: #cbd5e1; transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-        }
-        .treemap-zoom-overview {
-            position: absolute; top: 8px; right: 8px; z-index: 50;
-            display: flex; flex-direction: column; gap: 4px;
-        }
-        .treemap-zoom-btn {
-            width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-            background: white; border: 1px solid #e2e8f0; border-radius: 6px;
-            color: #475569; cursor: pointer; font-size: 16px; font-weight: 700;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            transition: background 0.15s;
-        }
-        .treemap-zoom-btn:hover { background: #f8fafc; }
-        .treemap-empty-state {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100%; color: #94a3b8; font-size: 14px; gap: 8px;
-        }
+        .treemap-breadcrumb-btn:hover { background: #ffffff; border-color: #cbd5e1; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+        
+        .treemap-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 15px; font-weight: 600; gap: 12px; }
     </style>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -330,8 +337,8 @@
         const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
         const highlight = (text, q) => q && text ? (text+"").replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "ig"), '<span class="bg-yellow-100 text-yellow-800 px-0.5 rounded">$1</span>') : (text || "");
         const debounce = (fn, ms = 200) => { let t = null; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
-        const stringToColor = str => `hsl(${Math.abs(str.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % 360}, 55%, 75%)`;
-        const stringToColorDark = str => `hsl(${Math.abs(str.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % 360}, 45%, 55%)`;
+        const stringToColor = str => `hsl(${Math.abs(str.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % 360}, 65%, 70%)`;
+        const stringToColorDark = str => `hsl(${Math.abs(str.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % 360}, 60%, 45%)`;
 
         /* ─────────────────────────────────────────────
            SQUARIFIED TREEMAP LAYOUT ALGORITHM
@@ -406,118 +413,134 @@
         }
 
         /* ─────────────────────────────────────────────
-           TREEMAP RENDERING
+           SMART TREEMAP RENDERING LOGIC
            ─────────────────────────────────────────────*/
-        function setupGlobalTooltip() {
-            let tt = document.getElementById('treemap-global-tooltip');
-            if (!tt) {
-                tt = document.createElement('div');
-                tt.id = 'treemap-global-tooltip';
-                tt.className = 'treemap-global-tooltip';
-                document.body.appendChild(tt);
-            }
-            return tt;
-        }
+        function buildSmartMemberTileContent(mtile, member, w, h, isDrilldown = false) {
+            const isTiny = w < 40 || h < 40;
+            const minDim = Math.min(w, h);
+            const isWide = w > h * 1.5;
+            const isTall = h > w * 1.5;
+            const name = member.full_name || 'Member';
+            const initialsText = name.split(' ').map(str => str[0]).join('').slice(0, 2).toUpperCase();
 
-        function createMemberBento(mr, member, tt) {
-            const mtile = document.createElement('div');
-            mtile.className = 'treemap-member-tile';
-            mtile.style.left = `${mr.rx + 2}px`;
-            mtile.style.top = `${mr.ry + 2}px`;
-            mtile.style.width = `${mr.rw - 1}px`;
-            mtile.style.height = `${mr.rh - 1}px`;
-            mtile.style.backgroundColor = stringToColorDark(member.full_name || 'M');
-            
-            // Bento logic: Adaptive sizing based on aspect ratio
-            const minDim = Math.min(mr.rw, mr.rh);
-            const avSize = clamp(minDim * 0.6, 16, 80);
-            
-            const isWide = mr.rw > mr.rh * 1.5 && mr.rw > 100;
-            const isTall = mr.rh > mr.rw * 1.5 && mr.rh > 100;
-            
-            mtile.style.flexDirection = isTall ? 'column' : 'row';
-            mtile.style.gap = (avSize >= 24 && (isWide || isTall)) ? '12px' : '4px';
-
-            if (minDim > 20) {
-                const avWrap = document.createElement('div');
-                avWrap.className = 'treemap-avatar-wrap';
-                avWrap.style.width = `${avSize}px`;
-                avWrap.style.height = `${avSize}px`;
-
+            if (isTiny) {
                 if (member.avatar_url) {
                     const img = document.createElement('img');
+                    img.className = 'treemap-member-avatar-full';
                     img.loading = 'lazy';
-                    img.alt = member.full_name || '';
+                    img.alt = name;
                     img.src = member.avatar_url;
-                    getAvatarUrl(member.avatar_url).then(u => { if (u) img.src = u; });
-                    avWrap.appendChild(img);
+                    mtile.appendChild(img);
                 } else {
                     const initials = document.createElement('span');
-                    initials.className = 'treemap-member-initials';
-                    initials.style.fontSize = `${clamp(avSize * 0.35, 8, 28)}px`;
-                    initials.textContent = (member.full_name || 'M').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-                    avWrap.appendChild(initials);
+                    initials.className = 'treemap-member-initials-full';
+                    initials.style.fontSize = `${clamp(minDim * 0.4, 10, 24)}px`;
+                    initials.textContent = initialsText;
+                    mtile.appendChild(initials);
                 }
-                mtile.appendChild(avWrap);
-
-                // Add text dynamically if there's enough room (The 1-person fix)
-                if ((isWide && mr.rw > avSize + 80) || (isTall && mr.rh > avSize + 50)) {
-                    const textWrap = document.createElement('div');
-                    textWrap.style.display = 'flex';
-                    textWrap.style.flexDirection = 'column';
-                    textWrap.style.alignItems = isTall ? 'center' : 'flex-start';
-                    textWrap.style.overflow = 'hidden';
-                    textWrap.style.color = 'white';
-                    textWrap.style.textShadow = '0 1px 3px rgba(0,0,0,0.6)';
-                    textWrap.style.flex = '1';
-                    textWrap.style.minWidth = '0';
-                    if (isTall) textWrap.style.textAlign = 'center';
-                    
-                    const nameEl = document.createElement('div');
-                    nameEl.style.fontSize = clamp(avSize * 0.25, 10, 15) + 'px';
-                    nameEl.style.fontWeight = '700';
-                    nameEl.style.whiteSpace = 'nowrap';
-                    nameEl.style.textOverflow = 'ellipsis';
-                    nameEl.style.overflow = 'hidden';
-                    nameEl.style.maxWidth = '100%';
-                    nameEl.textContent = member.full_name;
-                    textWrap.appendChild(nameEl);
-                    
-                    if (member.affiliation && (isTall ? mr.rh > avSize + 70 : mr.rw > avSize + 140)) {
-                        const affEl = document.createElement('div');
-                        affEl.style.fontSize = clamp(avSize * 0.18, 9, 12) + 'px';
-                        affEl.style.opacity = '0.9';
-                        affEl.style.whiteSpace = 'nowrap';
-                        affEl.style.textOverflow = 'ellipsis';
-                        affEl.style.overflow = 'hidden';
-                        affEl.style.maxWidth = '100%';
-                        affEl.textContent = member.affiliation;
-                        textWrap.appendChild(affEl);
-                    }
-                    mtile.appendChild(textWrap);
-                }
+                return;
             }
 
-            // High-fidelity Global Tooltip Handlers
-            mtile.onmouseenter = (e) => {
-                const rect = mtile.getBoundingClientRect();
-                tt.innerHTML = `
-                    <div style="font-weight:700;font-size:13px;margin-bottom:2px">${member.full_name || 'Member'}</div>
-                    ${member.affiliation ? `<div style="font-size:10px;opacity:0.85;margin-bottom:2px">${member.affiliation}</div>` : ''}
-                    ${member.role ? `<div style="font-size:9px;opacity:0.7;text-transform:uppercase;letter-spacing:0.5px">Role: ${member.role}</div>` : ''}
-                `;
-                tt.style.left = Math.max(10, rect.left + (rect.width / 2) - (tt.offsetWidth / 2)) + 'px';
-                tt.style.top = Math.max(10, rect.top - tt.offsetHeight - 12) + 'px';
-                tt.classList.add('visible');
-            };
-            mtile.onmouseleave = () => tt.classList.remove('visible');
-            mtile.onclick = (e) => {
-                e.stopPropagation();
-                tt.classList.remove('visible');
-                openProfileModal(member);
-            };
+            // For larger tiles, inject the cinematic background and smart wrapper
+            if (member.avatar_url) {
+                const bg = document.createElement('div');
+                bg.className = 'treemap-ambient-bg';
+                bg.style.backgroundImage = `url(${member.avatar_url})`;
+                mtile.appendChild(bg);
+            }
 
-            return mtile;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'treemap-smart-wrapper';
+
+            // Flex direction logic based on aspect ratio
+            if (isWide && w > 120) {
+                wrapper.style.flexDirection = 'row';
+                wrapper.style.justifyContent = 'flex-start';
+                wrapper.style.padding = '0 15%';
+            } else if (isTall && h > 120) {
+                wrapper.style.flexDirection = 'column';
+                wrapper.style.justifyContent = 'center';
+            } else {
+                wrapper.style.flexDirection = 'column';
+            }
+
+            // Avatar dimension capped securely
+            const avatarCap = isDrilldown ? 160 : 90;
+            const avatarSize = Math.min(minDim * 0.7, avatarCap);
+
+            if (member.avatar_url) {
+                const img = document.createElement('img');
+                img.className = 'treemap-smart-avatar';
+                img.loading = 'lazy';
+                img.alt = name;
+                img.src = member.avatar_url;
+                img.style.width = `${avatarSize}px`;
+                img.style.height = `${avatarSize}px`;
+                wrapper.appendChild(img);
+            } else {
+                const initBox = document.createElement('div');
+                initBox.className = 'treemap-smart-initials';
+                initBox.style.width = `${avatarSize}px`;
+                initBox.style.height = `${avatarSize}px`;
+                initBox.style.fontSize = `${avatarSize * 0.4}px`;
+                initBox.textContent = initialsText;
+                wrapper.appendChild(initBox);
+            }
+
+            // Typography injection if enough space
+            const showText = isDrilldown ? (w > 100 && h > 100) : (isWide ? w > 140 : (isTall ? h > 140 : w > 90 && h > 90));
+            if (showText) {
+                const textBox = document.createElement('div');
+                textBox.className = 'treemap-smart-text';
+                if (isWide) { textBox.style.alignItems = 'flex-start'; textBox.style.textAlign = 'left'; }
+                else { textBox.style.alignItems = 'center'; textBox.style.textAlign = 'center'; }
+
+                const nameEl = document.createElement('div');
+                nameEl.className = 'treemap-smart-name';
+                nameEl.style.fontSize = `${clamp(minDim * 0.15, 12, isDrilldown ? 22 : 16)}px`;
+                nameEl.textContent = name;
+                textBox.appendChild(nameEl);
+
+                if (member.role && (w > 160 || h > 160)) {
+                    const roleEl = document.createElement('div');
+                    roleEl.className = 'treemap-smart-role';
+                    roleEl.style.fontSize = `${clamp(minDim * 0.1, 10, isDrilldown ? 14 : 12)}px`;
+                    roleEl.textContent = member.role.charAt(0).toUpperCase() + member.role.slice(1);
+                    textBox.appendChild(roleEl);
+                }
+                wrapper.appendChild(textBox);
+            }
+
+            mtile.appendChild(wrapper);
+
+            // Add traditional tooltip as a fallback for rich info not shown
+            if (!showText || w < 200) {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'treemap-member-tooltip';
+                const tName = document.createElement('div');
+                tName.className = 'treemap-member-tooltip-name';
+                tName.textContent = name;
+                tooltip.appendChild(tName);
+                if (h > 60 && member.affiliation) {
+                    const tAff = document.createElement('div');
+                    tAff.className = 'treemap-member-tooltip-aff';
+                    tAff.textContent = member.affiliation;
+                    tooltip.appendChild(tAff);
+                }
+                mtile.appendChild(tooltip);
+            }
+
+            // Async load high-res avatar to replace both image and background
+            if (member.avatar_url && !member.avatar_url.startsWith('http')) {
+                getAvatarUrl(member.avatar_url).then(u => {
+                    if (u) {
+                        const imgs = mtile.querySelectorAll('img');
+                        imgs.forEach(i => i.src = u);
+                        const bgs = mtile.querySelectorAll('.treemap-ambient-bg');
+                        bgs.forEach(b => b.style.backgroundImage = `url(${u})`);
+                    }
+                });
+            }
         }
 
         function renderTreemap(members) {
@@ -529,13 +552,13 @@
 
             const l = t[state.lang] || t.en;
             const byGroup = new Map();
-            const tt = setupGlobalTooltip();
             
             members.forEach(m => {
                 if (!m.affiliation || !m.affiliation.trim()) return;
                 const key = state.groupBy === 'country'
                     ? (m.country ? (state.countries[m.country] || m.country) : "Unknown")
                     : m.affiliation.trim();
+                    
                 if (!byGroup.has(key)) byGroup.set(key, []);
                 byGroup.get(key).push(m);
             });
@@ -556,27 +579,27 @@
             if (state.treemapDrilledGroup) {
                 const drilled = groupRects.find(r => r.name === state.treemapDrilledGroup);
                 if (drilled) {
-                    renderTreemapDrillDown(root, drilled, containerW, containerH, l, tt);
+                    renderTreemapDrillDown(root, drilled, containerW, containerH, l);
                 } else {
                     state.treemapDrilledGroup = null;
-                    renderTreemapOverview(root, groupRects, l, tt);
+                    renderTreemapOverview(root, groupRects, l);
                 }
             } else {
-                renderTreemapOverview(root, groupRects, l, tt);
+                renderTreemapOverview(root, groupRects, l);
             }
 
             if (window.lucide) window.lucide.createIcons();
         }
 
-        function renderTreemapOverview(root, groupRects, l, tt) {
+        function renderTreemapOverview(root, groupRects, l) {
             const frag = document.createDocumentFragment();
 
             const hint = document.createElement('div');
-            hint.className = 'absolute bottom-4 left-1/2 -translate-x-1/2 z-50 text-[11px] font-bold text-slate-500 bg-white/95 backdrop-blur px-4 py-2 rounded-full border border-gray-200 shadow-lg pointer-events-none transition-opacity duration-300';
-            hint.textContent = l.treemapClickDrill || 'Click a group to explore members';
+            hint.className = 'absolute bottom-4 left-1/2 -translate-x-1/2 z-50 text-[11px] font-bold text-slate-500 bg-white/95 backdrop-blur px-4 py-2 rounded-full border border-gray-200 shadow-md pointer-events-none flex items-center gap-2';
+            hint.innerHTML = `<i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-brand-500"></i> <span>${l.treemapClickDrill || 'Click a group to explore'}</span>`;
             frag.appendChild(hint);
 
-            groupRects.forEach(rect => {
+            groupRects.forEach((rect, index) => {
                 const tile = document.createElement('div');
                 tile.className = 'treemap-group-tile';
                 tile.style.left = `${rect.rx}px`;
@@ -584,6 +607,7 @@
                 tile.style.width = `${rect.rw}px`;
                 tile.style.height = `${rect.rh}px`;
                 tile.style.backgroundColor = stringToColor(rect.name);
+                tile.style.animationDelay = `${index * 0.015}s`;
 
                 const isSmall = rect.rw < 100 || rect.rh < 70;
                 const isTiny = rect.rw < 50 || rect.rh < 40;
@@ -606,6 +630,7 @@
                     countSpan.textContent = rect.list.length;
                     if (isSmall) { countSpan.style.fontSize = '9px'; countSpan.style.padding = '1px 5px'; }
                     header.appendChild(countSpan);
+                    
                     tile.appendChild(header);
                 }
 
@@ -615,21 +640,35 @@
 
                 if (!isTiny && rect.rh > 50) {
                     const headerH = isTiny ? 0 : (isSmall ? 24 : 32);
-                    const innerW = rect.rw - 4;
-                    const innerH = rect.rh - headerH - 4;
+                    const innerW = rect.rw;
+                    const innerH = rect.rh - headerH;
                     if (innerW > 20 && innerH > 20) {
                         const maxShow = Math.min(rect.list.length, 30);
                         const memberItems = rect.list.slice(0, maxShow).map(m => ({ member: m, value: 1 }));
                         const memberRects = squarify(memberItems, 0, 0, innerW, innerH);
                         
-                        memberRects.forEach(mr => {
-                            const mtile = createMemberBento(mr, mr.member, tt);
+                        memberRects.forEach((mr, mIdx) => {
+                            const mtile = document.createElement('div');
+                            mtile.className = 'treemap-member-tile';
+                            mtile.style.left = `${mr.rx}px`;
+                            mtile.style.top = `${mr.ry}px`;
+                            mtile.style.width = `${mr.rw}px`;
+                            mtile.style.height = `${mr.rh}px`;
+                            mtile.style.backgroundColor = stringToColorDark(mr.member.full_name || 'M');
+                            mtile.style.animationDelay = `${(index * 0.01) + (mIdx * 0.005)}s`;
+
+                            buildSmartMemberTileContent(mtile, mr.member, mr.rw, mr.rh, false);
+
+                            mtile.onclick = (e) => {
+                                e.stopPropagation();
+                                openProfileModal(mr.member);
+                            };
                             membersArea.appendChild(mtile);
                         });
 
                         if (rect.list.length > maxShow) {
                             const moreLabel = document.createElement('div');
-                            moreLabel.style.cssText = 'position:absolute;bottom:4px;right:6px;font-size:10px;font-weight:800;color:white;text-shadow:0 1px 4px rgba(0,0,0,0.6);pointer-events:none;z-index:10;';
+                            moreLabel.style.cssText = 'position:absolute;bottom:4px;right:6px;font-size:10px;font-weight:800;color:white;text-shadow:0 1px 3px rgba(0,0,0,0.6);pointer-events:none;z-index:40;';
                             moreLabel.textContent = `+${rect.list.length - maxShow}`;
                             membersArea.appendChild(moreLabel);
                         }
@@ -637,7 +676,6 @@
                 }
 
                 tile.onclick = () => {
-                    tt.classList.remove('visible');
                     state.treemapDrilledGroup = rect.name;
                     const list = getFiltered();
                     renderTreemap(list);
@@ -649,7 +687,7 @@
             root.appendChild(frag);
         }
 
-        function renderTreemapDrillDown(root, groupRect, containerW, containerH, l, tt) {
+        function renderTreemapDrillDown(root, groupRect, containerW, containerH, l) {
             const frag = document.createDocumentFragment();
 
             const breadcrumb = document.createElement('div');
@@ -658,7 +696,6 @@
             backBtn.className = 'treemap-breadcrumb-btn';
             backBtn.innerHTML = `<i data-lucide="arrow-left" class="w-4 h-4"></i> ${l.treemapBack || 'Overview'}`;
             backBtn.onclick = () => {
-                tt.classList.remove('visible');
                 state.treemapDrilledGroup = null;
                 const list = getFiltered();
                 renderTreemap(list);
@@ -667,13 +704,13 @@
             
             const groupLabel = document.createElement('span');
             groupLabel.className = 'treemap-breadcrumb-btn';
-            groupLabel.style.cssText = 'cursor:default;background:' + stringToColor(groupRect.name) + ';border-color:' + stringToColor(groupRect.name) + ';color:rgba(0,0,0,0.8);text-shadow:0 1px 0 rgba(255,255,255,0.3);';
+            groupLabel.style.cssText = 'cursor:default;background:' + stringToColor(groupRect.name) + ';border-color:rgba(255,255,255,0.5);color:#0f172a;text-shadow:0 1px 0 rgba(255,255,255,0.4);';
             groupLabel.textContent = `${groupRect.name} (${groupRect.list.length})`;
             breadcrumb.appendChild(groupLabel);
             frag.appendChild(breadcrumb);
 
             const padding = 12;
-            const topOffset = 50;
+            const topOffset = 56;
             const areaW = containerW - padding * 2;
             const areaH = containerH - topOffset - padding;
 
@@ -689,32 +726,43 @@
 
             const memberRects = squarify(memberItems, padding, topOffset, areaW, areaH);
 
-            memberRects.forEach(mr => {
-                const mtile = createMemberBento(mr, mr.member, tt);
-                
-                // Enhance drill-down styling specifically
+            memberRects.forEach((mr, index) => {
+                const mtile = document.createElement('div');
+                mtile.className = 'treemap-member-tile';
+                mtile.style.left = `${mr.rx}px`;
+                mtile.style.top = `${mr.ry}px`;
+                mtile.style.width = `${mr.rw - 4}px`;
+                mtile.style.height = `${mr.rh - 4}px`;
+                mtile.style.backgroundColor = stringToColorDark(mr.member.full_name || 'M');
                 mtile.style.borderRadius = '12px';
-                mtile.style.border = '1px solid rgba(255,255,255,0.4)';
-                mtile.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.2)';
-                
-                const minDim = Math.min(mr.rw, mr.rh);
-                const avSize = clamp(minDim * 0.6, 16, 80);
+                mtile.style.border = '2px solid rgba(255,255,255,0.9)';
+                mtile.style.animationDelay = `${index * 0.02}s`;
+
+                buildSmartMemberTileContent(mtile, mr.member, mr.rw, mr.rh, true);
 
                 const connCount = state.connections.filter(c => c.source === mr.member.id || c.target === mr.member.id).length;
-                if (connCount > 0 && mr.rw > 45 && mr.rh > 45) {
+                if (connCount > 0 && mr.rw > 50 && mr.rh > 50) {
                     const badge = document.createElement('div');
-                    badge.style.cssText = 'position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:9999px;pointer-events:none;box-shadow:0 2px 4px rgba(0,0,0,0.2);';
-                    badge.textContent = `${connCount} 🔗`;
+                    badge.className = 'treemap-badge';
+                    badge.style.top = '8px'; badge.style.right = '8px';
+                    badge.style.padding = '2px 8px'; badge.style.fontSize = '10px';
+                    badge.innerHTML = `<i data-lucide="link" class="w-3 h-3 mr-1 opacity-70"></i> ${connCount}`;
                     mtile.appendChild(badge);
                 }
 
-                if (state.isSpeaker.has(mr.member.id) && mr.rw > 45 && mr.rh > 45) {
+                if (state.isSpeaker.has(mr.member.id) && mr.rw > 50 && mr.rh > 50) {
                     const speakerBadge = document.createElement('div');
-                    speakerBadge.style.cssText = 'position:absolute;top:6px;right:6px;background:rgba(245,158,11,0.9);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;pointer-events:none;box-shadow:0 2px 4px rgba(0,0,0,0.2);';
-                    speakerBadge.textContent = '🎤';
+                    speakerBadge.className = 'treemap-badge treemap-badge-speaker';
+                    speakerBadge.style.top = '8px'; speakerBadge.style.left = '8px';
+                    speakerBadge.style.padding = '2px 6px'; speakerBadge.style.fontSize = '10px';
+                    speakerBadge.innerHTML = `<i data-lucide="mic" class="w-3 h-3"></i>`;
                     mtile.appendChild(speakerBadge);
                 }
 
+                mtile.onclick = (e) => {
+                    e.stopPropagation();
+                    openProfileModal(mr.member);
+                };
                 frag.appendChild(mtile);
             });
             root.appendChild(frag);
@@ -793,11 +841,14 @@
 
         function calculatePositions(members) {
             const byGroup = new Map();
+            
             members.forEach(m => {
-                if (!m.affiliation || !m.affiliation.trim()) return; 
+                if (!m.affiliation || !m.affiliation.trim()) return;
+                
                 const key = state.groupBy === 'country' 
                     ? (m.country ? (state.countries[m.country] || m.country) : "Unknown") 
                     : m.affiliation.trim();
+                    
                 if (!byGroup.has(key)) byGroup.set(key, []);
                 byGroup.get(key).push(m);
             });
@@ -852,13 +903,12 @@
                 treemapRoot.style.display = 'block';
                 $('#hoverHint').style.display = 'none';
                 const l = t[state.lang] || t.en;
-                $('#legendContainer').innerHTML = `<div class="flex items-center gap-3 bg-white/95 backdrop-blur px-4 py-2.5 rounded-xl border border-gray-200 shadow-md text-[11px] font-bold text-slate-700"><div class="flex items-center gap-2"><div class="w-4 h-4 rounded-md" style="background:${stringToColor('Sample')}; border: 1px solid rgba(0,0,0,0.1);"></div><span>${l.legendAff || 'Group'}</span></div><div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full" style="background:${stringToColorDark('Sample')}; border: 1px solid rgba(0,0,0,0.2);"></div><span>${l.legendMember || 'Member'}</span></div></div>`;
+                $('#legendContainer').innerHTML = `<div class="flex items-center gap-3 bg-white/90 backdrop-blur p-3 rounded-xl border border-gray-200 shadow-sm text-[11px] font-medium text-slate-600"><div class="flex items-center gap-2"><div class="w-4 h-4 rounded" style="background:${stringToColor('Sample')}; border: 1px solid rgba(0,0,0,0.1);"></div><span>${l.legendAff || 'Group'}</span></div><div class="flex items-center gap-2"><div class="w-4 h-4 rounded" style="background:${stringToColorDark('Sample')}; border: 1px solid rgba(0,0,0,0.1);"></div><span>${l.legendMember || 'Member'}</span></div></div>`;
                 renderTreemap(members);
                 state.cachedNodes = [];
                 return;
             }
 
-            // Bubble mode
             treemapRoot.style.display = 'none';
             treemapRoot.innerHTML = '';
             $('#networkCanvas').style.display = '';
@@ -1017,8 +1067,6 @@
                 const btn = $('#viewToggleBtn'), icon = btn.querySelector('i');
                 state.viewMode = state.viewMode === 'network' ? 'bubble' : 'network';
                 state.treemapDrilledGroup = null;
-                const tt = document.getElementById('treemap-global-tooltip');
-                if(tt) tt.classList.remove('visible');
                 $('#viewModeText').innerText = state.viewMode === 'network' ? (t[state.lang]||t.en).switchBub : (t[state.lang]||t.en).switchNet;
                 if (icon) icon.setAttribute('data-lucide', state.viewMode === 'network' ? 'layout-grid' : 'share-2');
                 state.zoom = 1; state.panOffset = { x: 0, y: 0 };
