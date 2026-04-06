@@ -103,43 +103,25 @@ export async function loadOrgGrid(containerId, lang) {
             const bgImg = org.image_url || 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&q=80&w=800';
             const logoImg = org.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(org.acronym || 'ORG')}&background=random`;
 
-            // Redesigned Card: Removed constrained heights on the image wrapper so it stretches full-height
             return `
             <a href="${org.url || '#'}" target="_blank" class="group relative flex flex-col sm:flex-row bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 h-full">
-                
-                <!-- Accent Sidebar Line -->
                 <div class="absolute left-0 top-0 bottom-0 w-1.5 ${theme.bar} z-10 hidden sm:block"></div>
                 <div class="absolute top-0 left-0 right-0 h-1.5 ${theme.bar} z-10 sm:hidden"></div>
-
-                <!-- Fully stretched background image on the left -->
                 <div class="w-full sm:w-2/5 md:w-1/3 relative overflow-hidden bg-slate-100 flex-shrink-0 min-h-[180px]">
                     <img src="${bgImg}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
                 </div>
-
-                <!-- Card Content on the right -->
                 <div class="flex-1 p-6 sm:p-8 flex flex-col relative sm:pl-10">
-                    
-                    <!-- Desktop Logo Overlay -->
                     <div class="absolute top-6 right-6 w-14 h-14 bg-white rounded-xl shadow-sm border border-gray-100 p-2 items-center justify-center hidden sm:flex">
                         <img src="${logoImg}" class="max-w-full max-h-full object-contain" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(org.acronym || 'ORG')}&background=random'">
                     </div>
-
                     <div class="pr-0 sm:pr-16 mb-4">
                         <h3 class="font-display font-bold text-xl md:text-2xl text-slate-900 leading-tight mb-2 ${theme.text} transition-colors">${org.name || 'Organization'}</h3>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wide">
-                            ${org.acronym || 'ORG'}
-                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wide">${org.acronym || 'ORG'}</span>
                     </div>
-
-                    <!-- Mobile Logo Inline -->
                     <div class="sm:hidden mb-4 w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-100 p-1.5">
                         <img src="${logoImg}" class="w-full h-full object-contain" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(org.acronym || 'ORG')}&background=random'">
                     </div>
-
-                    <!-- Flexible description to fill remaining space -->
-                    <div class="text-sm text-slate-600 prose prose-sm max-w-none flex-1">
-                        ${desc || ''}
-                    </div>
+                    <div class="text-sm text-slate-600 prose prose-sm max-w-none flex-1">${desc || ''}</div>
                 </div>
             </a>`;
         }).join('');
@@ -190,7 +172,6 @@ function copyBelongsToCommittee(item) { return COMMITTEE_KEY_PREFIXES.some(p => 
 function copyBelongsToOrgs(item) { return ORG_KEY_PREFIXES.some(p => item.id.startsWith(p)); }
 
 // -- CLIENT SIDE IMAGE COMPRESSOR --
-// This strictly prevents "exceeded maximum allowed size" errors.
 async function compressImage(file, maxWidth = 1200) {
     if (!file.type.startsWith('image/')) return file;
     
@@ -222,7 +203,7 @@ async function compressImage(file, maxWidth = 1200) {
                         lastModified: Date.now(),
                     });
                     resolve(newFile);
-                }, 'image/jpeg', 0.85); // 85% quality avoids massive file sizes
+                }, 'image/jpeg', 0.85); 
             };
             img.onerror = () => resolve(file);
         };
@@ -263,8 +244,6 @@ async function processImageUpload(panel, type, id, folder) {
 
     if (input && input.files && input.files.length > 0) {
         let originalFile = input.files[0];
-        
-        // Dynamically set compression size based on where it's going
         const maxWidth = folder === 'organizations' ? 1600 : 800;
         const file = await compressImage(originalFile, maxWidth);
 
@@ -329,6 +308,12 @@ const ADMIN_STYLES = `
     .copy-type-rich { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
     
     .page-section-header { position: sticky; top: 0; z-index: 5; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+
+    /* Drag and Drop Specific Styles */
+    .is-editing .drag-handle { display: none !important; }
+    .card-editable.opacity-50 { z-index: 50; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+    .drag-active-top { border-top-width: 3px !important; border-top-color: #6366f1 !important; border-top-style: solid !important; }
+    .drag-active-bottom { border-bottom-width: 3px !important; border-bottom-color: #6366f1 !important; border-bottom-style: solid !important; }
 </style>
 `;
 
@@ -376,11 +361,11 @@ export async function renderCopyTab(containerId, authState) {
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h3 class="font-bold text-xl text-slate-800">Committee Members</h3>
-                        <p class="text-sm text-slate-500 mt-1">Page copy and member cards. Click any to edit inline.</p>
+                        <p class="text-sm text-slate-500 mt-1">Drag handles to reorder members. Click any card to edit.</p>
                     </div>
                 </div>
                 <div id="committee-copy-cards" class="section-copy-block space-y-3 mb-6"></div>
-                <div id="committee-admin-grid" class="space-y-3"></div>
+                <div id="committee-admin-grid"></div>
             </div>
 
             <!-- Organizations Tab -->
@@ -388,11 +373,11 @@ export async function renderCopyTab(containerId, authState) {
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h3 class="font-bold text-xl text-slate-800">Partner Organizations</h3>
-                        <p class="text-sm text-slate-500 mt-1">Page copy and organization cards. Click any to edit inline.</p>
+                        <p class="text-sm text-slate-500 mt-1">Drag handles to reorder organizations. Click any card to edit.</p>
                     </div>
                 </div>
                 <div id="orgs-copy-cards" class="section-copy-block space-y-3 mb-6"></div>
-                <div id="orgs-admin-grid" class="space-y-3"></div>
+                <div id="orgs-admin-grid"></div>
             </div>
         </div>
     `;
@@ -418,6 +403,95 @@ function setupTabs() {
 }
 
 // ==========================================
+// DRAG AND DROP HANDLER
+// ==========================================
+function setupDragAndDrop(containerId, dataArray, tableName, renderFn) {
+    const grid = document.getElementById(containerId);
+    const listWrapper = grid.querySelector('.sortable-list');
+    if (!listWrapper) return;
+
+    let draggedItem = null;
+
+    const cards = listWrapper.querySelectorAll('.card-editable');
+    cards.forEach(card => {
+        const handle = card.querySelector('.drag-handle');
+        if (handle) {
+            handle.addEventListener('mousedown', () => card.setAttribute('draggable', 'true'));
+            handle.addEventListener('mouseup', () => card.setAttribute('draggable', 'false'));
+            handle.addEventListener('mouseleave', () => card.setAttribute('draggable', 'false'));
+        }
+
+        card.addEventListener('dragstart', function(e) {
+            draggedItem = this;
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => this.classList.add('opacity-50', 'scale-[0.98]'), 0);
+        });
+
+        card.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (this === draggedItem) return;
+            
+            const bounding = this.getBoundingClientRect();
+            const offset = bounding.y + (bounding.height / 2);
+            if (e.clientY - offset > 0) {
+                this.classList.add('drag-active-bottom');
+                this.classList.remove('drag-active-top');
+            } else {
+                this.classList.add('drag-active-top');
+                this.classList.remove('drag-active-bottom');
+            }
+        });
+
+        card.addEventListener('dragleave', function() {
+            this.classList.remove('drag-active-top', 'drag-active-bottom');
+        });
+
+        card.addEventListener('drop', async function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-active-top', 'drag-active-bottom');
+            if (draggedItem === this || !draggedItem) return;
+
+            const allCards = [...listWrapper.querySelectorAll('.card-editable')];
+            const draggedIdx = allCards.indexOf(draggedItem);
+            let targetIdx = allCards.indexOf(this);
+
+            const bounding = this.getBoundingClientRect();
+            const offset = bounding.y + (bounding.height / 2);
+            if (e.clientY - offset > 0) targetIdx++; 
+            if (draggedIdx < targetIdx) targetIdx--; 
+
+            // Reorder Array
+            const movedData = dataArray.splice(draggedIdx, 1)[0];
+            dataArray.splice(targetIdx, 0, movedData);
+
+            // Re-assign display_order
+            dataArray.forEach((item, i) => item.display_order = i);
+
+            // Re-render UI Instantly
+            renderFn();
+            setFlash('Saving new order...', 1000);
+
+            // Background save to Supabase
+            try {
+                await Promise.all(dataArray.map(item => 
+                    supabase.from(tableName).update({ display_order: item.display_order }).eq('id', item.id)
+                ));
+            } catch (err) {
+                console.error("Error saving order:", err);
+            }
+        });
+
+        card.addEventListener('dragend', function() {
+            this.classList.remove('opacity-50', 'scale-[0.98]');
+            draggedItem = null;
+            cards.forEach(c => c.classList.remove('drag-active-top', 'drag-active-bottom'));
+        });
+    });
+}
+
+
+// ==========================================
 // SITE COPY LOGIC
 // ==========================================
 
@@ -436,18 +510,15 @@ async function loadAllCopy(authState) {
         else generalCopyData.push(item);
     });
 
-    // General Copy Render
     const generalContainer = document.getElementById('general-content');
     const loading = document.getElementById('general-loading');
     renderGeneralCopyCards(generalContainer);
     loading.classList.add('hidden');
     generalContainer.classList.remove('hidden');
 
-    // Section Specific Copy Render
     renderSectionCopyCards('committee-copy-cards', committeeCopyData, PAGE_META.committee);
     renderSectionCopyCards('orgs-copy-cards', orgsCopyData, PAGE_META.network);
 
-    // Filter Logic
     const searchInput = document.getElementById('copy-search');
     if (searchInput) {
         searchInput.addEventListener('input', () => {
@@ -714,7 +785,6 @@ async function saveCopyCard(id, panel) {
             collapseCopyCard(id);
             const gc = document.getElementById('general-content');
             
-            // Re-render the container to reflect new text
             if (gc && generalCopyData.find(c => c.id === id)) renderGeneralCopyCards(gc);
             if (committeeCopyData.find(c => c.id === id)) renderSectionCopyCards('committee-copy-cards', committeeCopyData, PAGE_META.committee);
             if (orgsCopyData.find(c => c.id === id)) renderSectionCopyCards('orgs-copy-cards', orgsCopyData, PAGE_META.network);
@@ -731,7 +801,7 @@ async function saveCopyCard(id, panel) {
 
 
 // ==========================================
-// COMMITTEE ADMIN (WITH COMPRESSION UPLOAD)
+// COMMITTEE ADMIN (WITH DnD & UPLOADS)
 // ==========================================
 
 let committeeData = [];
@@ -739,18 +809,24 @@ let committeeData = [];
 async function loadCommitteeAdmin() {
     const { data } = await supabase.from('committee_members').select('*').order('display_order');
     committeeData = data || [];
-    renderCommitteeCards(document.getElementById('committee-admin-grid'));
+    renderCommitteeCards();
 }
 
-function renderCommitteeCards(grid) {
-    grid.innerHTML = committeeData.map((m, idx) => renderMemberCard(m, idx)).join('') + `
+function renderCommitteeCards() {
+    const grid = document.getElementById('committee-admin-grid');
+    grid.innerHTML = `
+        <div class="sortable-list space-y-3">
+            ${committeeData.map((m, idx) => renderMemberCard(m, idx)).join('')}
+        </div>
         <button class="adm-btn-add mt-4" id="addMemberBtn">
             <i data-lucide="plus-circle" class="w-5 h-5"></i> Add New Member
         </button>`;
         
     grid.querySelectorAll('.member-card-view').forEach(card => {
         card.addEventListener('click', (e) => { 
-            if (!e.target.closest('.card-action-btn')) expandMemberCard(card.dataset.id); 
+            if (!e.target.closest('.card-action-btn') && !e.target.closest('.drag-handle')) {
+                expandMemberCard(card.dataset.id); 
+            }
         });
     });
     
@@ -762,6 +838,10 @@ function renderCommitteeCards(grid) {
     });
     
     document.getElementById('addMemberBtn').onclick = () => addNewMember();
+    
+    // Attach Drag and Drop
+    setupDragAndDrop('committee-admin-grid', committeeData, 'committee_members', renderCommitteeCards);
+    
     if (window.lucide) window.lucide.createIcons();
 }
 
@@ -772,8 +852,14 @@ function renderMemberCard(m, idx) {
     return `
     <div class="card-editable rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden fade-up-in" style="animation-delay: ${idx * 40}ms" data-member-id="${m.id}" id="member-card-${m.id}">
         <!-- VIEW MODE -->
-        <div class="member-card-view cursor-pointer" data-id="${m.id}">
-            <div class="group relative flex min-h-[130px]">
+        <div class="member-card-view cursor-pointer flex" data-id="${m.id}">
+            
+            <!-- Drag Handle -->
+            <div class="drag-handle w-10 flex items-center justify-center cursor-grab hover:bg-slate-100 transition-colors border-r border-gray-100 flex-shrink-0 text-slate-300 hover:text-slate-500">
+                <i data-lucide="grip-vertical" class="w-5 h-5"></i>
+            </div>
+
+            <div class="group relative flex flex-1 min-h-[130px]">
                 <div class="w-1.5 flex-shrink-0" style="background: ${barColor}"></div>
                 <div class="w-28 relative overflow-hidden flex-shrink-0 bg-gray-100">
                     <img src="${m.image_url || ''}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(m.name || 'M')}&background=f1f5f9&color=64748b&bold=true'" loading="lazy">
@@ -782,7 +868,7 @@ function renderMemberCard(m, idx) {
                 <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
                     <div class="absolute top-3 right-3 flex items-center gap-1.5">
                         <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-gray-100 ${theme.badge}">${m.badge_text || 'ASF'}</span>
-                        <span class="text-[9px] font-mono text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded">#${m.display_order || 0}</span>
+                        <span class="text-[9px] font-mono text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded">#${idx + 1}</span>
                         <button class="card-action-btn card-delete-btn p-1 rounded hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors" data-id="${m.id}" title="Remove member"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                     </div>
                     <div class="pr-24">
@@ -807,10 +893,9 @@ function renderMemberCard(m, idx) {
                     <div><label class="adm-label"><span class="inline-flex items-center gap-1"><img src="https://flagcdn.com/w20/us.png" class="w-3 h-2.5 rounded-sm"> Role</span></label><input type="text" class="adm-input me-role-en" value="${escapeHtml(m.role_en || '')}"></div>
                     <div><label class="adm-label"><span class="inline-flex items-center gap-1"><img src="https://flagcdn.com/w20/es.png" class="w-3 h-2.5 rounded-sm"> Rol</span></label><input type="text" class="adm-input me-role-es" value="${escapeHtml(m.role_es || '')}"></div>
                 </div>
+                
                 <div class="grid grid-cols-12 gap-3">
-                    
-                    <!-- NEW UPLOADER SECTION -->
-                    <div class="col-span-12 md:col-span-7">
+                    <div class="col-span-12 md:col-span-8">
                         <label class="adm-label">Profile Image</label>
                         <div class="flex items-center gap-3 mt-1">
                             <div class="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden border border-gray-200 shrink-0">
@@ -831,10 +916,9 @@ function renderMemberCard(m, idx) {
                         </div>
                     </div>
 
-                    <div class="col-span-6 md:col-span-2"><label class="adm-label">Order</label><input type="number" class="adm-input me-order" value="${m.display_order || 0}"></div>
-                    <div class="col-span-6 md:col-span-3">
+                    <div class="col-span-12 md:col-span-4">
                         <label class="adm-label">Theme</label>
-                        <div class="flex items-center gap-1.5 mt-1.5">
+                        <div class="flex items-center gap-2 mt-1.5">
                             ${THEME_OPTIONS.map(t => `<div class="theme-dot ${m.color_theme === t.value ? 'active' : ''}" style="background: ${t.dot}" data-theme="${t.value}" title="${t.label}"></div>`).join('')}
                         </div>
                     </div>
@@ -877,7 +961,6 @@ function expandMemberCard(id) {
         quillRegistry.set(`member-bio-es-${id}`, new Quill(editPanel.querySelector('.me-bio-es'), { theme: 'snow', modules: { toolbar: [['bold', 'italic'], ['clean']] } }));
     }
 
-    // Attach Image uploader listeners
     setupImageUploader(editPanel, 'me-img', id);
 
     editPanel.querySelectorAll('.theme-dot').forEach(dot => {
@@ -911,7 +994,6 @@ async function saveMemberCard(id, panel) {
     saveBtn.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Saving…`;
     saveBtn.disabled = true;
 
-    // Process File Uploads first
     const imageUrl = await processImageUpload(panel, 'me-img', id, 'committee');
 
     const payload = {
@@ -921,7 +1003,6 @@ async function saveMemberCard(id, panel) {
         role_en: panel.querySelector('.me-role-en').value,
         role_es: panel.querySelector('.me-role-es').value,
         image_url: imageUrl,
-        display_order: parseInt(panel.querySelector('.me-order').value) || 0,
         color_theme: panel.querySelector('.theme-dot.active')?.dataset.theme || 'purple',
         description_en: quillRegistry.get(`member-bio-en-${id}`)?.root.innerHTML || '',
         description_es: quillRegistry.get(`member-bio-es-${id}`)?.root.innerHTML || '',
@@ -939,7 +1020,7 @@ async function saveMemberCard(id, panel) {
         
         setTimeout(() => { 
             collapseMemberCard(id); 
-            renderCommitteeCards(document.getElementById('committee-admin-grid')); 
+            renderCommitteeCards(); 
             setFlash('Member updated', 1500); 
         }, 600);
     } else { 
@@ -967,7 +1048,7 @@ async function addNewMember() {
     const { data, error } = await supabase.from('committee_members').insert([payload]).select();
     if (!error && data) {
         committeeData.push(data[0]); 
-        renderCommitteeCards(document.getElementById('committee-admin-grid'));
+        renderCommitteeCards();
         setTimeout(() => expandMemberCard(data[0].id), 100); 
         setFlash('Member added', 2000);
     } else { 
@@ -984,7 +1065,7 @@ async function deleteMember(id) {
         if (card) {
             card.style.transition = 'all 0.3s'; card.style.opacity = '0'; card.style.transform = 'scale(0.95) translateY(-8px)'; card.style.maxHeight = card.offsetHeight + 'px';
             setTimeout(() => { card.style.maxHeight = '0'; card.style.padding = '0'; card.style.margin = '0'; card.style.border = 'none'; }, 200);
-            setTimeout(() => renderCommitteeCards(document.getElementById('committee-admin-grid')), 500);
+            setTimeout(() => renderCommitteeCards(), 500);
         }
         setFlash('Member removed', 1500);
     }
@@ -992,7 +1073,7 @@ async function deleteMember(id) {
 
 
 // ==========================================
-// ORGANIZATIONS ADMIN (WITH COMPRESSION UPLOAD)
+// ORGANIZATIONS ADMIN (WITH DnD & UPLOADS)
 // ==========================================
 
 let orgsData = [];
@@ -1000,18 +1081,24 @@ let orgsData = [];
 async function loadOrgsAdmin() {
     const { data } = await supabase.from('partner_organizations').select('*').order('display_order');
     orgsData = data || [];
-    renderOrgCards(document.getElementById('orgs-admin-grid'));
+    renderOrgCards();
 }
 
-function renderOrgCards(grid) {
-    grid.innerHTML = orgsData.map((o, idx) => renderOrgCard(o, idx)).join('') + `
+function renderOrgCards() {
+    const grid = document.getElementById('orgs-admin-grid');
+    grid.innerHTML = `
+        <div class="sortable-list space-y-3">
+            ${orgsData.map((o, idx) => renderOrgCard(o, idx)).join('')}
+        </div>
         <button class="adm-btn-add mt-4" id="addOrgBtn">
             <i data-lucide="plus-circle" class="w-5 h-5"></i> Add New Organization
         </button>`;
         
     grid.querySelectorAll('.org-card-view').forEach(card => {
         card.addEventListener('click', (e) => { 
-            if (!e.target.closest('.card-action-btn')) expandOrgCard(card.dataset.id); 
+            if (!e.target.closest('.card-action-btn') && !e.target.closest('.drag-handle')) {
+                expandOrgCard(card.dataset.id); 
+            }
         });
     });
     
@@ -1023,6 +1110,10 @@ function renderOrgCards(grid) {
     });
     
     document.getElementById('addOrgBtn').onclick = () => addNewOrg();
+    
+    // Attach Drag and Drop
+    setupDragAndDrop('orgs-admin-grid', orgsData, 'partner_organizations', renderOrgCards);
+
     if (window.lucide) window.lucide.createIcons();
 }
 
@@ -1033,8 +1124,14 @@ function renderOrgCard(o, idx) {
     return `
     <div class="card-editable rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden fade-up-in" style="animation-delay: ${idx * 40}ms" data-org-id="${o.id}" id="org-card-${o.id}">
         <!-- VIEW MODE -->
-        <div class="org-card-view cursor-pointer member-card-preview" data-id="${o.id}">
-            <div class="group relative flex min-h-[100px]">
+        <div class="org-card-view cursor-pointer flex" data-id="${o.id}">
+            
+            <!-- Drag Handle -->
+            <div class="drag-handle w-10 flex items-center justify-center cursor-grab hover:bg-slate-100 transition-colors border-r border-gray-100 flex-shrink-0 text-slate-300 hover:text-slate-500">
+                <i data-lucide="grip-vertical" class="w-5 h-5"></i>
+            </div>
+
+            <div class="group relative flex flex-1 min-h-[100px]">
                 <div class="w-1.5 flex-shrink-0" style="background: ${barColor}"></div>
                 <div class="w-20 relative overflow-hidden flex-shrink-0 bg-slate-50 flex items-center justify-center p-2">
                     <img src="${o.logo_url || ''}" class="w-full h-full object-contain" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(o.acronym || 'O')}&background=f1f5f9&color=64748b'" loading="lazy">
@@ -1043,7 +1140,7 @@ function renderOrgCard(o, idx) {
                 <div class="flex-1 p-4 flex flex-col justify-center min-w-0 relative">
                     <div class="absolute top-3 right-3 flex items-center gap-1.5">
                         <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-gray-100 ${theme.badge}">${o.acronym || 'ORG'}</span>
-                        <span class="text-[9px] font-mono text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded">#${o.display_order || 0}</span>
+                        <span class="text-[9px] font-mono text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded">#${idx + 1}</span>
                         <button class="card-action-btn org-delete-btn p-1 rounded hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors" data-id="${o.id}" title="Remove"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                     </div>
                     <div class="pr-28">
@@ -1065,8 +1162,7 @@ function renderOrgCard(o, idx) {
                 </div>
                 <div class="grid grid-cols-12 gap-3">
                     
-                    <!-- NEW LOGO UPLOADER -->
-                    <div class="col-span-6 md:col-span-4">
+                    <div class="col-span-12 md:col-span-4">
                         <label class="adm-label">Logo Image</label>
                         <div class="flex items-center gap-2 mt-1">
                             <div class="w-10 h-10 rounded bg-gray-50 border border-gray-200 shrink-0 p-1">
@@ -1083,8 +1179,7 @@ function renderOrgCard(o, idx) {
                         </div>
                     </div>
 
-                    <!-- NEW BACKGROUND UPLOADER -->
-                    <div class="col-span-6 md:col-span-4">
+                    <div class="col-span-12 md:col-span-4">
                         <label class="adm-label">Background Image</label>
                         <div class="flex items-center gap-2 mt-1">
                             <div class="w-10 h-10 rounded bg-gray-50 border border-gray-200 shrink-0 overflow-hidden">
@@ -1101,10 +1196,9 @@ function renderOrgCard(o, idx) {
                         </div>
                     </div>
 
-                    <div class="col-span-6 md:col-span-1"><label class="adm-label">Order</label><input type="number" class="adm-input oe-order" value="${o.display_order || 0}"></div>
-                    <div class="col-span-6 md:col-span-3">
+                    <div class="col-span-12 md:col-span-4">
                         <label class="adm-label">Theme</label>
-                        <div class="flex items-center gap-1.5 mt-1.5">
+                        <div class="flex items-center gap-1.5 mt-2">
                             ${THEME_OPTIONS.map(t => `<div class="theme-dot ${o.color_theme === t.value ? 'active' : ''}" style="background: ${t.dot}" data-theme="${t.value}" title="${t.label}"></div>`).join('')}
                         </div>
                     </div>
@@ -1147,7 +1241,6 @@ function expandOrgCard(id) {
         quillRegistry.set(`org-desc-es-${id}`, new Quill(editPanel.querySelector('.oe-desc-es'), { theme: 'snow', modules: { toolbar: [['bold', 'italic'], ['clean']] } }));
     }
 
-    // Attach Image Uploader listeners
     setupImageUploader(editPanel, 'oe-logo', id);
     setupImageUploader(editPanel, 'oe-img', id);
 
@@ -1182,7 +1275,6 @@ async function saveOrgCard(id, panel) {
     saveBtn.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Saving…`;
     saveBtn.disabled = true;
 
-    // Process file uploads first
     const logoUrl = await processImageUpload(panel, 'oe-logo', id, 'organizations');
     const bgUrl = await processImageUpload(panel, 'oe-img', id, 'organizations');
 
@@ -1192,7 +1284,6 @@ async function saveOrgCard(id, panel) {
         url: panel.querySelector('.oe-url').value,
         logo_url: logoUrl,
         image_url: bgUrl,
-        display_order: parseInt(panel.querySelector('.oe-order').value) || 0,
         color_theme: panel.querySelector('.theme-dot.active')?.dataset.theme || 'purple',
         description_en: quillRegistry.get(`org-desc-en-${id}`)?.root.innerHTML || '',
         description_es: quillRegistry.get(`org-desc-es-${id}`)?.root.innerHTML || '',
@@ -1210,7 +1301,7 @@ async function saveOrgCard(id, panel) {
         
         setTimeout(() => { 
             collapseOrgCard(id); 
-            renderOrgCards(document.getElementById('orgs-admin-grid')); 
+            renderOrgCards(); 
             setFlash('Organization updated', 1500); 
         }, 600);
     } else { 
@@ -1237,7 +1328,7 @@ async function addNewOrg() {
     const { data, error } = await supabase.from('partner_organizations').insert([payload]).select();
     if (!error && data) {
         orgsData.push(data[0]); 
-        renderOrgCards(document.getElementById('orgs-admin-grid'));
+        renderOrgCards();
         setTimeout(() => expandOrgCard(data[0].id), 100); 
         setFlash('Organization added', 2000);
     } else { 
@@ -1254,7 +1345,7 @@ async function deleteOrg(id) {
         if (card) {
             card.style.transition = 'all 0.3s'; card.style.opacity = '0'; card.style.transform = 'scale(0.95) translateY(-8px)'; card.style.maxHeight = card.offsetHeight + 'px';
             setTimeout(() => { card.style.maxHeight = '0'; card.style.padding = '0'; card.style.margin = '0'; card.style.border = 'none'; }, 200);
-            setTimeout(() => renderOrgCards(document.getElementById('orgs-admin-grid')), 500);
+            setTimeout(() => renderOrgCards(), 500);
         }
         setFlash('Organization removed', 1500);
     }
