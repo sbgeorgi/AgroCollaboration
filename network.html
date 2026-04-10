@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-50 antialiased">
+<html lang="en" class="h-full bg-[#f8fafc] antialiased">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,186 +8,232 @@
     <script src="auth-preloader.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css">
     <script src="theme.js"></script>
     <style>
-        body { overflow-y: auto; }
+        :root { color-scheme: light; }
+        body {
+            overflow-y: auto;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(1200px 800px at 80% -20%, rgba(99,102,241,0.08), transparent 60%),
+                        radial-gradient(1000px 600px at -10% 20%, rgba(14,165,233,0.06), transparent 50%),
+                        #f8fafc;
+        }
+        h1,h2,h3,.font-display { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; letter-spacing: -0.01em; }
         @media (min-width: 768px) { body { overflow: hidden; } }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; background-clip: content-box; border: 2px solid transparent; }
-        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; }
+
+       .no-scrollbar::-webkit-scrollbar { display: none; }
+       .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+       .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+       .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; border-radius: 10px; border: 2px solid transparent; background-clip: content-box;
+        }
+       .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; background-clip: content-box; }
+
         #network-container {
-            cursor: grab; background-color: #f8fafc;
-            background-image: radial-gradient(#e2e8f0 1px, transparent 1px), radial-gradient(#f1f5f9 1px, transparent 1px);
-            background-size: 40px 40px, 10px 10px; background-position: 0 0, 20px 20px;
-            touch-action: none; overflow: hidden; height: 500px; flex-grow: 0; flex-shrink: 0;
+            cursor: grab;
+            background-color: #fcfdff;
+            background-image:
+                radial-gradient(circle at 1px 1px, rgba(148,163,184,0.18) 1px, transparent 0),
+                radial-gradient(circle at 1px 1px, rgba(148,163,184,0.08) 1px, transparent 0);
+            background-size: 32px 32px, 16px 16px;
+            background-position: 0 0, 8px 8px;
+            touch-action: none; overflow: hidden; height: 520px; flex-grow: 0; flex-shrink: 0;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(15,23,42,0.04);
         }
         #network-container:active { cursor: grabbing; }
-        #networkCanvas { transform-origin: 0 0; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; will-change: transform; transform-style: preserve-3d; }
-        #networkNodes, .network-connections { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-        .network-connections { overflow: visible; }
-        .network-node {
+        #network-container::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background: radial-gradient(800px 400px at 50% -10%, rgba(99,102,241,0.06), transparent 70%);
+        }
+        #networkCanvas { transform-origin: 0 0; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; will-change: transform; }
+        #networkNodes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+       .network-node {
             position: absolute; transform: translate(-50%, -50%) translateZ(0);
             backface-visibility: hidden; cursor: pointer; pointer-events: auto; will-change: transform;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.35s cubic-bezier(0.21, 1.02, 0.73, 0.99), filter 0.2s ease;
             user-select: none; -webkit-user-select: none; z-index: 20;
         }
-        .network-node.is-interacting { transition: none !important; z-index: 500 !important; }
-        .network-node.magnified { z-index: 1000 !important; }
-        .group-node { z-index: 5; }
-        .bubble-group { border-radius: 50%; opacity: 0.85; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08); border: 2px solid rgba(255, 255, 255, 0.5); }
-        .bubble-group:hover { opacity: 1; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12); }
-        .bubble-member { border-radius: 50%; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
-        .network-edge { fill: none; stroke: #cbd5e1; stroke-width: 1.5px; stroke-opacity: 0.3; }
-        .collab-edge { fill: none; stroke: #f59e0b; stroke-width: 2px; stroke-opacity: 0.5; stroke-dasharray: 4; }
-        .dock-track { stroke: #cbd5e1; stroke-width: 4px; stroke-linecap: round; opacity: 0.3; }
-        th[data-sort] { user-select: none; }
-        th.sort-asc::after { content: ' ▲'; font-size: 10px; margin-left: 4px; color: #4f46e5; }
-        th.sort-desc::after { content: ' ▼'; font-size: 10px; margin-left: 4px; color: #4f46e5; }
-        #dragHandle {
-            height: 10px; background: #f1f5f9; cursor: row-resize; width: 100%; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
-            border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
-            transition: background-color 0.2s; touch-action: none;
+       .network-node.is-interacting { transition: none!important; z-index: 500!important; filter: drop-shadow(0 8px 24px rgba(15,23,42,0.12)); }
+       .network-node.magnified { z-index: 1000!important; }
+
+       .bubble-group {
+            border-radius: 50%;
+            backdrop-filter: blur(12px) saturate(1.2);
+            border: 1px solid rgba(255,255,255,0.9);
+            box-shadow:
+                0 30px 60px -20px rgba(15,23,42,0.25),
+                0 8px 20px -8px rgba(15,23,42,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.9),
+                inset 0 -20px 40px rgba(99,102,241,0.06);
+            opacity: 0.85;
         }
-        #dragHandle:hover, #dragHandle.dragging { background: #e2e8f0; }
-        #dragHandle::after { content: ''; width: 40px; height: 4px; background-color: #cbd5e1; border-radius: 2px; }
+       .bubble-group:hover { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+
+       .bubble-member { border-radius: 50%; }
+       .bubble-member > div {
+            box-shadow: 0 4px 12px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.08), inset 0 0 0 1px rgba(255,255,255,0.9);
+            transition: all 0.2s cubic-bezier(0.2, 0, 1);
+        }
+       .bubble-member:hover > div { box-shadow: 0 8px 24px rgba(15,23,42,0.12), 0 2px 6px rgba(15,23,42,0.08), inset 0 0 0 1px rgba(255,255,255,1); }
+
+        th[data-sort] { user-select: none; position: relative; }
+        th.sort-asc::after, th.sort-desc::after {
+            content: ''; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent;
+        }
+        th.sort-asc::after { border-bottom: 5px solid #6366f1; }
+        th.sort-desc::after { border-top: 5px solid #6366f1; }
+
+        #dragHandle {
+            height: 12px; background: transparent; cursor: row-resize; width: 100%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; position: relative;
+            touch-action: none; z-index: 30;
+        }
+        #dragHandle::before {
+            content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(241,245,249,0.8), rgba(248,250,252,0.9));
+            border-top: 1px solid rgba(226,232,240,0.8); border-bottom: 1px solid rgba(226,232,240,0.8);
+            backdrop-filter: blur(4px);
+        }
+        #dragHandle::after {
+            content: ''; width: 44px; height: 4px; background: #cbd5e1; border-radius: 2px;
+            transition: all 0.2s; position: relative; box-shadow: inset 0 1px 1px rgba(255,255,255,0.8);
+        }
+        #dragHandle:hover::after, #dragHandle.dragging::after { width: 56px; background: #94a3b8; }
+
         #flash {
-            position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-150%);
-            background-color: #0f172a; color: white; padding: 10px 20px; border-radius: 9999px;
-            font-weight: 500; font-size: 0.9rem; z-index: 9999; opacity: 0;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            position: fixed; top: 88px; left: 50%; transform: translateX(-50%) translateY(-150%);
+            background: rgba(15,23,42,0.92); color: white; padding: 10px 18px; border-radius: 9999px;
+            font-weight: 500; font-size: 0.875rem; z-index: 9999; opacity: 0; backdrop-filter: blur(12px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="text-slate-800 flex flex-col h-full selection:bg-brand-100 selection:text-brand-900 font-sans bg-gray-50">
+<body class="text-slate-800 flex flex-col h-full selection:bg-violet-100 selection:text-violet-900">
     <div id="flash" role="status" aria-live="polite"></div>
 
-    <main class="flex-1 relative bg-gray-50 overflow-visible md:overflow-hidden">
-        <div id="loadingScreen" class="absolute inset-0 bg-gray-50 z-[60] flex flex-col items-center justify-center transition-opacity duration-500 fixed md:absolute">
-            <div class="w-8 h-8 border-2 border-gray-200 border-t-brand-600 rounded-full animate-spin mb-4"></div>
-            <span class="text-sm font-medium text-slate-500 animate-pulse" data-i18n="optimizing">Optimizing Layout...</span>
+    <main class="flex-1 relative overflow-visible md:overflow-hidden">
+        <div id="loadingScreen" class="absolute inset-0 bg-[#f8fafc]/90 backdrop-blur-xl z-[60] flex flex-col items-center justify-center transition-opacity duration-500 fixed md:absolute">
+            <div class="relative">
+                <div class="w-12 h-12 rounded-full border-[3px] border-slate-200"></div>
+                <div class="w-12 h-12 rounded-full border-[3px] border-violet-600 border-t-transparent animate-spin absolute inset-0"></div>
+            </div>
+            <span class="text-[13px] font-medium text-slate-600 mt-4 tracking-wide" data-i18n="optimizing">Optimizing Layout...</span>
         </div>
-        <div id="signinGate" class="absolute inset-0 bg-gray-50/90 backdrop-blur-sm z-[55] flex items-center justify-center fixed md:absolute" style="display:none;">
-            <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 max-w-md text-center mx-4">
-                <div class="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="lock" class="w-6 h-6 text-brand-600"></i></div>
-                <h2 class="font-display font-bold text-2xl text-slate-900 mb-2" data-i18n="pageTitle">Member Network</h2>
-                <p class="text-slate-500 mb-6 text-sm" data-i18n="signinPrompt">Sign in to visualize connections.</p>
-                <a href="signin.html" class="inline-flex items-center justify-center px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors w-full" data-i18n="signinBtn">Sign In</a>
+        <div id="signinGate" class="absolute inset-0 bg-[#f8fafc]/80 backdrop-blur-2xl z-[55] flex items-center justify-center fixed md:absolute" style="display:none;">
+            <div class="bg-white/90 backdrop-blur-2xl rounded-[28px] shadow-2xl shadow-violet-500/10 border border-white p-8 max-w-md text-center mx-4 ring-1 ring-slate-900/5">
+                <div class="w-14 h-14 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-violet-500/20"><i data-lucide="lock" class="w-7 h-7 text-white"></i></div>
+                <h2 class="font-display font-bold text-[26px] text-slate-900 mb-2 tracking-tight" data-i18n="pageTitle">Member Network</h2>
+                <p class="text-slate-500 mb-7 text-[14px] leading-relaxed" data-i18n="signinPrompt">Sign in to visualize connections.</p>
+                <a href="signin.html" class="inline-flex items-center justify-center px-6 py-3 bg-slate-900 hover:bg-black text-white font-semibold rounded-xl transition-all shadow-lg shadow-slate-900/20 hover:shadow-xl hover:-translate-y-0.5 w-full" data-i18n="signinBtn">Sign In</a>
             </div>
         </div>
 
-        <div class="max-w-[1800px] mx-auto w-full h-auto md:h-full flex flex-col md:flex-row gap-4 p-4 md:p-6 relative">
-            <aside class="flex-none w-full md:w-80 bg-white border border-gray-200 rounded-2xl flex flex-col shadow-sm overflow-hidden h-auto md:h-full shrink-0">
-                <div class="p-5 border-b border-gray-100 space-y-4">
-                    <h2 class="font-display font-bold text-lg text-brand-700 flex items-center gap-2">
-                        <i data-lucide="share-2" class="w-5 h-5"></i> <span data-i18n="explore">Explore Network</span>
+        <div class="max-w-[1800px] mx-auto w-full h-auto md:h-full flex flex-col md:flex-row gap-5 p-4 md:p-6 relative">
+            <aside class="flex-none w-full md:w-[320px] bg-white/70 backdrop-blur-2xl border border-white/60 rounded-[24px] flex flex-col shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/5 overflow-hidden h-auto md:h-full shrink-0">
+                <div class="p-6 border-b border-slate-100/70 space-y-4">
+                    <h2 class="font-display font-bold text-[18px] text-slate-900 flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-md shadow-violet-500/20"><i data-lucide="share-2" class="w-4 h-4 text-white"></i></span>
+                        <span data-i18n="explore">Explore Network</span>
                     </h2>
-                    <div class="relative z-30">
-                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                        <input type="text" id="searchInput" class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-100 outline-none" placeholder="Search people, orgs..." data-i18n-placeholder="searchPlaceholder">
+                    <div class="relative group">
+                        <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-violet-600 transition-colors"></i>
+                        <input type="text" id="searchInput" class="w-full pl-10 pr-4 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-[13.5px] focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 outline-none transition-all placeholder:text-slate-400" placeholder="Search people, orgs..." data-i18n-placeholder="searchPlaceholder">
                     </div>
                     <div class="grid grid-cols-1 gap-3">
                         <div>
                             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block" data-i18n="groupBy">Group Nodes By</label>
                             <div class="relative">
-                                <select id="groupByFilter" class="w-full appearance-none bg-slate-50 border border-gray-200 text-slate-700 text-xs font-bold rounded-lg pl-3 pr-8 py-2.5 focus:ring-2 focus:ring-brand-100 outline-none">
+                                <select id="groupByFilter" class="w-full appearance-none bg-slate-50/70 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl pl-3.5 pr-9 py-2.5 focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 outline-none transition-all hover:bg-white">
                                     <option value="affiliation" data-i18n="optOrg">Organization</option>
                                     <option value="country" data-i18n="optCountry">Country</option>
                                 </select>
-                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div class="relative">
-                                <select id="eventFilter" class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none"><option value="all" data-i18n="allEvents">All Events</option></select>
-                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                                <select id="eventFilter" class="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-xl pl-3 pr-8 py-2.5 focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 outline-none transition-all"><option value="all" data-i18n="allEvents">All Events</option></select>
+                                <i data-lucide="chevron-down" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
                             </div>
                             <div class="relative">
-                                <select id="countryFilter" class="w-full appearance-none bg-white border border-gray-200 text-slate-700 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-brand-100 outline-none"><option value="all" data-i18n="allCountries">All Countries</option></select>
-                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                                <select id="countryFilter" class="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-xl pl-3 pr-8 py-2.5 focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 outline-none transition-all"><option value="all" data-i18n="allCountries">All Countries</option></select>
+                                <i data-lucide="chevron-down" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
                             </div>
                         </div>
                     </div>
-                    <div class="flex flex-wrap gap-2 pt-1">
-                        <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white" data-role="all" data-i18n="roleAll">All Roles</button>
-                        <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50" data-role="speakers" data-i18n="roleSpeakers">Speakers</button>
-                        <button class="px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50" data-role="organizers" data-i18n="roleHosts">Hosts</button>
+                    <div class="flex flex-wrap gap-1.5 pt-1">
+                        <button class="px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all shadow-sm bg-slate-900 text-white ring-1 ring-slate-900" data-role="all" data-i18n="roleAll">All Roles</button>
+                        <button class="px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 bg-white" data-role="speakers" data-i18n="roleSpeakers">Speakers</button>
+                        <button class="px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 bg-white" data-role="organizers" data-i18n="roleHosts">Hosts</button>
                     </div>
                 </div>
                 <div class="flex-1 overflow-y-auto custom-scrollbar p-5 min-h-[200px] md:min-h-0">
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center justify-between mb-3">
                         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="interests">Interests & Tags</label>
-                        <button id="clearFiltersBtn" class="text-[10px] font-bold text-brand-600 hover:underline" data-i18n="clear">Clear</button>
+                        <button id="clearFiltersBtn" class="text-[11px] font-semibold text-violet-600 hover:text-violet-700 transition-colors" data-i18n="clear">Clear</button>
                     </div>
                     <div id="selectedTagsContainer" class="flex flex-wrap gap-1.5 mb-3 empty:hidden"></div>
                     <div id="tagFilters" class="space-y-0.5"></div>
                 </div>
-                <div class="p-4 bg-slate-50 border-t border-gray-200 mt-auto">
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                            <span id="statMembers" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
-                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statMembers">Members</span>
+                <div class="p-4 bg-gradient-to-b from-slate-50/50 to-slate-50 border-t border-slate-100 mt-auto">
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center group hover:shadow-md transition-all">
+                            <span id="statMembers" class="block text-[22px] font-display font-bold text-slate-900 leading-none mb-1">0</span>
+                            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider" data-i18n="statMembers">Members</span>
                         </div>
-                        <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                            <span id="statConnections" class="block text-xl font-display font-bold text-brand-600 leading-none mb-0.5">0</span>
-                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statConnections">Connections</span>
+                        <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center group hover:shadow-md transition-all">
+                            <span id="statConnections" class="block text-[22px] font-display font-bold text-violet-600 leading-none mb-1">0</span>
+                            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider" data-i18n="statConnections">Connections</span>
                         </div>
-                        <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                            <span id="statOrgs" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
-                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statOrgs">Orgs</span>
+                        <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center group hover:shadow-md transition-all">
+                            <span id="statOrgs" class="block text-[22px] font-display font-bold text-slate-900 leading-none mb-1">0</span>
+                            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider" data-i18n="statOrgs">Orgs</span>
                         </div>
-                        <div class="bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-center">
-                            <span id="statEvents" class="block text-xl font-display font-bold text-slate-800 leading-none mb-0.5">0</span>
-                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="statEvents">Events</span>
+                        <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center group hover:shadow-md transition-all">
+                            <span id="statEvents" class="block text-[22px] font-display font-bold text-slate-900 leading-none mb-1">0</span>
+                            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider" data-i18n="statEvents">Events</span>
                         </div>
                     </div>
                 </div>
             </aside>
 
             <div class="flex-1 flex flex-col min-w-0 h-auto md:h-full relative" id="right-column">
-                <section id="network-container" class="bg-white border border-gray-200 rounded-t-2xl shadow-sm relative overflow-hidden group">
+                <section id="network-container" class="bg-white/80 backdrop-blur-xl border border-white/60 rounded-[24px] shadow-xl shadow-slate-200/40 ring-1 ring-slate-900/5 relative overflow-hidden group">
                     <div id="networkCanvas">
-                        <svg class="network-connections" id="networkConnections"></svg>
                         <div id="networkNodes"></div>
                     </div>
-                    <div class="absolute top-4 left-4 flex gap-2 z-40">
-                        <button id="viewToggleBtn" class="flex items-center gap-2 px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all">
-                            <i data-lucide="share-2" class="w-4 h-4 text-brand-500"></i>
-                            <span id="viewModeText" data-i18n="switchNet">Switch to Network</span>
-                        </button>
-                    </div>
                     <div class="absolute top-4 right-4 flex gap-2 z-40">
-                        <div class="flex items-center gap-2 bg-white/90 backdrop-blur border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm text-xs text-slate-600 font-medium">
-                            <i data-lucide="scan-search" class="w-4 h-4 text-brand-500"></i>
+                        <div class="hidden sm:flex items-center gap-2 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-xl px-3 py-2 shadow-xl text-[11px] text-white/90 font-medium">
+                            <i data-lucide="scan-search" class="w-3.5 h-3.5 text-violet-400"></i>
                             <span data-i18n="hoverMagnify">Hover to Magnify</span>
                         </div>
-                        <button id="resetViewBtn" class="px-3 py-1.5 bg-white text-xs font-bold text-slate-600 rounded-lg shadow-sm border border-gray-200 hover:border-brand-300 hover:text-brand-700 transition-all" data-i18n="resetView">Reset View</button>
+                        <button id="resetViewBtn" class="px-3.5 py-2 bg-white/85 backdrop-blur-xl text-[12px] font-semibold text-slate-700 rounded-xl shadow-lg shadow-slate-900/5 border border-white/70 hover:bg-white transition-all hover:-translate-y-0.5 ring-1 ring-slate-900/5" data-i18n="resetView">Reset View</button>
                     </div>
                     <div id="legendContainer" class="absolute bottom-4 left-4 z-40 pointer-events-none"></div>
                 </section>
                 <div id="dragHandle"></div>
-                <section id="table-container" class="bg-white border border-gray-200 rounded-b-2xl shadow-sm flex flex-col overflow-hidden shrink-0 flex-1 min-h-[100px]">
+                <section id="table-container" class="bg-white/70 backdrop-blur-2xl border border-white/60 rounded-[24px] shadow-xl shadow-slate-200/40 ring-1 ring-slate-900/5 flex flex-col overflow-hidden shrink-0 flex-1 min-h-[100px]">
                     <div class="overflow-auto custom-scrollbar flex-1 h-full">
                         <table class="w-full text-left border-collapse">
-                            <thead class="bg-gray-50 sticky top-0 z-20 shadow-sm">
+                            <thead class="bg-white/80 backdrop-blur-xl sticky top-0 z-20 border-b border-slate-100">
                                 <tr>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="name" data-i18n="tblName">Name</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="affiliation" data-i18n="tblAff">Affiliation</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden lg:table-cell" data-sort="interests" data-i18n="tblInterests">Interests</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="role" data-i18n="tblRole">Role</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" data-sort="country" data-i18n="tblCountry">Country</th>
-                                    <th class="py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors text-right" data-sort="connections" data-i18n="tblConn">Connections</th>
+                                    <th class="py-3.5 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors" data-sort="name" data-i18n="tblName">Name</th>
+                                    <th class="py-3.5 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors" data-sort="affiliation" data-i18n="tblAff">Affiliation</th>
+                                    <th class="py-3.5 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors" data-sort="role" data-i18n="tblRole">Role</th>
+                                    <th class="py-3.5 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors" data-sort="country" data-i18n="tblCountry">Country</th>
+                                    <th class="py-3.5 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors text-right" data-sort="connections" data-i18n="tblConn">Connections</th>
                                 </tr>
                             </thead>
-                            <tbody id="members-table-body" class="divide-y divide-gray-100 text-sm text-slate-700"></tbody>
+                            <tbody id="members-table-body" class="divide-y divide-slate-100/70 text-[13.5px] text-slate-700"></tbody>
                         </table>
                     </div>
                 </section>
@@ -204,8 +250,8 @@
         renderLayout('network');
 
         const t = {
-            en: { auth: { signin: "Sign in", signout: "Sign out" }, nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" }, pageTitle: "Member Network", optimizing: "Optimizing Layout...", signinPrompt: "Sign in to visualize connections.", signinBtn: "Sign In", explore: "Explore Network", searchPlaceholder: "Search people, orgs...", groupBy: "Group Nodes By", optOrg: "Organization", optCountry: "Country", allEvents: "All Events", allCountries: "All Countries", roleAll: "All Roles", roleSpeakers: "Speakers", roleHosts: "Hosts", interests: "Interests & Tags", clear: "Clear", statMembers: "Members", statConnections: "Connections", statOrgs: "Orgs", statEvents: "Events", switchNet: "Switch to Network", switchBub: "Switch to Bubbles", hoverMagnify: "Hover to Magnify", resetView: "Reset View", tblName: "Name", tblAff: "Affiliation / Institution", tblInterests: "Interests", tblRole: "Role", tblCountry: "Country", tblConn: "Connections", legendMember: "Member", legendOrg: "Organization", legendAff: "Affiliation / Group", legendCollab: "Collaborator", legendTrack: "Drag vertical track" },
-            es: { auth: { signin: "Ingresar", signout: "Salir" }, nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" }, pageTitle: "Red de Miembros", optimizing: "Optimizando Diseño...", signinPrompt: "Inicia sesión para visualizar conexiones.", signinBtn: "Ingresar", explore: "Explorar Red", searchPlaceholder: "Buscar personas, orgs...", groupBy: "Agrupar Nodos Por", optOrg: "Organización", optCountry: "País", allEvents: "Todos los Eventos", allCountries: "Todos los Países", roleAll: "Todos", roleSpeakers: "Ponentes", roleHosts: "Organizadores", interests: "Intereses y Etiquetas", clear: "Limpiar", statMembers: "Miembros", statConnections: "Conexiones", statOrgs: "Orgs", statEvents: "Eventos", switchNet: "Cambiar a Red", switchBub: "Cambiar a Burbujas", hoverMagnify: "Hover para Ampliar", resetView: "Reiniciar Vista", tblName: "Nombre", tblAff: "Afiliación / Institución", tblInterests: "Intereses", tblRole: "Rol", tblCountry: "País", tblConn: "Conexiones", legendMember: "Miembro", legendOrg: "Organización", legendAff: "Afiliación / Grupo", legendCollab: "Colaborador", legendTrack: "Arrastrar pista vertical" }
+            en: { auth: { signin: "Sign in", signout: "Sign out" }, nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" }, pageTitle: "Member Network", optimizing: "Optimizing Layout...", signinPrompt: "Sign in to visualize connections.", signinBtn: "Sign In", explore: "Explore Network", searchPlaceholder: "Search people, orgs...", groupBy: "Group Nodes By", optOrg: "Organization", optCountry: "Country", allEvents: "All Events", allCountries: "All Countries", roleAll: "All Roles", roleSpeakers: "Speakers", roleHosts: "Hosts", interests: "Interests & Tags", clear: "Clear", statMembers: "Members", statConnections: "Connections", statOrgs: "Orgs", statEvents: "Events", hoverMagnify: "Hover to Magnify", resetView: "Reset View", tblName: "Name", tblAff: "Affiliation / Institution", tblRole: "Role", tblCountry: "Country", tblConn: "Connections", legendMember: "Member", legendOrg: "Organization", legendAff: "Affiliation / Group", legendCollab: "Collaborator", legendTrack: "Drag vertical track" },
+            es: { auth: { signin: "Ingresar", signout: "Salir" }, nav: { schedule: "Programa", archive: "Archivo", about: "Acerca de", network: "Red", map: "Mapa", admin: "Admin" }, pageTitle: "Red de Miembros", optimizing: "Optimizando Diseño...", signinPrompt: "Inicia sesión para visualizar conexiones.", signinBtn: "Ingresar", explore: "Explorar Red", searchPlaceholder: "Buscar personas, orgs...", groupBy: "Agrupar Nodos Por", optOrg: "Organización", optCountry: "País", allEvents: "Todos los Eventos", allCountries: "Todos los Países", roleAll: "Todos", roleSpeakers: "Ponentes", roleHosts: "Organizadores", interests: "Intereses y Etiquetas", clear: "Limpiar", statMembers: "Miembros", statConnections: "Conexiones", statOrgs: "Orgs", statEvents: "Eventos", hoverMagnify: "Hover para Ampliar", resetView: "Reiniciar Vista", tblName: "Nombre", tblAff: "Afiliación / Institución", tblRole: "Rol", tblCountry: "País", tblConn: "Conexiones", legendMember: "Miembro", legendOrg: "Organización", legendAff: "Afiliación / Grupo", legendCollab: "Colaborador", legendTrack: "Arrastrar pista vertical" }
         };
 
         const state = {
@@ -215,12 +261,12 @@
             positions: new Map(), panOffset: { x: 0, y: 0 }, zoom: 1, sort: { key: "connections", dir: "desc" },
             roleFilter: "all", eventFilterId: "all", countryFilterId: "all", groupBy: "affiliation",
             searchQuery: "", selectedTags: new Set(), lang: localStorage.getItem("lang") || "en",
-            isDragging: false, viewMode: 'bubble', currentGroupBaseScale: 1,
+            isDragging: false,
             countries: { "US": "United States", "MX": "Mexico", "CA": "Canada", "CO": "Colombia", "BR": "Brazil", "CL": "Chile", "AR": "Argentina", "PE": "Peru", "ES": "Spain", "FR": "France", "DE": "Germany", "BE": "Belgium", "NL": "Netherlands", "IT": "Italy", "UK": "UK", "GB": "UK", "IN": "India", "CN": "China", "AU": "Australia" }
         };
 
         const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-        const highlight = (text, q) => q && text ? (text+"").replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "ig"), '<span class="bg-yellow-100 text-yellow-800 px-0.5 rounded">$1</span>') : (text || "");
+        const highlight = (text, q) => q && text? (text+"").replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "ig"), '<span class="bg-amber-100 text-amber-900 px-1 rounded-md">$1</span>') : (text || "");
         const debounce = (fn, ms = 200) => { let t = null; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
         const stringToColor = str => `hsl(${Math.abs(str.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % 360}, 55%, 75%)`;
 
@@ -228,7 +274,6 @@
             const l = t[state.lang] || t.en;
             document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.dataset.i18n; if (l[key]) el.innerText = l[key]; });
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const key = el.dataset.i18nPlaceholder; if (l[key]) el.placeholder = l[key]; });
-            const btnLabel = document.getElementById('viewModeText'); if (btnLabel) btnLabel.innerText = state.viewMode === 'network' ? l.switchBub : l.switchNet;
             applyI18n(t, state.lang); populateDropdowns();
             const list = getFiltered(); renderTable(list); if(list.length > 0) renderGraph(list);
         }
@@ -237,7 +282,7 @@
             const l = t[state.lang] || t.en;
             const es = $('#eventFilter'), cs = $('#countryFilter'), ce = es.value, cc = cs.value;
             es.innerHTML = `<option value="all">${l.allEvents}</option>`;
-            state.eventsById.forEach(e => es.add(new Option(new Date(e.start_time).toLocaleDateString() + ' - ' + (state.lang === 'es' ? (e.title_es || e.title_en) : e.title_en), e.id)));
+            state.eventsById.forEach(e => es.add(new Option(new Date(e.start_time).toLocaleDateString() + ' - ' + (state.lang === 'es'? (e.title_es || e.title_en) : e.title_en), e.id)));
             es.value = ce;
             cs.innerHTML = `<option value="all">${l.allCountries}</option>`;
             const uc = new Set(state.members.map(m => m.country).filter(Boolean));
@@ -254,7 +299,7 @@
             state.members = profiles.data || [];
             (events.data || []).forEach(e => state.eventsById.set(e.id, e));
             (speakers.data || []).forEach(s => { if (s.profile_id) { state.isSpeaker.add(s.profile_id); if (!state.speakersByProfileId.has(s.profile_id)) state.speakersByProfileId.set(s.profile_id, new Set()); state.speakersByProfileId.get(s.profile_id).add(s.event_id); }});
-            
+
             const processedConns = new Set(), conns = [];
             state.members.forEach(m => {
                 state.profileById.set(m.id, m);
@@ -284,182 +329,126 @@
             Array.from(state.tagCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 50).forEach(([tag, count]) => {
                 const isSel = state.selectedTags.has(tag);
                 const row = document.createElement('div');
-                row.className = 'flex items-center justify-between px-2 py-1 hover:bg-gray-50 rounded cursor-pointer group';
-                row.innerHTML = `<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-sm border ${isSel ? 'bg-brand-500 border-brand-500' : 'border-gray-300'} flex items-center justify-center">${isSel ? '<svg width="8" height="8" viewBox="0 0 24 24" stroke="white" stroke-width="4" fill="none"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div><span class="text-xs text-slate-600">${state.allCanonicalToDisplay.get(tag)}</span></div><span class="text-[10px] text-slate-300 font-bold">${count}</span>`;
-                row.onclick = () => { isSel ? state.selectedTags.delete(tag) : state.selectedTags.add(tag); onFiltersChanged(); };
+                row.className = 'flex items-center justify-between px-2.5 py-1.5 hover:bg-violet-50/70 rounded-xl cursor-pointer group transition-colors';
+                row.innerHTML = `<div class="flex items-center gap-2.5"><div class="w-4 h-4 rounded-md border-2 ${isSel? 'bg-violet-600 border-violet-600' : 'border-slate-300 group-hover:border-slate-400'} flex items-center justify-center transition-all">${isSel? '<svg width="10" height="10" viewBox="0 0 24 24" stroke="white" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div><span class="text-[12.5px] text-slate-700 group-hover:text-slate-900">${state.allCanonicalToDisplay.get(tag)}</span></div><span class="text-[10px] text-slate-400 font-medium tabular-nums">${count}</span>`;
+                row.onclick = () => { isSel? state.selectedTags.delete(tag) : state.selectedTags.add(tag); onFiltersChanged(); };
                 c.appendChild(row);
             });
             const selC = $('#selectedTagsContainer'); selC.innerHTML = '';
-            state.selectedTags.forEach(t => selC.insertAdjacentHTML('beforeend', `<span class="px-2 py-0.5 bg-brand-50 text-brand-700 border border-brand-100 rounded text-[10px] font-bold flex items-center gap-1">${state.allCanonicalToDisplay.get(t)} <button onclick="document.dispatchEvent(new CustomEvent('remTag',{detail:'${t}'}))">×</button></span>`));
+            state.selectedTags.forEach(t => selC.insertAdjacentHTML('beforeend', `<span class="px-2.5 py-1 bg-violet-50 text-violet-700 border border-violet-200/70 rounded-full text-[11px] font-semibold flex items-center gap-1.5 hover:bg-violet-100 transition-colors">${state.allCanonicalToDisplay.get(t)} <button class="hover:text-violet-900" onclick="document.dispatchEvent(new CustomEvent('remTag',{detail:'${t}'}))">×</button></span>`));
         }
         document.addEventListener('remTag', e => { state.selectedTags.delete(e.detail); onFiltersChanged(); });
 
         function calculatePositions(members) {
-            const byGroup = new Map(), dockMembers = [];
+            const byGroup = new Map();
             const dockKeys = ["Unaffiliated", "Independent", "Consultant", "Unknown Location", "Unknown", ""];
+            
             members.forEach(m => {
-                const key = state.groupBy === 'country' ? (m.country ? (state.countries[m.country] || m.country) : "Unknown") : (m.affiliation?.trim() || "Unaffiliated");
-                if (dockKeys.some(k => k.toLowerCase() === key.toLowerCase())) { if (state.viewMode !== 'bubble') dockMembers.push(m); }
-                else { if (!byGroup.has(key)) byGroup.set(key, []); byGroup.get(key).push(m); }
+                const key = state.groupBy === 'country'? (m.country? (state.countries[m.country] || m.country) : "Unknown") : (m.affiliation?.trim() || "Unaffiliated");
+                if (dockKeys.some(k => k.toLowerCase() === key.toLowerCase())) return;
+
+                if (!byGroup.has(key)) byGroup.set(key, []);
+                byGroup.get(key).push(m);
             });
 
-            if (state.viewMode === 'bubble') {
-                const container = $('#network-container'), clusters = [];
-                const aspectRatio = Math.max(1.8, (container.offsetWidth || 800) / (container.offsetHeight || 600));
-                let totalMemberCount = 0;
-                for (const [name, list] of byGroup.entries()) { totalMemberCount += list.length; clusters.push({ name, list, count: list.length }); }
-                clusters.sort((a, b) => b.count - a.count);
-                const pos = new Map(), areaPerMember = (container.offsetWidth * container.offsetHeight * 0.95) / Math.max(totalMemberCount, 1);
-                const memberRadius = Math.max(22, Math.min(32, Math.sqrt(areaPerMember / Math.PI) * 0.45));
-                const packed = clusters.map(c => ({ ...c, radius: Math.max(70, Math.sqrt(c.count * Math.PI * (memberRadius + 12)**2 * 3.5 / Math.PI) * 1.1), x: 0, y: 0 }));
-                
-                if (packed.length > 0) {
-                    for (let i = 1; i < packed.length; i++) {
-                        const cur = packed[i];
-                        let bestDist = Infinity, bestX = 0, bestY = 0;
-                        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 45) {
-                            for (let dist = 0; dist < 4000; dist += 25) {
-                                const tx = Math.cos(angle) * dist * aspectRatio, ty = Math.sin(angle) * dist;
-                                let valid = true;
-                                for (let j = 0; j < i; j++) {
-                                    const other = packed[j], minDist = cur.radius + other.radius + 60;
-                                    if ((tx - other.x)**2 + (ty - other.y)**2 < minDist**2) { valid = false; break; }
-                                }
-                                if (valid) { const d = Math.sqrt((tx/aspectRatio)**2 + ty**2); if (d < bestDist) { bestDist = d; bestX = tx; bestY = ty; } }
-                            }
-                        }
-                        cur.x = bestX; cur.y = bestY;
-                    }
-                }
-                packed.forEach(c => {
-                    pos.set(`group-${c.name}`, { x: c.x, y: c.y, r: c.radius });
-                    if (c.list.length === 1) pos.set(c.list[0].id, { x: c.x, y: c.y });
-                    else {
-                        const ga = Math.PI * (3 - Math.sqrt(5)), maxR = c.radius - memberRadius - 20;
-                        c.list.forEach((m, i) => { const a = i * ga, r = maxR * Math.sqrt(i / c.count); pos.set(m.id, { x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r }); });
-                    }
-                });
-                return { pos, clusters: packed, mode: 'bubble', memberRadius };
-            }
+            const container = $('#network-container'), clusters = [];
+            const aspectRatio = Math.max(1.8, (container.offsetWidth || 800) / (container.offsetHeight || 600));
+            let totalMemberCount = 0;
+            for (const [name, list] of byGroup.entries()) { totalMemberCount += list.length; clusters.push({ name, list, count: list.length }); }
+            clusters.sort((a, b) => b.count - a.count);
+            const pos = new Map(), areaPerMember = (container.offsetWidth * container.offsetHeight * 0.95) / Math.max(totalMemberCount, 1);
+            const memberRadius = Math.max(22, Math.min(32, Math.sqrt(areaPerMember / Math.PI) * 0.45));
+            const packed = clusters.map(c => ({...c, radius: Math.max(70, Math.sqrt(c.count * Math.PI * (memberRadius + 12)**2 * 3.5 / Math.PI) * 1.1), x: 0, y: 0 }));
 
-            const clusters = [];
-            let totalStageArea = 0;
-            for (const [name, list] of byGroup.entries()) {
-                const ringR = Math.max(160, (list.length * 55) / (2 * Math.PI));
-                const size = (ringR * 2) + 200; totalStageArea += size * size;
-                clusters.push({ name, list, ringR, size });
-            }
-            clusters.sort((a, b) => b.list.length - a.list.length);
-            const TARGET_ROW_WIDTH = Math.sqrt(totalStageArea * 3.5) + 500, GAP = 220;
-            const pos = new Map();
-            let rowX = 0, rowY = 0, rowItems = [], maxH = 0, minStageX = 0;
-            const flushRow = () => {
-                let startX = -((rowX - GAP) / 2);
-                if (startX < minStageX) minStageX = startX;
-                rowItems.forEach(c => {
-                    const cx = startX + (c.size / 2), cy = rowY + (c.size / 2);
-                    pos.set(`group-${c.name}`, { x: cx, y: cy });
-                    if (c.list.length) {
-                        const step = (Math.PI * 2) / c.list.length;
-                        c.list.forEach((m, i) => { const a = step * i, r = c.ringR + (i % 2 === 0 ? 0 : 50); pos.set(m.id, { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }); });
+            if (packed.length > 0) {
+                for (let i = 1; i < packed.length; i++) {
+                    const cur = packed[i];
+                    let bestDist = Infinity, bestX = 0, bestY = 0;
+                    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 45) {
+                        for (let dist = 0; dist < 4000; dist += 25) {
+                            const tx = Math.cos(angle) * dist * aspectRatio, ty = Math.sin(angle) * dist;
+                            let valid = true;
+                            for (let j = 0; j < i; j++) {
+                                const other = packed[j], minDist = cur.radius + other.radius + 60;
+                                if ((tx - other.x)**2 + (ty - other.y)**2 < minDist**2) { valid = false; break; }
+                            }
+                            if (valid) { const d = Math.sqrt((tx/aspectRatio)**2 + ty**2); if (d < bestDist) { bestDist = d; bestX = tx; bestY = ty; } }
+                        }
                     }
-                    startX += c.size + GAP;
-                });
-                rowY += maxH + GAP; rowX = 0; rowItems = []; maxH = 0;
-            };
-            clusters.forEach(c => { if (rowX + c.size > TARGET_ROW_WIDTH && rowItems.length) flushRow(); rowItems.push(c); rowX += c.size + GAP; maxH = Math.max(maxH, c.size); });
-            if (rowItems.length) flushRow();
-            for (const p of pos.values()) p.y -= rowY / 2;
-            const dockX = (minStageX || -900) - 800, dockH = dockMembers.length * 40;
-            dockMembers.sort((a,b)=>(a.full_name||"").localeCompare(b.full_name||"")).forEach((m, i) => pos.set(m.id, { x: dockX, y: (i * 40) - (dockH / 2) }));
-            return { pos, clusters, dockX, dockYMin: -(dockH/2), dockYMax: dockH/2, mode: 'network' };
+                    cur.x = bestX; cur.y = bestY;
+                }
+            }
+            packed.forEach(c => {
+                pos.set(`group-${c.name}`, { x: c.x, y: c.y, r: c.radius });
+                if (c.list.length === 1) pos.set(c.list[0].id, { x: c.x, y: c.y });
+                else {
+                    const ga = Math.PI * (3 - Math.sqrt(5)), maxR = c.radius - memberRadius - 20;
+                    c.list.forEach((m, i) => { const a = i * ga, r = maxR * Math.sqrt(i / c.count); pos.set(m.id, { x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r }); });
+                }
+            });
+            return { pos, clusters: packed, memberRadius };
         }
 
         function renderGraph(members) {
-            const c = $('#network-container'), svg = $('#networkConnections'), nodes = $('#networkNodes');
+            const c = $('#network-container'), nodes = $('#networkNodes');
             if (!c.offsetWidth) return;
             const layout = calculatePositions(members);
-            state.positions = layout.pos; svg.innerHTML = ''; nodes.innerHTML = '';
+            state.positions = layout.pos; nodes.innerHTML = '';
             const l = t[state.lang] || t.en, frag = document.createDocumentFragment();
 
-            if (state.viewMode === 'bubble') {
-                $('#legendContainer').innerHTML = `<div class="flex items-center gap-3 bg-white/90 backdrop-blur p-3 rounded-xl border border-gray-200 shadow-sm text-[11px] font-medium text-slate-600"><div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 border-2 border-white shadow-sm"></div><span>${l.legendOrg}</span></div><div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-white border-2 border-brand-400 shadow-sm"></div><span>${l.legendMember}</span></div></div>`;
-                layout.clusters.forEach(cluster => {
-                    const p = state.positions.get(`group-${cluster.name}`); if (!p) return;
-                    const el = document.createElement('div');
-                    el.className = 'network-node group-node bubble-group';
-                    el.dataset.x = p.x; el.dataset.y = p.y; el.dataset.type = 'group';
-                    el.style.width = el.style.height = `${p.r * 2}px`; el.style.backgroundColor = stringToColor(cluster.name);
-                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
-                    el.onclick = e => { e.stopPropagation(); $('#searchInput').value = cluster.name; onFiltersChanged(); };
-                    frag.appendChild(el);
-                    const lbl = document.createElement('div');
-                    lbl.className = 'network-node pointer-events-none z-30';
-                    lbl.dataset.x = p.x; lbl.dataset.y = p.y - p.r; lbl.dataset.type = 'group-label';
-                    lbl.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px) translateZ(0)`;
-                    lbl.innerHTML = `<div class="flex flex-col items-center"><span class="px-6 py-2.5 bg-white/95 backdrop-blur shadow-xl border border-gray-200 rounded-full text-lg font-extrabold text-slate-900 whitespace-nowrap ring-1 ring-black/5" style="max-width: 400px; overflow: hidden; text-overflow: ellipsis;">${cluster.name}</span></div>`;
-                    frag.appendChild(lbl);
-                });
-                members.forEach(m => {
-                    const p = state.positions.get(m.id); if (!p) return;
-                    const el = document.createElement('div');
-                    el.className = 'network-node member-node bubble-member group/bub';
-                    el.dataset.x = p.x; el.dataset.y = p.y;
-                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
-                    const size = (layout.memberRadius || 20) * 2;
-                    el.innerHTML = `<div class="rounded-full bg-white flex items-center justify-center shadow-md border-2 border-white overflow-hidden cursor-pointer relative" style="width: ${size}px; height: ${size}px;">${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : `<span class="text-xs font-bold text-brand-600">${(m.full_name||'M')[0]}</span>`}</div><div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 backdrop-blur text-white text-[11px] py-1.5 px-3 rounded-lg opacity-0 group-hover/bub:opacity-100 pointer-events-none transition-opacity duration-200 z-[100] shadow-xl border border-white/10"><div class="font-bold">${m.full_name}</div>${m.affiliation ? `<div class="text-slate-300 text-[9px] font-medium">${m.affiliation}</div>` : ''}<div class="absolute -top-1 left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-slate-900/90"></div></div>`;
-                    if (m.avatar_url) getAvatarUrl(m.avatar_url).then(u => { const img = el.querySelector('img'); if (img && u) img.src = u; });
-                    el.onclick = e => { e.stopPropagation(); openProfileModal(m); };
-                    frag.appendChild(el);
-                });
-                nodes.appendChild(frag);
-            } else {
-                $('#legendContainer').innerHTML = `<div class="flex flex-col gap-1.5 bg-white/80 backdrop-blur p-2 rounded-lg border border-gray-100 shadow-sm text-[10px] font-medium text-slate-600"><div class="flex items-center gap-2"><div class="w-6 h-0.5 bg-slate-300 opacity-50"></div><span>${l.legendAff}</span></div><div class="flex items-center gap-2"><div class="w-6 h-0.5 bg-amber-500 opacity-60"></div><span>${l.legendCollab}</span></div><div class="flex items-center gap-2"><div class="w-1 h-4 bg-slate-300 opacity-50 rounded-full mx-2"></div><span>${l.legendTrack}</span></div></div>`;
-                let paths = '';
-                if (layout.dockYMin !== undefined) paths += `<path d="M ${layout.dockX + 120} ${layout.dockYMin - 50} L ${layout.dockX + 120} ${layout.dockYMax + 50}" class="dock-track" />`;
-                members.forEach(m => {
-                    const mp = state.positions.get(m.id), gp = state.positions.get(`group-${state.groupBy === 'country' ? (m.country ? (state.countries[m.country] || m.country) : "Unknown") : (m.affiliation?.trim() || "Unaffiliated")}`);
-                    if (mp && gp) paths += `<path d="M ${mp.x} ${mp.y} L ${gp.x} ${gp.y}" class="network-edge"/>`;
-                });
-                state.connections.forEach(conn => {
-                    const p1 = state.positions.get(conn.source), p2 = state.positions.get(conn.target);
-                    if (p1 && p2) paths += `<path d="M ${p1.x} ${p1.y} Q ${(p1.x+p2.x)/2} ${(p1.y+p2.y)/2 - 25} ${p2.x} ${p2.y}" class="collab-edge"/>`;
-                });
-                svg.innerHTML = paths;
-                layout.clusters.forEach(cluster => {
-                    const p = state.positions.get(`group-${cluster.name}`); if (!p) return;
-                    const lbl = document.createElement('div');
-                    lbl.className = 'network-node pointer-events-none z-30';
-                    lbl.dataset.x = p.x; lbl.dataset.y = p.y - p.r; lbl.dataset.type = 'group-label';
-                    lbl.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px) translateZ(0)`;
-                    lbl.innerHTML = `<div class="flex flex-col items-center"><span class="px-8 py-3.5 bg-white/95 backdrop-blur shadow-xl border border-gray-200 rounded-full text-2xl font-extrabold text-slate-900 whitespace-nowrap ring-1 ring-black/5" style="max-width: 500px; overflow: hidden; text-overflow: ellipsis;">${cluster.name}</span></div>`;
-                    frag.appendChild(lbl);
-                });
-                members.forEach(m => {
-                    const p = state.positions.get(m.id); if (!p) return;
-                    const el = document.createElement('div');
-                    el.className = 'network-node member-node';
-                    el.dataset.x = p.x; el.dataset.y = p.y;
-                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
-                    el.innerHTML = `<div class="node-pill flex items-center gap-3 pl-1 pr-4 py-1 bg-white border border-gray-200 rounded-full shadow-sm transition-all duration-200 min-w-[150px] group-hover:border-brand-400 group-hover:shadow-md group-hover:ring-2 group-hover:ring-brand-100"><div class="node-avatar w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center text-xs font-bold overflow-hidden shrink-0 ring-2 ring-white shadow-sm">${(m.full_name||'M')[0].toUpperCase()}</div><div class="min-w-0"><span class="node-name text-xs font-bold text-slate-700 leading-tight block truncate">${m.full_name||'Member'}</span><span class="node-affiliation text-[9px] text-slate-400 leading-tight truncate max-w-[120px] block mt-0.5">${m.affiliation || '—'}</span></div></div>`;
-                    if (m.avatar_url) getAvatarUrl(m.avatar_url).then(u => { const img = el.querySelector('.node-avatar'); if (img && u) img.innerHTML = `<img src="${u}" class="w-full h-full object-cover">` });
-                    el.onclick = e => { e.stopPropagation(); openProfileModal(m); };
-                    frag.appendChild(el);
-                });
-                nodes.appendChild(frag);
-            }
+            $('#legendContainer').innerHTML = `<div class="flex items-center gap-3 bg-slate-900/85 backdrop-blur-xl p-2.5 pr-3.5 rounded-2xl border border-white/10 shadow-2xl text-[11px] font-medium text-white/90"><div class="flex items-center gap-2"><div class="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)] ring-1 ring-white/20"></div><span>${l.legendOrg}</span></div><div class="flex items-center gap-2"><div class="w-3.5 h-3.5 rounded-full bg-white shadow-sm ring-2 ring-violet-500/50"></div><span>${l.legendMember}</span></div></div>`;
+            
+            layout.clusters.forEach(cluster => {
+                const p = state.positions.get(`group-${cluster.name}`); if (!p) return;
+                const el = document.createElement('div');
+                el.className = 'network-node group-node bubble-group';
+                el.dataset.x = p.x; el.dataset.y = p.y; el.dataset.type = 'group';
+                el.style.width = el.style.height = `${p.r * 2}px`; el.style.backgroundColor = stringToColor(cluster.name);
+                el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
+                el.onclick = e => { e.stopPropagation(); $('#searchInput').value = cluster.name; onFiltersChanged(); };
+                frag.appendChild(el);
+                
+                const lbl = document.createElement('div');
+                lbl.className = 'network-node pointer-events-none z-30';
+                lbl.dataset.x = p.x; lbl.dataset.y = p.y - p.r; lbl.dataset.type = 'group-label';
+                lbl.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px) translateZ(0)`;
+                lbl.innerHTML = `<div class="flex flex-col items-center"><span class="px-6 py-2.5 bg-slate-900/90 backdrop-blur-xl shadow-2xl border border-white/10 rounded-full text-[18px] font-bold text-white whitespace-nowrap tracking-tight" style="max-width: 400px; overflow: hidden; text-overflow: ellipsis;">${cluster.name}</span></div>`;
+                frag.appendChild(lbl);
+            });
+
+            members.forEach(m => {
+                const p = state.positions.get(m.id); if (!p) return;
+                const el = document.createElement('div');
+                el.className = 'network-node member-node bubble-member group/bub';
+                el.dataset.x = p.x; el.dataset.y = p.y;
+                el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
+                const size = (layout.memberRadius || 20) * 2;
+                
+                const nameParts = (m.full_name || 'Member').trim().split(/\s+/);
+                const initials = nameParts.length > 1 
+                    ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase() 
+                    : nameParts[0].substring(0, 2).toUpperCase();
+
+                el.innerHTML = `<div class="rounded-full bg-white flex items-center justify-center overflow-hidden cursor-pointer relative ring-2 ring-white shadow-xl" style="width: ${size}px; height: ${size}px;">${m.avatar_url? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : `<span class="text-[13px] font-bold text-violet-600">${initials}</span>`}</div><div class="absolute top-full mt-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900 text-white text-[11px] py-1.5 px-3 rounded-xl opacity-0 group-hover/bub:opacity-100 pointer-events-none transition-all duration-200 z-[100] shadow-2xl border border-white/10 translate-y-1 group-hover/bub:translate-y-0"><div class="font-semibold">${m.full_name}</div>${m.affiliation? `<div class="text-slate-300 text-[10px]">${m.affiliation}</div>` : ''}</div>`;
+                
+                if (m.avatar_url) getAvatarUrl(m.avatar_url).then(u => { const img = el.querySelector('img'); if (img && u) img.src = u; });
+                el.onclick = e => { e.stopPropagation(); openProfileModal(m); };
+                frag.appendChild(el);
+            });
+            nodes.appendChild(frag);
+
             state.cachedNodes = Array.from(nodes.children).filter(n => n.classList.contains('network-node'));
             if (window.lucide) window.lucide.createIcons();
             fitGraph();
         }
 
         function fitGraph() {
-            const pts = Array.from(state.positions.values()).filter(p => !isNaN(p.x));
+            const pts = Array.from(state.positions.values()).filter(p =>!isNaN(p.x));
             if (!pts.length) return;
             let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
             pts.forEach(p => { const r = p.r||0; minX=Math.min(minX,p.x-r); maxX=Math.max(maxX,p.x+r); minY=Math.min(minY,p.y-r); maxY=Math.max(maxY,p.y+r); });
-            const padding = state.viewMode === 'bubble' ? 150 : 500;
-            const scale = Math.min($('#network-container').offsetWidth/(maxX-minX+padding), $('#network-container').offsetHeight/(maxY-minY+padding), state.viewMode === 'bubble' ? 1.0 : 1.2);
+            const padding = 150;
+            const scale = Math.min($('#network-container').offsetWidth/(maxX-minX+padding), $('#network-container').offsetHeight/(maxY-minY+padding), 1.0);
             if (isFinite(scale) && scale > 0) {
                 state.zoom = scale; state.panOffset.x = ($('#network-container').offsetWidth/2) - ((minX+maxX)/2)*scale; state.panOffset.y = ($('#network-container').offsetHeight/2) - ((minY+maxY)/2)*scale;
                 updateTransform();
@@ -468,41 +457,33 @@
 
         function updateTransform() {
             $('#networkCanvas').style.transform = `translate(${state.panOffset.x}px, ${state.panOffset.y}px) scale(${state.zoom})`;
-            state.currentGroupBaseScale = state.viewMode === 'bubble' ? 1 : clamp((1/Math.max(0.2,state.zoom))*0.7, 1, 3.5);
-            if (state.viewMode !== 'bubble') {
-                const s = state.currentGroupBaseScale;
-                state.cachedNodes.forEach(n => { if (n.dataset.type === 'group' && !n.classList.contains('magnified')) n.style.transform = `translate(-50%, -50%) translate(${n.dataset.x}px, ${n.dataset.y}px) scale(${s}) translateZ(0)`; });
-            }
         }
 
         let mousePos = { x: 0, y: 0 }, visualRafId = null, transformRafId = null, wheelRafId = null, pendingWheelScale = 1;
-        
+
         function updateVisuals() {
             if (state.isDragging) { visualRafId = null; return; }
-            const rSq = 62500, maxScale = state.viewMode === 'bubble' ? 2.0 : 4.0, groupBase = state.currentGroupBaseScale;
+            const rSq = 62500, maxScale = 2.0;
             let nearest = null, minDSq = Infinity;
-            
+
             for (let i = 0, len = state.cachedNodes.length; i < len; i++) {
                 const node = state.cachedNodes[i];
-                if (node.dataset.type === 'group-label') continue;
-                const isGroup = node.dataset.type === 'group';
-                if (state.viewMode === 'bubble' && isGroup) continue;
-                
+                if (node.dataset.type === 'group-label' || node.dataset.type === 'group') continue;
+
                 const wx = parseFloat(node.dataset.x), wy = parseFloat(node.dataset.y);
                 const dx = ((wx * state.zoom) + state.panOffset.x) - mousePos.x, dy = ((wy * state.zoom) + state.panOffset.y) - mousePos.y;
                 const distSq = dx * dx + dy * dy;
-                const baseScale = (!state.viewMode && isGroup) ? groupBase : 1;
 
                 if (distSq < rSq) {
                     const factor = 1 - (Math.sqrt(distSq) / 250);
                     if (!node.classList.contains('is-interacting')) node.classList.add('is-interacting');
-                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale + ((factor * factor * factor) * (maxScale - 1))}) translateZ(0)`;
+                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${1 + ((factor * factor * factor) * (maxScale - 1))}) translateZ(0)`;
                     if (distSq < minDSq) { minDSq = distSq; nearest = node; }
                 } else if (node.classList.contains('is-interacting')) {
-                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${baseScale}) translateZ(0)`;
+                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(1) translateZ(0)`;
                     node.classList.remove('is-interacting', 'magnified');
                 }
-                if (node !== nearest) node.classList.remove('magnified');
+                if (node!== nearest) node.classList.remove('magnified');
             }
             if (nearest && minDSq < 10000) nearest.classList.add('magnified');
             visualRafId = null;
@@ -510,25 +491,22 @@
 
         function resetMagnification() {
             if (visualRafId) { cancelAnimationFrame(visualRafId); visualRafId = null; }
-            const groupBase = state.currentGroupBaseScale;
             state.cachedNodes.forEach(node => {
-                if (state.viewMode === 'bubble' && node.classList.contains('bubble-group')) return;
-                if (node.dataset.type === 'group-label') return;
-                const base = (state.viewMode !== 'bubble' && node.dataset.type === 'group') ? groupBase : 1;
-                node.style.transform = `translate(-50%, -50%) translate(${node.dataset.x}px, ${node.dataset.y}px) scale(${base}) translateZ(0)`;
+                if (node.classList.contains('bubble-group') || node.dataset.type === 'group-label') return;
+                node.style.transform = `translate(-50%, -50%) translate(${node.dataset.x}px, ${node.dataset.y}px) scale(1) translateZ(0)`;
                 node.classList.remove('magnified', 'is-interacting');
             });
         }
 
         function getFiltered() {
             let res = state.members;
-            if (state.roleFilter !== 'all') res = res.filter(m => state.roleFilter === 'speakers' ? state.isSpeaker.has(m.id) : ['organizer', 'admin'].includes(m.role));
-            if (state.eventFilterId !== 'all') res = res.filter(m => state.speakersByProfileId.get(m.id)?.has(state.eventFilterId));
-            if (state.countryFilterId !== 'all') res = res.filter(m => m.country === state.countryFilterId);
+            if (state.roleFilter!== 'all') res = res.filter(m => state.roleFilter === 'speakers'? state.isSpeaker.has(m.id) : ['organizer', 'admin'].includes(m.role));
+            if (state.eventFilterId!== 'all') res = res.filter(m => state.speakersByProfileId.get(m.id)?.has(state.eventFilterId));
+            if (state.countryFilterId!== 'all') res = res.filter(m => m.country === state.countryFilterId);
             if (state.searchQuery) { const q = state.searchQuery.toLowerCase(); res = res.filter(m => (m.full_name||"").toLowerCase().includes(q) || (m.affiliation||"").toLowerCase().includes(q)); }
             if (state.selectedTags.size > 0) res = res.filter(m => { for(const t of state.selectedTags) if(state.tagIndex.get(t)?.has(m.id)) return true; return false; });
-            const k = state.sort.key, d = state.sort.dir === 'asc' ? 1 : -1;
-            return res.sort((a, b) => k === 'connections' ? (state.connections.filter(c=>c.source===a.id||c.target===a.id).length - state.connections.filter(c=>c.source===b.id||c.target===b.id).length) * d : (a[k==='name'?'full_name':k]||"").localeCompare(b[k==='name'?'full_name':k]||"") * d);
+            const k = state.sort.key, d = state.sort.dir === 'asc'? 1 : -1;
+            return res.sort((a, b) => k === 'connections'? (state.connections.filter(c=>c.source===a.id||c.target===a.id).length - state.connections.filter(c=>c.source===b.id||c.target===b.id).length) * d : (a[k==='name'?'full_name':k]||"").localeCompare(b[k==='name'?'full_name':k]||"") * d);
         }
 
         function renderTable(list) {
@@ -536,9 +514,15 @@
             $$('th[data-i18n]').forEach(th => { const key = th.dataset.i18n; if (l[key]) th.innerText = l[key]; });
             $('#members-table-body').innerHTML = list.map(m => {
                 const n = m.full_name || 'Member', c = state.connections.filter(x => x.source === m.id || x.target === m.id).length;
-                return `<tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="document.dispatchEvent(new CustomEvent('openProfile',{detail:'${m.id}'}))"><td class="py-2.5 px-6 border-b border-gray-50 font-medium text-slate-900"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden text-xs text-slate-500 font-bold shrink-0 ring-1 ring-gray-100">${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : n[0].toUpperCase()}</div><span>${highlight(n, state.searchQuery)}</span></div></td><td class="py-2.5 px-6 border-b border-gray-50 text-slate-500">${highlight(m.affiliation || '—', state.searchQuery)}</td><td class="py-2.5 px-6 border-b border-gray-50 text-slate-400 truncate max-w-xs hidden lg:table-cell">${m.fields_of_study || '—'}</td><td class="py-2.5 px-6 border-b border-gray-50 text-slate-500"><span class="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-600">${m.role ? m.role.charAt(0).toUpperCase()+m.role.slice(1) : 'Member'}</span></td><td class="py-2.5 px-6 border-b border-gray-50 text-slate-500">${m.country ? (state.countries[m.country] || m.country) : '—'}</td><td class="py-2.5 px-6 border-b border-gray-50 text-right"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-600">${c}</span></td></tr>`;
+                
+                const nameParts = n.trim().split(/\s+/);
+                const initials = nameParts.length > 1 
+                    ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase() 
+                    : nameParts[0].substring(0, 2).toUpperCase();
+
+                return `<tr class="hover:bg-violet-50/50 cursor-pointer transition-colors group" onclick="document.dispatchEvent(new CustomEvent('openProfile',{detail:'${m.id}'}))"><td class="py-3 px-6 border-b border-slate-100/70 font-medium text-slate-900"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden text-[12px] text-slate-600 font-bold shrink-0 ring-1 ring-slate-200 group-hover:ring-violet-300 transition-all">${m.avatar_url? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : initials}</div><span class="group-hover:text-violet-700 transition-colors">${highlight(n, state.searchQuery)}</span></div></td><td class="py-3 px-6 border-b border-slate-100/70 text-slate-600">${highlight(m.affiliation || '—', state.searchQuery)}</td><td class="py-3 px-6 border-b border-slate-100/70"><span class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 text-slate-700 group-hover:bg-violet-100 group-hover:text-violet-700 transition-colors">${m.role? m.role.charAt(0).toUpperCase()+m.role.slice(1) : 'Member'}</span></td><td class="py-3 px-6 border-b border-slate-100/70 text-slate-600">${m.country? (state.countries[m.country] || m.country) : '—'}</td><td class="py-3 px-6 border-b border-slate-100/70 text-right"><span class="inline-flex items-center justify-center min-w-[24px] px-2 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 text-white tabular-nums">${c}</span></td></tr>`;
             }).join('');
-            list.forEach(m => { if (m.avatar_url && !m.avatar_url.startsWith('http')) getAvatarUrl(m.avatar_url).then(u => { const img = document.querySelector(`tr[onclick*="${m.id}"] img`); if (img && u) img.src = u; }); });
+            list.forEach(m => { if (m.avatar_url &&!m.avatar_url.startsWith('http')) getAvatarUrl(m.avatar_url).then(u => { const img = document.querySelector(`tr[onclick*="${m.id}"] img`); if (img && u) img.src = u; }); });
         }
         document.addEventListener('openProfile', e => openProfileModal(state.profileById.get(e.detail)));
 
@@ -548,7 +532,7 @@
         }
 
         (async function () {
-            initSharedUI({ onLangSwitch: () => { state.lang = state.lang === 'en' ? 'es' : 'en'; localStorage.setItem("lang", state.lang); applyLocalTranslations(); }, onSignOut: signOut });
+            initSharedUI({ onLangSwitch: () => { state.lang = state.lang === 'en'? 'es' : 'en'; localStorage.setItem("lang", state.lang); applyLocalTranslations(); }, onSignOut: signOut });
             applyLocalTranslations();
 
             const resizer = document.getElementById('dragHandle'), topEl = document.getElementById('network-container'), container = document.getElementById('right-column');
@@ -558,30 +542,20 @@
             resizer.addEventListener('mousedown', e => { e.preventDefault(); startY = e.clientY; startH = parseInt(getComputedStyle(topEl).height, 10); document.documentElement.addEventListener('mousemove', doDrag); document.documentElement.addEventListener('mouseup', stopDrag); resizer.classList.add('dragging'); document.body.style.cursor = 'row-resize'; topEl.style.pointerEvents = 'none'; });
 
             document.addEventListener('click', e => { if (e.target.closest('#btnProfile') || e.target.closest('#userName')) window.location.href = 'profile.html'; });
-            $$('[data-role]').forEach(b => b.onclick = e => { $$('[data-role]').forEach(x => x.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"); e.target.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white"; state.roleFilter = e.target.dataset.role; onFiltersChanged(); });
-            $$('th[data-sort]').forEach(th => th.onclick = () => { const k = th.dataset.sort; state.sort.dir = (state.sort.key === k && state.sort.dir === 'asc') ? 'desc' : 'asc'; state.sort.key = k; $$('th[data-sort]').forEach(h => h.className = "py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"); th.className = `py-3 px-6 text-[11px] font-bold text-brand-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors sort-${state.sort.dir}`; onFiltersChanged(); });
-            
+            $$('[data-role]').forEach(b => b.onclick = e => { $$('[data-role]').forEach(x => x.className = "px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 bg-white"); e.target.className = "px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all shadow-md shadow-slate-900/10 bg-slate-900 text-white ring-1 ring-slate-900"; state.roleFilter = e.target.dataset.role; onFiltersChanged(); });
+            $$('th[data-sort]').forEach(th => th.onclick = () => { const k = th.dataset.sort; state.sort.dir = (state.sort.key === k && state.sort.dir === 'asc')? 'desc' : 'asc'; state.sort.key = k; $$('th[data-sort]').forEach(h => h.className = "py-3.5 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors"); th.className = `py-3.5 px-6 text-[11px] font-bold text-violet-600 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors sort-${state.sort.dir}`; onFiltersChanged(); });
+
             $('#groupByFilter').onchange = e => { state.groupBy = e.target.value; onFiltersChanged(); };
             $('#eventFilter').onchange = e => { state.eventFilterId = e.target.value; onFiltersChanged(); };
             $('#countryFilter').onchange = e => { state.countryFilterId = e.target.value; onFiltersChanged(); };
             $('#searchInput').oninput = debounce(onFiltersChanged);
             $('#clearFiltersBtn').onclick = () => { $('#resetViewBtn').click(); };
 
-            $('#viewToggleBtn').onclick = () => {
-                const btn = $('#viewToggleBtn'), icon = btn.querySelector('i');
-                state.viewMode = state.viewMode === 'network' ? 'bubble' : 'network';
-                $('#viewModeText').innerText = state.viewMode === 'network' ? (t[state.lang]||t.en).switchBub : (t[state.lang]||t.en).switchNet;
-                if (icon) icon.setAttribute('data-lucide', state.viewMode === 'network' ? 'layout-grid' : 'share-2');
-                state.zoom = 1; state.panOffset = { x: 0, y: 0 };
-                if (window.lucide) window.lucide.createIcons();
-                const list = getFiltered(); renderTable(list); renderGraph(list);
-            };
-
             $('#resetViewBtn').onclick = () => {
                 state.searchQuery = ''; state.groupBy = 'affiliation'; state.eventFilterId = state.countryFilterId = state.roleFilter = 'all'; state.selectedTags.clear(); state.sort = { key: "connections", dir: "desc" };
                 $('#searchInput').value = ''; $('#groupByFilter').value = 'affiliation'; $('#eventFilter').value = $('#countryFilter').value = 'all';
-                $$('[data-role]').forEach(x => x.className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all border border-gray-200 text-slate-500 hover:bg-gray-50"); $('[data-role="all"]').className = "px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-sm bg-slate-800 text-white";
-                $$('th[data-sort]').forEach(h => h.className = "py-3 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"); $('th[data-sort="connections"]').className = "py-3 px-6 text-[11px] font-bold text-brand-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors sort-desc";
+                $$('[data-role]').forEach(x => x.className = "px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 bg-white"); $('[data-role="all"]').className = "px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all shadow-md shadow-slate-900/10 bg-slate-900 text-white ring-1 ring-slate-900";
+                $$('th[data-sort]').forEach(h => h.className = "py-3.5 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors"); $('th[data-sort="connections"]').className = "py-3.5 px-6 text-[11px] font-bold text-violet-600 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors sort-desc";
                 onFiltersChanged();
             };
 
@@ -601,7 +575,7 @@
             cv.onmouseleave = () => resetMagnification();
             cv.onmousedown = e => {
                 const node = e.target.closest('.network-node');
-                if (!node || (state.viewMode === 'bubble' && node.dataset.type === 'group')) {
+                if (!node || node.dataset.type === 'group') {
                     state.isDragging = true; dragMoved = false; dsX = e.clientX; dsY = e.clientY;
                     sx = e.clientX - state.panOffset.x; sy = e.clientY - state.panOffset.y;
                     cv.style.cursor = 'grabbing'; resetMagnification();
@@ -609,12 +583,12 @@
             };
             window.onmouseup = () => { if (state.isDragging && dragMoved) suppressClick = true; state.isDragging = false; cv.style.cursor = 'grab'; };
             cv.onwheel = e => {
-                e.preventDefault(); pendingWheelScale *= (e.deltaY > 0 ? 0.9 : 1.1);
-                if (!wheelRafId) wheelRafId = requestAnimationFrame(() => { state.zoom = clamp(state.zoom * pendingWheelScale, 0.1, 5); pendingWheelScale = 1; updateTransform(); if (state.viewMode !== 'bubble') resetMagnification(); wheelRafId = null; });
+                e.preventDefault(); pendingWheelScale *= (e.deltaY > 0? 0.9 : 1.1);
+                if (!wheelRafId) wheelRafId = requestAnimationFrame(() => { state.zoom = clamp(state.zoom * pendingWheelScale, 0.1, 5); pendingWheelScale = 1; updateTransform(); wheelRafId = null; });
             };
             cv.ontouchstart = e => {
                 const node = e.target.closest('.network-node');
-                if (!node || (state.viewMode === 'bubble' && node.dataset.type === 'group')) {
+                if (!node || node.dataset.type === 'group') {
                     state.isDragging = true; dragMoved = false; dsX = e.touches[0].clientX; dsY = e.touches[0].clientY;
                     sx = e.touches[0].clientX - state.panOffset.x; sy = e.touches[0].clientY - state.panOffset.y;
                 }
@@ -624,7 +598,7 @@
 
             if (window.lucide) window.lucide.createIcons();
             const [authRes] = await Promise.all([initAuth({ onAuthReady: () => { renderHeader(authState, t, state.lang); applyLocalTranslations(); }, onAuthChange: () => renderHeader(authState, t, state.lang) }), loadNetworkData()]);
-            $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none'); $('#signinGate').style.display = authState.session ? 'none' : 'flex';
+            $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none'); $('#signinGate').style.display = authState.session? 'none' : 'flex';
         })();
     </script>
 </body>
