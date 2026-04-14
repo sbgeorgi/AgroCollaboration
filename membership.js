@@ -386,6 +386,12 @@ function render() {
 
                     <!-- View & Pagination Controls -->
                     <div class="flex items-center gap-2 self-end sm:self-auto">
+                        <!-- Export CSV Button -->
+                        <button id="downloadCsvBtn" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand-600 transition-colors shadow-sm" title="Download CSV">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline">Export CSV</span>
+                        </button>
+                        
                         <!-- View Toggle -->
                         <div class="flex bg-slate-100 p-1 rounded-lg border border-gray-200">
                             <button class="view-toggle p-1.5 rounded-md ${memberState.viewMode === 'table' ? 'bg-white shadow text-brand-600' : 'text-slate-400 hover:text-slate-600'}" data-view="table">
@@ -413,6 +419,9 @@ function render() {
                     <div class="h-4 w-px bg-brand-200"></div>
                     <button id="bulkRoleBtn" class="flex items-center gap-1.5 text-xs font-medium text-brand-700 hover:text-brand-900">
                         <i data-lucide="user-cog" class="w-3.5 h-3.5"></i> Set Role
+                    </button>
+                    <button id="bulkExportBtn" class="flex items-center gap-1.5 text-xs font-medium text-brand-700 hover:text-brand-900">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Selected
                     </button>
                     <button id="bulkDeleteBtn" class="flex items-center gap-1.5 text-xs font-medium text-red-600 hover:text-red-800 ml-auto">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Selected
@@ -887,7 +896,7 @@ function drawerLink(url, label) {
 }
 
 // ==========================================
-// ACTIONS (Delete/Update)
+// ACTIONS (Delete/Update/Export)
 // ==========================================
 async function deleteUser(uid, name) {
     if (!confirm(`Are you sure you want to remove ${name}? This action cannot be undone.`)) return;
@@ -920,6 +929,63 @@ async function updateUserRole(uid, newRole, selectElem) {
         setFlash('Role updated');
     }
     selectElem.disabled = false;
+}
+
+function downloadCSV() {
+    let exportData = [];
+    if (memberState.selected.size > 0) {
+        exportData = memberState.profiles.filter(p => memberState.selected.has(p.id));
+    } else {
+        // If no specific users selected, export all members based on original prompt instructions
+        exportData = memberState.profiles;
+    }
+
+    if (exportData.length === 0) {
+        if (typeof setFlash === 'function') setFlash('No members to export.', 3000);
+        return;
+    }
+
+    const headers = [
+        'Name',
+        'Email',
+        'Affiliation',
+        'Department',
+        'Country',
+        'Role',
+        'Joined Date',
+        'Personal Website',
+        'Professional Website',
+        'Google Scholar'
+    ];
+
+    const csvRows = [headers.join(',')];
+
+    for (const p of exportData) {
+        const row = [
+            `"${(p.full_name || '').replace(/"/g, '""')}"`,
+            `"${(p.work_email || p.username || '').replace(/"/g, '""')}"`,
+            `"${(p.affiliation || '').replace(/"/g, '""')}"`,
+            `"${(p.department || '').replace(/"/g, '""')}"`,
+            `"${(p.country || '').replace(/"/g, '""')}"`,
+            `"${(p.role || '').replace(/"/g, '""')}"`,
+            `"${p.created_at ? new Date(p.created_at).toISOString().split('T')[0] : ''}"`,
+            `"${(p.personal_website || '').replace(/"/g, '""')}"`,
+            `"${(p.professional_website || '').replace(/"/g, '""')}"`,
+            `"${(p.google_scholar || '').replace(/"/g, '""')}"`
+        ];
+        csvRows.push(row.join(','));
+    }
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `members_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // ==========================================
@@ -1084,11 +1150,14 @@ function attachListeners() {
         });
     });
 
-    // Bulk Actions
+    // Bulk Actions & Exports
     container.querySelector('#clearSelection')?.addEventListener('click', () => {
         memberState.selected.clear();
         render();
     });
+
+    container.querySelector('#downloadCsvBtn')?.addEventListener('click', downloadCSV);
+    container.querySelector('#bulkExportBtn')?.addEventListener('click', downloadCSV);
 
     container.querySelector('#bulkDeleteBtn')?.addEventListener('click', async () => {
         if(!confirm(`Delete ${memberState.selected.size} users?`)) return;
