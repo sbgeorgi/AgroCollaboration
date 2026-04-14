@@ -14,12 +14,12 @@ const memberState = {
     roleFilter: 'all',
     affiliationFilter: 'all',
     countryFilter: 'all',
-    quickFilter: 'all', // 'all' | 'new_this_month' | 'new_this_week' | 'no_affiliation' | 'no_country' | 'incomplete_profile' | 'with_website' | 'with_scholar'
+    quickFilter: 'all', 
     sortField: 'full_name',
     sortDir: 'asc',
     page: 1,
     pageSize: 25,
-    viewMode: 'table', // 'table' | 'grid'
+    viewMode: 'table',
     currentAuthState: null,
     containerId: null,
 };
@@ -49,18 +49,18 @@ const QUICK_FILTERS = [
         },
     },
     {
-    id: 'new_this_month',
-    label: 'New - 30 Days',
-    icon: 'calendar-plus',
-    color: 'emerald',
-    predicate: (p) => {
-        if (!p.created_at) return false;
-        const d = new Date();
-        d.setDate(d.getDate() - 30);
-        d.setHours(0, 0, 0, 0);
-        return new Date(p.created_at) >= d;
+        id: 'new_this_month',
+        label: 'New - 30 Days',
+        icon: 'calendar-plus',
+        color: 'emerald',
+        predicate: (p) => {
+            if (!p.created_at) return false;
+            const d = new Date();
+            d.setDate(d.getDate() - 30);
+            d.setHours(0, 0, 0, 0);
+            return new Date(p.created_at) >= d;
+        },
     },
-},
     {
         id: 'no_affiliation',
         label: 'No Affiliation',
@@ -125,7 +125,6 @@ async function loadProfiles() {
         memberState.currentAuthState.profile = { id: user.id };
     }
 
-    // 1. Fetch public profile data
     const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
@@ -134,40 +133,33 @@ async function loadProfiles() {
     if (error) throw error;
     memberState.profiles = profiles || [];
 
-    // 2. Check if the current user is an admin
     const currentUserProfile = memberState.profiles.find(p => p.id === user?.id);
     const isAdmin = currentUserProfile?.role === 'admin';
 
-    // 3. If admin, augment profiles by fetching the real auth emails from our RPC
     if (isAdmin) {
         try {
             const { data: rpcData, error: rpcError } = await supabase.rpc('export_user_data');
             
             if (!rpcError && rpcData) {
-                // Merge real auth emails into matching profiles
                 memberState.profiles.forEach(p => {
-                    // Match the RPC data back to the profile via full_name and username
                     const rpcMatch = rpcData.find(r => 
                         (r.full_name === p.full_name) && 
                         (r.username === p.username)
                     );
                     
                     if (rpcMatch && rpcMatch.email) {
-                        p.login_email = rpcMatch.email; // Store real email safely behind the scenes
+                        p.login_email = rpcMatch.email; 
                         
-                        // If they don't have a work_email entered, populate it with their real email for the UI!
                         if (!p.work_email || p.work_email.trim() === '') {
                             p.work_email = rpcMatch.email;
                         }
 
-                        // Also patch missing usernames if available
                         if (!p.username && rpcMatch.username) {
                             p.username = rpcMatch.username;
                         }
                     }
                 });
 
-                // Add any users who exist in auth.users but DO NOT have a complete profile yet!
                 rpcData.forEach((row, idx) => {
                     const existsInProfiles = memberState.profiles.some(p => 
                         (p.full_name === row.full_name) && (p.username === row.username)
@@ -175,7 +167,7 @@ async function loadProfiles() {
                     
                     if (!existsInProfiles && row.email) {
                         memberState.profiles.push({
-                            id: 'auth-only-' + idx, // temporary fallback ID
+                            id: 'auth-only-' + idx,
                             full_name: row.full_name || 'Incomplete Profile',
                             username: row.username || '',
                             work_email: row.email,
@@ -224,10 +216,6 @@ function applyFilters() {
         results = results.filter(p => p.role === memberState.roleFilter);
     }
 
-    if (memberState.affiliationFilter !== 'all') {
-        results = results.filter(p => (p.affiliation || '') === memberState.affiliationFilter);
-    }
-
     if (memberState.countryFilter !== 'all') {
         results = results.filter(p => (p.country || '') === memberState.countryFilter);
     }
@@ -259,10 +247,6 @@ function getPageSlice() {
 
 function getTotalPages() {
     return Math.max(1, Math.ceil(memberState.filtered.length / memberState.pageSize));
-}
-
-function getUniqueAffiliations() {
-    return [...new Set(memberState.profiles.map(p => p.affiliation).filter(Boolean))].sort();
 }
 
 function getUniqueCountries() {
@@ -363,6 +347,22 @@ function render() {
     const isSelf = (id) => id === memberState.currentAuthState?.profile?.id;
     const activeQF = getQuickFilterDef(memberState.quickFilter);
 
+    // Update the external 'Download CSV' button state to reflect our selection UI
+    const exportBtn = document.getElementById('btnExportCsv');
+    if (exportBtn) {
+        const count = memberState.selected.size;
+        if (count > 0) {
+            exportBtn.innerHTML = `<i data-lucide="download" class="w-4 h-4"></i> Export ${count} Selected`;
+            exportBtn.classList.add('bg-brand-50', 'text-brand-700', 'border-brand-200');
+            exportBtn.classList.remove('text-slate-500', 'bg-white');
+        } else {
+            exportBtn.innerHTML = `<i data-lucide="download" class="w-4 h-4"></i> Download CSV`;
+            exportBtn.classList.remove('bg-brand-50', 'text-brand-700', 'border-brand-200');
+            exportBtn.classList.add('text-slate-500', 'bg-white');
+        }
+        if (window.lucide) window.lucide.createIcons({ root: exportBtn });
+    }
+
     container.innerHTML = `
         <div class="flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
 
@@ -424,13 +424,8 @@ function render() {
                         }
                     </div>
 
-                    <!-- View & Pagination Controls -->
+                    <!-- View Controls -->
                     <div class="flex items-center gap-2 self-end sm:self-auto">
-                        <button id="downloadCsvBtn" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand-600 transition-colors shadow-sm" title="Download CSV">
-                            <i data-lucide="download" class="w-4 h-4"></i>
-                            <span class="hidden sm:inline">Export CSV</span>
-                        </button>
-                        
                         <div class="flex bg-slate-100 p-1 rounded-lg border border-gray-200">
                             <button class="view-toggle p-1.5 rounded-md ${memberState.viewMode === 'table' ? 'bg-white shadow text-brand-600' : 'text-slate-400 hover:text-slate-600'}" data-view="table">
                                 <i data-lucide="table-2" class="w-4 h-4"></i>
@@ -455,9 +450,6 @@ function render() {
                     <div class="h-4 w-px bg-brand-200"></div>
                     <button id="bulkRoleBtn" class="flex items-center gap-1.5 text-xs font-medium text-brand-700 hover:text-brand-900">
                         <i data-lucide="user-cog" class="w-3.5 h-3.5"></i> Set Role
-                    </button>
-                    <button id="bulkExportBtn" class="flex items-center gap-1.5 text-xs font-medium text-brand-700 hover:text-brand-900">
-                        <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Selected
                     </button>
                     <button id="bulkDeleteBtn" class="flex items-center gap-1.5 text-xs font-medium text-red-600 hover:text-red-800 ml-auto">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Selected
@@ -912,7 +904,7 @@ function closeDrawer() {
     }, 300);
 }
 
-function drawerItem(icon, label, value, isCopyable = false) {
+function drawerItem(icon, label, value) {
     if (!value) return '';
     return `
         <div class="flex gap-3">
@@ -967,20 +959,19 @@ async function updateUserRole(uid, newRole, selectElem) {
     selectElem.disabled = false;
 }
 
-// Rewritten CSV logic to export the fully stitched data (emails + all profile data)
+// Export the newly stitched secure auth email CSV logic
 async function downloadCSV(exportSelectedOnly = false) {
-    const btnId = exportSelectedOnly ? '#bulkExportBtn' : '#downloadCsvBtn';
+    const btnId = '#btnExportCsv'; // Controls the unified admin.html button
     const btn = document.querySelector(btnId);
     let originalHtml = '';
 
     try {
         if (btn) {
             originalHtml = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Loading...`;
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // Export straight from JS state which has already been merged securely
         const dataToExport = exportSelectedOnly 
             ? memberState.filtered.filter(p => memberState.selected.has(p.id))
             : memberState.filtered;
@@ -990,7 +981,6 @@ async function downloadCSV(exportSelectedOnly = false) {
             return;
         }
 
-        // We pull the mapped 'work_email' since that is where we injected the secure auth email
         const columns = [
             { header: 'email', key: 'work_email' },
             { header: 'full_name', key: 'full_name' },
@@ -1004,7 +994,7 @@ async function downloadCSV(exportSelectedOnly = false) {
         ];
 
         const csvContent = [
-            columns.map(c => c.header).join(','), // Headers
+            columns.map(c => c.header).join(','), 
             ...dataToExport.map(row => columns.map(c => {
                 const val = row[c.key] || '';
                 return `"${String(val).replace(/"/g, '""')}"`;
@@ -1035,6 +1025,12 @@ async function downloadCSV(exportSelectedOnly = false) {
     }
 }
 
+async function handleExportClick() {
+    // Determine export type strictly by selections. Size > 0 triggers selected-only behavior
+    const hasSelection = memberState.selected.size > 0;
+    await downloadCSV(hasSelection);
+}
+
 // ==========================================
 // EVENT LISTENERS
 // ==========================================
@@ -1063,7 +1059,6 @@ function attachListeners() {
     container.querySelectorAll('.quick-filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const qf = btn.dataset.qf;
-            // Toggle off if already active (except 'all')
             if (memberState.quickFilter === qf && qf !== 'all') {
                 memberState.quickFilter = 'all';
             } else {
@@ -1197,15 +1192,11 @@ function attachListeners() {
         });
     });
 
-    // Bulk Actions & Exports
+    // Bulk Actions
     container.querySelector('#clearSelection')?.addEventListener('click', () => {
         memberState.selected.clear();
         render();
     });
-
-    // Map exports to the newly re-written comprehensive function
-    container.querySelector('#downloadCsvBtn')?.addEventListener('click', () => downloadCSV(false));
-    container.querySelector('#bulkExportBtn')?.addEventListener('click', () => downloadCSV(true));
 
     container.querySelector('#bulkDeleteBtn')?.addEventListener('click', async () => {
         if(!confirm(`Delete ${memberState.selected.size} users?`)) return;
@@ -1238,6 +1229,14 @@ export async function renderMembershipTab(containerId, authState) {
     memberState.containerId = containerId;
     memberState.currentAuthState = authState;
     const container = document.getElementById(containerId);
+
+    // Bind the external unified export button (located in admin.html's sticky header)
+    const exportBtn = document.getElementById('btnExportCsv');
+    if (exportBtn) {
+        // Remove previous listener instance to prevent duplicate execution loops if re-rendered
+        exportBtn.removeEventListener('click', handleExportClick);
+        exportBtn.addEventListener('click', handleExportClick);
+    }
 
     container.innerHTML = `
         <div class="flex flex-col items-center justify-center h-96 gap-4 text-slate-400">
