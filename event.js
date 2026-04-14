@@ -597,11 +597,21 @@ export function initEventLogic(deps) {
     const ev = state.selectedEvent;
     if (!ev) return;
     const desc = (state.language === "es" && ev.description_es) || ev.description_en || '';
-    const isPast = new Date(ev.start_time) < new Date();
+    
+    // Use end_time if available, otherwise fallback to start_time
+    const baseTime = ev.end_time ? new Date(ev.end_time) : new Date(ev.start_time);
+    
+    // Add a 4-hour buffer (4 * 60 * 60 * 1000 milliseconds) to keep the link alive during & after the event
+    const expirationTime = new Date(baseTime.getTime() + (4 * 60 * 60 * 1000)); 
+    const isExpired = new Date() > expirationTime;
 
     let access = `<div class="w-full py-3 bg-gray-100 text-gray-400 font-bold text-center rounded-lg text-sm cursor-not-allowed">Access Unavailable</div>`;
-    if (!isPast && ev.zoom_url) access = `<a href="${ev.zoom_url}" target="_blank" class="block w-full text-center py-3 bg-[#0077b6] hover:bg-[#023e8a] text-white font-bold rounded-lg shadow-sm mb-1"><i data-lucide="video" class="inline w-4 h-4 mr-2"></i>Join via Google Meet</a>`;
-    else if (ev.recording_url) access = `<a href="${ev.recording_url}" target="_blank" class="block w-full text-center py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg shadow-sm mb-1"><i data-lucide="play-circle" class="inline w-4 h-4 mr-2"></i>Watch Recording</a>`;
+    
+    if (!isExpired && ev.zoom_url) {
+        access = `<a href="${ev.zoom_url}" target="_blank" class="block w-full text-center py-3 bg-[#0077b6] hover:bg-[#023e8a] text-white font-bold rounded-lg shadow-sm mb-1"><i data-lucide="video" class="inline w-4 h-4 mr-2"></i>Join via Google Meet</a>`;
+    } else if (ev.recording_url) {
+        access = `<a href="${ev.recording_url}" target="_blank" class="block w-full text-center py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg shadow-sm mb-1"><i data-lucide="play-circle" class="inline w-4 h-4 mr-2"></i>Watch Recording</a>`;
+    }
 
     const speakersHtml = await Promise.all((ev.event_speakers || []).map(async s => {
       const p = s.profile;
