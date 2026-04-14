@@ -104,7 +104,6 @@ function getQuickFilterDef(id) {
     return QUICK_FILTERS.find(f => f.id === id) || QUICK_FILTERS[0];
 }
 
-// Color maps for quick filter pills
 const QF_COLOR = {
     slate:   { pill: 'bg-slate-100 text-slate-700 border-slate-200',   active: 'bg-slate-700 text-white border-slate-700',   dot: 'bg-slate-400'  },
     amber:   { pill: 'bg-amber-50 text-amber-700 border-amber-200',    active: 'bg-amber-500 text-white border-amber-500',    dot: 'bg-amber-400'  },
@@ -126,13 +125,74 @@ async function loadProfiles() {
         memberState.currentAuthState.profile = { id: user.id };
     }
 
-    const { data, error } = await supabase
+    // 1. Fetch public profile data
+    const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
         .order('full_name', { ascending: true });
 
     if (error) throw error;
-    memberState.profiles = data || [];
+    memberState.profiles = profiles || [];
+
+    // 2. Check if the current user is an admin
+    const currentUserProfile = memberState.profiles.find(p => p.id === user?.id);
+    const isAdmin = currentUserProfile?.role === 'admin';
+
+    // 3. If admin, augment profiles by fetching the real auth emails from our RPC
+    if (isAdmin) {
+        try {
+            const { data: rpcData, error: rpcError } = await supabase.rpc('export_user_data');
+            
+            if (!rpcError && rpcData) {
+                // Merge real auth emails into matching profiles
+                memberState.profiles.forEach(p => {
+                    // Match the RPC data back to the profile via full_name and username
+                    const rpcMatch = rpcData.find(r => 
+                        (r.full_name === p.full_name) && 
+                        (r.username === p.username)
+                    );
+                    
+                    if (rpcMatch && rpcMatch.email) {
+                        p.login_email = rpcMatch.email; // Store real email safely behind the scenes
+                        
+                        // If they don't have a work_email entered, populate it with their real email for the UI!
+                        if (!p.work_email || p.work_email.trim() === '') {
+                            p.work_email = rpcMatch.email;
+                        }
+
+                        // Also patch missing usernames if available
+                        if (!p.username && rpcMatch.username) {
+                            p.username = rpcMatch.username;
+                        }
+                    }
+                });
+
+                // Add any users who exist in auth.users but DO NOT have a complete profile yet!
+                rpcData.forEach((row, idx) => {
+                    const existsInProfiles = memberState.profiles.some(p => 
+                        (p.full_name === row.full_name) && (p.username === row.username)
+                    );
+                    
+                    if (!existsInProfiles && row.email) {
+                        memberState.profiles.push({
+                            id: 'auth-only-' + idx, // temporary fallback ID
+                            full_name: row.full_name || 'Incomplete Profile',
+                            username: row.username || '',
+                            work_email: row.email,
+                            role: row.role || 'member',
+                            affiliation: 'No Profile Setup',
+                            country: '',
+                            description: 'User has signed up but has not completed a profile yet.',
+                            created_at: new Date().toISOString()
+                        });
+                    }
+                });
+            }
+        } catch (err) {
+            console.warn("Could not fetch secure auth data", err);
+        }
+    }
+
     applyFilters();
 }
 
@@ -142,13 +202,11 @@ async function loadProfiles() {
 function applyFilters() {
     let results = [...memberState.profiles];
 
-    // Quick filter
     if (memberState.quickFilter !== 'all') {
         const def = getQuickFilterDef(memberState.quickFilter);
         if (def) results = results.filter(def.predicate);
     }
 
-    // Text search
     if (memberState.searchQuery) {
         const q = memberState.searchQuery.toLowerCase();
         results = results.filter(p =>
@@ -162,22 +220,18 @@ function applyFilters() {
         );
     }
 
-    // Role filter
     if (memberState.roleFilter !== 'all') {
         results = results.filter(p => p.role === memberState.roleFilter);
     }
 
-    // Affiliation filter
     if (memberState.affiliationFilter !== 'all') {
         results = results.filter(p => (p.affiliation || '') === memberState.affiliationFilter);
     }
 
-    // Country filter
     if (memberState.countryFilter !== 'all') {
         results = results.filter(p => (p.country || '') === memberState.countryFilter);
     }
 
-    // Sort
     const field = memberState.sortField;
     const dir = memberState.sortDir === 'asc' ? 1 : -1;
     results.sort((a, b) => {
@@ -194,7 +248,6 @@ function applyFilters() {
     });
 
     memberState.filtered = results;
-
     const totalPages = Math.max(1, Math.ceil(results.length / memberState.pageSize));
     if (memberState.page > totalPages) memberState.page = 1;
 }
@@ -208,9 +261,6 @@ function getTotalPages() {
     return Math.max(1, Math.ceil(memberState.filtered.length / memberState.pageSize));
 }
 
-// ==========================================
-// UNIQUE VALUES FOR FILTER DROPDOWNS
-// ==========================================
 function getUniqueAffiliations() {
     return [...new Set(memberState.profiles.map(p => p.affiliation).filter(Boolean))].sort();
 }
@@ -219,9 +269,6 @@ function getUniqueCountries() {
     return [...new Set(memberState.profiles.map(p => p.country).filter(Boolean))].sort();
 }
 
-// ==========================================
-// STATS CALCULATION
-// ==========================================
 function getStats() {
     const total = memberState.profiles.length;
     const roles = { member: 0, organizer: 0, admin: 0 };
@@ -242,9 +289,7 @@ function getStats() {
     return { total, roles, countries: countries.size, affiliations: affiliations.size, newThisMonth };
 }
 
-// Count how many profiles match each quick filter (applied on top of role/country/search but independently of quick filter itself)
 function getQuickFilterCounts() {
-    // Base set: apply text search + role + country filters only
     let base = [...memberState.profiles];
 
     if (memberState.searchQuery) {
@@ -273,9 +318,6 @@ function getQuickFilterCounts() {
     return counts;
 }
 
-// ==========================================
-// QUICK FILTER BAR RENDERER
-// ==========================================
 function renderQuickFilterBar(counts) {
     return `
         <div class="flex-none px-4 pt-3 pb-0 bg-white border-b border-gray-100 z-20">
@@ -353,7 +395,6 @@ function render() {
 
                     <!-- Search & Filter Group -->
                     <div class="flex flex-1 flex-col sm:flex-row gap-2">
-                        <!-- Search -->
                         <div class="relative flex-1 min-w-[200px]">
                             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
                             <input id="memberSearch" type="text"
@@ -363,7 +404,6 @@ function render() {
                             ${memberState.searchQuery ? `<button id="clearSearch" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-3 h-3"></i></button>` : ''}
                         </div>
 
-                        <!-- Dropdowns -->
                         <select id="filterRole" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-slate-600 focus:ring-2 focus:ring-brand-500 outline-none cursor-pointer hover:border-brand-300">
                             <option value="all" ${memberState.roleFilter === 'all' ? 'selected' : ''}>All Roles</option>
                             <option value="member" ${memberState.roleFilter === 'member' ? 'selected' : ''}>Member</option>
@@ -386,13 +426,11 @@ function render() {
 
                     <!-- View & Pagination Controls -->
                     <div class="flex items-center gap-2 self-end sm:self-auto">
-                        <!-- Export CSV Button -->
                         <button id="downloadCsvBtn" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand-600 transition-colors shadow-sm" title="Download CSV">
                             <i data-lucide="download" class="w-4 h-4"></i>
                             <span class="hidden sm:inline">Export CSV</span>
                         </button>
                         
-                        <!-- View Toggle -->
                         <div class="flex bg-slate-100 p-1 rounded-lg border border-gray-200">
                             <button class="view-toggle p-1.5 rounded-md ${memberState.viewMode === 'table' ? 'bg-white shadow text-brand-600' : 'text-slate-400 hover:text-slate-600'}" data-view="table">
                                 <i data-lucide="table-2" class="w-4 h-4"></i>
@@ -404,7 +442,6 @@ function render() {
                     </div>
                 </div>
 
-                <!-- Active Quick Filter indicator inside toolbar (mobile-friendly) -->
                 ${memberState.quickFilter !== 'all' ? `
                 <div class="mt-2 flex items-center gap-2 text-xs text-slate-500 md:hidden">
                     <i data-lucide="${activeQF.icon}" class="w-3.5 h-3.5 text-slate-400"></i>
@@ -412,7 +449,6 @@ function render() {
                     <button id="clearQuickFilter" class="ml-auto text-red-500 hover:text-red-700 font-medium">Clear</button>
                 </div>` : ''}
 
-                <!-- Bulk Actions Context Bar -->
                 ${someSelected ? `
                 <div class="mt-3 flex items-center gap-3 px-3 py-2 bg-brand-50 border border-brand-100 rounded-lg animate-in fade-in slide-in-from-top-1">
                     <span class="text-xs font-bold text-brand-700">${memberState.selected.size} selected</span>
@@ -931,61 +967,72 @@ async function updateUserRole(uid, newRole, selectElem) {
     selectElem.disabled = false;
 }
 
-function downloadCSV() {
-    let exportData = [];
-    if (memberState.selected.size > 0) {
-        exportData = memberState.profiles.filter(p => memberState.selected.has(p.id));
-    } else {
-        // If no specific users selected, export all members based on original prompt instructions
-        exportData = memberState.profiles;
-    }
+// Rewritten CSV logic to export the fully stitched data (emails + all profile data)
+async function downloadCSV(exportSelectedOnly = false) {
+    const btnId = exportSelectedOnly ? '#bulkExportBtn' : '#downloadCsvBtn';
+    const btn = document.querySelector(btnId);
+    let originalHtml = '';
 
-    if (exportData.length === 0) {
-        if (typeof setFlash === 'function') setFlash('No members to export.', 3000);
-        return;
-    }
+    try {
+        if (btn) {
+            originalHtml = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
 
-    const headers = [
-        'Name',
-        'Email',
-        'Affiliation',
-        'Department',
-        'Country',
-        'Role',
-        'Joined Date',
-        'Personal Website',
-        'Professional Website',
-        'Google Scholar'
-    ];
+        // Export straight from JS state which has already been merged securely
+        const dataToExport = exportSelectedOnly 
+            ? memberState.filtered.filter(p => memberState.selected.has(p.id))
+            : memberState.filtered;
+        
+        if (!dataToExport || dataToExport.length === 0) {
+            if (typeof setFlash === 'function') setFlash("No user data found to export", 3000);
+            return;
+        }
 
-    const csvRows = [headers.join(',')];
-
-    for (const p of exportData) {
-        const row = [
-            `"${(p.full_name || '').replace(/"/g, '""')}"`,
-            `"${(p.work_email || p.username || '').replace(/"/g, '""')}"`,
-            `"${(p.affiliation || '').replace(/"/g, '""')}"`,
-            `"${(p.department || '').replace(/"/g, '""')}"`,
-            `"${(p.country || '').replace(/"/g, '""')}"`,
-            `"${(p.role || '').replace(/"/g, '""')}"`,
-            `"${p.created_at ? new Date(p.created_at).toISOString().split('T')[0] : ''}"`,
-            `"${(p.personal_website || '').replace(/"/g, '""')}"`,
-            `"${(p.professional_website || '').replace(/"/g, '""')}"`,
-            `"${(p.google_scholar || '').replace(/"/g, '""')}"`
+        // We pull the mapped 'work_email' since that is where we injected the secure auth email
+        const columns = [
+            { header: 'email', key: 'work_email' },
+            { header: 'full_name', key: 'full_name' },
+            { header: 'username', key: 'username' },
+            { header: 'role', key: 'role' },
+            { header: 'affiliation', key: 'affiliation' },
+            { header: 'department', key: 'department' },
+            { header: 'country', key: 'country' },
+            { header: 'fields_of_study', key: 'fields_of_study' },
+            { header: 'joined_at', key: 'created_at' }
         ];
-        csvRows.push(row.join(','));
-    }
 
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `members_export_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+        const csvContent = [
+            columns.map(c => c.header).join(','), // Headers
+            ...dataToExport.map(row => columns.map(c => {
+                const val = row[c.key] || '';
+                return `"${String(val).replace(/"/g, '""')}"`;
+            }).join(','))
+        ].join('\n');
+
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", `members_export_${new Date().toISOString().slice(0, 10)}.csv`);
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+    } catch (err) {
+        console.error("Export failed:", err);
+        if (typeof setFlash === 'function') {
+            setFlash("Export failed: " + err.message, 3000);
+        }
+    } finally {
+        if (btn) {
+            btn.innerHTML = originalHtml;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    }
 }
 
 // ==========================================
@@ -1156,8 +1203,9 @@ function attachListeners() {
         render();
     });
 
-    container.querySelector('#downloadCsvBtn')?.addEventListener('click', downloadCSV);
-    container.querySelector('#bulkExportBtn')?.addEventListener('click', downloadCSV);
+    // Map exports to the newly re-written comprehensive function
+    container.querySelector('#downloadCsvBtn')?.addEventListener('click', () => downloadCSV(false));
+    container.querySelector('#bulkExportBtn')?.addEventListener('click', () => downloadCSV(true));
 
     container.querySelector('#bulkDeleteBtn')?.addEventListener('click', async () => {
         if(!confirm(`Delete ${memberState.selected.size} users?`)) return;
