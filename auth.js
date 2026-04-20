@@ -102,6 +102,7 @@ export async function ensureProfile() {
   authState.profileComplete = !!(
     profile?.full_name &&
     profile?.username &&
+    profile?.country &&
     profile?.affiliation &&
     profile?.work_email
   );

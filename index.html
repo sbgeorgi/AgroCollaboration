@@ -319,8 +319,7 @@
     import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
-    import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl } from './ui.js';
-    import { stripHtml } from './rich-text.js';
+import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl, showProfileGateModal, showAuthGateModal } from './ui.js';    import { stripHtml } from './rich-text.js';
 
     // Inject Layout
     renderLayout('schedule');
@@ -595,8 +594,7 @@
 
     // --- MAIN EXECUTION ---
     (async function main() {
-      const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide, refreshEventsList: renderEventsList };
-      eventLogic = initEventLogic(deps);
+const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide, refreshEventsList: renderEventsList, showProfileGateModal, showAuthGateModal };      eventLogic = initEventLogic(deps);
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
 
       applyI18n(t, state.language);

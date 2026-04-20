@@ -5,7 +5,7 @@ export function initEventLogic(deps) {
   const {
     supabase, authState, tr, state, $, $$, setFlash, fmtDateTime,
     escapeHtml, linkify, bytesToSize, showView, getAvatarUrl,
-    show, hide, refreshEventsList
+    show, hide, refreshEventsList, showProfileGateModal, showAuthGateModal
   } = deps;
 
   // --- STATE ---
@@ -652,9 +652,16 @@ export function initEventLogic(deps) {
   // --- INIT ---
   async function openEvent(eid) {
     if (!authState.session) {
-      const gate = document.getElementById('authGateModal');
-      if (gate) { gate.classList.remove('hidden'); lucideRefresh(); }
+      if (showAuthGateModal) showAuthGateModal(state.language || 'en', true); // true = dismissible
       else setFlash(tr('auth.required'));
+      return;
+    }
+
+    // --- NEW GATEKEEPING ---
+
+    // --- NEW GATEKEEPING ---
+    if (!authState.profileComplete && showProfileGateModal) {
+      showProfileGateModal(state.language || 'en');
       return;
     }
 

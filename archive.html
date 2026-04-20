@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en" class="h-full bg-gray-50 antialiased">
 
 <head>
@@ -244,8 +243,7 @@
     import { renderLayout } from './layout.js';
     import { supabase, authState, initAuth, signOut } from './auth.js';
     import { initEventLogic } from './event.js';
-    import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl } from './ui.js';
-    import { stripHtml } from './rich-text.js';
+import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, getAvatarUrl, showProfileGateModal, showAuthGateModal } from './ui.js';    import { stripHtml } from './rich-text.js';
 
     // Inject Layout with 'archive' active state
     renderLayout('archive');
@@ -544,8 +542,7 @@
 
     // --- MAIN EXECUTION ---
     (async function main() {
-      const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide, refreshEventsList: updateArchiveView };
-      eventLogic = initEventLogic(deps);
+const deps = { supabase, authState, tr: localTr, state, $, $$, setFlash, fmtDateTime, escapeHtml, linkify, bytesToSize, showView, getAvatarUrl, applyI18n: () => applyI18n(t, state.language), show, hide, refreshEventsList: updateArchiveView, showProfileGateModal, showAuthGateModal };      eventLogic = initEventLogic(deps);
 
       initSharedUI({ onLangSwitch: handleLangSwitch, onSignOut: signOut });
 
@@ -607,7 +604,8 @@
           await eventLogic.openEvent(eid);
         } else {
           authState.pendingDeepLinkEventId = eid;
-          setFlash(localTr('auth.required'));
+          // Show the dismissible (true) modal so they can still browse the archive list behind it
+          showAuthGateModal(state.language || 'en', true); 
           showView("archive");
         }
       } else {
@@ -616,49 +614,6 @@
     })();
   </script>
 
-  <!-- ================= AUTH GATE MODAL ================= -->
-  <div id="authGateModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
-    <!-- Backdrop -->
-    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
-      onclick="document.getElementById('authGateModal').classList.add('hidden')"></div>
-
-    <!-- Modal Panel -->
-    <div class="relative flex min-h-full items-center justify-center p-4">
-      <div
-        class="transform overflow-hidden rounded-2xl bg-white p-8 text-left shadow-2xl transition-all max-w-sm w-full border border-gray-100 relative">
-
-        <button onclick="document.getElementById('authGateModal').classList.add('hidden')"
-          class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-gray-50 hover:bg-gray-100 p-1 rounded-full">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-
-        <div class="flex flex-col items-center text-center">
-          <div
-            class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-6 text-brand-600 ring-8 ring-brand-50/50">
-            <i data-lucide="lock" class="w-8 h-8"></i>
-          </div>
-
-          <h3 class="text-xl font-display font-bold text-slate-900 mb-2">Member Access Required</h3>
-          <p class="text-sm text-slate-500 mb-8 leading-relaxed">
-            Join our community to view full event details, watch recordings, download files, and participate in
-            discussions.
-          </p>
-
-          <div class="flex flex-col gap-3 w-full">
-            <a href="signin.html"
-              class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all text-sm flex items-center justify-center gap-2">
-              <span>Sign In / Register</span>
-              <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </a>
-            <button onclick="document.getElementById('authGateModal').classList.add('hidden')"
-              class="w-full py-3 px-4 bg-white border border-gray-200 text-slate-600 font-bold rounded-xl hover:bg-gray-50 hover:text-slate-800 transition-all text-sm">
-              Maybe Later
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
 </body>
 </html>

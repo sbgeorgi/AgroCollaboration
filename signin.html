@@ -300,7 +300,8 @@
           signup: "Sign Up",
           forgot: "Forgot your password?",
           email_placeholder: "you@example.com",
-          password_placeholder: "Password"
+          password_placeholder: "Password",
+          signup_success: "Success! Check your email to verify."
         }
       },
       es: {
@@ -315,12 +316,14 @@
           signup: "Registro",
           forgot: "¿Olvidaste tu contraseña?",
           email_placeholder: "tu@ejemplo.com",
-          password_placeholder: "Contraseña"
+          password_placeholder: "Contraseña",
+          signup_success: "¡Éxito! Revisa tu correo para verificar."
         }
       }
     };
 
     function tr(key) { const parts = key.split("."); let obj = t[state.language]; for (const p of parts) obj = obj?.[p]; return obj ?? key; }
+    
     function applyI18n() {
       document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = tr(el.dataset.i18n); });
       document.querySelectorAll("[data-i18n-placeholder]").forEach(el => { el.placeholder = tr(el.dataset.i18nPlaceholder); });
@@ -338,55 +341,66 @@
       }
     }
 
-    async function handleSignIn(email, password) {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        setFlash(error.message);
-      } else if (data.session) {
-        window.location.replace('index.html');
-      }
-    }
+    // --- NEW: Centralized Traffic Router ---
+    // This evaluates where the user should go immediately after auth is confirmed
+    function routeUser(authState) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnTo = urlParams.get('return_to') || 'index.html';
 
-    async function handleSignUp(email, password) {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) {
-        setFlash(error.message);
+      if (!authState.profileComplete) {
+        // Send to profile with highlight modal lock
+        window.location.replace(`profile.html?force=true&return_to=${encodeURIComponent(returnTo)}`);
       } else {
-        setFlash("Success! Check your email to verify.");
-        $('#signUpForm').reset();
+        // Profile is complete, proceed to intended destination
+        window.location.replace(returnTo);
       }
     }
 
     function wireUI() {
-      // --- CRITICAL FIX FOR REDIRECT ---
-      // Replaces 'window.location.origin' with a relative path calculation
-      // This ensures that if you are in http://localhost:3000/AgroCollaboration/signin.html
-      // it redirects to http://localhost:3000/AgroCollaboration/index.html
-      // instead of http://localhost:3000/index.html (which causes the File Not Found error)
-      const targetRedirectUrl = new URL('index.html', window.location.href).href;
+      // Tell Supabase to return the user RIGHT BACK HERE to signin.html after OAuth.
+      // This allows our routeUser() function to properly evaluate their profile status!
+      const redirectUrl = window.location.href;
 
-      $("#btnGoogle")?.addEventListener("click", () => signInWithGoogle({ redirectTo: targetRedirectUrl }));
+      $("#btnGoogle")?.addEventListener("click", () => signInWithGoogle({ redirectTo: redirectUrl }));
 
       $("#magicLinkForm")?.addEventListener("submit", async (e) => {
         e.preventDefault();
         const email = $("#magicLinkEmail")?.value.trim();
         if (email) {
-          const msg = await signInWithEmail(email, { emailRedirectTo: targetRedirectUrl });
+          const msg = await signInWithEmail(email, { emailRedirectTo: redirectUrl });
           setFlash(msg);
           e.target.reset();
         }
       });
 
-      $('#signInForm')?.addEventListener('submit', e => {
+      $('#signInForm')?.addEventListener('submit', async e => {
         e.preventDefault();
-        handleSignIn($('#signInEmail').value, $('#signInPassword').value);
+        const email = $('#signInEmail').value;
+        const password = $('#signInPassword').value;
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) setFlash(error.message);
+        // Note: On success, initAuth's onAuthChange listener will fire automatically!
       });
 
-      $('#signUpForm')?.addEventListener('submit', e => {
+      $('#signUpForm')?.addEventListener('submit', async e => {
         e.preventDefault();
-        handleSignUp($('#signUpEmail').value, $('#signUpPassword').value);
+        const email = $('#signUpEmail').value;
+        const password = $('#signUpPassword').value;
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        
+        if (error) {
+          setFlash(error.message);
+        } else {
+          // If email confirmations are enabled in Supabase, there is no session yet
+          if (!data.session) {
+            setFlash(tr("auth.signup_success"));
+            $('#signUpForm').reset();
+          }
+          // If session exists immediately, onAuthChange will fire automatically!
+        }
       });
 
+      // --- Tabs Logic ---
       const tabSignIn = $('#tabSignIn'), tabSignUp = $('#tabSignUp');
       const signInForm = $('#signInForm'), signUpForm = $('#signUpForm');
 
@@ -415,17 +429,19 @@
       applyI18n();
       wireUI();
 
+      // Use auth.js to handle the session tracking
       await initAuth({
         onAuthReady: (authState) => {
-          if (authState.session) {
-            // Use replace to prevent back-button loops
-            window.location.replace('index.html');
-          }
+          // Triggers on page load (e.g., returning from Google OAuth)
+          if (authState.session) routeUser(authState);
+        },
+        onAuthChange: (authState) => {
+          // Triggers on live session change (e.g., Email/Password form submit)
+          if (authState.session) routeUser(authState);
         }
       });
     })();
   </script>
 
 </body>
-
 </html>

@@ -142,6 +142,16 @@
               <span class="text-[10px] font-bold text-slate-400 bg-gray-50 px-2 py-1 rounded border border-gray-200 uppercase tracking-wider">Required *</span>
             </div>
 
+            <div id="mandatory-fields-alert" class="hidden mb-6 bg-amber-50/90 border border-amber-200 rounded-2xl p-5 shadow-sm flex-col sm:flex-row items-start gap-4">
+              <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0 border border-amber-200">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600"></i>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-amber-900 font-bold text-[15px] mb-1" data-i18n="profile.mandatory_title">Action Required: Complete Your Profile</h3>
+                <p class="text-amber-700 text-[13.5px] leading-relaxed" data-i18n="profile.mandatory_desc">Please quickly fill out the mandatory fields (marked with a red asterisk *) to access the network and other community features.</p>
+              </div>
+            </div>
+
             <form id="profileForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
               <div class="space-y-1">
                 <label class="label-text" for="fullName"><span data-i18n="profile.full_name">Full Name</span> <span class="text-red-500">*</span></label>
@@ -242,14 +252,14 @@
         en: {
             auth: { signin_prompt_title: "Please Sign In", signin_prompt_body: "Access to your profile dashboard requires authentication.", signin_prompt_button: "Go to Sign In" },
             profile: {
-                title: "Edit Profile", full_name: "Full Name", username: "Username", country: "Country", affiliation: "Affiliation", department: "Department", working_group: "Working Group", work_email: "Work Email", personal_website: "Personal Website", professional_website: "Lab Website", google_scholar: "Google Scholar Profile", fields_section: "Research Interests (tags, comma-separated)", fields_hint: "e.g. agrivoltaics, carbon fluxes, remote sensing...", collaborators: "Collaborators (Optional)", collaborators_help: "Type to search for existing members.", description_section: "Profile Description (optional)", description_hint: "Brief bio, current projects, and how you collaborate (optional).", save: "Save Changes", saving: "Saving...", saved: "Dashboard updated successfully", remove_image: "Remove Picture", upload_error: "Failed to upload image. Please try again.", no_affiliation_results: "No matches found. Typing will create a new one.", no_results: "No existing options found.", username_taken: "Username already taken. Please choose another."
+                title: "Edit Profile", mandatory_title: "Action Required: Complete Your Profile", mandatory_desc: "Please quickly fill out the mandatory fields (marked with a red asterisk *) to access the network and other community features.", full_name: "Full Name", username: "Username", country: "Country", affiliation: "Affiliation", department: "Department", working_group: "Working Group", work_email: "Work Email", personal_website: "Personal Website", professional_website: "Lab Website", google_scholar: "Google Scholar Profile", fields_section: "Research Interests (tags, comma-separated)", fields_hint: "e.g. agrivoltaics, carbon fluxes, remote sensing...", collaborators: "Collaborators (Optional)", collaborators_help: "Type to search for existing members.", description_section: "Profile Description (optional)", description_hint: "Brief bio, current projects, and how you collaborate (optional).", save: "Save Changes", saving: "Saving...", saved: "Dashboard updated successfully", remove_image: "Remove Picture", upload_error: "Failed to upload image. Please try again.", no_affiliation_results: "No matches found. Typing will create a new one.", no_results: "No existing options found.", username_taken: "Username already taken. Please choose another."
             },
             back: { general: "Go Back" }
         },
         es: {
             auth: { signin_prompt_title: "Inicia Sesión", signin_prompt_body: "El acceso al panel de perfil requiere autenticación.", signin_prompt_button: "Iniciar Sesión" },
             profile: {
-                title: "Editar Perfil", full_name: "Nombre Completo", username: "Usuario", country: "País", affiliation: "Afiliación", department: "Departamento", working_group: "Grupo de Trabajo", work_email: "Correo Trabajo", personal_website: "Sitio Personal", professional_website: "Sitio Laboratorio", google_scholar: "Perfil Google Scholar", fields_section: "Intereses de investigación (etiquetas separadas por comas)", fields_hint: "ej. agrovoltaica, flujos de carbono, teledetección...", collaborators: "Colaboradores (Opcional)", collaborators_help: "Escribe para buscar miembros existentes.", description_section: "Descripción del perfil (opcional)", description_hint: "Breve biografía, proyectos actuales y cómo colaboras.", save: "Guardar Cambios", saving: "Guardando...", saved: "Panel actualizado con éxito", remove_image: "Eliminar Foto", upload_error: "Error al subir la imagen. Por favor intenta de nuevo.", no_affiliation_results: "No se encontraron coincidencias. Escribir creará uno nuevo.", no_results: "No se encontraron opciones existentes.", username_taken: "El nombre de usuario ya está en uso."
+                title: "Editar Perfil", mandatory_title: "Acción Requerida: Completa tu Perfil", mandatory_desc: "Por favor, completa rápidamente los campos obligatorios (marcados con un asterisco rojo *) para acceder a la red y otras funciones de la comunidad.", full_name: "Nombre Completo", username: "Usuario", country: "País", affiliation: "Afiliación", department: "Departamento", working_group: "Grupo de Trabajo", work_email: "Correo Trabajo", personal_website: "Sitio Personal", professional_website: "Sitio Laboratorio", google_scholar: "Perfil Google Scholar", fields_section: "Intereses de investigación (etiquetas separadas por comas)", fields_hint: "ej. agrovoltaica, flujos de carbono, teledetección...", collaborators: "Colaboradores (Opcional)", collaborators_help: "Escribe para buscar miembros existentes.", description_section: "Descripción del perfil (opcional)", description_hint: "Breve biografía, proyectos actuales y cómo colaboras.", save: "Guardar Cambios", saving: "Guardando...", saved: "Panel actualizado con éxito", remove_image: "Eliminar Foto", upload_error: "Error al subir la imagen. Por favor intenta de nuevo.", no_affiliation_results: "No se encontraron coincidencias. Escribir creará uno nuevo.", no_results: "No se encontraron opciones existentes.", username_taken: "El nombre de usuario ya está en uso."
             },
             back: { general: "Regresar" }
         }
@@ -289,7 +299,27 @@
     function getQuillContent(quill) { if (!quill) return null; if (quill.getText().trim().length === 0 && quill.root.innerHTML === '<p><br></p>') return null; return quill.root.innerHTML; }
 
     async function handleRoute() {
-        if (!authState.session) { hide($('#view-loading')); hide($('#view-profile')); show($('#view-auth-required')); } else { hide($('#view-auth-required')); show($('#view-profile')); hide($('#view-loading')); if (!state.quillEditor) state.quillEditor = initQuill('#description'); initCountryPicker(); initCollaboratorPicker(); await Promise.all([loadProfileData(), fetchExistingAffiliations()]); }
+        if (!authState.session) { 
+            hide($('#view-loading')); hide($('#view-profile')); show($('#view-auth-required')); 
+        } else { 
+            hide($('#view-auth-required')); show($('#view-profile')); hide($('#view-loading')); 
+            
+            if (!state.quillEditor) state.quillEditor = initQuill('#description'); 
+            initCountryPicker(); 
+            initCollaboratorPicker(); 
+            
+            if (new URLSearchParams(window.location.search).get('force') === 'true') {
+                show($('#mandatory-fields-alert'));
+                $$('label .text-red-500').forEach(asterisk => {
+                    const wrapper = asterisk.closest('.space-y-1');
+                    if (wrapper && !wrapper.classList.contains('bg-amber-50/50')) {
+                        wrapper.classList.add('px-4', 'py-3', '-mx-4', 'rounded-xl', 'bg-amber-50/50', 'border', 'border-amber-200/60', 'shadow-sm', 'transition-all');
+                    }
+                });
+            }
+
+            await Promise.all([loadProfileData(), fetchExistingAffiliations()]); 
+        }
     }
 
     async function fetchExistingAffiliations() {
@@ -385,8 +415,6 @@
                 description: getQuillContent(state.quillEditor),
             };
 
-            // FIX 1: Use .update() instead of .upsert()
-            // FIX 2: Check for unique username error
             const { error } = await supabase.from('profiles').update(updates).eq('id', authState.session.user.id);
             if (error) {
                 if (error.code === '23505') throw new Error(localTr('profile.username_taken'));

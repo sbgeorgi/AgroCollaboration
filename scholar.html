@@ -1022,7 +1022,7 @@
     <script type="module">
         import { supabase, authState, initAuth, signOut } from "./auth.js";
         import { renderLayout } from './layout.js';
-        import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide } from './ui.js';
+import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGateModal, showAuthGateModal } from './ui.js';
 
         renderLayout('scholar');
 
@@ -2705,7 +2705,39 @@
             ui: () => { let tm; el('globalSearch').oninput = e => { clearTimeout(tm); tm = setTimeout(() => { app.state.filters.q = e.target.value; app.state.page = 1; app.render() }, 300) }; el('sortSelect').onchange = e => { app.state.sort = e.target.value; app.render() };['yearFrom', 'yearTo'].forEach(i => el(i).onchange = e => { app.state.filters[i === 'yearFrom' ? 'yFrom' : 'yTo'] = e.target.value ? clamp(+e.target.value, 2000, 2026) : null; app.render() }); el('minRelevance').oninput = e => { const v = +e.target.value; el('valMinRel').textContent = v.toFixed(1); clearTimeout(tm); tm = setTimeout(() => { app.state.filters.minRel = v; app.render() }, 200) }; el('linkDistance').oninput = e => { app.d3.sim.force('link').distance(+e.target.value); app.d3.sim.alpha(.3).restart() }; el('chargeStrength').oninput = e => { app.d3.sim.force('charge').strength(-e.target.value); app.d3.sim.alpha(.3).restart() }; document.querySelectorAll('.view-btn').forEach(b => b.onclick = () => app.setView(b.dataset.view)); let d = false; el('splitHandle').onmousedown = () => { d = true; document.body.style.cursor = 'col-resize' }; document.onmouseup = () => { if (d) { app.resizeGraph(); d = false; document.body.style.cursor = 'default'; } }; document.onmousemove = e => { if (d) { const p = (e.clientX - 320) / (document.body.clientWidth - 320) * 100; if (p > 15 && p < 85) { el('publicationsPanel').style.width = p + '%'; el('networkPanel').style.width = (100 - p) + '%'; app.resizeGraph() } } }; document.addEventListener('click', e => { if (!el('exportDropdown').contains(e.target)) el('exportMenu').classList.add('hidden') }); el('darkModeToggle').onclick = () => app.toggleDarkMode(); el('graphSearchInput').oninput = () => setTimeout(app.hl, 200) }
         };
         const jsStr = s => (s || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-        document.addEventListener('DOMContentLoaded', () => { initSharedUI({ onSignOut: signOut }); initAuth({ onAuthReady: () => { renderHeader(authState, { en: { nav: { schedule: "Schedule", archive: "Archive", scholar: "Scholar", network: "Network", map: "Map", about: "About", admin: "Admin" }, auth: { signin: "Sign in", signout: "Sign out" } }, es: { nav: { schedule: "Programa", archive: "Archivo", scholar: "Académico", network: "Red", map: "Mapa", about: "Acerca de", admin: "Admin" }, auth: { signin: "Ingresar", signout: "Salir" } } }, localStorage.getItem('lang') || 'en'); if (authState.profile?.avatar_url) getAvatarUrl(authState.profile.avatar_url).then(u => { if (u) { $('#userAvatar').src = u; show($('#userAvatar')); hide($('#userInitial')) } }) }, onAuthChange: () => { } }); app.init() }); window.app = app;
+        
+        document.addEventListener('DOMContentLoaded', async () => { 
+            initSharedUI({ onSignOut: signOut }); 
+            
+            await initAuth({ 
+                onAuthReady: () => { 
+                    renderHeader(authState, { 
+                        en: { nav: { schedule: "Schedule", archive: "Archive", scholar: "Scholar", network: "Network", map: "Map", about: "About", admin: "Admin" }, auth: { signin: "Sign in", signout: "Sign out" } }, 
+                        es: { nav: { schedule: "Programa", archive: "Archivo", scholar: "Académico", network: "Red", map: "Mapa", about: "Acerca de", admin: "Admin" }, auth: { signin: "Ingresar", signout: "Salir" } } 
+                    }, localStorage.getItem('lang') || 'en'); 
+                    if (authState.profile?.avatar_url) getAvatarUrl(authState.profile.avatar_url).then(u => { if (u) { $('#userAvatar').src = u; show($('#userAvatar')); hide($('#userInitial')) } }) 
+                }, 
+                onAuthChange: () => { } 
+            });
+
+           // GATEKEEPING
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (!authState.session) {
+                if (loadingOverlay) loadingOverlay.classList.add('hidden');
+                // false = non-dismissible, blocking the page
+                showAuthGateModal(localStorage.getItem('lang') || 'en', false);
+                return;
+            }
+            if (authState.session && !authState.profileComplete) {
+                if (loadingOverlay) loadingOverlay.classList.add('hidden');
+                showProfileGateModal(localStorage.getItem('lang') || 'en');
+                return;
+            }
+
+            app.init()
+        }); 
+        
+        window.app = app;
     </script>
 </body>
 

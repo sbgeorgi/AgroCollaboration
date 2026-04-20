@@ -128,15 +128,7 @@
             </div>
             <span class="text-[13px] font-medium text-slate-600 mt-4 tracking-wide" data-i18n="optimizing">Optimizing Layout...</span>
         </div>
-        <div id="signinGate" class="absolute inset-0 bg-[#f8fafc]/80 backdrop-blur-2xl z-[55] flex items-center justify-center fixed md:absolute" style="display:none;">
-            <div class="bg-white/90 backdrop-blur-2xl rounded-[28px] shadow-2xl shadow-violet-500/10 border border-white p-8 max-w-md text-center mx-4 ring-1 ring-slate-900/5">
-                <div class="w-14 h-14 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-violet-500/20"><i data-lucide="lock" class="w-7 h-7 text-white"></i></div>
-                <h2 class="font-display font-bold text-[26px] text-slate-900 mb-2 tracking-tight" data-i18n="pageTitle">Member Network</h2>
-                <p class="text-slate-500 mb-7 text-[14px] leading-relaxed" data-i18n="signinPrompt">Sign in to visualize connections.</p>
-                <a href="signin.html" class="inline-flex items-center justify-center px-6 py-3 bg-slate-900 hover:bg-black text-white font-semibold rounded-xl transition-all shadow-lg shadow-slate-900/20 hover:shadow-xl hover:-translate-y-0.5 w-full" data-i18n="signinBtn">Sign In</a>
-            </div>
-        </div>
-
+        
         <div class="max-w-[1800px] mx-auto w-full h-auto md:h-full flex flex-col md:flex-row gap-5 p-4 md:p-6 relative">
             <aside class="flex-none w-full md:w-[320px] bg-white/70 backdrop-blur-2xl border border-white/60 rounded-[24px] flex flex-col shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/5 overflow-hidden h-auto md:h-full shrink-0">
                 <div class="p-6 border-b border-slate-100/70 space-y-4">
@@ -244,8 +236,7 @@
     <script type="module">
         import { renderLayout } from './layout.js';
         import { supabase, authState, initAuth, signOut } from './auth.js';
-        import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatarUrl } from './ui.js';
-        import { openProfileModal } from './clickprofile.js';
+import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatarUrl, showProfileGateModal, showAuthGateModal } from './ui.js';        import { openProfileModal } from './clickprofile.js';
 
         renderLayout('network');
 
@@ -597,8 +588,28 @@
             cv.ontouchend = () => { if (state.isDragging && dragMoved) suppressClick = true; state.isDragging = false; };
 
             if (window.lucide) window.lucide.createIcons();
-            const [authRes] = await Promise.all([initAuth({ onAuthReady: () => { renderHeader(authState, t, state.lang); applyLocalTranslations(); }, onAuthChange: () => renderHeader(authState, t, state.lang) }), loadNetworkData()]);
-            $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none'); $('#signinGate').style.display = authState.session? 'none' : 'flex';
+            
+            // 1. Initialize Auth FIRST
+            await initAuth({ 
+                onAuthReady: () => { renderHeader(authState, t, state.lang); applyLocalTranslations(); }, 
+                onAuthChange: () => renderHeader(authState, t, state.lang) 
+            });
+
+           // 2. GATEKEEPING
+            if (!authState.session) {
+                $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
+                showAuthGateModal(state.lang, false); // false = non-dismissible
+                return; 
+            }
+            if (authState.session && !authState.profileComplete) {
+                $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
+                showProfileGateModal(state.lang);
+                return; 
+            }
+
+            // 3. Load Data & Remove Loading Screen
+            await loadNetworkData();
+            $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
         })();
     </script>
 </body>

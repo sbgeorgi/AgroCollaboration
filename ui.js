@@ -253,3 +253,117 @@ export function initSharedUI({ onLangSwitch, onSignOut }) {
   }
 }
 
+// ADD TO ui.js
+export function showProfileGateModal(lang = 'en') {
+    const existing = document.getElementById('profileGateModal');
+    if (existing) existing.remove();
+
+    const tModal = {
+        en: {
+            title: "Action Required",
+            desc: "Please quickly fill out your mandatory profile fields (marked with an asterisk *) to access the interactive map and member network.",
+            btn: "Complete Profile Now"
+        },
+        es: {
+            title: "Acción Requerida",
+            desc: "Por favor completa rápidamente los campos obligatorios de tu perfil (marcados con un asterisco *) para acceder al mapa interactivo y la red de miembros.",
+            btn: "Completar Perfil Ahora"
+        }
+    };
+    const l = tModal[lang] || tModal.en;
+
+    // Changed z-[9999] to z-[40] so it sits under the main header
+    const modalHtml = `
+        <div id="profileGateModal" class="fixed inset-0 z-[40] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 opacity-0 transition-opacity duration-500">
+            <div class="bg-white rounded-[24px] shadow-2xl max-w-md w-full p-8 text-center transform scale-95 transition-transform duration-500 relative overflow-hidden ring-1 ring-slate-900/5 mt-16">
+                <div class="absolute top-0 left-0 w-full h-1.5 bg-amber-400"></div>
+                <div class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-amber-100 shadow-sm">
+                    <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h3 class="text-[22px] font-bold text-slate-900 mb-2 font-display tracking-tight">${l.title}</h3>
+                <p class="text-slate-500 mb-8 text-[14.5px] leading-relaxed">${l.desc}</p>
+                <button onclick="window.location.href='profile.html?force=true&return_to=' + encodeURIComponent(window.location.href)" class="w-full inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-black text-white font-semibold py-3.5 px-4 rounded-xl transition-all shadow-lg shadow-slate-900/20 hover:shadow-xl hover:-translate-y-0.5">
+                    <span>${l.btn}</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    requestAnimationFrame(() => {
+        const modal = document.getElementById('profileGateModal');
+        if (modal) {
+            modal.classList.remove('opacity-0');
+            modal.querySelector('div').classList.remove('scale-95');
+        }
+    });
+}
+
+export function showAuthGateModal(lang = 'en', dismissible = true) {
+    const existing = document.getElementById('authGateModal');
+    if (existing) existing.remove();
+
+    const tModal = {
+        en: {
+            title: "Member Access Required",
+            desc: "Join our community to view full event details, watch recordings, and access the interactive network.",
+            btnIn: "Sign In / Register",
+            btnLater: "Maybe Later"
+        },
+        es: {
+            title: "Acceso de Miembro Requerido",
+            desc: "Únete a nuestra comunidad para ver detalles completos, grabaciones y acceder a la red interactiva.",
+            btnIn: "Ingresar / Registrarse",
+            btnLater: "Quizás más tarde"
+        }
+    };
+    const l = tModal[lang] || tModal.en;
+
+    // 1. Changed z-[9999] to z-[40]
+    // 2. Swapped brand-600 buttons for universal slate-900
+    // 3. Swapped brand-50 icon background for universal slate-100
+    const modalHtml = `
+        <div id="authGateModal" class="fixed inset-0 z-[40] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300" role="dialog" aria-modal="true">
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" ${dismissible ? 'onclick="document.getElementById(\'authGateModal\').remove()"' : ''}></div>
+
+            <!-- Modal Panel -->
+            <div class="relative transform overflow-hidden rounded-2xl bg-white p-8 text-center shadow-2xl transition-all max-w-sm w-full border border-gray-100 scale-95 duration-300 mt-16">
+
+                ${dismissible ? `<button onclick="document.getElementById('authGateModal').remove()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-gray-50 hover:bg-gray-100 p-1 rounded-full">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>` : ''}
+
+                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-600 ring-8 ring-slate-50/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+
+                <h3 class="text-xl font-display font-bold text-slate-900 mb-2">${l.title}</h3>
+                <p class="text-sm text-slate-500 mb-8 leading-relaxed">${l.desc}</p>
+
+                <div class="flex flex-col gap-3 w-full">
+                    <a href="signin.html?return_to=${encodeURIComponent(window.location.href)}" class="w-full inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-black text-white font-semibold py-3.5 px-4 rounded-xl transition-all shadow-lg shadow-slate-900/20 hover:shadow-xl hover:-translate-y-0.5 text-sm">
+                        <span>${l.btnIn}</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </a>
+                    ${dismissible ? `<button onclick="document.getElementById('authGateModal').remove()" class="w-full py-3.5 px-4 bg-white border border-gray-200 text-slate-600 font-bold rounded-xl hover:bg-gray-50 hover:text-slate-800 transition-all text-sm">${l.btnLater}</button>` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    requestAnimationFrame(() => {
+        const modal = document.getElementById('authGateModal');
+        if (modal) {
+            modal.classList.remove('opacity-0');
+            modal.querySelector('.relative').classList.remove('scale-95');
+        }
+    });
+}

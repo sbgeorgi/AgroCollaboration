@@ -372,8 +372,7 @@
   <script type="module">
     import { renderLayout } from './layout.js';
     import { authState, initAuth, signOut } from './auth.js';
-    import { initSharedUI, renderHeader, applyI18n as applySharedI18n, getAvatarUrl, show, hide } from './ui.js';
-    import { initMap } from './map.js';
+import { initSharedUI, renderHeader, applyI18n as applySharedI18n, getAvatarUrl, show, hide, showProfileGateModal, showAuthGateModal } from './ui.js';    import { initMap } from './map.js';
 
     renderLayout('map');
 
@@ -458,10 +457,23 @@
         
         // 3. UI Updates
         applySharedI18n(t, initialLang);
-        lucide.createIcons();
+        if (window.lucide) window.lucide.createIcons();
 
         // 4. Wait for Auth to settle (Map continues loading in background)
         await authPromise;
+
+        // 5. GATEKEEPING MODALS
+        if (!authState.session) {
+            // false = non-dismissible lock screen covering the map
+            showAuthGateModal(initialLang, false);
+            return; // Halt execution
+        }
+        
+        if (authState.session && !authState.profileComplete) {
+            showProfileGateModal(initialLang);
+            return; // Halt execution
+        }
+
         if(mapPromise instanceof Promise) await mapPromise;
 
         setTimeout(() => { if (window.map && typeof window.map.invalidateSize === 'function') window.map.invalidateSize(); }, 200);
