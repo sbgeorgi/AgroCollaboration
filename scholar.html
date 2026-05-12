@@ -1022,7 +1022,7 @@
     <script type="module">
         import { supabase, authState, initAuth, signOut } from "./auth.js";
         import { renderLayout } from './layout.js';
-import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGateModal, showAuthGateModal } from './ui.js';
+        import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGateModal, showAuthGateModal } from './ui.js';
 
         renderLayout('scholar');
 
@@ -1033,11 +1033,23 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
             clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
         const COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4", "#ec4899", "#6366f1", "#84cc16", "#f97316", "#64748b", "#14b8a6"],
-            CFG = { api: "https://api.openalex.org", key: "asf_network_v23", now: new Date().getFullYear(), minRel: 5.0, cap: 50, conc: 8, defMin: 10.0 },
+            CFG = {
+                api: "https://api.openalex.org",
+
+                // Bumped cache key so old year-only cached publications are refreshed with full dates.
+                key: "asf_network_v24_full_dates",
+
+                now: new Date().getFullYear(),
+                minRel: 5.0,
+                cap: 50,
+                conc: 8,
+                defMin: 10.0
+            },
             INST_MAP = [['arizona', 'Univ. of Arizona'], ['unam', 'UNAM'], ['nacional autonoma', 'UNAM'], ['chile', 'Univ. de Chile'], ['fraunhofer', 'Fraunhofer ISE'], ['wageningen', 'Wageningen UR'], ['nrel', 'NREL'], ['davis', 'UC Davis'], ['umass', 'UMass Amherst'], ['massachusetts', 'UMass Amherst']],
             TOPIC_BLOCK = new Set(["medicine", "physics", "materials science", "computer science", "chemistry", "biology", "mathematics", "philosophy", "art", "psychology", "geology", "sociology"]);
 
-        const WORK_FIELDS = 'id,title,publication_year,cited_by_count,type,authorships,concepts,topics,keywords,abstract_inverted_index,primary_location,open_access,doi';
+        // Added publication_date so OpenAlex returns full YYYY-MM-DD dates.
+        const WORK_FIELDS = 'id,title,publication_year,publication_date,cited_by_count,type,authorships,concepts,topics,keywords,abstract_inverted_index,primary_location,open_access,doi';
 
         const createSemaphore = max => { let r = 0; const q = []; return { acquire: () => new Promise(res => r < max ? (r++, res()) : q.push(res)), release: () => { r--; if (q.length) { r++; q.shift()(); } } }; };
         const sem = createSemaphore(CFG.conc);
@@ -1163,27 +1175,27 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
 
                 // RULE 1: Ban Single-Word Seed Matches
                 if (sTokens.length === 1 && !isUsername(seedName)) {
-                     return cTokens.length === 1 && levenshtein(sNorm, cNorm) <= 1 ? 95 : 0;
+                    return cTokens.length === 1 && levenshtein(sNorm, cNorm) <= 1 ? 95 : 0;
                 }
 
                 let nameScore = 0;
 
                 // RULE 2: Strict Username Matching
                 if (isUsername(seedName)) {
-                    const u = sNorm.replace(/[\d_.]/g, ''); 
+                    const u = sNorm.replace(/[\d_.]/g, '');
                     if (u.length > 3) {
                         const firstInit = u.charAt(0);
                         const possibleLastName = u.substring(1);
                         const candFirstInit = cTokens[0].charAt(0);
                         const candLastToken = cTokens[cTokens.length - 1];
-                        
+
                         if (firstInit === candFirstInit && (candLastToken === possibleLastName || levenshtein(candLastToken, possibleLastName) <= 1)) {
-                            nameScore = 95; 
+                            nameScore = 95;
                         } else if (cNorm.includes(u)) {
-                            nameScore = 60; 
+                            nameScore = 60;
                         }
                     }
-                } 
+                }
                 // RULE 3: Normal Name Matching
                 else {
                     const sFirst = sTokens[0];
@@ -1202,11 +1214,11 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
 
                     if (nameScore > 0) {
                         if (sFirst === cFirst) nameScore += 40;
-                        else if (levenshtein(sFirst, cFirst) <= 2) nameScore += 30; 
-                        else if (sFirst.charAt(0) === cFirst.charAt(0)) nameScore += 25; 
+                        else if (levenshtein(sFirst, cFirst) <= 2) nameScore += 30;
+                        else if (sFirst.charAt(0) === cFirst.charAt(0)) nameScore += 25;
                     }
                 }
-                
+
                 if (sNorm === cNorm && nameScore > 0) {
                     nameScore = 100;
                 }
@@ -1215,10 +1227,10 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
                 const sAff = seedAff ? norm(seedAff) : '';
                 const cAff = candInstitution ? norm(candInstitution) : '';
                 const genericAffs = ['no inst', 'other', 'independiente', 'independent', ''];
-                
+
                 const hasSeedAff = !genericAffs.includes(sAff);
                 const hasCandAff = !genericAffs.includes(cAff);
-                
+
                 // If we are in Phase 1B (Niche Context), we trust the topic filter.
                 // We only care about collision risk in the global Phase 1C search.
                 const isGenericName = !isNicheContext && sTokens.length <= 2 && !isUsername(seedName) && candPoolSize > 3;
@@ -1227,7 +1239,7 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
                     if (hasSeedAff && hasCandAff) {
                         const genericInstWords = new Set(['universidad', 'university', 'instituto', 'institute', 'department', 'departamento', 'hospital', 'center', 'centro', 'national', 'nacional', 'school', 'college', 'de', 'del', 'la', 'the', 'and', 'for', 'of', 'las', 'los', 'state', 'estado', 'autonomous', 'autonoma', 'research', 'investigacion']);
                         const affTokens = tokenize(sAff).filter(t => t.length > 2 && !genericInstWords.has(t));
-                        
+
                         let instMatch = false;
                         if (affTokens.length > 0) {
                             for (const t of affTokens) {
@@ -1236,12 +1248,12 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
                         } else {
                             instMatch = levenshtein(sAff, cAff) <= 3 || cAff.includes(sAff) || sAff.includes(cAff);
                         }
-                        
+
                         if (instMatch) {
-                            nameScore += 15; 
+                            nameScore += 15;
                         } else if (!isNicheContext) {
                             // Only apply the brutal penalty if we are searching globally
-                            nameScore -= 30; 
+                            nameScore -= 30;
                         }
                     } else if (isGenericName && (!hasSeedAff || !hasCandAff)) {
                         // High collision risk + Missing Institution = Capped Score (Rejected)
@@ -1293,6 +1305,79 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
         };
 
         const invIdx = i => { if (!i) return ''; const a = []; for (const [w, p] of Object.entries(i)) for (const x of p) a[x] = w; return a.join(' '); };
+
+        const parsePublicationDate = (workOrPub = {}) => {
+            const rawDate = typeof workOrPub.publication_date === 'string'
+                ? workOrPub.publication_date.trim()
+                : '';
+
+            const rawYear = Number.parseInt(
+                workOrPub.publication_year ?? workOrPub.year ?? rawDate.slice(0, 4),
+                10
+            );
+
+            const year = Number.isFinite(rawYear) && rawYear > 0 ? rawYear : null;
+            const hasFullDate = /^\d{4}-\d{2}-\d{2}$/.test(rawDate);
+
+            // Use full date for true recency. Fall back to Jan 1 only for stable sorting,
+            // but keep publication_date null so UI does not pretend we know the exact day.
+            const sortDate = hasFullDate
+                ? rawDate
+                : (year ? `${year}-01-01` : null);
+
+            const sortTime = sortDate
+                ? Date.parse(`${sortDate}T00:00:00.000Z`)
+                : 0;
+
+            return {
+                year,
+                publication_date: hasFullDate ? rawDate : null,
+                publication_date_sort: Number.isFinite(sortTime) ? sortTime : 0
+            };
+        };
+
+        const pubSortTime = p => {
+            if (Number.isFinite(p?.publication_date_sort)) return p.publication_date_sort;
+            return parsePublicationDate(p).publication_date_sort;
+        };
+
+        const pubDateLabel = p => p?.publication_date || (p?.year ? String(p.year) : 'n.d.');
+
+        const makePubRecord = (w, rM, memA, topics) => {
+            const dt = parsePublicationDate(w);
+
+            return {
+                id: w.id,
+                title: w.title,
+                year: dt.year,
+                publication_date: dt.publication_date,
+                publication_date_sort: dt.publication_date_sort,
+                cites: w.cited_by_count || 0,
+                doi: w.doi,
+                url: w.primary_location?.landing_page_url || w.doi || w.primary_location?.pdf_url,
+                source: w.primary_location?.source?.display_name,
+                oa: w.open_access?.is_oa,
+                type: w.type,
+                score: w._r || 0,
+                why: w._w || [],
+                tier: w._t || 'Weak',
+                topics,
+                allA: (w.authorships || []).map(a => ({
+                    id: a.author?.id,
+                    name: a.author?.display_name,
+                    mem: rM.has(a.author?.id)
+                })),
+                memA
+            };
+        };
+
+        const refreshPubDateFields = (pub, sourceWork) => {
+            const dt = parsePublicationDate(sourceWork);
+            pub.year = dt.year;
+            pub.publication_date = dt.publication_date;
+            pub.publication_date_sort = dt.publication_date_sort;
+            return pub;
+        };
 
         const Storage = {
             get: k => { try { const i = JSON.parse(localStorage.getItem(k)); return i && i.e > Date.now() ? i.v : null; } catch { return null; } },
@@ -1783,16 +1868,15 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
 
                                     if (oldPubsMap.has(w.id)) {
                                         const oldPub = oldPubsMap.get(w.id);
+                                        refreshPubDateFields(oldPub, w);
                                         oldPub.memA = memA;
-                                        oldPub.allA = (w.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, mem: rM.has(a.author?.id) }));
+                                        oldPub.allA = (w.authorships || []).map(a => ({
+                                            id: a.author?.id,
+                                            name: a.author?.display_name,
+                                            mem: rM.has(a.author?.id)
+                                        }));
                                     } else {
-                                        app.data.pubs.push({
-                                            id: w.id, title: w.title, year: w.publication_year, cites: w.cited_by_count || 0,
-                                            doi: w.doi, url: w.primary_location?.landing_page_url || w.doi || w.primary_location?.pdf_url,
-                                            source: w.primary_location?.source?.display_name, oa: w.open_access?.is_oa, type: w.type,
-                                            score: w._r || 0, why: w._w || [], tier: w._t || 'Weak', topics: cts,
-                                            allA: (w.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, mem: rM.has(a.author?.id) })), memA
-                                        });
+                                        app.data.pubs.push(makePubRecord(w, rM, memA, cts));
                                     }
                                 });
                             }
@@ -1991,7 +2075,7 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
 
                 const sbRows = app.sleepingBeauties.map(p => `
                 <div class="flex justify-between items-start p-2 border-b border-slate-100 hover:bg-slate-50">
-                    <div class="flex-1"><div class="text-[11px] font-semibold text-slate-700 cursor-pointer hover:text-blue-600" onclick="app.detail('${p.id}')">${esc(p.title)}</div><div class="text-[9px] text-slate-400">${p.year} · Dormancy: ${p.dormancy} yrs · Awake: ${p.awakening.toFixed(1)}x</div></div>
+                    <div class="flex-1"><div class="text-[11px] font-semibold text-slate-700 cursor-pointer hover:text-blue-600" onclick="app.detail('${p.id}')">${esc(p.title)}</div><div class="text-[9px] text-slate-400">${pubDateLabel(p)} · Dormancy: ${p.dormancy} yrs · Awake: ${p.awakening.toFixed(1)}x</div></div>
                     <div class="text-xs font-bold text-slate-600">${p.cites}</div>
                 </div>`).join('');
 
@@ -2117,25 +2201,25 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
                         const candidates = fuzzy.getCandidates(sn, cIdx);
                         const poolSize = candidates.length;
 
-                        for (const c of candidates) { 
+                        for (const c of candidates) {
                             // Phase 1B is NICHE context: pass TRUE at the end
-                            const sc = fuzzy.score(sn, sa, c.display_name, c.institution, poolSize, true); 
-                            if (sc >= 85) { 
+                            const sc = fuzzy.score(sn, sa, c.display_name, c.institution, poolSize, true);
+                            if (sc >= 85) {
                                 console.log(`[Phase 1B Match] Score: ${sc} | Pool: ${poolSize} | Supabase: "${sn}" (${sa || 'No Inst'}) ---> OpenAlex: "${c.display_name}" (${c.institution || 'No Inst'})`);
-                                allP.push({ si, cid: c.id, cn: c.display_name, institution: c.institution, sc }); 
-                            } 
+                                allP.push({ si, cid: c.id, cn: c.display_name, institution: c.institution, sc });
+                            }
                         }
                     }
                     allP.sort((a, b) => b.sc - a.sc);
-                    
+
                     const uSeeds = new Set(), asgn = new Map();
-                    for (const p of allP) { 
-                        if (uSeeds.has(p.si) || uCands.has(p.cid)) continue; 
-                        uSeeds.add(p.si); 
-                        uCands.add(p.cid); 
-                        asgn.set(p.si, p); 
+                    for (const p of allP) {
+                        if (uSeeds.has(p.si) || uCands.has(p.cid)) continue;
+                        uSeeds.add(p.si);
+                        uCands.add(p.cid);
+                        asgn.set(p.si, p);
                     }
-                    
+
                     for (let si = 0; si < R.length; si++) {
                         const a = asgn.get(si);
                         if (a) {
@@ -2144,13 +2228,13 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
                             if (a.institution) R[si].inst = getInst(a.institution);
                             R[si]._matchScore = a.sc;
                             R[si]._matchMethod = 'fuzzy';
-                            const ids = new Set([a.cid]); 
-                            for (const [aid, cid] of aliasMap) if (cid === a.cid) ids.add(aid); 
+                            const ids = new Set([a.cid]);
+                            for (const [aid, cid] of aliasMap) if (cid === a.cid) ids.add(aid);
                             R[si]._allIds = [...ids];
                         }
-                        else { 
-                            R[si].id = `local:${R[si]._seed?.id}`; 
-                            R[si]._matchMethod = 'none'; 
+                        else {
+                            R[si].id = `local:${R[si]._seed?.id}`;
+                            R[si]._matchMethod = 'none';
                         }
                     }
 
@@ -2168,22 +2252,22 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
                     const negativeConcepts = /\b(medicin|surg|nurs|psych|astron|quant|particle|law|art|history|literature|cancer|clinic|syndrome|disease)\b/i;
 
                     await Promise.all(chunks.map(async chunk => {
-                        const terms = chunk.map(r => { 
-                            const n = r._qn || r.display_name; 
-                            if (fuzzy.isUsername(n)) { 
-                                const p = fuzzy.parseUsername(n); 
-                                return p.parts.filter(x => x.length > 2).join(' '); 
-                            } 
-                            return fuzzy.norm(n).replace(/[^a-z\s-]/g, ''); 
+                        const terms = chunk.map(r => {
+                            const n = r._qn || r.display_name;
+                            if (fuzzy.isUsername(n)) {
+                                const p = fuzzy.parseUsername(n);
+                                return p.parts.filter(x => x.length > 2).join(' ');
+                            }
+                            return fuzzy.norm(n).replace(/[^a-z\s-]/g, '');
                         }).filter(n => n.length > 3);
-                        
+
                         const uq = [...new Set(terms)].join('|');
                         if (!uq) return;
-                        
+
                         // NEW: Select 'x_concepts' to peek at their publication history topics
                         const d = await fetchJSON(`${CFG.api}/authors?filter=display_name.search:${encodeURIComponent(uq)}&per_page=200&select=id,display_name,last_known_institutions,x_concepts`);
                         if (!d?.results) return;
-                        
+
                         const candCounts = new Map();
                         for (let ci = 0; ci < chunk.length; ci++) {
                             const sbName = chunk[ci]._qn || chunk[ci].display_name;
@@ -2198,39 +2282,39 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
                             const sbInst = chunk[ci]._seed?.affiliation || '';
                             const poolSize = candCounts.get(ci);
 
-                            for (const res of d.results) { 
-                                if (gUsed.has(res.id)) continue; 
-                                
+                            for (const res of d.results) {
+                                if (gUsed.has(res.id)) continue;
+
                                 const oaName = res.display_name;
                                 const oaInst = res.last_known_institutions?.[0]?.display_name || '';
-                                
+
                                 // Profile Validation via Concepts
                                 const concepts = res.x_concepts || [];
                                 const topConcepts = concepts.slice(0, 10).map(c => c.display_name);
                                 const topConceptStr = topConcepts.join(' ');
-                                
+
                                 const hasPositiveContext = positiveConcepts.test(topConceptStr);
                                 const hasNegativeContext = negativeConcepts.test(topConceptStr);
-                                
+
                                 // If they are clearly a doctor or astronomer, skip them entirely
                                 if (hasNegativeContext && !hasPositiveContext) continue;
 
                                 // If they publish in our domain, we grant them "Niche Context" status
                                 // This tells the fuzzy matcher: "Don't penalize them if institutions are missing/different, we know they are in our field!"
-                                const isNiche = hasPositiveContext; 
-                                
-                                const sc = fuzzy.score(sbName, sbInst, oaName, oaInst, poolSize, isNiche); 
-                                
+                                const isNiche = hasPositiveContext;
+
+                                const sc = fuzzy.score(sbName, sbInst, oaName, oaInst, poolSize, isNiche);
+
                                 // We can safely use a lower threshold (80) because we validated their concepts
-                                if (sc >= 80) { 
-                                    console.log(`[Phase 1C Rescue] Score: ${sc} | Domain Validated: ${isNiche} | "${sbName}" ---> "${oaName}" [Top Concepts: ${topConcepts.slice(0,3).join(', ')}]`);
-                                    
+                                if (sc >= 80) {
+                                    console.log(`[Phase 1C Rescue] Score: ${sc} | Domain Validated: ${isNiche} | "${sbName}" ---> "${oaName}" [Top Concepts: ${topConcepts.slice(0, 3).join(', ')}]`);
+
                                     // Give a slight score bump to authors who were positively validated
-                                    pairs.push({ ci, cid: res.id, cn: res.display_name, inst: oaInst, sc: sc + (isNiche ? 10 : 0) }); 
-                                } 
+                                    pairs.push({ ci, cid: res.id, cn: res.display_name, inst: oaInst, sc: sc + (isNiche ? 10 : 0) });
+                                }
                             }
                         }
-                        
+
                         pairs.sort((a, b) => b.sc - a.sc);
                         const uC = new Set(), uS = new Set();
                         for (const p of pairs) {
@@ -2340,13 +2424,7 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
                     });
                     if (!cts.length && ts.length) return null;
                     if (p._hasAbs) app.cache.set(p.id, p._abstract);
-                    return {
-                        id: p.id, title: p.title, year: p.publication_year, cites: p.cited_by_count || 0,
-                        doi: p.doi, url: p.primary_location?.landing_page_url || p.doi || p.primary_location?.pdf_url,
-                        source: p.primary_location?.source?.display_name, oa: p.open_access?.is_oa, type: p.type,
-                        score: p._r || 0, why: p._w || [], tier: p._t || 'Weak', topics: cts,
-                        allA: (p.authorships || []).map(a => ({ id: a.author?.id, name: a.author?.display_name, mem: rM.has(a.author?.id) })), memA: m
-                    }
+                    return makePubRecord(p, rM, m, cts);
                 }).filter(Boolean);
                 app.data.researchers = R.filter(r => app.data.pubs.some(p => p.memA.includes(r)));
                 app.buildGraph()
@@ -2360,8 +2438,113 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
                 });
                 app.data.graph = { nodes: app.data.researchers.map(r => ({ ...r, deg: D.get(r.id) || 0, rad: clamp(10 + Math.sqrt(r.net_works || 0) * 3 + Math.sqrt(D.get(r.id) || 0) * 1.5, 10, 30) })), links: [...L.values()] }
             },
-            pack: () => { const D = { t: [], s: [] }, gx = (a, v) => { if (!v) return -1; let i = a.indexOf(v); return i === -1 ? (a.push(v), a.length - 1) : i }; return { r: app.data.researchers.map(r => ({ id: r.id, si: r._seedId, n: r.display_name, i: r.inst, nw: r.net_works, nc: r.net_cited, nh: r.net_hindex, t: Object.keys(r.topics).map(t => gx(D.t, t)), d: r.deg })), p: app.data.pubs.map(p => ({ id: p.id, t: p.title, y: p.year, c: p.cites, d: p.doi, u: p.url, s: gx(D.s, p.source), oa: p.oa ? 1 : 0, r: p.score, w: p.why, ti: p.tier === 'Core' ? 3 : (p.tier === 'Strong' ? 2 : 1), tp: p.topics.map(t => gx(D.t, t)), aa: p.allA.slice(0, 10).map(a => a.name), ma: p.memA.map(m => m.id) })), D } },
-            restore: c => { const D = c.D || { t: [], s: [] }; app.data.researchers = c.r.map(r => ({ id: r.id, _seedId: r.si, display_name: r.n, inst: r.i, net_works: r.nw, net_cited: r.nc, net_hindex: r.nh || 0, topics: (r.t || []).reduce((a, i) => { if (D.t[i]) a[D.t[i]] = 1; return a }, {}), deg: r.deg || 0, color: app.gCol(r.i) })); const rM = new Map(app.data.researchers.map(r => [r.id, r])); app.data.pubs = c.p.map(p => { const m = (p.ma || []).map(i => rM.get(i)).filter(Boolean), rt = (p.tp || []).map(i => D.t[i]).filter(Boolean), ct = rt.filter(t => !TOPIC_NEG.has(norm(t))); if (!ct.length && rt.length) return null; return { id: p.id, title: p.t, year: p.y, cites: p.c, doi: p.d, url: p.u, source: typeof p.s === 'number' ? D.s[p.s] : p.s, oa: !!p.oa, type: p.ty, score: p.r, why: p.w || [], tier: p.ti === 3 ? 'Core' : (p.ti === 2 ? 'Strong' : 'Weak'), topics: ct, allA: (p.aa || []).map(n => { const f = m.find(z => z.display_name === n); return { name: n, id: f ? f.id : null, mem: !!f } }), memA: m } }).filter(Boolean); app.data.topics = new Map; app.data.pubs.forEach(p => p.topics.forEach(t => app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1))); app.buildGraph() },
+            pack: () => {
+                const D = { t: [], s: [] };
+                const gx = (a, v) => {
+                    if (!v) return -1;
+                    let i = a.indexOf(v);
+                    return i === -1 ? (a.push(v), a.length - 1) : i;
+                };
+
+                return {
+                    r: app.data.researchers.map(r => ({
+                        id: r.id,
+                        si: r._seedId,
+                        n: r.display_name,
+                        i: r.inst,
+                        nw: r.net_works,
+                        nc: r.net_cited,
+                        nh: r.net_hindex,
+                        t: Object.keys(r.topics).map(t => gx(D.t, t)),
+                        d: r.deg
+                    })),
+                    p: app.data.pubs.map(p => ({
+                        id: p.id,
+                        t: p.title,
+                        y: p.year,
+                        pd: p.publication_date || null,
+                        pds: pubSortTime(p),
+                        c: p.cites,
+                        d: p.doi,
+                        u: p.url,
+                        s: gx(D.s, p.source),
+                        oa: p.oa ? 1 : 0,
+                        ty: p.type,
+                        r: p.score,
+                        w: p.why,
+                        ti: p.tier === 'Core' ? 3 : (p.tier === 'Strong' ? 2 : 1),
+                        tp: p.topics.map(t => gx(D.t, t)),
+                        aa: p.allA.slice(0, 10).map(a => a.name),
+                        ma: p.memA.map(m => m.id)
+                    })),
+                    D
+                };
+            },
+
+            restore: c => {
+                const D = c.D || { t: [], s: [] };
+
+                app.data.researchers = c.r.map(r => ({
+                    id: r.id,
+                    _seedId: r.si,
+                    display_name: r.n,
+                    inst: r.i,
+                    net_works: r.nw,
+                    net_cited: r.nc,
+                    net_hindex: r.nh || 0,
+                    topics: (r.t || []).reduce((a, i) => {
+                        if (D.t[i]) a[D.t[i]] = 1;
+                        return a;
+                    }, {}),
+                    deg: r.deg || 0,
+                    color: app.gCol(r.i)
+                }));
+
+                const rM = new Map(app.data.researchers.map(r => [r.id, r]));
+
+                app.data.pubs = c.p.map(p => {
+                    const m = (p.ma || []).map(i => rM.get(i)).filter(Boolean);
+                    const rt = (p.tp || []).map(i => D.t[i]).filter(Boolean);
+                    const ct = rt.filter(t => !TOPIC_NEG.has(norm(t)));
+
+                    if (!ct.length && rt.length) return null;
+
+                    const parsed = parsePublicationDate({
+                        year: p.y,
+                        publication_date: p.pd || null
+                    });
+
+                    return {
+                        id: p.id,
+                        title: p.t,
+                        year: parsed.year,
+                        publication_date: parsed.publication_date,
+                        publication_date_sort: Number.isFinite(p.pds) ? p.pds : parsed.publication_date_sort,
+                        cites: p.c,
+                        doi: p.d,
+                        url: p.u,
+                        source: typeof p.s === 'number' ? D.s[p.s] : p.s,
+                        oa: !!p.oa,
+                        type: p.ty,
+                        score: p.r,
+                        why: p.w || [],
+                        tier: p.ti === 3 ? 'Core' : (p.ti === 2 ? 'Strong' : 'Weak'),
+                        topics: ct,
+                        allA: (p.aa || []).map(n => {
+                            const f = m.find(z => z.display_name === n);
+                            return { name: n, id: f ? f.id : null, mem: !!f };
+                        }),
+                        memA: m
+                    };
+                }).filter(Boolean);
+
+                app.data.topics = new Map;
+                app.data.pubs.forEach(p => {
+                    p.topics.forEach(t => app.data.topics.set(t, (app.data.topics.get(t) || 0) + 1));
+                });
+
+                app.buildGraph();
+            },
             gCol: i => { if (!app.col.has(i)) app.col.set(i, COLORS[app.col.size % COLORS.length]); return app.col.get(i) },
             spark: (d, w = 48, h = 16) => {
                 const m = Math.max(...d, 1);
@@ -2393,7 +2576,15 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
 
                 app.timeline(timelineYc);
 
-                const sF = { cited: (a, b) => b.cites - a.cites, relevance: (a, b) => b.score - a.score || b.cites - a.cites, title: (a, b) => a.title.localeCompare(b.title), recent: (a, b) => b.year - a.year || b.score - a.score, oldest: (a, b) => a.year - b.year || b.score - a.score, bookmarked: (a, b) => (app.bm.has(b.id) ? 1 : 0) - (app.bm.has(a.id) ? 1 : 0) || b.score - a.score }; F.sort(sF[app.state.sort] || sF.recent); const inf = app.state.mode === 'infinite', sz = inf ? F.length : 12, pgs = inf ? 1 : Math.ceil(F.length / sz), pg = app.state.page = clamp(app.state.page, 1, Math.max(1, pgs)), st = inf ? 0 : (pg - 1) * sz; el('publicationsList').innerHTML = F.slice(st, st + sz).map(app.pubCard).join('') || '<div class="text-center py-20 text-slate-400 text-xs">No results.</div>'; if (!inf) el('publicationsList').scrollTop = 0;['showingFrom', 'showingTo', 'totalPublications'].forEach((id, i) => el(id).textContent = [F.length ? st + 1 : 0, Math.min(st + sz, F.length), F.length][i]); if (!inf && pgs > 1) { const b = [], ad = (p, l, a) => b.push(`<button onclick="app.setPage(${p})" class="w-6 h-6 flex items-center justify-center rounded text-[9px] font-medium ${a ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`); ad(Math.max(1, pg - 1), '<i class="fas fa-chevron-left"></i>'); (pgs <= 5 ? Array.from({ length: pgs }, (_, i) => i + 1) : (pg <= 3 ? [1, 2, 3, '...', pgs] : (pg >= pgs - 2 ? [1, '...', pgs - 2, pgs - 1, pgs] : [1, '...', pg, pg + 1, '...', pgs]))).forEach(x => x === '...' ? b.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : ad(x, x, x === pg)); ad(Math.min(pgs, pg + 1), '<i class="fas fa-chevron-right"></i>'); el('paginationContainer').innerHTML = b.join('') } else el('paginationContainer').innerHTML = ''; app.renderGraph(F, am); if (app.state.view === 'constellation') app.renderConstellation(F); const ic = new Map, tc = new Map; app.data.researchers.forEach(r => am.has(r.id) && ic.set(r.inst, (ic.get(r.inst) || 0) + 1)); F.forEach(p => p.topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1))); el('institutionFilters').innerHTML = [...ic].sort((a, b) => b[1] - a[1]).map(([i, c]) => `<label class="flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 p-1 rounded group"><input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 w-3 h-3" ${I.has(i) ? 'checked' : ''}><div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${app.gCol(i)}"></div><span class="text-[10px] text-slate-600 truncate flex-1">${esc(i)}</span><span class="text-[8px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span></label>`).join(''); el('topicFilters').innerHTML = [...tc].sort((a, b) => b[1] - a[1]).slice(0, 35).map(([t, c]) => `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] border flex gap-1 ${T.has(t) ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-50 text-slate-500 hover:bg-white'}">${esc(t)} <span class="opacity-50 text-[8px]">${c}</span></button>`).join(''); const fc = T.size + I.size + (bo ? 1 : 0) + (co ? 1 : 0) + (author ? 1 : 0), tg = (l, k, c) => `<span class="${c} px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>`; el('activeFiltersPanel').classList.toggle('hidden', !fc); el('activeFilterCount').textContent = fc;
+                const sF = {
+                    cited: (a, b) => b.cites - a.cites || pubSortTime(b) - pubSortTime(a),
+                    relevance: (a, b) => b.score - a.score || pubSortTime(b) - pubSortTime(a) || b.cites - a.cites,
+                    title: (a, b) => a.title.localeCompare(b.title),
+                    recent: (a, b) => pubSortTime(b) - pubSortTime(a) || b.score - a.score || b.cites - a.cites,
+                    oldest: (a, b) => pubSortTime(a) - pubSortTime(b) || b.score - a.score || b.cites - a.cites,
+                    bookmarked: (a, b) => (app.bm.has(b.id) ? 1 : 0) - (app.bm.has(a.id) ? 1 : 0) || pubSortTime(b) - pubSortTime(a) || b.score - a.score
+                }; 
+                F.sort(sF[app.state.sort] || sF.recent); const inf = app.state.mode === 'infinite', sz = inf ? F.length : 12, pgs = inf ? 1 : Math.ceil(F.length / sz), pg = app.state.page = clamp(app.state.page, 1, Math.max(1, pgs)), st = inf ? 0 : (pg - 1) * sz; el('publicationsList').innerHTML = F.slice(st, st + sz).map(app.pubCard).join('') || '<div class="text-center py-20 text-slate-400 text-xs">No results.</div>'; if (!inf) el('publicationsList').scrollTop = 0;['showingFrom', 'showingTo', 'totalPublications'].forEach((id, i) => el(id).textContent = [F.length ? st + 1 : 0, Math.min(st + sz, F.length), F.length][i]); if (!inf && pgs > 1) { const b = [], ad = (p, l, a) => b.push(`<button onclick="app.setPage(${p})" class="w-6 h-6 flex items-center justify-center rounded text-[9px] font-medium ${a ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${l}</button>`); ad(Math.max(1, pg - 1), '<i class="fas fa-chevron-left"></i>'); (pgs <= 5 ? Array.from({ length: pgs }, (_, i) => i + 1) : (pg <= 3 ? [1, 2, 3, '...', pgs] : (pg >= pgs - 2 ? [1, '...', pgs - 2, pgs - 1, pgs] : [1, '...', pg, pg + 1, '...', pgs]))).forEach(x => x === '...' ? b.push('<span class="text-[9px] text-slate-400 self-end px-1">...</span>') : ad(x, x, x === pg)); ad(Math.min(pgs, pg + 1), '<i class="fas fa-chevron-right"></i>'); el('paginationContainer').innerHTML = b.join('') } else el('paginationContainer').innerHTML = ''; app.renderGraph(F, am); if (app.state.view === 'constellation') app.renderConstellation(F); const ic = new Map, tc = new Map; app.data.researchers.forEach(r => am.has(r.id) && ic.set(r.inst, (ic.get(r.inst) || 0) + 1)); F.forEach(p => p.topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1))); el('institutionFilters').innerHTML = [...ic].sort((a, b) => b[1] - a[1]).map(([i, c]) => `<label class="flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 p-1 rounded group"><input type="checkbox" onchange="app.tog('insts','${jsStr(i)}')" class="rounded border-slate-300 text-green-600 w-3 h-3" ${I.has(i) ? 'checked' : ''}><div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${app.gCol(i)}"></div><span class="text-[10px] text-slate-600 truncate flex-1">${esc(i)}</span><span class="text-[8px] text-slate-400 font-mono bg-slate-100 px-1 rounded">${c}</span></label>`).join(''); el('topicFilters').innerHTML = [...tc].sort((a, b) => b[1] - a[1]).slice(0, 35).map(([t, c]) => `<button onclick="app.tog('topics','${jsStr(t)}')" class="px-1.5 py-0.5 rounded text-[9px] border flex gap-1 ${T.has(t) ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-50 text-slate-500 hover:bg-white'}">${esc(t)} <span class="opacity-50 text-[8px]">${c}</span></button>`).join(''); const fc = T.size + I.size + (bo ? 1 : 0) + (co ? 1 : 0) + (author ? 1 : 0), tg = (l, k, c) => `<span class="${c} px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">${esc(l)}<button onclick="app.tog('${k}','${jsStr(l)}')" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>`; el('activeFiltersPanel').classList.toggle('hidden', !fc); el('activeFilterCount').textContent = fc;
 
                 let authorTag = '';
                 if (author) {
@@ -2403,7 +2594,7 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
 
                 el('activeFilterTags').innerHTML = (bo ? '<span class="bg-amber-50 text-amber-700 border-amber-200 px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">Bookmarked<button onclick="app.toggleBookmarkFilter()" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>' : '') + (co ? `<span class="bg-purple-50 text-purple-700 border-purple-200 px-1.5 py-0.5 rounded border text-[9px] flex gap-1 items-center font-medium">Interact: ${co.t1.substring(0, 8)}... & ${co.t2.substring(0, 8)}...<button onclick="app.clrCo()" class="hover:text-red-500 ml-0.5"><i class="fas fa-times"></i></button></span>` : '') + authorTag + [...T].map(t => tg(t, 'topics', 'bg-green-50 text-green-700 border-green-200')).join('') + [...I].map(i => tg(i, 'insts', 'bg-blue-50 text-blue-700 border-blue-200')).join(''); const actInst = [...app.col].filter(([i]) => app.data.researchers.some(r => r.inst === i && am.has(r.id))); el('legendContainer').innerHTML = actInst.map(([i, c]) => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background:${c}"></span><span class="text-[9px] text-slate-600 truncate">${esc(i)}</span></div>`).join(''); app.updSel(); app.updBm(); if (app.state.hm) app.heatmap(F)
             },
-            pubCard: p => `<div class="pub-card p-3 bg-white mb-2 cursor-pointer" onclick="app.detail('${p.id}')"><div class="flex items-start gap-2"><input type="checkbox" class="pub-checkbox mt-1" ${app.state.sel.has(p.id) ? 'checked' : ''} onclick="event.stopPropagation();app.togSel('${p.id}')"><div class="flex-1 min-w-0"><div class="flex items-start justify-between gap-2 mb-1.5"><h4 class="font-bold text-slate-800 text-xs leading-snug flex-1">${esc(p.title)}</h4><div class="shrink-0 flex items-center gap-1"><button class="bookmark-btn ${app.bm.has(p.id) ? 'active text-amber-500' : 'text-slate-300 hover:text-amber-400'} p-1 text-xs" onclick="event.stopPropagation();app.togBm('${p.id}')"><i class="fas fa-bookmark"></i></button>${p.oa ? '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[8px] font-bold rounded border border-amber-100 uppercase">OA</span>' : ''} ${p.tier === 'Core' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-green-100 text-green-800 border border-green-200">Core</span>' : (p.tier === 'Strong' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">Strong</span>' : '')}</div></div><div class="flex flex-wrap gap-1 mb-2">${p.allA.slice(0, 5).map(a => `<span class="px-1.5 py-0.5 rounded text-[9px] truncate max-w-[100px] ${a.mem ? 'network-member font-medium' : 'external-author'}">${esc(a.name)}</span>`).join('')}${p.allA.length > 5 ? `<span class="text-[9px] text-slate-400 self-center">+${p.allA.length - 5}</span>` : ''}</div><div class="flex items-center gap-3 text-[9px] text-slate-500 font-medium"><span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${p.year || ''}</span><span class="flex items-center gap-1"><i class="fas fa-quote-right text-slate-400"></i> ${p.cites}</span><span class="ml-auto text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 font-semibold">Score: ${p.score.toFixed(1)}</span><div class="flex gap-1 ml-1"><button class="hover:text-brand p-1" onclick="event.stopPropagation();app.cite('${p.id}')"><i class="fas fa-quote-left"></i></button>${p.doi ? `<button class="hover:text-blue-600 p-1 transition-colors" onclick="event.stopPropagation();app.cpD(event, '${jsStr(p.doi)}')" title="Copy DOI"><i class="fas fa-copy"></i></button><a href="https://doi.org/${p.doi}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 p-1 transition-colors" onclick="event.stopPropagation()" title="Open Paper"><i class="fas fa-external-link-alt"></i></a>` : ''}</div></div></div></div></div>`,
+            pubCard: p => `<div class="pub-card p-3 bg-white mb-2 cursor-pointer" onclick="app.detail('${p.id}')"><div class="flex items-start gap-2"><input type="checkbox" class="pub-checkbox mt-1" ${app.state.sel.has(p.id) ? 'checked' : ''} onclick="event.stopPropagation();app.togSel('${p.id}')"><div class="flex-1 min-w-0"><div class="flex items-start justify-between gap-2 mb-1.5"><h4 class="font-bold text-slate-800 text-xs leading-snug flex-1">${esc(p.title)}</h4><div class="shrink-0 flex items-center gap-1"><button class="bookmark-btn ${app.bm.has(p.id) ? 'active text-amber-500' : 'text-slate-300 hover:text-amber-400'} p-1 text-xs" onclick="event.stopPropagation();app.togBm('${p.id}')"><i class="fas fa-bookmark"></i></button>${p.oa ? '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[8px] font-bold rounded border border-amber-100 uppercase">OA</span>' : ''} ${p.tier === 'Core' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-green-100 text-green-800 border border-green-200">Core</span>' : (p.tier === 'Strong' ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">Strong</span>' : '')}</div></div><div class="flex flex-wrap gap-1 mb-2">${p.allA.slice(0, 5).map(a => `<span class="px-1.5 py-0.5 rounded text-[9px] truncate max-w-[100px] ${a.mem ? 'network-member font-medium' : 'external-author'}">${esc(a.name)}</span>`).join('')}${p.allA.length > 5 ? `<span class="text-[9px] text-slate-400 self-center">+${p.allA.length - 5}</span>` : ''}</div><div class="flex items-center gap-3 text-[9px] text-slate-500 font-medium"><span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-slate-400"></i> ${pubDateLabel(p)}</span><span class="flex items-center gap-1"><i class="fas fa-quote-right text-slate-400"></i> ${p.cites}</span><span class="ml-auto text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 font-semibold">Score: ${p.score.toFixed(1)}</span><div class="flex gap-1 ml-1"><button class="hover:text-brand p-1" onclick="event.stopPropagation();app.cite('${p.id}')"><i class="fas fa-quote-left"></i></button>${p.doi ? `<button class="hover:text-blue-600 p-1 transition-colors" onclick="event.stopPropagation();app.cpD(event, '${jsStr(p.doi)}')" title="Copy DOI"><i class="fas fa-copy"></i></button><a href="https://doi.org/${p.doi}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 p-1 transition-colors" onclick="event.stopPropagation()" title="Open Paper"><i class="fas fa-external-link-alt"></i></a>` : ''}</div></div></div></div></div>`,
             timeline: (yc) => {
                 const svg = d3.select('#timelineChart');
                 const allYears = app.data.pubs.map(p => p.year).filter(Boolean);
@@ -2614,9 +2805,9 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
                 vp.attr('x', vx * scale + offX).attr('y', vy * scale + offY).attr('width', vw * scale).attr('height', vh * scale);
             },
             renderConstellation: (F) => {
-                const svg = d3.select('#constellationGraph'); svg.selectAll('*').remove(); if (!F.length) return; const container = el('constellationPanel'); const W = container.clientWidth || 800; const H = container.clientHeight || 600; svg.attr('viewBox', `0 0 ${W} ${H}`); const topicColors = new Map(); const tc = new Map(); F.forEach(p => p.topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1))); const sortedTopics = [...tc.entries()].sort((a, b) => b[1] - a[1]); sortedTopics.forEach(([t], i) => topicColors.set(t, COLORS[i % COLORS.length])); const cNodes = F.slice(0, 200).map(p => ({ id: p.id, title: p.title, year: p.year, cites: p.cites, topics: p.topics, score: p.score, color: topicColors.get(p.topics[0]) || '#94a3b8', r: clamp(3 + Math.sqrt(p.cites) * 0.5, 3, 12) })); const cLinks = []; for (let i = 0; i < cNodes.length; i++) { for (let j = i + 1; j < cNodes.length; j++) { const shared = cNodes[i].topics.filter(t => cNodes[j].topics.includes(t)).length; if (shared >= 2) { cLinks.push({ source: cNodes[i].id, target: cNodes[j].id, w: shared }) } } } const g = svg.append('g'); const zoom = d3.zoom().scaleExtent([0.2, 5]).on('zoom', e => g.attr('transform', e.transform)); svg.call(zoom); const cSim = d3.forceSimulation(cNodes).force('link', d3.forceLink(cLinks).id(d => d.id).distance(40).strength(d => d.w * 0.05)).force('charge', d3.forceManyBody().strength(-15)).force('center', d3.forceCenter(W / 2, H / 2)).force('collide', d3.forceCollide().radius(d => d.r + 2)); if (app.constellationSim) app.constellationSim.stop(); app.constellationSim = cSim; const link = g.append('g').selectAll('line').data(cLinks).enter().append('line').attr('class', 'constellation-link').attr('stroke-width', d => d.w * 0.5); const node = g.append('g').selectAll('circle').data(cNodes).enter().append('circle').attr('class', 'constellation-node').attr('r', d => d.r).attr('fill', d => d.color).attr('opacity', 0.7); const cTip = el('constellationTooltip');
+                const svg = d3.select('#constellationGraph'); svg.selectAll('*').remove(); if (!F.length) return; const container = el('constellationPanel'); const W = container.clientWidth || 800; const H = container.clientHeight || 600; svg.attr('viewBox', `0 0 ${W} ${H}`); const topicColors = new Map(); const tc = new Map(); F.forEach(p => p.topics.forEach(t => tc.set(t, (tc.get(t) || 0) + 1))); const sortedTopics = [...tc.entries()].sort((a, b) => b[1] - a[1]); sortedTopics.forEach(([t], i) => topicColors.set(t, COLORS[i % COLORS.length])); const cNodes = F.slice(0, 200).map(p => ({ id: p.id, title: p.title, year: p.year, publication_date: p.publication_date, cites: p.cites, topics: p.topics, score: p.score, color: topicColors.get(p.topics[0]) || '#94a3b8', r: clamp(3 + Math.sqrt(p.cites) * 0.5, 3, 12) })); const cLinks = []; for (let i = 0; i < cNodes.length; i++) { for (let j = i + 1; j < cNodes.length; j++) { const shared = cNodes[i].topics.filter(t => cNodes[j].topics.includes(t)).length; if (shared >= 2) { cLinks.push({ source: cNodes[i].id, target: cNodes[j].id, w: shared }) } } } const g = svg.append('g'); const zoom = d3.zoom().scaleExtent([0.2, 5]).on('zoom', e => g.attr('transform', e.transform)); svg.call(zoom); const cSim = d3.forceSimulation(cNodes).force('link', d3.forceLink(cLinks).id(d => d.id).distance(40).strength(d => d.w * 0.05)).force('charge', d3.forceManyBody().strength(-15)).force('center', d3.forceCenter(W / 2, H / 2)).force('collide', d3.forceCollide().radius(d => d.r + 2)); if (app.constellationSim) app.constellationSim.stop(); app.constellationSim = cSim; const link = g.append('g').selectAll('line').data(cLinks).enter().append('line').attr('class', 'constellation-link').attr('stroke-width', d => d.w * 0.5); const node = g.append('g').selectAll('circle').data(cNodes).enter().append('circle').attr('class', 'constellation-node').attr('r', d => d.r).attr('fill', d => d.color).attr('opacity', 0.7); const cTip = el('constellationTooltip');
                 const targetNode = g.append('g').selectAll('circle.target').data(cNodes).enter().append('circle').attr('r', d => d.r + 15).attr('fill', 'transparent').attr('cursor', 'pointer');
-                targetNode.on('mouseover', (e, d) => { const r = container.getBoundingClientRect(); Object.assign(cTip.style, { left: Math.min(e.clientX - r.left + 10, r.width - 220) + 'px', top: Math.min(e.clientY - r.top + 10, r.height - 120) + 'px' }); cTip.innerHTML = `<div class="font-bold text-slate-800 text-[11px] leading-snug mb-1">${esc(d.title)}</div><div class="text-[9px] text-slate-500">${d.year} · ${d.cites} cites · Score ${d.score.toFixed(1)}</div><div class="flex flex-wrap gap-1 mt-1">${d.topics.slice(0, 4).map(t => `<span class="px-1 py-0.5 rounded text-[8px] border" style="background:${topicColors.get(t) || '#f1f5f9'}20;border-color:${topicColors.get(t) || '#e2e8f0'};color:${topicColors.get(t) || '#64748b'}">${esc(t.substring(0, 20))}</span>`).join('')}</div>`; cTip.classList.remove('hidden'); node.filter(n => n.id === d.id).attr('stroke', '#16a34a').attr('stroke-width', 2).attr('opacity', 1); }).on('mouseout', (e, d) => { cTip.classList.add('hidden'); node.filter(n => n.id === d.id).attr('stroke', '#fff').attr('stroke-width', 0.5).attr('opacity', 0.7); }).on('click', (e, d) => { e.stopPropagation(); app.detail(d.id) });
+                targetNode.on('mouseover', (e, d) => { const r = container.getBoundingClientRect(); Object.assign(cTip.style, { left: Math.min(e.clientX - r.left + 10, r.width - 220) + 'px', top: Math.min(e.clientY - r.top + 10, r.height - 120) + 'px' }); cTip.innerHTML = `<div class="font-bold text-slate-800 text-[11px] leading-snug mb-1">${esc(d.title)}</div><div class="text-[9px] text-slate-500">${pubDateLabel(d)} · ${d.cites} cites · Score ${d.score.toFixed(1)}</div><div class="flex flex-wrap gap-1 mt-1">${d.topics.slice(0, 4).map(t => `<span class="px-1 py-0.5 rounded text-[8px] border" style="background:${topicColors.get(t) || '#f1f5f9'}20;border-color:${topicColors.get(t) || '#e2e8f0'};color:${topicColors.get(t) || '#64748b'}">${esc(t.substring(0, 20))}</span>`).join('')}</div>`; cTip.classList.remove('hidden'); node.filter(n => n.id === d.id).attr('stroke', '#16a34a').attr('stroke-width', 2).attr('opacity', 1); }).on('mouseout', (e, d) => { cTip.classList.add('hidden'); node.filter(n => n.id === d.id).attr('stroke', '#fff').attr('stroke-width', 0.5).attr('opacity', 0.7); }).on('click', (e, d) => { e.stopPropagation(); app.detail(d.id) });
                 cSim.on('tick', () => { link.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y); node.attr('cx', d => d.x).attr('cy', d => d.y); targetNode.attr('cx', d => d.x).attr('cy', d => d.y); }); const legendG = svg.append('g').attr('transform', `translate(${W - 150}, 20)`); legendG.append('rect').attr('width', 140).attr('height', Math.min(sortedTopics.length, 8) * 14 + 22).attr('rx', 6).attr('fill', 'white').attr('fill-opacity', 0.9).attr('stroke', '#e2e8f0'); legendG.append('text').attr('x', 8).attr('y', 14).attr('font-size', 8).attr('font-weight', 700).attr('fill', '#94a3b8').text('TOPIC COLORS'); sortedTopics.slice(0, 8).forEach(([t], i) => { legendG.append('circle').attr('cx', 12).attr('cy', 28 + i * 14).attr('r', 4).attr('fill', topicColors.get(t)); legendG.append('text').attr('x', 22).attr('y', 31 + i * 14).attr('font-size', 8).attr('fill', '#64748b').text(t.length > 18 ? t.substring(0, 18) + '…' : t) })
             },
             hl: () => { const q = norm(el('graphSearchInput')?.value || ''); if (!app.d3.nd) return; app.d3.nd.select('.search-highlight-ring').attr('opacity', d => q && norm(d.display_name).includes(q) ? 1 : 0).each(function (d) { d3.select(this).classed('pulse-highlight', q && norm(d.display_name).includes(q)) }) },
@@ -2664,7 +2855,6 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
                 const yc = new Map; P.forEach(p => yc.set(p.year, (yc.get(p.year) || 0) + 1)); const top = [...Object.entries(r.topics)].sort((a, b) => b[1] - a[1]).slice(0, 8);
                 const cent = app.centralities ? app.centralities.get(r.id) : null;
                 const vel = r._velocity || {};
-
                 el('researcherContent').innerHTML = `<div class="sticky top-0 bg-white z-10 p-5 border-b border-slate-100"><div class="flex justify-between items-start"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" style="background:${r.color}">${r.display_name.substring(0, 2)}</div><div><h2 class="text-lg font-bold text-slate-800">${esc(r.display_name)}</h2><p class="text-xs text-slate-500">${esc(r.inst)}</p>${vel.trend ? `<p class="text-[9px] mt-0.5 ${vel.trend === 'accelerating' ? 'text-green-600' : vel.trend === 'decelerating' ? 'text-red-500' : 'text-slate-400'}">${vel.trend === 'accelerating' ? '🚀 Accelerating' : vel.trend === 'decelerating' ? '📉 Decelerating' : '➡️ Stable'} · ${vel.velocity?.toFixed(1) || 0} papers/yr${vel.streak > 2 ? ` · 🔥 ${vel.streak}yr streak` : ''}</p>` : ''}</div></div><button onclick="document.getElementById('researcherModal').classList.remove('active')"><i class="fas fa-times"></i></button></div><div class="grid grid-cols-4 gap-2 mt-4 text-center"><div class="bg-slate-50 p-2 rounded"><span class="block font-bold text-xl">${P.length}</span><span class="text-[9px] uppercase font-bold text-slate-400">Pubs</span></div><div class="bg-slate-50 p-2 rounded"><span class="block font-bold text-xl">${P.reduce((s, p) => s + p.cites, 0)}</span><span class="text-[9px] uppercase font-bold text-slate-400">Citations</span></div><div class="bg-emerald-50 p-2 rounded border border-emerald-100"><span class="block font-bold text-xl text-emerald-700">${r.net_hindex || 0}</span><span class="text-[9px] uppercase font-bold text-emerald-600" title="Internal network h-index">H-Index</span></div><div class="bg-slate-50 p-2 rounded flex flex-col items-center justify-center">${app.spark([...yc.keys()].sort().map(y => yc.get(y)), 60, 18)}<span class="text-[9px] mt-1 font-bold text-slate-400">Trend</span></div></div>
     ${cent ? `<div class="mt-3 bg-slate-50 rounded-lg p-3"><h4 class="text-[9px] font-bold text-slate-400 uppercase mb-2">Network Centrality</h4><div class="grid grid-cols-4 gap-2">${[{ label: 'Betweenness', val: cent.betweenness, desc: 'Bridge connector', color: 'blue' }, { label: 'PageRank', val: cent.pagerank, desc: 'Scholarly influence', color: 'purple' }, { label: 'Eigenvector', val: cent.eigenvector, desc: 'Connected influence', color: 'cyan' }, { label: 'Brokerage', val: cent.brokerage, desc: 'Structural holes', color: 'amber' }].map(m => `<div class="text-center"><div class="relative w-10 h-10 mx-auto mb-1"><svg viewBox="0 0 36 36" class="w-10 h-10"><path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" stroke-width="3"/><path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${m.color === 'blue' ? '#3b82f6' : m.color === 'purple' ? '#8b5cf6' : m.color === 'cyan' ? '#06b6d4' : '#f59e0b'}" stroke-width="3" stroke-dasharray="${(m.val * 100).toFixed(0)}, 100" stroke-linecap="round"/></svg><div class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-slate-700">${(m.val * 100).toFixed(0)}</div></div><div class="text-[8px] font-semibold text-slate-600">${m.label}</div><div class="text-[7px] text-slate-400">${m.desc}</div></div>`).join('')}</div></div>` : ''}
     ${top.length ? `<div class="mt-3"><div class="flex flex-wrap gap-1">${top.map(([t, c]) => `<span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[9px] rounded border border-green-100">${esc(t)}</span>`).join('')}</div></div>` : ''}
@@ -2705,22 +2895,22 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
             ui: () => { let tm; el('globalSearch').oninput = e => { clearTimeout(tm); tm = setTimeout(() => { app.state.filters.q = e.target.value; app.state.page = 1; app.render() }, 300) }; el('sortSelect').onchange = e => { app.state.sort = e.target.value; app.render() };['yearFrom', 'yearTo'].forEach(i => el(i).onchange = e => { app.state.filters[i === 'yearFrom' ? 'yFrom' : 'yTo'] = e.target.value ? clamp(+e.target.value, 2000, 2026) : null; app.render() }); el('minRelevance').oninput = e => { const v = +e.target.value; el('valMinRel').textContent = v.toFixed(1); clearTimeout(tm); tm = setTimeout(() => { app.state.filters.minRel = v; app.render() }, 200) }; el('linkDistance').oninput = e => { app.d3.sim.force('link').distance(+e.target.value); app.d3.sim.alpha(.3).restart() }; el('chargeStrength').oninput = e => { app.d3.sim.force('charge').strength(-e.target.value); app.d3.sim.alpha(.3).restart() }; document.querySelectorAll('.view-btn').forEach(b => b.onclick = () => app.setView(b.dataset.view)); let d = false; el('splitHandle').onmousedown = () => { d = true; document.body.style.cursor = 'col-resize' }; document.onmouseup = () => { if (d) { app.resizeGraph(); d = false; document.body.style.cursor = 'default'; } }; document.onmousemove = e => { if (d) { const p = (e.clientX - 320) / (document.body.clientWidth - 320) * 100; if (p > 15 && p < 85) { el('publicationsPanel').style.width = p + '%'; el('networkPanel').style.width = (100 - p) + '%'; app.resizeGraph() } } }; document.addEventListener('click', e => { if (!el('exportDropdown').contains(e.target)) el('exportMenu').classList.add('hidden') }); el('darkModeToggle').onclick = () => app.toggleDarkMode(); el('graphSearchInput').oninput = () => setTimeout(app.hl, 200) }
         };
         const jsStr = s => (s || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-        
-        document.addEventListener('DOMContentLoaded', async () => { 
-            initSharedUI({ onSignOut: signOut }); 
-            
-            await initAuth({ 
-                onAuthReady: () => { 
-                    renderHeader(authState, { 
-                        en: { nav: { schedule: "Schedule", archive: "Archive", scholar: "Scholar", network: "Network", map: "Map", about: "About", admin: "Admin" }, auth: { signin: "Sign in", signout: "Sign out" } }, 
-                        es: { nav: { schedule: "Programa", archive: "Archivo", scholar: "Académico", network: "Red", map: "Mapa", about: "Acerca de", admin: "Admin" }, auth: { signin: "Ingresar", signout: "Salir" } } 
-                    }, localStorage.getItem('lang') || 'en'); 
-                    if (authState.profile?.avatar_url) getAvatarUrl(authState.profile.avatar_url).then(u => { if (u) { $('#userAvatar').src = u; show($('#userAvatar')); hide($('#userInitial')) } }) 
-                }, 
-                onAuthChange: () => { } 
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            initSharedUI({ onSignOut: signOut });
+
+            await initAuth({
+                onAuthReady: () => {
+                    renderHeader(authState, {
+                        en: { nav: { schedule: "Schedule", archive: "Archive", scholar: "Scholar", network: "Network", map: "Map", about: "About", admin: "Admin" }, auth: { signin: "Sign in", signout: "Sign out" } },
+                        es: { nav: { schedule: "Programa", archive: "Archivo", scholar: "Académico", network: "Red", map: "Mapa", about: "Acerca de", admin: "Admin" }, auth: { signin: "Ingresar", signout: "Salir" } }
+                    }, localStorage.getItem('lang') || 'en');
+                    if (authState.profile?.avatar_url) getAvatarUrl(authState.profile.avatar_url).then(u => { if (u) { $('#userAvatar').src = u; show($('#userAvatar')); hide($('#userInitial')) } })
+                },
+                onAuthChange: () => { }
             });
 
-           // GATEKEEPING
+            // GATEKEEPING
             const loadingOverlay = document.getElementById('loadingOverlay');
             if (!authState.session) {
                 if (loadingOverlay) loadingOverlay.classList.add('hidden');
@@ -2735,8 +2925,8 @@ import { initSharedUI, renderHeader, getAvatarUrl, $, show, hide, showProfileGat
             }
 
             app.init()
-        }); 
-        
+        });
+
         window.app = app;
     </script>
 </body>
