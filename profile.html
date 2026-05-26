@@ -265,8 +265,6 @@
         }
     };
 
-    const countries = [ { code: "AF", name: "Afghanistan", flag: "🇦🇫" }, { code: "AL", name: "Albania", flag: "🇦🇱" }, { code: "US", name: "United States", flag: "🇺🇸" }, { code: "MX", name: "Mexico", flag: "🇲🇽" }, { code: "CA", name: "Canada", flag: "🇨🇦" }, { code: "CO", name: "Colombia", flag: "🇨🇴" }, { code: "CL", name: "Chile", flag: "🇨🇱" }, { code: "AR", name: "Argentina", flag: "🇦🇷" }, { code: "PE", name: "Peru", flag: "🇵🇪" }, { code: "ES", name: "Spain", flag: "🇪🇸" }, { code: "GB", name: "United Kingdom", flag: "🇬🇧" }, { code: "DE", name: "Germany", flag: "🇩🇪" }, { code: "FR", name: "France", flag: "🇫🇷" }, { code: "IT", name: "Italy", flag: "🇮🇹" }, { code: "BR", name: "Brazil", flag: "🇧🇷" } ];
-
     function localTr(key) { return tr(t, state.language, key); }
 
     function handleLangSwitch() {
@@ -283,9 +281,38 @@
         return new Quill(selector, { theme: 'snow', placeholder: localTr('profile.description_hint'), modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['link', 'clean']] } });
     }
 
-    function initCountryPicker() {
+    async function initCountryPicker() {
         if(state.countrySelect) return;
-        state.countrySelect = new TomSelect('#country', { options: countries, valueField: 'code', labelField: 'name', searchField: 'name', placeholder: "Select a country...", maxItems: 1, render: { option: (d, e) => `<div><span class="text-xl mr-2">${d.flag}</span> <span class="text-slate-700">${e(d.name)}</span></div>`, item: (d, e) => `<div><span class="text-xl mr-2">${d.flag}</span> ${e(d.name)}</div>` } });
+        
+        try {
+            const res = await fetch('https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/index.json');
+            const data = await res.json();
+            
+            const fetchedCountries = data.map(c => ({
+                code: c.code,
+                name: c.name,
+                flag: c.emoji
+            })).sort((a, b) => a.name.localeCompare(b.name));
+
+            state.countrySelect = new TomSelect('#country', { 
+                options: fetchedCountries, 
+                valueField: 'code', 
+                labelField: 'name', 
+                searchField: 'name', 
+                placeholder: "Select a country...", 
+                maxItems: 1, 
+                render: { 
+                    option: (d, e) => `<div><span class="text-xl mr-2">${d.flag}</span> <span class="text-slate-700">${e(d.name)}</span></div>`, 
+                    item: (d, e) => `<div><span class="text-xl mr-2">${d.flag}</span> ${e(d.name)}</div>` 
+                } 
+            });
+        } catch (error) {
+            console.error("Failed to load country library", error);
+            state.countrySelect = new TomSelect('#country', {
+                options: [],
+                placeholder: "Error loading countries..."
+            });
+        }
     }
 
     function initCollaboratorPicker() {
@@ -305,7 +332,7 @@
             hide($('#view-auth-required')); show($('#view-profile')); hide($('#view-loading')); 
             
             if (!state.quillEditor) state.quillEditor = initQuill('#description'); 
-            initCountryPicker(); 
+            await initCountryPicker(); 
             initCollaboratorPicker(); 
             
             if (new URLSearchParams(window.location.search).get('force') === 'true') {
