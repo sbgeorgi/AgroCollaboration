@@ -304,18 +304,12 @@
 
         /* Improvement #2: Precompute connection counts */
         function rebuildConnectionCountMap() {
-            state.connectionCountMap.clear();
-            for (const c of state.connections) {
-                state.connectionCountMap.set(c.source, (state.connectionCountMap.get(c.source) || 0) + 1);
-                state.connectionCountMap.set(c.target, (state.connectionCountMap.get(c.target) || 0) + 1);
-            }
-            /* Also count affiliation connections */
-            for (const [, members] of state.orgIndex) {
-                for (const mid of members) {
-                    state.connectionCountMap.set(mid, (state.connectionCountMap.get(mid) || 0) + members.size - 1);
-                }
-            }
-        }
+    state.connectionCountMap.clear();
+    for (const c of state.connections) {
+        state.connectionCountMap.set(c.source, (state.connectionCountMap.get(c.source) || 0) + 1);
+        state.connectionCountMap.set(c.target, (state.connectionCountMap.get(c.target) || 0) + 1);
+    }
+}
 
         function getConnectionCount(memberId) {
             return state.connectionCountMap.get(memberId) || 0;
@@ -379,9 +373,9 @@
             rebuildConnectionCountMap();
 
             $('#statMembers').innerText = state.members.length;
-            $('#statConnections').innerText = conns.length + state.members.filter(m => m.affiliation).length;
-            $('#statOrgs').innerText = state.orgIndex.size;
-            $('#statEvents').innerText = state.eventsById.size;
+$('#statConnections').innerText = conns.length + state.members.filter(m => m.affiliation).length;
+$('#statOrgs').innerText = state.orgIndex.size;
+$('#statEvents').innerText = state.eventsById.size;
             populateTagFilters(); onFiltersChanged();
         }
 
