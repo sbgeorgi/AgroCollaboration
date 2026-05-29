@@ -47,8 +47,12 @@
         #network-container::after {
             content: ''; position: absolute; inset: 0; pointer-events: none;
             background: radial-gradient(800px 400px at 50% -10%, rgba(99,102,241,0.06), transparent 70%);
+            z-index: 1;
         }
-        #networkCanvas { transform-origin: 0 0; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; will-change: transform; }
+        #edgeCanvas {
+            position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;
+        }
+        #networkCanvas { transform-origin: 0 0; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; will-change: transform; z-index: 10; }
         #networkNodes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
        .network-node {
@@ -59,6 +63,7 @@
         }
        .network-node.is-interacting { transition: none!important; z-index: 500!important; filter: drop-shadow(0 8px 24px rgba(15,23,42,0.12)); }
        .network-node.magnified { z-index: 1000!important; }
+       .network-node.animating-position { transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), filter 0.2s ease; }
 
        .bubble-group {
             border-radius: 50%;
@@ -74,11 +79,11 @@
        .bubble-group:hover { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
 
        .bubble-member { border-radius: 50%; }
-       .bubble-member > div {
+       .bubble-member > div:first-child {
             box-shadow: 0 4px 12px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.08), inset 0 0 0 1px rgba(255,255,255,0.9);
-            transition: all 0.2s cubic-bezier(0.2, 0, 1);
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
         }
-       .bubble-member:hover > div { box-shadow: 0 8px 24px rgba(15,23,42,0.12), 0 2px 6px rgba(15,23,42,0.08), inset 0 0 0 1px rgba(255,255,255,1); }
+       .bubble-member:hover > div:first-child { box-shadow: 0 8px 24px rgba(15,23,42,0.12), 0 2px 6px rgba(15,23,42,0.08), inset 0 0 0 1px rgba(255,255,255,1); }
 
         th[data-sort] { user-select: none; position: relative; }
         th.sort-asc::after, th.sort-desc::after {
@@ -113,6 +118,11 @@
             border: 1px solid rgba(255,255,255,0.1);
         }
         #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        .edge-highlight {
+            stroke: rgba(99, 102, 241, 0.5) !important;
+            stroke-width: 2 !important;
+        }
     </style>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -200,6 +210,7 @@
 
             <div class="flex-1 flex flex-col min-w-0 h-auto md:h-full relative" id="right-column">
                 <section id="network-container" class="bg-white/80 backdrop-blur-xl border border-white/60 rounded-[24px] shadow-xl shadow-slate-200/40 ring-1 ring-slate-900/5 relative overflow-hidden group">
+                    <canvas id="edgeCanvas"></canvas>
                     <div id="networkCanvas">
                         <div id="networkNodes"></div>
                     </div>
@@ -212,7 +223,7 @@
                     </div>
                     <div id="legendContainer" class="absolute bottom-4 left-4 z-40 pointer-events-none"></div>
                 </section>
-                <div id="dragHandle"></div>
+                <div id="dragHandle" role="separator" aria-orientation="horizontal" aria-label="Resize network and table panels"></div>
                 <section id="table-container" class="bg-white/70 backdrop-blur-2xl border border-white/60 rounded-[24px] shadow-xl shadow-slate-200/40 ring-1 ring-slate-900/5 flex flex-col overflow-hidden shrink-0 flex-1 min-h-[100px]">
                     <div class="overflow-auto custom-scrollbar flex-1 h-full">
                         <table class="w-full text-left border-collapse">
@@ -236,7 +247,8 @@
     <script type="module">
         import { renderLayout } from './layout.js';
         import { supabase, authState, initAuth, signOut } from './auth.js';
-import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatarUrl, showProfileGateModal, showAuthGateModal } from './ui.js';        import { openProfileModal } from './clickprofile.js';
+        import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatarUrl, showProfileGateModal, showAuthGateModal } from './ui.js';
+        import { openProfileModal } from './clickprofile.js';
 
         renderLayout('network');
 
@@ -249,17 +261,65 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
             members: [], profileById: new Map(), isSpeaker: new Set(), speakersByProfileId: new Map(),
             eventsById: new Map(), orgIndex: new Map(), tagIndex: new Map(), tagCounts: new Map(),
             allCanonicalToDisplay: new Map(), connections: [], nodes: new Map(), cachedNodes: [],
+            cachedMemberNodes: [], /* Improvement #5: separate cache for member-only nodes */
             positions: new Map(), panOffset: { x: 0, y: 0 }, zoom: 1, sort: { key: "connections", dir: "desc" },
             roleFilter: "all", eventFilterId: "all", countryFilterId: "all", groupBy: "affiliation",
             searchQuery: "", selectedTags: new Set(), lang: localStorage.getItem("lang") || "en",
             isDragging: false,
+            connectionCountMap: new Map(), /* Improvement #2: precomputed connection counts */
+            avatarUrlCache: new Map(), /* Improvement #12: avatar URL cache */
+            prevPositions: new Map(), /* Improvement #14: animation source positions */
+            filteredConnections: [], /* Improvement #1: filtered connections for edge rendering */
+            highlightedMemberId: null, /* For edge highlighting on hover */
+            edgeRafId: null, /* rAF handle for edge canvas */
             countries: { "US": "United States", "MX": "Mexico", "CA": "Canada", "CO": "Colombia", "BR": "Brazil", "CL": "Chile", "AR": "Argentina", "PE": "Peru", "ES": "Spain", "FR": "France", "DE": "Germany", "BE": "Belgium", "NL": "Netherlands", "IT": "Italy", "UK": "UK", "GB": "UK", "IN": "India", "CN": "China", "AU": "Australia" }
         };
 
         const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-        const highlight = (text, q) => q && text? (text+"").replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "ig"), '<span class="bg-amber-100 text-amber-900 px-1 rounded-md">$1</span>') : (text || "");
+
+        /* Improvement #3: Sanitize text to prevent XSS via user-controlled fields */
+        const escapeHtml = (() => {
+            const el = document.createElement('div');
+            return str => { el.textContent = str || ''; return el.innerHTML; };
+        })();
+
+        const highlight = (text, q) => {
+            const safe = escapeHtml(text);
+            if (!q) return safe;
+            const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return safe.replace(new RegExp(`(${escaped})`, "ig"), '<span class="bg-amber-100 text-amber-900 px-1 rounded-md">$1</span>');
+        };
+
         const debounce = (fn, ms = 200) => { let t = null; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
         const stringToColor = str => `hsl(${Math.abs(str.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % 360}, 55%, 75%)`;
+
+        /* Improvement #12: Cached avatar URL resolution */
+        async function getCachedAvatarUrl(avatarPath) {
+            if (!avatarPath) return null;
+            if (state.avatarUrlCache.has(avatarPath)) return state.avatarUrlCache.get(avatarPath);
+            const url = await getAvatarUrl(avatarPath);
+            if (url) state.avatarUrlCache.set(avatarPath, url);
+            return url;
+        }
+
+        /* Improvement #2: Precompute connection counts */
+        function rebuildConnectionCountMap() {
+            state.connectionCountMap.clear();
+            for (const c of state.connections) {
+                state.connectionCountMap.set(c.source, (state.connectionCountMap.get(c.source) || 0) + 1);
+                state.connectionCountMap.set(c.target, (state.connectionCountMap.get(c.target) || 0) + 1);
+            }
+            /* Also count affiliation connections */
+            for (const [, members] of state.orgIndex) {
+                for (const mid of members) {
+                    state.connectionCountMap.set(mid, (state.connectionCountMap.get(mid) || 0) + members.size - 1);
+                }
+            }
+        }
+
+        function getConnectionCount(memberId) {
+            return state.connectionCountMap.get(memberId) || 0;
+        }
 
         function applyLocalTranslations() {
             const l = t[state.lang] || t.en;
@@ -272,10 +332,13 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
         function populateDropdowns() {
             const l = t[state.lang] || t.en;
             const es = $('#eventFilter'), cs = $('#countryFilter'), ce = es.value, cc = cs.value;
-            es.innerHTML = `<option value="all">${l.allEvents}</option>`;
-            state.eventsById.forEach(e => es.add(new Option(new Date(e.start_time).toLocaleDateString() + ' - ' + (state.lang === 'es'? (e.title_es || e.title_en) : e.title_en), e.id)));
+            es.innerHTML = `<option value="all">${escapeHtml(l.allEvents)}</option>`;
+            state.eventsById.forEach(e => {
+                const title = state.lang === 'es' ? (e.title_es || e.title_en) : e.title_en;
+                es.add(new Option(new Date(e.start_time).toLocaleDateString() + ' - ' + title, e.id));
+            });
             es.value = ce;
-            cs.innerHTML = `<option value="all">${l.allCountries}</option>`;
+            cs.innerHTML = `<option value="all">${escapeHtml(l.allCountries)}</option>`;
             const uc = new Set(state.members.map(m => m.country).filter(Boolean));
             Array.from(uc).sort().forEach(c => cs.add(new Option(`${state.countries[c] || c} (${c})`, c)));
             cs.value = cc;
@@ -292,6 +355,7 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
             (speakers.data || []).forEach(s => { if (s.profile_id) { state.isSpeaker.add(s.profile_id); if (!state.speakersByProfileId.has(s.profile_id)) state.speakersByProfileId.set(s.profile_id, new Set()); state.speakersByProfileId.get(s.profile_id).add(s.event_id); }});
 
             const processedConns = new Set(), conns = [];
+            const memberIdSet = new Set(state.members.map(m => m.id)); /* Improvement: O(1) lookup for member existence */
             state.members.forEach(m => {
                 state.profileById.set(m.id, m);
                 const org = m.affiliation?.trim();
@@ -306,65 +370,97 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
                 });
                 if (m.collaborators?.length) m.collaborators.forEach(tid => {
                     const key = [m.id, tid].sort().join('-');
-                    if (!processedConns.has(key) && state.members.some(x => x.id === tid)) { conns.push({ source: m.id, target: tid, type: 'collab' }); processedConns.add(key); }
+                    if (!processedConns.has(key) && memberIdSet.has(tid)) { conns.push({ source: m.id, target: tid, type: 'collab' }); processedConns.add(key); }
                 });
             });
             state.connections = conns;
-            $('#statMembers').innerText = state.members.length; $('#statConnections').innerText = conns.length + state.members.filter(m => m.affiliation).length;
-            $('#statOrgs').innerText = state.orgIndex.size; $('#statEvents').innerText = state.eventsById.size;
+
+            /* Improvement #2: precompute counts */
+            rebuildConnectionCountMap();
+
+            $('#statMembers').innerText = state.members.length;
+            $('#statConnections').innerText = conns.length + state.members.filter(m => m.affiliation).length;
+            $('#statOrgs').innerText = state.orgIndex.size;
+            $('#statEvents').innerText = state.eventsById.size;
             populateTagFilters(); onFiltersChanged();
         }
 
         function populateTagFilters() {
             const c = $('#tagFilters'); c.innerHTML = '';
+            const frag = document.createDocumentFragment();
             Array.from(state.tagCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 50).forEach(([tag, count]) => {
                 const isSel = state.selectedTags.has(tag);
                 const row = document.createElement('div');
                 row.className = 'flex items-center justify-between px-2.5 py-1.5 hover:bg-violet-50/70 rounded-xl cursor-pointer group transition-colors';
-                row.innerHTML = `<div class="flex items-center gap-2.5"><div class="w-4 h-4 rounded-md border-2 ${isSel? 'bg-violet-600 border-violet-600' : 'border-slate-300 group-hover:border-slate-400'} flex items-center justify-center transition-all">${isSel? '<svg width="10" height="10" viewBox="0 0 24 24" stroke="white" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div><span class="text-[12.5px] text-slate-700 group-hover:text-slate-900">${state.allCanonicalToDisplay.get(tag)}</span></div><span class="text-[10px] text-slate-400 font-medium tabular-nums">${count}</span>`;
+                row.innerHTML = `<div class="flex items-center gap-2.5"><div class="w-4 h-4 rounded-md border-2 ${isSel? 'bg-violet-600 border-violet-600' : 'border-slate-300 group-hover:border-slate-400'} flex items-center justify-center transition-all">${isSel? '<svg width="10" height="10" viewBox="0 0 24 24" stroke="white" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div><span class="text-[12.5px] text-slate-700 group-hover:text-slate-900">${escapeHtml(state.allCanonicalToDisplay.get(tag))}</span></div><span class="text-[10px] text-slate-400 font-medium tabular-nums">${count}</span>`;
                 row.onclick = () => { isSel? state.selectedTags.delete(tag) : state.selectedTags.add(tag); onFiltersChanged(); };
-                c.appendChild(row);
+                frag.appendChild(row);
             });
-            const selC = $('#selectedTagsContainer'); selC.innerHTML = '';
-            state.selectedTags.forEach(t => selC.insertAdjacentHTML('beforeend', `<span class="px-2.5 py-1 bg-violet-50 text-violet-700 border border-violet-200/70 rounded-full text-[11px] font-semibold flex items-center gap-1.5 hover:bg-violet-100 transition-colors">${state.allCanonicalToDisplay.get(t)} <button class="hover:text-violet-900" onclick="document.dispatchEvent(new CustomEvent('remTag',{detail:'${t}'}))">×</button></span>`));
-        }
-        document.addEventListener('remTag', e => { state.selectedTags.delete(e.detail); onFiltersChanged(); });
+            c.appendChild(frag);
 
+            const selC = $('#selectedTagsContainer'); selC.innerHTML = '';
+            const selFrag = document.createDocumentFragment();
+            state.selectedTags.forEach(tg => {
+                const span = document.createElement('span');
+                span.className = 'px-2.5 py-1 bg-violet-50 text-violet-700 border border-violet-200/70 rounded-full text-[11px] font-semibold flex items-center gap-1.5 hover:bg-violet-100 transition-colors';
+                span.textContent = state.allCanonicalToDisplay.get(tg);
+                const btn = document.createElement('button');
+                btn.className = 'hover:text-violet-900 ml-1';
+                btn.textContent = '×';
+                btn.onclick = () => { state.selectedTags.delete(tg); onFiltersChanged(); };
+                span.appendChild(btn);
+                selFrag.appendChild(span);
+            });
+            selC.appendChild(selFrag);
+        }
+
+        /* Improvement #10: Improved cluster packing with binary search on distance */
         function calculatePositions(members) {
             const byGroup = new Map();
-            const dockKeys = ["Unaffiliated", "Independent", "Consultant", "Unknown Location", "Unknown", ""];
+            const dockKeys = new Set(["unaffiliated", "independent", "consultant", "unknown location", "unknown", ""]);
             
             members.forEach(m => {
                 const key = state.groupBy === 'country'? (m.country? (state.countries[m.country] || m.country) : "Unknown") : (m.affiliation?.trim() || "Unaffiliated");
-                if (dockKeys.some(k => k.toLowerCase() === key.toLowerCase())) return;
-
+                if (dockKeys.has(key.toLowerCase())) return;
                 if (!byGroup.has(key)) byGroup.set(key, []);
                 byGroup.get(key).push(m);
             });
 
             const container = $('#network-container'), clusters = [];
-            const aspectRatio = Math.max(1.8, (container.offsetWidth || 800) / (container.offsetHeight || 600));
+            const cw = container.offsetWidth || 800, ch = container.offsetHeight || 600;
+            const aspectRatio = Math.max(1.8, cw / ch);
             let totalMemberCount = 0;
             for (const [name, list] of byGroup.entries()) { totalMemberCount += list.length; clusters.push({ name, list, count: list.length }); }
             clusters.sort((a, b) => b.count - a.count);
-            const pos = new Map(), areaPerMember = (container.offsetWidth * container.offsetHeight * 0.95) / Math.max(totalMemberCount, 1);
+            const pos = new Map(), areaPerMember = (cw * ch * 0.95) / Math.max(totalMemberCount, 1);
             const memberRadius = Math.max(22, Math.min(32, Math.sqrt(areaPerMember / Math.PI) * 0.45));
             const packed = clusters.map(c => ({...c, radius: Math.max(70, Math.sqrt(c.count * Math.PI * (memberRadius + 12)**2 * 3.5 / Math.PI) * 1.1), x: 0, y: 0 }));
 
             if (packed.length > 0) {
+                const angleSteps = 90;
+                const angleStep = (Math.PI * 2) / angleSteps;
                 for (let i = 1; i < packed.length; i++) {
                     const cur = packed[i];
                     let bestDist = Infinity, bestX = 0, bestY = 0;
-                    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 45) {
-                        for (let dist = 0; dist < 4000; dist += 25) {
-                            const tx = Math.cos(angle) * dist * aspectRatio, ty = Math.sin(angle) * dist;
+                    for (let ai = 0; ai < angleSteps; ai++) {
+                        const angle = ai * angleStep;
+                        const cosA = Math.cos(angle) * aspectRatio;
+                        const sinA = Math.sin(angle);
+                        /* Binary search for minimum valid distance along this ray */
+                        let lo = 0, hi = 4000;
+                        while (hi - lo > 10) {
+                            const mid = (lo + hi) / 2;
+                            const tx = cosA * mid, ty = sinA * mid;
                             let valid = true;
                             for (let j = 0; j < i; j++) {
-                                const other = packed[j], minDist = cur.radius + other.radius + 60;
-                                if ((tx - other.x)**2 + (ty - other.y)**2 < minDist**2) { valid = false; break; }
+                                const other = packed[j], minD = cur.radius + other.radius + 60;
+                                if ((tx - other.x)**2 + (ty - other.y)**2 < minD**2) { valid = false; break; }
                             }
-                            if (valid) { const d = Math.sqrt((tx/aspectRatio)**2 + ty**2); if (d < bestDist) { bestDist = d; bestX = tx; bestY = ty; } }
+                            if (valid) hi = mid; else lo = mid;
                         }
+                        const tx = cosA * hi, ty = sinA * hi;
+                        const d = Math.sqrt((tx/aspectRatio)**2 + ty**2);
+                        if (d < bestDist) { bestDist = d; bestX = tx; bestY = ty; }
                     }
                     cur.x = bestX; cur.y = bestY;
                 }
@@ -380,14 +476,98 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
             return { pos, clusters: packed, memberRadius };
         }
 
+        /* Improvement #1: Canvas-based edge rendering */
+        function resizeEdgeCanvas() {
+            const container = $('#network-container');
+            const canvas = $('#edgeCanvas');
+            const dpr = window.devicePixelRatio || 1;
+            const w = container.offsetWidth;
+            const h = container.offsetHeight;
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function drawEdges() {
+            const canvas = $('#edgeCanvas');
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.clearRect(0, 0, w, h);
+
+            const ox = state.panOffset.x;
+            const oy = state.panOffset.y;
+            const z = state.zoom;
+            const hId = state.highlightedMemberId;
+
+            for (let i = 0, len = state.filteredConnections.length; i < len; i++) {
+                const conn = state.filteredConnections[i];
+                const sp = state.positions.get(conn.source);
+                const tp = state.positions.get(conn.target);
+                if (!sp || !tp) continue;
+
+                const x1 = sp.x * z + ox;
+                const y1 = sp.y * z + oy;
+                const x2 = tp.x * z + ox;
+                const y2 = tp.y * z + oy;
+
+                /* Frustum cull: skip edges entirely outside viewport */
+                if ((x1 < -50 && x2 < -50) || (x1 > w + 50 && x2 > w + 50) ||
+                    (y1 < -50 && y2 < -50) || (y1 > h + 50 && y2 > h + 50)) continue;
+
+                const isHighlighted = hId && (conn.source === hId || conn.target === hId);
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+
+                if (isHighlighted) {
+                    ctx.strokeStyle = 'rgba(99, 102, 241, 0.55)';
+                    ctx.lineWidth = 2.5;
+                } else {
+                    ctx.strokeStyle = hId ? 'rgba(148, 163, 184, 0.06)' : 'rgba(148, 163, 184, 0.18)';
+                    ctx.lineWidth = 1;
+                }
+                ctx.stroke();
+            }
+
+            state.edgeRafId = null;
+        }
+
+        function scheduleEdgeDraw() {
+            if (!state.edgeRafId) {
+                state.edgeRafId = requestAnimationFrame(drawEdges);
+            }
+        }
+
         function renderGraph(members) {
             const c = $('#network-container'), nodes = $('#networkNodes');
             if (!c.offsetWidth) return;
+
+            /* Improvement #14: Save previous positions for animation */
+            state.prevPositions = new Map(state.positions);
+
             const layout = calculatePositions(members);
-            state.positions = layout.pos; nodes.innerHTML = '';
+            state.positions = layout.pos;
+
+            /* Improvement #1: Build filtered connections for visible members */
+            const visibleIds = new Set(members.map(m => m.id));
+            state.filteredConnections = state.connections.filter(conn =>
+                visibleIds.has(conn.source) && visibleIds.has(conn.target) &&
+                state.positions.has(conn.source) && state.positions.has(conn.target)
+            );
+
+            /* Improvement #6: Clean up properly */
+            nodes.innerHTML = '';
+
             const l = t[state.lang] || t.en, frag = document.createDocumentFragment();
 
-            $('#legendContainer').innerHTML = `<div class="flex items-center gap-3 bg-slate-900/85 backdrop-blur-xl p-2.5 pr-3.5 rounded-2xl border border-white/10 shadow-2xl text-[11px] font-medium text-white/90"><div class="flex items-center gap-2"><div class="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)] ring-1 ring-white/20"></div><span>${l.legendOrg}</span></div><div class="flex items-center gap-2"><div class="w-3.5 h-3.5 rounded-full bg-white shadow-sm ring-2 ring-violet-500/50"></div><span>${l.legendMember}</span></div></div>`;
+            $('#legendContainer').innerHTML = `<div class="flex items-center gap-3 bg-slate-900/85 backdrop-blur-xl p-2.5 pr-3.5 rounded-2xl border border-white/10 shadow-2xl text-[11px] font-medium text-white/90"><div class="flex items-center gap-2"><div class="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)] ring-1 ring-white/20"></div><span>${escapeHtml(l.legendOrg)}</span></div><div class="flex items-center gap-2"><div class="w-3.5 h-3.5 rounded-full bg-white shadow-sm ring-2 ring-violet-500/50"></div><span>${escapeHtml(l.legendMember)}</span></div>${state.filteredConnections.length > 0 ? `<div class="flex items-center gap-2"><div class="w-4 h-0.5 bg-slate-400 rounded-full"></div><span>${escapeHtml(l.legendCollab)}</span></div>` : ''}</div>`;
             
             layout.clusters.forEach(cluster => {
                 const p = state.positions.get(`group-${cluster.name}`); if (!p) return;
@@ -403,7 +583,7 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
                 lbl.className = 'network-node pointer-events-none z-30';
                 lbl.dataset.x = p.x; lbl.dataset.y = p.y - p.r; lbl.dataset.type = 'group-label';
                 lbl.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y - p.r}px) translateZ(0)`;
-                lbl.innerHTML = `<div class="flex flex-col items-center"><span class="px-6 py-2.5 bg-slate-900/90 backdrop-blur-xl shadow-2xl border border-white/10 rounded-full text-[18px] font-bold text-white whitespace-nowrap tracking-tight" style="max-width: 400px; overflow: hidden; text-overflow: ellipsis;">${cluster.name}</span></div>`;
+                lbl.innerHTML = `<div class="flex flex-col items-center"><span class="px-6 py-2.5 bg-slate-900/90 backdrop-blur-xl shadow-2xl border border-white/10 rounded-full text-[18px] font-bold text-white whitespace-nowrap tracking-tight" style="max-width: 400px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(cluster.name)}</span></div>`;
                 frag.appendChild(lbl);
             });
 
@@ -411,8 +591,28 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
                 const p = state.positions.get(m.id); if (!p) return;
                 const el = document.createElement('div');
                 el.className = 'network-node member-node bubble-member group/bub';
+                /* Improvement #5: Cache numeric coordinates on the element for fast access */
+                el._nx = p.x;
+                el._ny = p.y;
+                el._mid = m.id;
                 el.dataset.x = p.x; el.dataset.y = p.y;
-                el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
+
+                /* Improvement #14: Animate from previous position if available */
+                const prevP = state.prevPositions.get(m.id);
+                if (prevP && (Math.abs(prevP.x - p.x) > 1 || Math.abs(prevP.y - p.y) > 1)) {
+                    el.style.transform = `translate(-50%, -50%) translate(${prevP.x}px, ${prevP.y}px) translateZ(0)`;
+                    el.classList.add('animating-position');
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
+                            const onEnd = () => { el.classList.remove('animating-position'); el.removeEventListener('transitionend', onEnd); };
+                            el.addEventListener('transitionend', onEnd, { once: true });
+                        });
+                    });
+                } else {
+                    el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) translateZ(0)`;
+                }
+
                 const size = (layout.memberRadius || 20) * 2;
                 
                 const nameParts = (m.full_name || 'Member').trim().split(/\s+/);
@@ -420,17 +620,31 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
                     ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase() 
                     : nameParts[0].substring(0, 2).toUpperCase();
 
-                el.innerHTML = `<div class="rounded-full bg-white flex items-center justify-center overflow-hidden cursor-pointer relative ring-2 ring-white shadow-xl" style="width: ${size}px; height: ${size}px;">${m.avatar_url? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : `<span class="text-[13px] font-bold text-violet-600">${initials}</span>`}</div><div class="absolute top-full mt-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900 text-white text-[11px] py-1.5 px-3 rounded-xl opacity-0 group-hover/bub:opacity-100 pointer-events-none transition-all duration-200 z-[100] shadow-2xl border border-white/10 translate-y-1 group-hover/bub:translate-y-0"><div class="font-semibold">${m.full_name}</div>${m.affiliation? `<div class="text-slate-300 text-[10px]">${m.affiliation}</div>` : ''}</div>`;
+                el.innerHTML = `<div class="rounded-full bg-white flex items-center justify-center overflow-hidden cursor-pointer relative ring-2 ring-white shadow-xl" style="width: ${size}px; height: ${size}px;">${m.avatar_url? `<img src="${m.avatar_url}" alt="${escapeHtml(m.full_name)}" loading="lazy" decoding="async" class="w-full h-full object-cover">` : `<span class="text-[13px] font-bold text-violet-600">${escapeHtml(initials)}</span>`}</div><div class="absolute top-full mt-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900 text-white text-[11px] py-1.5 px-3 rounded-xl opacity-0 group-hover/bub:opacity-100 pointer-events-none transition-all duration-200 z-[100] shadow-2xl border border-white/10 translate-y-1 group-hover/bub:translate-y-0"><div class="font-semibold">${escapeHtml(m.full_name)}</div>${m.affiliation? `<div class="text-slate-300 text-[10px]">${escapeHtml(m.affiliation)}</div>` : ''}</div>`;
                 
-                if (m.avatar_url) getAvatarUrl(m.avatar_url).then(u => { const img = el.querySelector('img'); if (img && u) img.src = u; });
+                /* Improvement #12: Use cached avatar URL resolution */
+                if (m.avatar_url) getCachedAvatarUrl(m.avatar_url).then(u => { const img = el.querySelector('img'); if (img && u) img.src = u; });
+
                 el.onclick = e => { e.stopPropagation(); openProfileModal(m); };
+
+                /* Improvement #1: Highlight edges on hover */
+                el.onmouseenter = () => { state.highlightedMemberId = m.id; scheduleEdgeDraw(); };
+                el.onmouseleave = () => { if (state.highlightedMemberId === m.id) { state.highlightedMemberId = null; scheduleEdgeDraw(); } };
+
                 frag.appendChild(el);
             });
             nodes.appendChild(frag);
 
             state.cachedNodes = Array.from(nodes.children).filter(n => n.classList.contains('network-node'));
+            /* Improvement #5: Separate member-only cache for magnification loop */
+            state.cachedMemberNodes = state.cachedNodes.filter(n => n.classList.contains('member-node'));
+
             if (window.lucide) window.lucide.createIcons();
+
+            /* Improvement #1: Size edge canvas and draw edges */
+            resizeEdgeCanvas();
             fitGraph();
+            scheduleEdgeDraw();
         }
 
         function fitGraph() {
@@ -439,10 +653,15 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
             let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
             pts.forEach(p => { const r = p.r||0; minX=Math.min(minX,p.x-r); maxX=Math.max(maxX,p.x+r); minY=Math.min(minY,p.y-r); maxY=Math.max(maxY,p.y+r); });
             const padding = 150;
-            const scale = Math.min($('#network-container').offsetWidth/(maxX-minX+padding), $('#network-container').offsetHeight/(maxY-minY+padding), 1.0);
+            const cw = $('#network-container').offsetWidth;
+            const ch = $('#network-container').offsetHeight;
+            const scale = Math.min(cw/(maxX-minX+padding), ch/(maxY-minY+padding), 1.0);
             if (isFinite(scale) && scale > 0) {
-                state.zoom = scale; state.panOffset.x = ($('#network-container').offsetWidth/2) - ((minX+maxX)/2)*scale; state.panOffset.y = ($('#network-container').offsetHeight/2) - ((minY+maxY)/2)*scale;
+                state.zoom = scale;
+                state.panOffset.x = (cw/2) - ((minX+maxX)/2)*scale;
+                state.panOffset.y = (ch/2) - ((minY+maxY)/2)*scale;
                 updateTransform();
+                scheduleEdgeDraw();
             }
         }
 
@@ -450,31 +669,35 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
             $('#networkCanvas').style.transform = `translate(${state.panOffset.x}px, ${state.panOffset.y}px) scale(${state.zoom})`;
         }
 
-        let mousePos = { x: 0, y: 0 }, visualRafId = null, transformRafId = null, wheelRafId = null, pendingWheelScale = 1;
+        let mousePos = { x: 0, y: 0 }, visualRafId = null, transformRafId = null, wheelRafId = null, pendingWheelDelta = 0;
 
+        /* Improvement #5: Only iterate member nodes, use cached numeric coords */
         function updateVisuals() {
             if (state.isDragging) { visualRafId = null; return; }
             const rSq = 62500, maxScale = 2.0;
             let nearest = null, minDSq = Infinity;
+            const memberNodes = state.cachedMemberNodes;
+            const mX = mousePos.x, mY = mousePos.y;
+            const z = state.zoom, oX = state.panOffset.x, oY = state.panOffset.y;
 
-            for (let i = 0, len = state.cachedNodes.length; i < len; i++) {
-                const node = state.cachedNodes[i];
-                if (node.dataset.type === 'group-label' || node.dataset.type === 'group') continue;
-
-                const wx = parseFloat(node.dataset.x), wy = parseFloat(node.dataset.y);
-                const dx = ((wx * state.zoom) + state.panOffset.x) - mousePos.x, dy = ((wy * state.zoom) + state.panOffset.y) - mousePos.y;
+            for (let i = 0, len = memberNodes.length; i < len; i++) {
+                const node = memberNodes[i];
+                const wx = node._nx, wy = node._ny;
+                const dx = ((wx * z) + oX) - mX;
+                const dy = ((wy * z) + oY) - mY;
                 const distSq = dx * dx + dy * dy;
 
                 if (distSq < rSq) {
                     const factor = 1 - (Math.sqrt(distSq) / 250);
                     if (!node.classList.contains('is-interacting')) node.classList.add('is-interacting');
-                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${1 + ((factor * factor * factor) * (maxScale - 1))}) translateZ(0)`;
+                    const s = 1 + ((factor * factor * factor) * (maxScale - 1));
+                    node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(${s}) translateZ(0)`;
                     if (distSq < minDSq) { minDSq = distSq; nearest = node; }
                 } else if (node.classList.contains('is-interacting')) {
                     node.style.transform = `translate(-50%, -50%) translate(${wx}px, ${wy}px) scale(1) translateZ(0)`;
                     node.classList.remove('is-interacting', 'magnified');
                 }
-                if (node!== nearest) node.classList.remove('magnified');
+                if (node !== nearest) node.classList.remove('magnified');
             }
             if (nearest && minDSq < 10000) nearest.classList.add('magnified');
             visualRafId = null;
@@ -482,45 +705,93 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
 
         function resetMagnification() {
             if (visualRafId) { cancelAnimationFrame(visualRafId); visualRafId = null; }
-            state.cachedNodes.forEach(node => {
-                if (node.classList.contains('bubble-group') || node.dataset.type === 'group-label') return;
-                node.style.transform = `translate(-50%, -50%) translate(${node.dataset.x}px, ${node.dataset.y}px) scale(1) translateZ(0)`;
+            const memberNodes = state.cachedMemberNodes;
+            for (let i = 0, len = memberNodes.length; i < len; i++) {
+                const node = memberNodes[i];
+                node.style.transform = `translate(-50%, -50%) translate(${node._nx}px, ${node._ny}px) scale(1) translateZ(0)`;
                 node.classList.remove('magnified', 'is-interacting');
+            }
+        }
+
+        /* Improvement #2: Use precomputed connection counts, no O(n*m) per sort */
+        function getFiltered() {
+            let res = state.members;
+            if (state.roleFilter !== 'all') res = res.filter(m => state.roleFilter === 'speakers'? state.isSpeaker.has(m.id) : ['organizer', 'admin'].includes(m.role));
+            if (state.eventFilterId !== 'all') res = res.filter(m => state.speakersByProfileId.get(m.id)?.has(state.eventFilterId));
+            if (state.countryFilterId !== 'all') res = res.filter(m => m.country === state.countryFilterId);
+            if (state.searchQuery) { const q = state.searchQuery.toLowerCase(); res = res.filter(m => (m.full_name||"").toLowerCase().includes(q) || (m.affiliation||"").toLowerCase().includes(q)); }
+            if (state.selectedTags.size > 0) res = res.filter(m => { for(const tg of state.selectedTags) if(state.tagIndex.get(tg)?.has(m.id)) return true; return false; });
+            const k = state.sort.key, d = state.sort.dir === 'asc'? 1 : -1;
+            return res.sort((a, b) => {
+                if (k === 'connections') return (getConnectionCount(a.id) - getConnectionCount(b.id)) * d;
+                return (a[k==='name'?'full_name':k]||"").localeCompare(b[k==='name'?'full_name':k]||"") * d;
             });
         }
 
-        function getFiltered() {
-            let res = state.members;
-            if (state.roleFilter!== 'all') res = res.filter(m => state.roleFilter === 'speakers'? state.isSpeaker.has(m.id) : ['organizer', 'admin'].includes(m.role));
-            if (state.eventFilterId!== 'all') res = res.filter(m => state.speakersByProfileId.get(m.id)?.has(state.eventFilterId));
-            if (state.countryFilterId!== 'all') res = res.filter(m => m.country === state.countryFilterId);
-            if (state.searchQuery) { const q = state.searchQuery.toLowerCase(); res = res.filter(m => (m.full_name||"").toLowerCase().includes(q) || (m.affiliation||"").toLowerCase().includes(q)); }
-            if (state.selectedTags.size > 0) res = res.filter(m => { for(const t of state.selectedTags) if(state.tagIndex.get(t)?.has(m.id)) return true; return false; });
-            const k = state.sort.key, d = state.sort.dir === 'asc'? 1 : -1;
-            return res.sort((a, b) => k === 'connections'? (state.connections.filter(c=>c.source===a.id||c.target===a.id).length - state.connections.filter(c=>c.source===b.id||c.target===b.id).length) * d : (a[k==='name'?'full_name':k]||"").localeCompare(b[k==='name'?'full_name':k]||"") * d);
-        }
-
+        /* Improvement #3: Use DOM creation and escapeHtml instead of raw innerHTML for table */
         function renderTable(list) {
             const l = t[state.lang] || t.en;
             $$('th[data-i18n]').forEach(th => { const key = th.dataset.i18n; if (l[key]) th.innerText = l[key]; });
-            $('#members-table-body').innerHTML = list.map(m => {
-                const n = m.full_name || 'Member', c = state.connections.filter(x => x.source === m.id || x.target === m.id).length;
+
+            const tbody = $('#members-table-body');
+            /* Improvement #11: For very large lists, limit visible rows and add a notice */
+            const MAX_TABLE_ROWS = 200;
+            const displayList = list.length > MAX_TABLE_ROWS ? list.slice(0, MAX_TABLE_ROWS) : list;
+            const truncated = list.length > MAX_TABLE_ROWS;
+
+            const frag = document.createDocumentFragment();
+
+            for (let i = 0, len = displayList.length; i < len; i++) {
+                const m = displayList[i];
+                const n = m.full_name || 'Member';
+                const c = getConnectionCount(m.id);
                 
                 const nameParts = n.trim().split(/\s+/);
                 const initials = nameParts.length > 1 
                     ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase() 
                     : nameParts[0].substring(0, 2).toUpperCase();
 
-                return `<tr class="hover:bg-violet-50/50 cursor-pointer transition-colors group" onclick="document.dispatchEvent(new CustomEvent('openProfile',{detail:'${m.id}'}))"><td class="py-3 px-6 border-b border-slate-100/70 font-medium text-slate-900"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden text-[12px] text-slate-600 font-bold shrink-0 ring-1 ring-slate-200 group-hover:ring-violet-300 transition-all">${m.avatar_url? `<img src="${m.avatar_url}" class="w-full h-full object-cover">` : initials}</div><span class="group-hover:text-violet-700 transition-colors">${highlight(n, state.searchQuery)}</span></div></td><td class="py-3 px-6 border-b border-slate-100/70 text-slate-600">${highlight(m.affiliation || '—', state.searchQuery)}</td><td class="py-3 px-6 border-b border-slate-100/70"><span class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 text-slate-700 group-hover:bg-violet-100 group-hover:text-violet-700 transition-colors">${m.role? m.role.charAt(0).toUpperCase()+m.role.slice(1) : 'Member'}</span></td><td class="py-3 px-6 border-b border-slate-100/70 text-slate-600">${m.country? (state.countries[m.country] || m.country) : '—'}</td><td class="py-3 px-6 border-b border-slate-100/70 text-right"><span class="inline-flex items-center justify-center min-w-[24px] px-2 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 text-white tabular-nums">${c}</span></td></tr>`;
-            }).join('');
-            list.forEach(m => { if (m.avatar_url &&!m.avatar_url.startsWith('http')) getAvatarUrl(m.avatar_url).then(u => { const img = document.querySelector(`tr[onclick*="${m.id}"] img`); if (img && u) img.src = u; }); });
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-violet-50/50 cursor-pointer transition-colors group';
+                const memberId = m.id;
+                tr.onclick = () => openProfileModal(state.profileById.get(memberId));
+
+                tr.innerHTML = `<td class="py-3 px-6 border-b border-slate-100/70 font-medium text-slate-900"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden text-[12px] text-slate-600 font-bold shrink-0 ring-1 ring-slate-200 group-hover:ring-violet-300 transition-all">${m.avatar_url? `<img src="${escapeHtml(m.avatar_url)}" alt="${escapeHtml(n)}" loading="lazy" decoding="async" class="w-full h-full object-cover">` : escapeHtml(initials)}</div><span class="group-hover:text-violet-700 transition-colors">${highlight(n, state.searchQuery)}</span></div></td><td class="py-3 px-6 border-b border-slate-100/70 text-slate-600">${highlight(m.affiliation || '—', state.searchQuery)}</td><td class="py-3 px-6 border-b border-slate-100/70"><span class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 text-slate-700 group-hover:bg-violet-100 group-hover:text-violet-700 transition-colors">${escapeHtml(m.role? m.role.charAt(0).toUpperCase()+m.role.slice(1) : 'Member')}</span></td><td class="py-3 px-6 border-b border-slate-100/70 text-slate-600">${escapeHtml(m.country? (state.countries[m.country] || m.country) : '—')}</td><td class="py-3 px-6 border-b border-slate-100/70 text-right"><span class="inline-flex items-center justify-center min-w-[24px] px-2 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 text-white tabular-nums">${c}</span></td>`;
+
+                /* Improvement #12: Use cached avatar resolution */
+                if (m.avatar_url && !m.avatar_url.startsWith('http')) {
+                    const img = tr.querySelector('img');
+                    if (img) getCachedAvatarUrl(m.avatar_url).then(u => { if (u) img.src = u; });
+                }
+
+                frag.appendChild(tr);
+            }
+
+            if (truncated) {
+                const notice = document.createElement('tr');
+                notice.innerHTML = `<td colspan="5" class="py-3 px-6 text-center text-[12px] text-slate-400 italic">Showing first ${MAX_TABLE_ROWS} of ${list.length} members. Use filters to narrow results.</td>`;
+                frag.appendChild(notice);
+            }
+
+            tbody.innerHTML = '';
+            tbody.appendChild(frag);
         }
-        document.addEventListener('openProfile', e => openProfileModal(state.profileById.get(e.detail)));
 
         function onFiltersChanged() {
             state.searchQuery = $('#searchInput').value; populateTagFilters();
             const list = getFiltered(); renderTable(list); renderGraph(list);
         }
+
+        /* Improvement #8: ResizeObserver for responsive layout recalculation */
+        let resizeTimeout = null;
+        const resizeObserver = new ResizeObserver(() => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                resizeEdgeCanvas();
+                fitGraph();
+                scheduleEdgeDraw();
+            }, 150);
+        });
 
         (async function () {
             initSharedUI({ onLangSwitch: () => { state.lang = state.lang === 'en'? 'es' : 'en'; localStorage.setItem("lang", state.lang); applyLocalTranslations(); }, onSignOut: signOut });
@@ -528,9 +799,65 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
 
             const resizer = document.getElementById('dragHandle'), topEl = document.getElementById('network-container'), container = document.getElementById('right-column');
             let startY, startH;
-            const stopDrag = () => { document.documentElement.removeEventListener('mousemove', doDrag); document.documentElement.removeEventListener('mouseup', stopDrag); resizer.classList.remove('dragging'); document.body.style.cursor = ''; topEl.style.pointerEvents = 'auto'; fitGraph(); };
-            const doDrag = e => { const h = startH + (e.clientY - startY); if (h > 200 && h < container.offsetHeight - 200) { topEl.style.height = `${h}px`; requestAnimationFrame(fitGraph); } };
-            resizer.addEventListener('mousedown', e => { e.preventDefault(); startY = e.clientY; startH = parseInt(getComputedStyle(topEl).height, 10); document.documentElement.addEventListener('mousemove', doDrag); document.documentElement.addEventListener('mouseup', stopDrag); resizer.classList.add('dragging'); document.body.style.cursor = 'row-resize'; topEl.style.pointerEvents = 'none'; });
+
+            /* Improvement #15: Batch reads/writes to prevent layout thrashing during drag */
+            const stopDrag = () => {
+                document.documentElement.removeEventListener('mousemove', doDrag);
+                document.documentElement.removeEventListener('mouseup', stopDrag);
+                document.documentElement.removeEventListener('touchmove', doDragTouch);
+                document.documentElement.removeEventListener('touchend', stopDrag);
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                topEl.style.pointerEvents = 'auto';
+                resizeEdgeCanvas();
+                fitGraph();
+                scheduleEdgeDraw();
+            };
+
+            let dragResizeRafId = null;
+            const applyDragHeight = (h) => {
+                if (dragResizeRafId) return;
+                dragResizeRafId = requestAnimationFrame(() => {
+                    const maxH = container.offsetHeight - 200;
+                    if (h > 200 && h < maxH) {
+                        topEl.style.height = `${h}px`;
+                        resizeEdgeCanvas();
+                        fitGraph();
+                        scheduleEdgeDraw();
+                    }
+                    dragResizeRafId = null;
+                });
+            };
+
+            const doDrag = e => { applyDragHeight(startH + (e.clientY - startY)); };
+
+            /* Improvement #13: Touch support for drag handle */
+            const doDragTouch = e => { if (e.touches.length === 1) { e.preventDefault(); applyDragHeight(startH + (e.touches[0].clientY - startY)); } };
+
+            const initDrag = (clientY) => {
+                startY = clientY;
+                startH = parseInt(getComputedStyle(topEl).height, 10);
+                resizer.classList.add('dragging');
+                document.body.style.cursor = 'row-resize';
+                topEl.style.pointerEvents = 'none';
+            };
+
+            resizer.addEventListener('mousedown', e => {
+                e.preventDefault();
+                initDrag(e.clientY);
+                document.documentElement.addEventListener('mousemove', doDrag);
+                document.documentElement.addEventListener('mouseup', stopDrag);
+            });
+
+            /* Improvement #13: Touch events for drag handle */
+            resizer.addEventListener('touchstart', e => {
+                if (e.touches.length === 1) {
+                    e.preventDefault();
+                    initDrag(e.touches[0].clientY);
+                    document.documentElement.addEventListener('touchmove', doDragTouch, { passive: false });
+                    document.documentElement.addEventListener('touchend', stopDrag);
+                }
+            }, { passive: false });
 
             document.addEventListener('click', e => { if (e.target.closest('#btnProfile') || e.target.closest('#userName')) window.location.href = 'profile.html'; });
             $$('[data-role]').forEach(b => b.onclick = e => { $$('[data-role]').forEach(x => x.className = "px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 bg-white"); e.target.className = "px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all shadow-md shadow-slate-900/10 bg-slate-900 text-white ring-1 ring-slate-900"; state.roleFilter = e.target.dataset.role; onFiltersChanged(); });
@@ -552,18 +879,23 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
 
             const cv = $('#network-container');
             let sx=0, sy=0, suppressClick=false, dragMoved=false, dsX=0, dsY=0;
+
+            /* Improvement #4: Pinch-to-zoom tracking */
+            let lastPinchDist = 0, isPinching = false;
+
             cv.addEventListener('click', e => { if (suppressClick) { e.preventDefault(); e.stopImmediatePropagation(); suppressClick = false; } }, true);
+
             cv.onmousemove = e => {
                 if (state.isDragging) {
                     if (!dragMoved && ((e.clientX - dsX)**2 + (e.clientY - dsY)**2) > 16) dragMoved = true;
                     state.panOffset.x = e.clientX - sx; state.panOffset.y = e.clientY - sy;
-                    if (!transformRafId) transformRafId = requestAnimationFrame(() => { updateTransform(); transformRafId = null; });
+                    if (!transformRafId) transformRafId = requestAnimationFrame(() => { updateTransform(); scheduleEdgeDraw(); transformRafId = null; });
                 } else {
                     const r = cv.getBoundingClientRect(); mousePos.x = e.clientX - r.left; mousePos.y = e.clientY - r.top;
                     if (!visualRafId) visualRafId = requestAnimationFrame(updateVisuals);
                 }
             };
-            cv.onmouseleave = () => resetMagnification();
+            cv.onmouseleave = () => { resetMagnification(); state.highlightedMemberId = null; scheduleEdgeDraw(); };
             cv.onmousedown = e => {
                 const node = e.target.closest('.network-node');
                 if (!node || node.dataset.type === 'group') {
@@ -573,19 +905,86 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
                 }
             };
             window.onmouseup = () => { if (state.isDragging && dragMoved) suppressClick = true; state.isDragging = false; cv.style.cursor = 'grab'; };
+
+            /* Improvement #7: Zoom toward cursor position */
             cv.onwheel = e => {
-                e.preventDefault(); pendingWheelScale *= (e.deltaY > 0? 0.9 : 1.1);
-                if (!wheelRafId) wheelRafId = requestAnimationFrame(() => { state.zoom = clamp(state.zoom * pendingWheelScale, 0.1, 5); pendingWheelScale = 1; updateTransform(); wheelRafId = null; });
+                e.preventDefault();
+                const rect = cv.getBoundingClientRect();
+                const cursorX = e.clientX - rect.left;
+                const cursorY = e.clientY - rect.top;
+                pendingWheelDelta += e.deltaY;
+
+                if (!wheelRafId) wheelRafId = requestAnimationFrame(() => {
+                    const scaleFactor = pendingWheelDelta > 0 ? 0.9 : 1.1;
+                    const newZoom = clamp(state.zoom * scaleFactor, 0.1, 5);
+                    const ratio = newZoom / state.zoom;
+
+                    /* Zoom toward cursor: adjust pan so the point under cursor stays fixed */
+                    state.panOffset.x = cursorX - (cursorX - state.panOffset.x) * ratio;
+                    state.panOffset.y = cursorY - (cursorY - state.panOffset.y) * ratio;
+                    state.zoom = newZoom;
+
+                    pendingWheelDelta = 0;
+                    updateTransform();
+                    scheduleEdgeDraw();
+                    wheelRafId = null;
+                });
             };
+
             cv.ontouchstart = e => {
-                const node = e.target.closest('.network-node');
-                if (!node || node.dataset.type === 'group') {
-                    state.isDragging = true; dragMoved = false; dsX = e.touches[0].clientX; dsY = e.touches[0].clientY;
-                    sx = e.touches[0].clientX - state.panOffset.x; sy = e.touches[0].clientY - state.panOffset.y;
+                /* Improvement #4: Detect pinch (2 fingers) vs pan (1 finger) */
+                if (e.touches.length === 2) {
+                    isPinching = true;
+                    state.isDragging = false;
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    lastPinchDist = Math.sqrt(dx * dx + dy * dy);
+                } else if (e.touches.length === 1) {
+                    const node = e.target.closest('.network-node');
+                    if (!node || node.dataset.type === 'group') {
+                        state.isDragging = true; dragMoved = false; isPinching = false;
+                        dsX = e.touches[0].clientX; dsY = e.touches[0].clientY;
+                        sx = e.touches[0].clientX - state.panOffset.x; sy = e.touches[0].clientY - state.panOffset.y;
+                    }
                 }
             };
-            cv.ontouchmove = e => { if (state.isDragging) { e.preventDefault(); if (!dragMoved && ((e.touches[0].clientX - dsX)**2 + (e.touches[0].clientY - dsY)**2) > 16) dragMoved = true; state.panOffset.x = e.touches[0].clientX - sx; state.panOffset.y = e.touches[0].clientY - sy; if (!transformRafId) transformRafId = requestAnimationFrame(() => { updateTransform(); transformRafId = null; }); } };
-            cv.ontouchend = () => { if (state.isDragging && dragMoved) suppressClick = true; state.isDragging = false; };
+            cv.ontouchmove = e => {
+                if (isPinching && e.touches.length === 2) {
+                    e.preventDefault();
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (lastPinchDist > 0) {
+                        const ratio = dist / lastPinchDist;
+                        /* Pinch center point */
+                        const rect = cv.getBoundingClientRect();
+                        const cx = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+                        const cy = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
+                        const newZoom = clamp(state.zoom * ratio, 0.1, 5);
+                        const zoomRatio = newZoom / state.zoom;
+                        state.panOffset.x = cx - (cx - state.panOffset.x) * zoomRatio;
+                        state.panOffset.y = cy - (cy - state.panOffset.y) * zoomRatio;
+                        state.zoom = newZoom;
+                        if (!transformRafId) transformRafId = requestAnimationFrame(() => { updateTransform(); scheduleEdgeDraw(); transformRafId = null; });
+                    }
+                    lastPinchDist = dist;
+                } else if (state.isDragging && e.touches.length === 1) {
+                    e.preventDefault();
+                    if (!dragMoved && ((e.touches[0].clientX - dsX)**2 + (e.touches[0].clientY - dsY)**2) > 16) dragMoved = true;
+                    state.panOffset.x = e.touches[0].clientX - sx; state.panOffset.y = e.touches[0].clientY - sy;
+                    if (!transformRafId) transformRafId = requestAnimationFrame(() => { updateTransform(); scheduleEdgeDraw(); transformRafId = null; });
+                }
+            };
+            cv.ontouchend = e => {
+                if (isPinching) {
+                    if (e.touches.length < 2) { isPinching = false; lastPinchDist = 0; }
+                }
+                if (state.isDragging && dragMoved) suppressClick = true;
+                if (e.touches.length === 0) { state.isDragging = false; isPinching = false; }
+            };
+
+            /* Improvement #8: Observe container for resize */
+            resizeObserver.observe($('#network-container'));
 
             if (window.lucide) window.lucide.createIcons();
             
@@ -597,19 +996,27 @@ import { initSharedUI, renderHeader, applyI18n, tr, $, $$, show, hide, getAvatar
 
            // 2. GATEKEEPING
             if (!authState.session) {
-                $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
-                showAuthGateModal(state.lang, false); // false = non-dismissible
+                const ls = $('#loadingScreen');
+                ls.classList.add('opacity-0', 'pointer-events-none');
+                /* Improvement #9: Remove loading screen from DOM after fade */
+                ls.addEventListener('transitionend', () => ls.remove(), { once: true });
+                showAuthGateModal(state.lang, false);
                 return; 
             }
             if (authState.session && !authState.profileComplete) {
-                $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
+                const ls = $('#loadingScreen');
+                ls.classList.add('opacity-0', 'pointer-events-none');
+                ls.addEventListener('transitionend', () => ls.remove(), { once: true });
                 showProfileGateModal(state.lang);
                 return; 
             }
 
             // 3. Load Data & Remove Loading Screen
             await loadNetworkData();
-            $('#loadingScreen').classList.add('opacity-0', 'pointer-events-none');
+            const ls = $('#loadingScreen');
+            ls.classList.add('opacity-0', 'pointer-events-none');
+            /* Improvement #9: Remove from DOM after transition to free GPU compositing */
+            ls.addEventListener('transitionend', () => ls.remove(), { once: true });
         })();
     </script>
 </body>
