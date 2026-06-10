@@ -54,6 +54,8 @@ const normalize = (value = '') => String(value).toLowerCase().trim();
 const getEvent = (id) => state.events.find((event) => String(event.id) === String(id));
 const formatName = (profile) => profile?.full_name || profile?.username || 'Anonymous';
 const initialLetter = (name) => (name || 'U').charAt(0).toUpperCase();
+const eventTitle = (event) => state.language === 'es' ? (event.title_es || event.title_en) : event.title_en;
+const eventPageHref = (eventId) => `index.html?event=${encodeURIComponent(eventId)}`;
 
 function localTr(key, fallback = '') {
   return tr(t, state.language, key, fallback);
@@ -116,7 +118,12 @@ function threadBoard(thread) {
 function threadEventTitle(thread) {
   const event = getEvent(thread.event_id);
   if (!event) return 'Community forum';
-  return state.language === 'es' ? (event.title_es || event.title_en) : event.title_en;
+  return eventTitle(event);
+}
+
+function formatEventOption(event) {
+  const date = event.start_time ? fmtDateTime(event.start_time, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Event';
+  return `${date} - ${eventTitle(event) || 'Untitled event'}`;
 }
 
 async function resolveProfiles(items, idKey = 'created_by') {
@@ -185,7 +192,38 @@ function renderBoards() {
 }
 
 function renderEventSelects() {
+  const options = state.events.map((event) => `
+    <option value="${escapeHtml(event.id)}">${escapeHtml(formatEventOption(event))}</option>
+  `).join('');
+
+  const filter = $('#forumEventFilter');
+  if (filter) {
+    filter.innerHTML = `<option value="">All event discussions</option>${options}`;
+    filter.value = state.focusedEventId || '';
+  }
+
+  const topicEvent = $('#forumTopicEvent');
+  if (topicEvent) {
+    topicEvent.innerHTML = `<option value="">Choose an event...</option>${options}`;
+    if (state.focusedEventId && getEvent(state.focusedEventId)) topicEvent.value = state.focusedEventId;
+  }
+
+  renderEventContext();
   renderStats();
+}
+
+function renderEventContext() {
+  const context = $('#forumEventContext');
+  if (!context) return;
+  const showContext = state.selectedBoard === 'event' || Boolean(state.focusedEventId);
+  showContext ? show(context) : hide(context);
+
+  const event = state.focusedEventId ? getEvent(state.focusedEventId) : null;
+  const label = $('#forumEventContextLabel');
+  if (label) label.textContent = event ? eventTitle(event) : 'All event discussions';
+
+  const filter = $('#forumEventFilter');
+  if (filter && filter.value !== (state.focusedEventId || '')) filter.value = state.focusedEventId || '';
 }
 
 function filteredThreads() {
@@ -217,6 +255,7 @@ function renderStats() {
 
 function renderThreads() {
   renderBoards();
+  renderEventContext();
   renderStats();
 
   const list = $('#forumThreads');
@@ -224,8 +263,20 @@ function renderThreads() {
   const threads = filteredThreads();
 
   if (!threads.length) {
+    const event = state.focusedEventId ? getEvent(state.focusedEventId) : null;
+    const emptyCopy = event
+      ? `No threads yet for ${escapeHtml(eventTitle(event))}.`
+      : state.selectedBoard === 'event'
+        ? 'No event discussions match this view.'
+        : 'No forum threads match this view.';
     status.className = 'forum-status';
-    status.innerHTML = '<i data-lucide="search-x"></i> No forum threads match this view.';
+    status.innerHTML = `
+      <div class="forum-empty-state">
+        <i data-lucide="${event || state.selectedBoard === 'event' ? 'calendar-plus' : 'search-x'}"></i>
+        <span>${emptyCopy}</span>
+        ${(event || state.selectedBoard === 'event') ? `<button type="button" class="forum-secondary-action small" data-start-event-thread="${escapeHtml(event?.id || '')}"><i data-lucide="message-square-plus"></i>Start event thread</button>` : ''}
+      </div>
+    `;
     list.innerHTML = '';
     window.lucide?.createIcons();
     return;
@@ -452,6 +503,8 @@ async function selectThread(threadId, options = {}) {
   if (!options.keepUrl) {
     const url = new URL(window.location.href);
     url.searchParams.set('thread', threadId);
+    if (thread.event_id) url.searchParams.set('event', thread.event_id);
+    else url.searchParams.delete('event');
     window.history.replaceState({ thread: threadId }, '', url);
   }
 }
@@ -485,13 +538,17 @@ async function createThread(e) {
   if (!requireMemberAction()) return;
 
   const board = $('#forumTopicBoard').value;
-  const eventId = null;
+  const eventId = board === 'event' ? ($('#forumTopicEvent').value || state.focusedEventId || null) : null;
   const title = $('#forumTopicTitle').value.trim();
   const detail = board === 'opportunity' ? $('#forumOpportunityType').value.trim() : '';
   const deadline = $('#forumOpportunityDeadline').value.trim();
   let body = getEditorHtml(topicEditor);
 
   if (!title) return;
+  if (board === 'event' && !eventId) {
+    setFlash('Choose an event for this discussion.');
+    return;
+  }
   if (board === 'opportunity' && deadline) {
     body = sanitizeRichText(`<p><strong>Timing:</strong> ${escapeHtml(deadline)}</p>${body}`);
   }
@@ -523,6 +580,10 @@ async function createThread(e) {
   $('#forumTopicTitle').value = '';
   $('#forumOpportunityDeadline').value = '';
   clearEditor(topicEditor);
+  if (eventId) {
+    state.focusedEventId = eventId;
+    state.selectedBoard = 'event';
+  }
   await loadThreads();
   await selectThread(data.id);
   setFlash('Forum post published.');
@@ -584,17 +645,21 @@ async function updateThread(action) {
   else await loadThreads();
 }
 
-function openTopicDialog(prefillBoard = null) {
+function openTopicDialog(prefillBoard = null, prefillEventId = null) {
   if (!requireMemberAction()) return;
-  const board = prefillBoard || (state.selectedBoard === 'all' || state.selectedBoard === 'event' ? 'general' : state.selectedBoard);
+  const board = prefillBoard || (state.focusedEventId || state.selectedBoard === 'event' ? 'event' : (state.selectedBoard === 'all' ? 'general' : state.selectedBoard));
   $('#forumTopicBoard').value = board;
+  const eventId = prefillEventId || state.focusedEventId;
+  if (eventId && getEvent(eventId)) $('#forumTopicEvent').value = eventId;
   toggleOpportunityFields();
   $('#forumTopicDialog').showModal();
   setTimeout(() => $('#forumTopicTitle').focus(), 50);
 }
 
 function toggleOpportunityFields() {
-  $('#forumTopicBoard').value === 'opportunity' ? show($('#forumOpportunityFields')) : hide($('#forumOpportunityFields'));
+  const board = $('#forumTopicBoard').value;
+  board === 'opportunity' ? show($('#forumOpportunityFields')) : hide($('#forumOpportunityFields'));
+  board === 'event' ? show($('#forumTopicEventField')) : hide($('#forumTopicEventField'));
 }
 
 function bindEvents() {
@@ -623,6 +688,22 @@ function bindEvents() {
     state.selectedBoard = btn.dataset.board;
     state.focusedEventId = null;
     renderThreads();
+  });
+  $('#forumEventQuickPost').addEventListener('click', () => openTopicDialog('event', state.focusedEventId));
+  $('#forumEventFilter').addEventListener('change', (e) => {
+    state.focusedEventId = e.target.value || null;
+    state.selectedBoard = 'event';
+    const url = new URL(window.location.href);
+    if (state.focusedEventId) url.searchParams.set('event', state.focusedEventId);
+    else url.searchParams.delete('event');
+    url.searchParams.delete('thread');
+    window.history.replaceState({ event: state.focusedEventId }, '', url);
+    renderThreads();
+  });
+  $('#forumStatus').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-start-event-thread]');
+    if (!btn) return;
+    openTopicDialog('event', btn.dataset.startEventThread || state.focusedEventId);
   });
   $('#forumThreads').addEventListener('click', (e) => {
     const profileBtn = e.target.closest('[data-open-profile]');
@@ -711,6 +792,21 @@ function bindEvents() {
     state.selectedBoard = 'event';
     $('#forumEventDialog').close();
     renderThreads();
+    const filter = $('#forumEventFilter');
+    if (filter) filter.value = eventId;
+  });
+  $('#forumEventDialogNewThread').addEventListener('click', () => {
+    const eventId = $('#forumEventDialog').dataset.eventId;
+    $('#forumEventDialog').close();
+    openTopicDialog('event', eventId);
+  });
+
+  window.addEventListener('pagehide', () => {
+    ['#forumTopicDialog', '#forumEventDialog'].forEach((selector) => {
+      const dialog = $(selector);
+      if (dialog?.open) dialog.close();
+    });
+    document.body.style.overflow = '';
   });
 }
 
@@ -718,7 +814,7 @@ async function openEventPreview(eventId) {
   const event = getEvent(eventId);
   if (!event) return;
 
-  const title = state.language === 'es' ? (event.title_es || event.title_en) : event.title_en;
+  const title = eventTitle(event);
   const description = state.language === 'es' ? (event.description_es || event.description_en) : event.description_en;
   const speakers = await Promise.all((event.event_speakers || []).map(async (speaker) => {
     const img = speaker.profile?.avatar_url ? await getAvatarUrl(speaker.profile.avatar_url) : null;
@@ -737,6 +833,7 @@ async function openEventPreview(eventId) {
   }));
 
   $('#forumEventDialog').dataset.eventId = event.id;
+  $('#forumEventDialogOpenPage').href = eventPageHref(event.id);
   $('#forumEventDialogTitle').textContent = title;
   $('#forumEventDialogMeta').textContent = `${fmtDateTime(event.start_time)}${event.host_org ? ` · ${event.host_org}` : ''}`;
   $('#forumEventDialogBody').innerHTML = `
@@ -780,7 +877,7 @@ function handleLangSwitch() {
   state.language = state.language === 'en' ? 'es' : 'en';
   localStorage.setItem('lang', state.language);
   applyI18n(t, state.language);
-  renderStats();
+  renderEventSelects();
   renderThreads();
 }
 
@@ -796,11 +893,21 @@ function handleLangSwitch() {
   });
 
   await loadEvents();
+  const params = new URLSearchParams(window.location.search);
+  const requestedEvent = params.get('event') || params.get('e');
+  if (requestedEvent && getEvent(requestedEvent)) {
+    state.focusedEventId = requestedEvent;
+    state.selectedBoard = 'event';
+    renderEventSelects();
+  }
   await loadThreads();
   subscribeRealtime();
 
-  const requestedThread = new URLSearchParams(window.location.search).get('thread');
+  const requestedThread = params.get('thread');
   if (requestedThread) await selectThread(requestedThread, { keepUrl: true });
+  if ((params.get('new') === 'thread' || params.get('compose') === '1') && state.focusedEventId) {
+    openTopicDialog('event', state.focusedEventId);
+  }
 
   window.lucide?.createIcons();
 })();

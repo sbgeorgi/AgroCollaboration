@@ -79,6 +79,25 @@
           </select>
         </div>
 
+        <div id="forumEventContext" class="forum-event-context hidden">
+          <div class="forum-event-context-copy">
+            <i data-lucide="calendar-days"></i>
+            <div>
+              <span>Event discussions</span>
+              <strong id="forumEventContextLabel">All event discussions</strong>
+            </div>
+          </div>
+          <div class="forum-event-context-controls">
+            <select id="forumEventFilter" aria-label="Filter event discussions">
+              <option value="">All event discussions</option>
+            </select>
+            <button id="forumEventQuickPost" class="forum-secondary-action small" type="button">
+              <i data-lucide="message-square-plus"></i>
+              Start thread
+            </button>
+          </div>
+        </div>
+
         <div id="forumStatus" class="forum-status">
           <span class="forum-spinner"></span>
           Loading forum threads...
@@ -147,9 +166,16 @@
           Board
           <select id="forumTopicBoard">
             <option value="general">General discussion</option>
+            <option value="event">Event discussion</option>
             <option value="question">Question</option>
             <option value="opportunity">Jobs, research, opportunities</option>
             <option value="resource">Resource or method</option>
+          </select>
+        </label>
+        <label id="forumTopicEventField" class="hidden">
+          Event
+          <select id="forumTopicEvent">
+            <option value="">Choose an event...</option>
           </select>
         </label>
       </div>
@@ -213,6 +239,14 @@
       </header>
       <div id="forumEventDialogBody" class="forum-event-body"></div>
       <footer>
+        <button id="forumEventDialogNewThread" class="forum-primary-action small" type="button">
+          <i data-lucide="message-square-plus"></i>
+          Start thread
+        </button>
+        <a id="forumEventDialogOpenPage" class="forum-secondary-action small" href="index.html">
+          <i data-lucide="external-link"></i>
+          Open event page
+        </a>
         <button id="forumEventDialogFocusThreads" class="forum-secondary-action small" type="button">
           <i data-lucide="messages-square"></i>
           Show related threads

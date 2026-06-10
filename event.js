@@ -24,6 +24,15 @@ export function initEventLogic(deps) {
   const formatName = (p) => p?.full_name || p?.username || 'Anonymous';
   const initialLetter = (n) => (n || 'U').charAt(0).toUpperCase();
 
+  const parseThreadTitle = (rawTitle = '') => {
+    const match = rawTitle.match(/^\[(Opportunity(?::\s*([^\]]+))?|Question|Resource|General|Event)\]\s*(.*)$/i);
+    if (!match) return { title: rawTitle, board: 'event', detail: '' };
+    const label = match[1].toLowerCase();
+    const detail = match[2] || '';
+    const board = label.startsWith('opportunity') ? 'opportunity' : label;
+    return { title: match[3] || rawTitle, board, detail };
+  };
+
   const timeMeta = (created, updated) => {
     const base = fmtDateTime(created);
     return updated && updated !== created ? `${base} · edited ${fmtDateTime(updated)}` : base;
@@ -376,11 +385,12 @@ export function initEventLogic(deps) {
     listEl.innerHTML = state.threads.map(t => {
       const active = String(t.id) === String(state.selectedThreadId);
       const canMod = t.created_by === uid || isAdmin;
+      const parsed = parseThreadTitle(t.title);
 
       return `<div class="group flex items-center justify-between gap-2 p-2 rounded-lg cursor-pointer transition-colors ${active ? 'bg-brand-50 ring-1 ring-brand-200' : 'hover:bg-slate-100'}" data-thread-row="${t.id}">
           <div class="flex items-center gap-2 min-w-0 flex-1" data-thread-id="${t.id}">
             <i data-lucide="${t.pinned ? 'pin' : 'hash'}" class="w-3.5 h-3.5 shrink-0 ${t.pinned ? 'text-amber-500 fill-current' : 'text-slate-400'}"></i>
-            <span class="truncate text-sm font-medium text-slate-700 ${active ? 'text-brand-800' : ''}">${escapeHtml(t.title)}</span>
+            <span class="truncate text-sm font-medium text-slate-700 ${active ? 'text-brand-800' : ''}">${escapeHtml(parsed.title)}</span>
           </div>
           ${canMod ? `<div class="relative thread-actions-menu group/menu">
             <button class="p-1 text-slate-400 hover:text-slate-600 rounded opacity-0 group-hover:opacity-100 transition-opacity" data-thread-menu="${t.id}"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
@@ -399,7 +409,8 @@ export function initEventLogic(deps) {
     e.preventDefault();
     const title = e.target.querySelector('input').value.trim();
     if (!title) return;
-    const { data, error } = await supabase.from('threads').insert({ title, event_id: state.selectedEvent.id, created_by: authState.session.user.id }).select().single();
+    const storedTitle = title.match(/^\[(Opportunity|Question|Resource|General|Event)/i) ? title : `[Event] ${title}`;
+    const { data, error } = await supabase.from('threads').insert({ title: storedTitle, event_id: state.selectedEvent.id, created_by: authState.session.user.id }).select().single();
     if (error) setFlash('Failed to create thread');
     else {
       e.target.querySelector('input').value = '';
@@ -416,8 +427,9 @@ export function initEventLogic(deps) {
 
     let error;
     if (action === 'edit') {
-      const title = prompt('New title:', t.title);
-      if (title && title.trim() !== t.title) ({ error } = await supabase.from('threads').update({ title: title.trim() }).eq('id', id));
+      const parsed = parseThreadTitle(t.title);
+      const title = prompt('New title:', parsed.title);
+      if (title && title.trim() !== parsed.title) ({ error } = await supabase.from('threads').update({ title: `[Event] ${title.trim()}` }).eq('id', id));
     } else if (action === 'pin') {
       ({ error } = await supabase.from('threads').update({ pinned: !t.pinned }).eq('id', id));
     } else if (action === 'delete') {
@@ -543,6 +555,7 @@ export function initEventLogic(deps) {
              </div>
         </div>
         <div class="event-detail-actions">
+             <a href="forum.html?event=${encodeURIComponent(ev.id)}" class="event-control-button"><i data-lucide="messages-square" class="w-3.5 h-3.5"></i> <span>Forum</span></a>
              <button id="followBtn" class="event-control-button"><i data-lucide="star" class="w-3.5 h-3.5"></i> <span>${escapeHtml(tr('follow', state.language === 'es' ? 'Seguir' : 'Follow'))}</span></button>
              <select id="rsvpSelect" class="event-control-select"><option value="not_going">${escapeHtml(rsvpLabels.not_going)}</option><option value="interested">${escapeHtml(rsvpLabels.interested)}</option><option value="going">${escapeHtml(rsvpLabels.going)}</option></select>
              ${isAdmin ? `<button class="event-control-button event-control-icon" data-edit-event-section="main" aria-label="Edit event"><i data-lucide="pencil" class="w-4 h-4"></i></button>` : ''}

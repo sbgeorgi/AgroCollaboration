@@ -1295,15 +1295,24 @@ body:not(:has(#scholarApp)) .search-bar input {
 
 /* ========== SCROLLBARS ========== */
 /* CRITICAL FIX: Do not override custom scrollbars in the Scholar App */
-body:not(:has(#scholarApp)) *::-webkit-scrollbar { width: 8px; height: 8px; }
-body:not(:has(#scholarApp)) *::-webkit-scrollbar-track { background: transparent; }
-body:not(:has(#scholarApp)) *::-webkit-scrollbar-thumb {
+body:not(:has(#scholarApp)) :where(.custom-scrollbar, .panel-scroll-section, .autocomplete-results, .sidebar-container, #threadsList, #commentsList, .forum-thread-list, .forum-comments, .forum-event-body, .forum-reply-card .ql-editor, .mobile-nav-content) {
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+body:not(:has(#scholarApp)) :where(.custom-scrollbar, .panel-scroll-section, .autocomplete-results, .sidebar-container, #threadsList, #commentsList, .forum-thread-list, .forum-comments, .forum-event-body, .forum-reply-card .ql-editor, .mobile-nav-content)::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+body:not(:has(#scholarApp)) :where(.custom-scrollbar, .panel-scroll-section, .autocomplete-results, .sidebar-container, #threadsList, #commentsList, .forum-thread-list, .forum-comments, .forum-event-body, .forum-reply-card .ql-editor, .mobile-nav-content)::-webkit-scrollbar-track { background: transparent; }
+body:not(:has(#scholarApp)) :where(.custom-scrollbar, .panel-scroll-section, .autocomplete-results, .sidebar-container, #threadsList, #commentsList, .forum-thread-list, .forum-comments, .forum-event-body, .forum-reply-card .ql-editor, .mobile-nav-content)::-webkit-scrollbar-thumb {
   background-color: var(--border-strong);
   border-radius: 99px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
-body:not(:has(#scholarApp)) *::-webkit-scrollbar-thumb:hover { background-color: var(--text-tertiary); }
+body:not(:has(#scholarApp)) :where(.custom-scrollbar, .panel-scroll-section, .autocomplete-results, .sidebar-container, #threadsList, #commentsList, .forum-thread-list, .forum-comments, .forum-event-body, .forum-reply-card .ql-editor, .mobile-nav-content)::-webkit-scrollbar-thumb:hover { background-color: var(--text-tertiary); }
 
 /* ========== NETWORK & PAGE SPECIFIC ========== */
 /* This section respects the specific grid layout requested while applying the new skin */
@@ -3319,13 +3328,6 @@ body:has(#scholarApp) .border-purple-200 {
   text-align: center;
 }
 
-.forum-event-filter {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(36, 64, 51, 0.1);
-}
-
-.forum-event-filter label,
 .forum-topic-form label {
   display: grid;
   gap: 0.4rem;
@@ -3336,11 +3338,11 @@ body:has(#scholarApp) .border-purple-200 {
   letter-spacing: 0.05em;
 }
 
-.forum-event-filter select,
 .forum-topic-form select,
 .forum-topic-form input,
 .forum-search input,
-#forumSort {
+#forumSort,
+#forumEventFilter {
   min-height: 44px;
   width: 100%;
   border: 1px solid rgba(36, 64, 51, 0.14);
@@ -3351,10 +3353,10 @@ body:has(#scholarApp) .border-purple-200 {
   font-size: 0.92rem;
 }
 
-.forum-event-filter select,
 .forum-topic-form select,
 .forum-topic-form input,
-#forumSort {
+#forumSort,
+#forumEventFilter {
   padding: 0.65rem 0.75rem;
 }
 
@@ -3404,6 +3406,68 @@ body:has(#scholarApp) .border-purple-200 {
   margin-bottom: 0.7rem;
 }
 
+.forum-event-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: -0.1rem 0 0.7rem;
+  padding: 0.65rem;
+  border: 1px solid rgba(38, 116, 84, 0.14);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(135deg, rgba(237, 246, 239, 0.94), rgba(255, 255, 251, 0.88));
+}
+
+.forum-event-context-copy {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--color-brand-dark);
+}
+
+.forum-event-context-copy > svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.forum-event-context-copy span,
+.forum-event-context-copy strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.forum-event-context-copy span {
+  color: #60746b;
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.forum-event-context-copy strong {
+  max-width: 300px;
+  color: var(--color-brand-dark);
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.forum-event-context-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: min(100%, 360px);
+}
+
+#forumEventFilter {
+  min-width: 0;
+  font-size: 0.86rem;
+}
+
 #forumSort {
   max-width: 180px;
 }
@@ -3420,6 +3484,20 @@ body:has(#scholarApp) .border-purple-200 {
   font-size: 0.9rem;
   font-weight: 700;
   text-align: center;
+}
+
+.forum-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  max-width: 320px;
+  padding: 1rem;
+}
+
+.forum-empty-state svg {
+  width: 1.6rem;
+  height: 1.6rem;
+  color: rgba(38, 116, 84, 0.4);
 }
 
 .forum-spinner {
@@ -3848,6 +3926,16 @@ body:has(#scholarApp) .border-purple-200 {
     flex-direction: column;
   }
 
+  .forum-event-context {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .forum-event-context-controls {
+    width: 100%;
+    min-width: 0;
+  }
+
   #forumSort {
     max-width: none;
   }
@@ -3881,6 +3969,14 @@ body:has(#forumApp) .site-footer {
 body:has(#forumApp) .site-footer {
   min-height: 60px !important;
   padding-block: 8px !important;
+}
+
+body:has(#forumApp) .site-footer .container {
+  min-height: 44px;
+}
+
+body:has(#forumApp) .site-footer .footer-text {
+  font-size: 0.84rem !important;
 }
 
 body:has(#forumApp) .site-footer .footer-logos a {
@@ -3971,7 +4067,7 @@ body:has(#forumApp) .site-footer .footer-logos img {
 
 .forum-board-list {
   min-height: 0;
-  overflow: auto;
+  overflow: visible;
 }
 
 .forum-feed-panel {
@@ -4101,6 +4197,7 @@ body:has(#forumApp) .site-footer .footer-logos img {
   border-top: 1px solid rgba(36, 64, 51, 0.1);
   border-bottom: 0;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .forum-event-drawer h2 {
