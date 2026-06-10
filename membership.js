@@ -87,7 +87,7 @@ const QUICK_FILTERS = [
         id: 'with_website',
         label: 'Has Website',
         icon: 'globe',
-        color: 'indigo',
+        color: 'emerald',
         predicate: (p) =>
             !!(p.personal_website || p.professional_website),
     },
@@ -95,7 +95,7 @@ const QUICK_FILTERS = [
         id: 'with_scholar',
         label: 'Has Scholar',
         icon: 'graduation-cap',
-        color: 'violet',
+        color: 'amber',
         predicate: (p) => !!p.google_scholar,
     },
 ];
@@ -111,8 +111,6 @@ const QF_COLOR = {
     orange:  { pill: 'bg-orange-50 text-orange-700 border-orange-200', active: 'bg-orange-500 text-white border-orange-500', dot: 'bg-orange-400'  },
     rose:    { pill: 'bg-rose-50 text-rose-700 border-rose-200',       active: 'bg-rose-500 text-white border-rose-500',     dot: 'bg-rose-400'   },
     red:     { pill: 'bg-red-50 text-red-700 border-red-200',          active: 'bg-red-600 text-white border-red-600',       dot: 'bg-red-400'    },
-    indigo:  { pill: 'bg-indigo-50 text-indigo-700 border-indigo-200', active: 'bg-indigo-600 text-white border-indigo-600', dot: 'bg-indigo-400'  },
-    violet:  { pill: 'bg-violet-50 text-violet-700 border-violet-200', active: 'bg-violet-600 text-white border-violet-600', dot: 'bg-violet-400'  },
 };
 
 // ==========================================
@@ -369,10 +367,10 @@ function render() {
             <!-- 1. Stats Bar (Compact) -->
             <div class="flex-none px-5 py-3 border-b border-gray-100 bg-slate-50/50 flex flex-wrap gap-4 md:gap-8 items-center justify-between text-xs">
                 <div class="flex items-center gap-6 overflow-x-auto no-scrollbar">
-                    ${statItem('users', 'Total', stats.total, 'text-blue-600')}
-                    ${statItem('shield-check', 'Admins', stats.roles.admin, 'text-purple-600')}
+                    ${statItem('users', 'Total', stats.total, 'text-brand-600')}
+                    ${statItem('shield-check', 'Admins', stats.roles.admin, 'text-amber-600')}
                     ${statItem('user-check', 'Organizers', stats.roles.organizer, 'text-emerald-600')}
-                    ${statItem('globe', 'Countries', stats.countries, 'text-indigo-600')}
+                    ${statItem('globe', 'Countries', stats.countries, 'text-emerald-700')}
                     ${statItem('zap', 'New', stats.newThisMonth, 'text-amber-600')}
                 </div>
                 <div class="hidden md:flex items-center gap-2 text-slate-400">
@@ -706,7 +704,7 @@ function renderGrid(profiles, isSelf) {
 // ==========================================
 function getRoleBadgeClass(role) {
     switch(role) {
-        case 'admin': return 'bg-purple-50 text-purple-700 border-purple-100';
+        case 'admin': return 'bg-amber-50 text-amber-700 border-amber-100';
         case 'organizer': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
         default: return 'bg-slate-50 text-slate-600 border-slate-200';
     }
@@ -714,7 +712,7 @@ function getRoleBadgeClass(role) {
 
 function getRoleTextColor(role) {
     switch(role) {
-        case 'admin': return 'text-purple-700';
+        case 'admin': return 'text-amber-700';
         case 'organizer': return 'text-emerald-700';
         default: return 'text-slate-600';
     }

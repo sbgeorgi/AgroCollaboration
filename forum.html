@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50 antialiased">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Forum - Agrovoltaicos sin Fronteras</title>
+  <meta name="description" content="Community forum for agrivoltaics events, research opportunities, jobs, questions, and collaboration across the Americas.">
+
+  <script src="auth-preloader.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="theme.js"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="text-slate-800 flex flex-col min-h-full selection:bg-brand-100 selection:text-brand-900 font-sans">
+  <main id="forumApp" class="forum-page">
+    <section class="forum-hero">
+      <div class="forum-hero-copy">
+        <div class="forum-kicker">
+          <span class="forum-live-dot"></span>
+          Community Forum
+        </div>
+        <h1>Forum</h1>
+        <p>
+          Event discussions, research questions, jobs, funding calls, and collaboration requests in one member workspace.
+        </p>
+      </div>
+      <div class="forum-hero-actions">
+        <button id="newForumTopicHero" class="forum-primary-action" type="button">
+          <i data-lucide="square-pen"></i>
+          New post
+        </button>
+      </div>
+      <div class="forum-stats" aria-label="Forum summary">
+        <div><strong id="forumThreadCount">0</strong><span>threads</span></div>
+        <div><strong id="forumEventCount">0</strong><span>events</span></div>
+        <div><strong id="forumOpportunityCount">0</strong><span>opportunities</span></div>
+      </div>
+    </section>
+
+    <section class="forum-workspace" id="forumFeed">
+      <aside class="forum-sidebar" aria-label="Forum boards">
+        <div class="forum-panel-title">
+          <span>Boards</span>
+          <button id="forumBoardAdminButton" class="forum-icon-button admin-only hidden" type="button" aria-label="Manage boards">
+            <i data-lucide="plus"></i>
+          </button>
+        </div>
+        <nav id="forumBoards" class="forum-board-list"></nav>
+
+        <div class="forum-sidebar-note">
+          <i data-lucide="shield-check"></i>
+          <span>Posting follows the same member profile requirements as event discussions.</span>
+        </div>
+      </aside>
+
+      <section class="forum-feed-panel" aria-label="Forum threads">
+        <div class="forum-toolbar">
+          <div class="forum-search">
+            <i data-lucide="search"></i>
+            <input id="forumSearch" type="search" placeholder="Search topics, opportunities, events...">
+          </div>
+          <select id="forumSort" aria-label="Sort forum threads">
+            <option value="recent">Recent activity</option>
+            <option value="newest">Newest topics</option>
+            <option value="pinned">Pinned first</option>
+          </select>
+        </div>
+
+        <div id="forumStatus" class="forum-status">
+          <span class="forum-spinner"></span>
+          Loading forum threads...
+        </div>
+        <div id="forumThreads" class="forum-thread-list"></div>
+      </section>
+
+      <section class="forum-detail-panel" aria-label="Selected thread">
+        <div id="forumEmptyThread" class="forum-empty-thread">
+          <i data-lucide="message-circle"></i>
+          <h2>Select a thread</h2>
+          <p>Open an event discussion, a collaboration request, or an opportunity post to read and reply.</p>
+        </div>
+
+        <article id="forumThreadDetail" class="forum-thread-detail hidden">
+          <header class="forum-thread-header">
+            <div class="forum-thread-meta" id="forumThreadMeta"></div>
+            <h2 id="forumThreadTitle"></h2>
+            <div class="forum-thread-tools">
+              <button id="forumEventLink" class="forum-event-link hidden" type="button">
+                <i data-lucide="calendar-days"></i>
+                Open event
+              </button>
+              <button id="forumPinThread" class="forum-text-button hidden" type="button"><i data-lucide="pin"></i><span>Pin</span></button>
+              <button id="forumEditThread" class="forum-text-button hidden" type="button"><i data-lucide="pencil"></i><span>Edit</span></button>
+              <button id="forumDeleteThread" class="forum-text-button danger hidden" type="button"><i data-lucide="trash-2"></i><span>Delete</span></button>
+            </div>
+          </header>
+
+          <div id="forumComments" class="forum-comments"></div>
+
+          <form id="forumReplyForm" class="forum-reply-card">
+            <div id="forumReplyTarget" class="forum-reply-target hidden"></div>
+            <div id="forumReplyEditor" class="forum-rich-editor"></div>
+            <div class="forum-composer-actions">
+              <button id="forumReplyImageButton" class="forum-secondary-action small" type="button">
+                <i data-lucide="image-plus"></i>
+                Image
+              </button>
+              <input id="forumReplyImageInput" class="hidden" type="file" accept="image/*">
+              <button class="forum-primary-action small" type="submit">
+                <i data-lucide="send"></i>
+                Reply
+              </button>
+            </div>
+          </form>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="forumTopicDialog" class="forum-dialog">
+    <form id="forumTopicForm" method="dialog" class="forum-topic-form">
+      <div class="forum-dialog-header">
+        <div>
+          <span class="forum-kicker">Create thread</span>
+          <h2>Share with the network</h2>
+        </div>
+        <button id="forumTopicClose" class="forum-icon-button" type="button" aria-label="Close dialog">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="forum-form-grid">
+        <label>
+          Board
+          <select id="forumTopicBoard">
+            <option value="general">General discussion</option>
+            <option value="question">Question</option>
+            <option value="opportunity">Jobs, research, opportunities</option>
+            <option value="resource">Resource or method</option>
+          </select>
+        </label>
+      </div>
+
+      <label>
+        Title
+        <input id="forumTopicTitle" type="text" maxlength="140" placeholder="Post title" required>
+      </label>
+
+      <div id="forumOpportunityFields" class="forum-opportunity-fields hidden">
+        <label>
+          Opportunity type
+          <select id="forumOpportunityType">
+            <option>Research opportunity</option>
+            <option>Job opening</option>
+            <option>Student position</option>
+            <option>Funding call</option>
+            <option>Field campaign</option>
+            <option>Collaboration request</option>
+            <option>Awareness or announcement</option>
+          </select>
+        </label>
+        <label>
+          Deadline or timing
+          <input id="forumOpportunityDeadline" type="text" placeholder="Optional deadline, season, or timeline">
+        </label>
+      </div>
+
+      <label>
+        Details
+        <div id="forumTopicEditor" class="forum-rich-editor"></div>
+      </label>
+
+      <div class="forum-composer-actions">
+        <button id="forumTopicImageButton" class="forum-secondary-action small" type="button">
+          <i data-lucide="image-plus"></i>
+          Image
+        </button>
+        <input id="forumTopicImageInput" class="hidden" type="file" accept="image/*">
+        <div class="forum-dialog-spacer"></div>
+        <button id="forumTopicCancel" class="forum-secondary-action small" type="button">Cancel</button>
+        <button class="forum-primary-action small" type="submit">
+          <i data-lucide="sparkles"></i>
+          Publish
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="forumEventDialog" class="forum-event-dialog">
+    <div class="forum-event-drawer">
+      <header>
+        <div>
+          <span class="forum-kicker">Event preview</span>
+          <h2 id="forumEventDialogTitle">Event</h2>
+          <p id="forumEventDialogMeta"></p>
+        </div>
+        <button id="forumEventDialogClose" class="forum-icon-button" type="button" aria-label="Close event preview">
+          <i data-lucide="x"></i>
+        </button>
+      </header>
+      <div id="forumEventDialogBody" class="forum-event-body"></div>
+      <footer>
+        <button id="forumEventDialogFocusThreads" class="forum-secondary-action small" type="button">
+          <i data-lucide="messages-square"></i>
+          Show related threads
+        </button>
+      </footer>
+    </div>
+  </dialog>
+
+  <div id="flash" aria-live="polite"></div>
+
+  <script type="module" src="forum.js"></script>
+</body>
+
+</html>

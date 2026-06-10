@@ -27,7 +27,7 @@ style.textContent = `
     .rich-text-content li { margin-bottom: 0.25em; padding-left: 0.25em; }
     
     /* Links */
-    .rich-text-content a { color: var(--color-brand, #0284c7); text-decoration: none; font-weight: 500; }
+    .rich-text-content a { color: var(--color-brand, #267454); text-decoration: none; font-weight: 500; }
     .rich-text-content a:hover { text-decoration: underline; }
     
     /* Blockquotes */
@@ -58,4 +58,88 @@ export function stripHtml(html) {
 export function formatRichText(html) {
     if (!html) return "";
     return `<div class="rich-text-content">${html}</div>`;
+}
+
+function escapeCommentText(text = "") {
+    return String(text).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+}
+
+function linkifyCommentText(text = "") {
+    const safe = escapeCommentText(text);
+    return safe
+        .replace(/\b(https?:\/\/[^\s<]+)\b/g, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`)
+        .replace(/\n/g, "<br/>");
+}
+
+export function sanitizeRichText(html = "") {
+    const template = document.createElement("template");
+    template.innerHTML = html;
+
+    const allowedTags = new Set([
+        "A", "B", "BLOCKQUOTE", "BR", "CODE", "DIV", "EM", "H1", "H2", "H3",
+        "I", "IMG", "LI", "OL", "P", "PRE", "SPAN", "STRONG", "U", "UL"
+    ]);
+    const allowedAttrs = new Set(["href", "target", "rel", "src", "alt", "title", "class"]);
+
+    const cleanNode = (node) => {
+        if (node.nodeType === Node.TEXT_NODE) return;
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+            node.remove();
+            return;
+        }
+
+        if (!allowedTags.has(node.tagName)) {
+            node.replaceWith(...Array.from(node.childNodes));
+            return;
+        }
+
+        Array.from(node.attributes).forEach((attr) => {
+            const name = attr.name.toLowerCase();
+            const value = attr.value || "";
+
+            if (!allowedAttrs.has(name)) {
+                node.removeAttribute(attr.name);
+                return;
+            }
+
+            if (name === "class") {
+                const safeClasses = value.split(/\s+/).filter((cls) => /^ql-align-(center|right|justify)$/.test(cls));
+                if (safeClasses.length) node.setAttribute("class", safeClasses.join(" "));
+                else node.removeAttribute("class");
+                return;
+            }
+
+            if (name === "href" || name === "src") {
+                try {
+                    const url = new URL(value, window.location.origin);
+                    if (!["http:", "https:"].includes(url.protocol)) node.removeAttribute(attr.name);
+                } catch (_) {
+                    node.removeAttribute(attr.name);
+                }
+            }
+        });
+
+        if (node.tagName === "A") {
+            node.setAttribute("target", "_blank");
+            node.setAttribute("rel", "noopener noreferrer");
+        }
+
+        if (node.tagName === "IMG") {
+            node.setAttribute("loading", "lazy");
+            node.setAttribute("decoding", "async");
+            node.classList.add("rich-comment-image");
+        }
+
+        Array.from(node.childNodes).forEach(cleanNode);
+    };
+
+    Array.from(template.content.childNodes).forEach(cleanNode);
+    return template.innerHTML;
+}
+
+export function formatCommentContent(content = "") {
+    if (!content) return "";
+    const hasHtml = /<\/?[a-z][\s\S]*>/i.test(content);
+    const body = hasHtml ? sanitizeRichText(content) : linkifyCommentText(content);
+    return `<div class="rich-text-content rich-comment-content">${body}</div>`;
 }

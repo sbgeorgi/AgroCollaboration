@@ -8,9 +8,10 @@ export function renderLayout(activePage) {
   const navLinks = [
     { key: 'schedule', href: 'index.html', label: 'nav.schedule', text: 'Schedule' },
     { key: 'archive',  href: 'archive.html', label: 'nav.archive', text: 'Archive' },
-    { key: 'scholar',  href: 'scholar.html', label: 'nav.scholar', text: 'Scholar', badge: 'beta' }, 
+    { key: 'scholar',  href: 'scholar.html', label: 'nav.scholar', text: 'Scholar' },
     { key: 'network',  href: 'network.html', label: 'nav.network', text: 'Network' },
-    { key: 'map',      href: 'map.html',     label: 'nav.map', text: 'Map', badge: 'updated' },
+    { key: 'map',      href: 'map.html',     label: 'nav.map', text: 'Map' },
+    { key: 'forum',    href: 'forum.html',   label: 'nav.forum', text: 'Forum', badge: 'beta' },
     { 
       key: 'about_group', 
       label: 'nav.about', 
@@ -27,13 +28,12 @@ export function renderLayout(activePage) {
   const getBadge = (badgeType) => {
     if (!badgeType) return '';
     
-    // Default to blue (Beta)
-    let bg = '#dbeafe', color = '#1e40af', text = 'BETA'; 
+    let bg = 'rgba(200, 121, 26, 0.14)', color = '#7d470f', text = 'BETA';
     
     // Change to green theme for 'Updated'
     if (badgeType === 'updated') {
-      bg = '#dcfce7'; // Tailwind green-100
-      color = '#166534'; // Tailwind green-800
+      bg = '#e5f3ec';
+      color = '#124b37';
       text = 'UPDATED';
     }
 
@@ -147,7 +147,7 @@ export function renderLayout(activePage) {
         ${navItemsHtml}
         
         <div class="divider"></div>
-        <a href="admin.html" id="btnAdmin" class="link" style="color: var(--color-danger); display: none;" data-i18n="nav.admin">Admin</a>
+        <a href="admin.html" id="btnAdmin" class="link${activePage === 'admin' ? ' active' : ''}" style="color: var(--color-danger); display: none;" data-i18n="nav.admin">Admin</a>
         <div id="langSwitchDesktop" class="lang-switch-slider" data-lang="en"><span>EN</span><span>ES</span></div>
         
         <div class="auth-area">
@@ -172,11 +172,11 @@ export function renderLayout(activePage) {
         <nav>${mobileNavHtml}</nav>
       </div>
       <div style="padding: 24px; border-top: 1px solid var(--border); background: rgba(255,255,255,0.5); display: flex; flex-direction: column; gap: 16px;">
-        <a href="admin.html" id="btnAdminMobile" class="link" style="color: var(--color-danger); display: none; text-align: center; justify-content: center;" data-i18n="nav.admin">Admin</a>
+        <a href="admin.html" id="btnAdminMobile" class="link${activePage === 'admin' ? ' active' : ''}" style="color: var(--color-danger); display: none; text-align: center; justify-content: center;" data-i18n="nav.admin">Admin</a>
         <div style="display: flex; justify-content: center;"><div id="langSwitchMobile" class="lang-switch-slider" data-lang="en"><span>EN</span><span>ES</span></div></div>
         <div id="mobileAuthContainer" class="auth-area" style="flex-direction: column; gap: 12px; width: 100%;">
           <div id="mobileProfileContainer" style="display: none; flex-direction: column; align-items: center; gap: 8px;">
-            <button id="mobileProfileBtn" class="profile-button"><span id="mobileUserInitial"></span><img id="mobileUserAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" /></button>
+            <button id="mobileProfileBtn" class="profile-button" aria-label="Profile"><span id="mobileUserInitial"></span><img id="mobileUserAvatar" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="Avatar" /></button>
             <span id="mobileUserName" style="font-weight: 700; color: var(--text-primary); cursor: pointer;"></span>
           </div>
           <a href="signin.html" id="mobileSignIn" class="btn btn-primary" style="width: 100%; text-decoration: none;" data-i18n="auth.signin">Sign in</a>
@@ -198,6 +198,7 @@ export function renderLayout(activePage) {
           <a href="https://biosphere2.org" target="_blank" style="display: flex; align-items: center;"><img src="static/b2ua.jpg" alt="Biosphere 2" style="height: 24px; width: auto; display: block;"></a>
           <a href="https://www.ier.unam.mx" target="_blank" style="display: flex; align-items: center;"><img src="static/unam.png" alt="UNAM" style="height: 24px; width: auto; display: block;"></a>
           <a href="https://centroenergia.cl" target="_blank" style="display: flex; align-items: center;"><img src="static/aal.png" alt="AAL" style="height: 24px; width: auto; display: block;"></a>
+          <a href="https://centroenergia.cl" target="_blank" style="display: flex; align-items: center;"><img src="static/CentroDeEnergiaUC.png" alt="University of Chile Energy Center" style="height: 24px; width: auto; display: block;"></a>
           <a href="https://redagvmx.com" target="_blank" style="display: flex; align-items: center;"><img src="static/rame.png" alt="RAME" style="height: 24px; width: auto; display: block;"></a>
       </div>
     </div>
@@ -222,7 +223,8 @@ function initMobileMenu() {
   const langSwitchMobile = $('#langSwitchMobile');
   const langSwitchDesktop = $('#langSwitchDesktop');
   if (langSwitchMobile && langSwitchDesktop) {
-    langSwitchMobile.addEventListener('click', () => { langSwitchDesktop.click(); const isES = langSwitchDesktop.getAttribute('data-lang') === 'es'; langSwitchMobile.setAttribute('data-lang', isES ? 'en' : 'es'); });
+    langSwitchMobile.setAttribute('data-lang', langSwitchDesktop.getAttribute('data-lang') || 'en');
+    langSwitchMobile.addEventListener('click', () => { langSwitchDesktop.click(); });
     const langObserver = new MutationObserver(() => { langSwitchMobile.setAttribute('data-lang', langSwitchDesktop.getAttribute('data-lang')); });
     langObserver.observe(langSwitchDesktop, { attributes: true, attributeFilter: ['data-lang'] });
   }

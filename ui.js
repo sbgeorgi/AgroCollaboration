@@ -196,9 +196,11 @@ export async function renderHeader(authState, t, lang) {
           <div class="flex-1 flex flex-col justify-center w-full gap-2 py-4">
               <a href="index.html" class="link" data-i18n="nav.schedule">Schedule</a>
               <a href="archive.html" class="link" data-i18n="nav.archive">Archive</a>
+              <a href="scholar.html" class="link" data-i18n="nav.scholar">Scholar</a>
               <a href="about.html" class="link" data-i18n="nav.about">About</a>
               <a href="network.html" class="link" data-i18n="nav.network">Network</a>
               <a href="map.html" class="link" data-i18n="nav.map">Map</a>
+              <a href="forum.html" class="link" data-i18n="nav.forum">Forum</a>
               ${isOrganizer ? `<a href="admin.html" class="link text-red-600" data-i18n="nav.admin">Admin</a>` : ''}
           </div>
 

@@ -2,34 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fuzzy Logic Sanity Check (Ultra-Fast Batching)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #0f172a; color: #e2e8f0; font-family: system-ui, sans-serif; }
+        :root {
+            --check-bg: #0d1511;
+            --check-surface: #15201a;
+            --check-border: #2a3a31;
+            --check-muted: #96a79b;
+            --check-accent: #c8791a;
+        }
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(200, 121, 26, 0.14), transparent 30rem),
+                radial-gradient(circle at bottom right, rgba(38, 116, 84, 0.22), transparent 30rem),
+                var(--check-bg);
+            color: #e9f1e8;
+            font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        }
         .match-good { color: #4ade80; font-weight: bold; } /* Green */
         .match-ok { color: #facc15; } /* Yellow */
         .match-bad { color: #f87171; } /* Red */
-        tr { border-bottom: 1px solid #1e293b; }
+        tr { border-bottom: 1px solid var(--check-border); }
         td { padding: 12px; vertical-align: top; }
-        .mono { font-family: monospace; font-size: 0.85rem; color: #94a3b8; }
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85rem; color: var(--check-muted); }
+        button { min-height: 44px; }
+        button:focus-visible {
+            outline: 2px solid var(--check-accent);
+            outline-offset: 2px;
+        }
+        .results-shell {
+            background: rgba(21, 32, 26, 0.9);
+            border-color: rgba(143, 192, 168, 0.2);
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.24);
+        }
+        @media (max-width: 760px) {
+            body { padding: 16px !important; }
+            .page-header { align-items: flex-start; flex-direction: column; gap: 16px; }
+            .page-header button { width: 100%; }
+            .results-shell { overflow-x: auto; }
+            table { min-width: 760px; }
+        }
     </style>
 </head>
 <body class="p-8">
 
     <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-center mb-6">
+        <div class="page-header flex justify-between items-center mb-6">
             <div>
                 <h1 class="text-2xl font-bold text-white">Fuzzy Resolve Sanity Check</h1>
                 <p class="text-slate-400 text-sm">Processing 280+ members via 15-name OR-piped batches</p>
             </div>
-            <button onclick="window.RunSanity()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold transition shadow-lg shadow-blue-900/20 active:scale-95">
+            <button onclick="window.RunSanity()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 rounded text-white font-bold transition shadow-lg shadow-emerald-950/30 active:scale-95">
                 Run Blazing Fast Test
             </button>
         </div>
 
         <div id="status" class="mb-4 text-sm font-bold text-yellow-400">Ready.</div>
 
-        <div class="bg-slate-900 rounded-lg border border-slate-700 overflow-hidden">
+        <div class="results-shell bg-slate-900 rounded-lg border border-slate-700 overflow-hidden">
             <table class="w-full text-left text-sm">
                 <thead class="bg-slate-800 text-slate-400 font-bold uppercase text-xs">
                     <tr>
@@ -211,7 +243,7 @@
                             <div class="font-bold text-slate-200">${p.full_name}</div>
                             <div class="text-xs text-slate-500">${p.affiliation || 'No Affiliation'}</div>
                         </td>
-                        <td class="mono text-blue-300">
+                        <td class="mono text-emerald-300">
                             ${p.qn}<br>
                             <span class="text-[10px] text-slate-500">norm: ${fuzzy.norm(p.qn)}</span>
                         </td>

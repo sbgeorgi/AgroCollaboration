@@ -1,5 +1,5 @@
 import { openProfileModal } from './clickprofile.js';
-import { formatRichText } from './rich-text.js';
+import { formatRichText, formatCommentContent } from './rich-text.js';
 
 export function initEventLogic(deps) {
   const {
@@ -482,7 +482,7 @@ export function initEventLogic(deps) {
                       <i data-lucide="heart" class="w-3.5 h-3.5 ${c.liked_by_me ? 'fill-current' : ''}"></i><span class="text-[10px] font-bold">${c.likes_count || ''}</span>
                   </button>
               </div>
-              <div class="comment-content text-sm text-slate-700 prose prose-sm max-w-none prose-p:my-0 prose-a:text-brand-600">${linkify(c.content)}</div>
+              <div class="comment-content text-sm text-slate-700 prose prose-sm max-w-none prose-p:my-0 prose-a:text-brand-600">${formatCommentContent(c.content)}</div>
               <form class="comment-edit-form hidden mt-2" data-edit-form-for="${c.id}">
                   <textarea class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" rows="2">${escapeHtml(c.content)}</textarea>
                   <div class="flex justify-end gap-2 mt-2"><button type="button" class="text-xs font-bold text-slate-500 px-3 py-1" data-cancel-edit>Cancel</button><button type="submit" class="text-xs font-bold text-white bg-brand-600 rounded px-3 py-1">Save</button></div>
@@ -527,20 +527,25 @@ export function initEventLogic(deps) {
     if (!ev) return;
     const title = (state.language === "es" && ev.title_es) || ev.title_en;
     const isAdmin = isOrganizerOrAdmin();
+    const rsvpLabels = {
+      not_going: tr('rsvp.notgoing', state.language === 'es' ? 'No asistirÃ©' : 'Not Going'),
+      interested: tr('rsvp.interested', state.language === 'es' ? 'Me interesa' : 'Interested'),
+      going: tr('rsvp.going', state.language === 'es' ? 'AsistirÃ©' : 'Going')
+    };
 
     $('#compactEventHeaderContainer').innerHTML = `
-      <div class="flex items-start justify-between gap-4">
-        <div class="flex items-start gap-3 overflow-hidden">
-             <button id="back-to-schedule" class="mt-1 p-2 text-slate-400 hover:bg-slate-100 rounded-full shrink-0"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+      <div class="event-detail-header">
+        <div class="event-detail-heading">
+             <button id="back-to-schedule" class="event-detail-back" aria-label="Back to schedule"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
              <div class="min-w-0 py-1">
                 <div class="flex items-center gap-2 text-brand-600 text-xs font-bold uppercase tracking-wider mb-1"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> ${fmtDateTime(ev.start_time, { weekday: 'short', month: 'short', day: 'numeric' })} <span class="text-slate-300">•</span> ${fmtDateTime(ev.start_time, { hour: 'numeric', minute: '2-digit' })}</div>
                 <h2 class="font-display font-bold text-xl md:text-2xl text-slate-900 leading-tight truncate" title="${escapeHtml(title)}">${escapeHtml(title)}</h2>
              </div>
         </div>
-        <div class="flex items-center gap-2 shrink-0 pt-1">
-             <button id="followBtn" class="h-9 px-4 rounded-lg border text-xs font-bold flex items-center gap-2"><i data-lucide="star" class="w-3.5 h-3.5"></i> <span>Follow</span></button>
-             <select id="rsvpSelect" class="h-9 pl-3 pr-8 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-gray-50 cursor-pointer outline-none focus:border-brand-500"><option value="not_going">Not Going</option><option value="interested">Interested</option><option value="going">Going</option></select>
-             ${isAdmin ? `<button class="h-9 w-9 rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-brand-600 hover:bg-brand-50 flex items-center justify-center ml-2" data-edit-event-section="main"><i data-lucide="pencil" class="w-4 h-4"></i></button>` : ''}
+        <div class="event-detail-actions">
+             <button id="followBtn" class="event-control-button"><i data-lucide="star" class="w-3.5 h-3.5"></i> <span>${escapeHtml(tr('follow', state.language === 'es' ? 'Seguir' : 'Follow'))}</span></button>
+             <select id="rsvpSelect" class="event-control-select"><option value="not_going">${escapeHtml(rsvpLabels.not_going)}</option><option value="interested">${escapeHtml(rsvpLabels.interested)}</option><option value="going">${escapeHtml(rsvpLabels.going)}</option></select>
+             ${isAdmin ? `<button class="event-control-button event-control-icon" data-edit-event-section="main" aria-label="Edit event"><i data-lucide="pencil" class="w-4 h-4"></i></button>` : ''}
         </div>
       </div>`;
 
@@ -569,17 +574,26 @@ export function initEventLogic(deps) {
     const btn = $('#followBtn');
     if (!btn) return;
     if (state.isFollowing) {
-      btn.className = 'h-9 px-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-xs font-bold flex items-center gap-2 transition-all';
-      btn.innerHTML = `<i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i> <span>Following</span>`;
+      btn.className = 'event-control-button is-following';
+      btn.innerHTML = `<i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i> <span>${escapeHtml(tr('following', state.language === 'es' ? 'Siguiendo' : 'Following'))}</span>`;
     } else {
-      btn.className = 'h-9 px-4 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 text-xs font-bold flex items-center gap-2 transition-all';
-      btn.innerHTML = `<i data-lucide="star" class="w-3.5 h-3.5"></i> <span>Follow</span>`;
+      btn.className = 'event-control-button';
+      btn.innerHTML = `<i data-lucide="star" class="w-3.5 h-3.5"></i> <span>${escapeHtml(tr('follow', state.language === 'es' ? 'Seguir' : 'Follow'))}</span>`;
     }
     lucideRefresh();
   }
 
   const updateRSVP = async (eid, status) => {
-    if (authState.profile) await supabase.from('event_rsvps').upsert({ event_id: eid, profile_id: authState.profile.id, status });
+    if (!authState.profile) return;
+    const previous = state.rsvpStatus || 'not_going';
+    state.rsvpStatus = status;
+    const { error } = await supabase.from('event_rsvps').upsert({ event_id: eid, profile_id: authState.profile.id, status });
+    if (error) {
+      state.rsvpStatus = previous;
+      if ($('#rsvpSelect')) $('#rsvpSelect').value = previous;
+      setFlash('Could not update RSVP');
+      return;
+    }
     setFlash('RSVP updated');
   };
 
@@ -589,8 +603,14 @@ export function initEventLogic(deps) {
     state.isFollowing = !was;
     updateFollowUI();
     const q = supabase.from('event_follows');
-    if (was) await q.delete().match({ event_id: eid, profile_id: authState.profile.id });
-    else await q.insert({ event_id: eid, profile_id: authState.profile.id });
+    const { error } = was
+      ? await q.delete().match({ event_id: eid, profile_id: authState.profile.id })
+      : await q.insert({ event_id: eid, profile_id: authState.profile.id });
+    if (error) {
+      state.isFollowing = was;
+      updateFollowUI();
+      setFlash('Could not update follow status');
+    }
   };
 
   async function renderDescriptionTab() {
@@ -605,12 +625,12 @@ export function initEventLogic(deps) {
     const expirationTime = new Date(baseTime.getTime() + (4 * 60 * 60 * 1000)); 
     const isExpired = new Date() > expirationTime;
 
-    let access = `<div class="w-full py-3 bg-gray-100 text-gray-400 font-bold text-center rounded-lg text-sm cursor-not-allowed">Access Unavailable</div>`;
+    let access = `<div class="w-full py-3 bg-gray-100 text-gray-400 font-bold text-center rounded-lg text-sm cursor-not-allowed">${escapeHtml(tr('event_detail.access_unavailable', state.language === 'es' ? 'Acceso no disponible' : 'Access Unavailable'))}</div>`;
     
     if (!isExpired && ev.zoom_url) {
-        access = `<a href="${ev.zoom_url}" target="_blank" class="block w-full text-center py-3 bg-[#0077b6] hover:bg-[#023e8a] text-white font-bold rounded-lg shadow-sm mb-1"><i data-lucide="video" class="inline w-4 h-4 mr-2"></i>Join via Google Meet</a>`;
+        access = `<a href="${ev.zoom_url}" target="_blank" class="block w-full text-center py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg shadow-sm mb-1"><i data-lucide="video" class="inline w-4 h-4 mr-2"></i>${escapeHtml(tr('event_detail.join', state.language === 'es' ? 'Unirse por Google Meet' : 'Join via Google Meet'))}</a>`;
     } else if (ev.recording_url) {
-        access = `<a href="${ev.recording_url}" target="_blank" class="block w-full text-center py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg shadow-sm mb-1"><i data-lucide="play-circle" class="inline w-4 h-4 mr-2"></i>Watch Recording</a>`;
+        access = `<a href="${ev.recording_url}" target="_blank" class="block w-full text-center py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg shadow-sm mb-1"><i data-lucide="play-circle" class="inline w-4 h-4 mr-2"></i>${escapeHtml(tr('event_detail.watch_recording', state.language === 'es' ? 'Ver grabaciÃ³n' : 'Watch Recording'))}</a>`;
     }
 
     const speakersHtml = await Promise.all((ev.event_speakers || []).map(async s => {
@@ -630,14 +650,14 @@ export function initEventLogic(deps) {
 
     $('#tab_description').innerHTML = `
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-        <div class="lg:col-span-8"><h3 class="flex items-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">About this session</h3>${formatRichText(desc)}</div>
+        <div class="lg:col-span-8"><h3 class="flex items-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">${escapeHtml(tr('event_detail.about', state.language === 'es' ? 'Sobre esta sesiÃ³n' : 'About this session'))}</h3>${formatRichText(desc)}</div>
         <div class="lg:col-span-4 space-y-6">
-            <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Access</h4>${access}</div>
-            <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Speakers</h4><div class="space-y-2">${speakersHtml.length ? speakersHtml.join('') : '<span class="text-sm text-slate-400 italic">TBA</span>'}</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">${escapeHtml(tr('event_detail.access', state.language === 'es' ? 'Acceso' : 'Access'))}</h4>${access}</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">${escapeHtml(tr('event_detail.speakers', state.language === 'es' ? 'Ponentes' : 'Speakers'))}</h4><div class="space-y-2">${speakersHtml.length ? speakersHtml.join('') : `<span class="text-sm text-slate-400 italic">${escapeHtml(tr('event_detail.tba', state.language === 'es' ? 'Por anunciar' : 'TBA'))}</span>`}</div></div>
             <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm space-y-4">
-                <div><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Language</h4><div class="text-sm font-semibold text-slate-800">${ev.language === 'bi' ? 'English & Spanish' : (ev.language === 'es' ? 'Español' : 'English')}</div></div>
-                ${ev.host_org ? `<div><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Hosted By</h4><div class="text-sm font-semibold text-slate-800 flex items-center gap-1.5"><i data-lucide="building-2" class="w-3.5 h-3.5 text-slate-400"></i> ${escapeHtml(ev.host_org)}</div></div>` : ''}
-                ${tags ? `<div><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tags</h4><div class="flex flex-wrap gap-1.5">${tags}</div></div>` : ''}
+                <div><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">${escapeHtml(tr('event_detail.language', state.language === 'es' ? 'Idioma' : 'Language'))}</h4><div class="text-sm font-semibold text-slate-800">${ev.language === 'bi' ? escapeHtml(tr('event_detail.bilingual', state.language === 'es' ? 'InglÃ©s y espaÃ±ol' : 'English & Spanish')) : (ev.language === 'es' ? 'Español' : escapeHtml(tr('event_detail.english', 'English')))}</div></div>
+                ${ev.host_org ? `<div><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">${escapeHtml(tr('event_detail.hosted_by', state.language === 'es' ? 'Organizado por' : 'Hosted By'))}</h4><div class="text-sm font-semibold text-slate-800 flex items-center gap-1.5"><i data-lucide="building-2" class="w-3.5 h-3.5 text-slate-400"></i> ${escapeHtml(ev.host_org)}</div></div>` : ''}
+                ${tags ? `<div><h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">${escapeHtml(tr('event_detail.tags', state.language === 'es' ? 'Etiquetas' : 'Tags'))}</h4><div class="flex flex-wrap gap-1.5">${tags}</div></div>` : ''}
             </div>
         </div>
       </div>`;

@@ -17,8 +17,8 @@
         body {
             overflow-y: auto;
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: radial-gradient(1200px 800px at 80% -20%, rgba(99,102,241,0.08), transparent 60%),
-                        radial-gradient(1000px 600px at -10% 20%, rgba(14,165,233,0.06), transparent 50%),
+            background: radial-gradient(1200px 800px at 80% -20%, rgba(200,121,26,0.10), transparent 60%),
+                        radial-gradient(1000px 600px at -10% 20%, rgba(38,116,84,0.10), transparent 50%),
                         #f8fafc;
         }
         h1,h2,h3,.font-display { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; letter-spacing: -0.01em; }
@@ -46,7 +46,7 @@
         #network-container:active { cursor: grabbing; }
         #network-container::after {
             content: ''; position: absolute; inset: 0; pointer-events: none;
-            background: radial-gradient(800px 400px at 50% -10%, rgba(99,102,241,0.06), transparent 70%);
+            background: radial-gradient(800px 400px at 50% -10%, rgba(200,121,26,0.10), transparent 70%);
             z-index: 1;
         }
         #edgeCanvas {
@@ -73,7 +73,7 @@
                 0 30px 60px -20px rgba(15,23,42,0.25),
                 0 8px 20px -8px rgba(15,23,42,0.1),
                 inset 0 1px 0 rgba(255,255,255,0.9),
-                inset 0 -20px 40px rgba(99,102,241,0.06);
+                inset 0 -20px 40px rgba(38,116,84,0.08);
             opacity: 0.85;
         }
        .bubble-group:hover { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
@@ -90,8 +90,8 @@
             content: ''; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
             width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent;
         }
-        th.sort-asc::after { border-bottom: 5px solid #6366f1; }
-        th.sort-desc::after { border-top: 5px solid #6366f1; }
+        th.sort-asc::after { border-bottom: 5px solid var(--color-brand); }
+        th.sort-desc::after { border-top: 5px solid var(--color-brand); }
 
         #dragHandle {
             height: 12px; background: transparent; cursor: row-resize; width: 100%; flex-shrink: 0;
@@ -120,21 +120,21 @@
         #flash.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
 
         .edge-highlight {
-            stroke: rgba(99, 102, 241, 0.5) !important;
+            stroke: rgba(38, 116, 84, 0.55) !important;
             stroke-width: 2 !important;
         }
     </style>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="text-slate-800 flex flex-col h-full selection:bg-violet-100 selection:text-violet-900">
+<body class="text-slate-800 flex flex-col h-full selection:bg-brand-100 selection:text-brand-900">
     <div id="flash" role="status" aria-live="polite"></div>
 
     <main class="flex-1 relative overflow-visible md:overflow-hidden">
         <div id="loadingScreen" class="absolute inset-0 bg-[#f8fafc]/90 backdrop-blur-xl z-[60] flex flex-col items-center justify-center transition-opacity duration-500 fixed md:absolute">
             <div class="relative">
                 <div class="w-12 h-12 rounded-full border-[3px] border-slate-200"></div>
-                <div class="w-12 h-12 rounded-full border-[3px] border-violet-600 border-t-transparent animate-spin absolute inset-0"></div>
+                <div class="w-12 h-12 rounded-full border-[3px] border-brand-600 border-t-transparent animate-spin absolute inset-0"></div>
             </div>
             <span class="text-[13px] font-medium text-slate-600 mt-4 tracking-wide" data-i18n="optimizing">Optimizing Layout...</span>
         </div>
@@ -143,18 +143,18 @@
             <aside class="flex-none w-full md:w-[320px] bg-white/70 backdrop-blur-2xl border border-white/60 rounded-[24px] flex flex-col shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/5 overflow-hidden h-auto md:h-full shrink-0">
                 <div class="p-6 border-b border-slate-100/70 space-y-4">
                     <h2 class="font-display font-bold text-[18px] text-slate-900 flex items-center gap-2.5">
-                        <span class="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-md shadow-violet-500/20"><i data-lucide="share-2" class="w-4 h-4 text-white"></i></span>
+                        <span class="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-700 to-amber-500 flex items-center justify-center shadow-md shadow-brand-500/20"><i data-lucide="share-2" class="w-4 h-4 text-white"></i></span>
                         <span data-i18n="explore">Explore Network</span>
                     </h2>
                     <div class="relative group">
-                        <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-violet-600 transition-colors"></i>
-                        <input type="text" id="searchInput" class="w-full pl-10 pr-4 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-[13.5px] focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 outline-none transition-all placeholder:text-slate-400" placeholder="Search people, orgs..." data-i18n-placeholder="searchPlaceholder">
+                        <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-600 transition-colors"></i>
+                        <input type="text" id="searchInput" class="w-full pl-10 pr-4 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-[13.5px] focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all placeholder:text-slate-400" placeholder="Search people, orgs..." data-i18n-placeholder="searchPlaceholder">
                     </div>
                     <div class="grid grid-cols-1 gap-3">
                         <div>
                             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block" data-i18n="groupBy">Group Nodes By</label>
                             <div class="relative">
-                                <select id="groupByFilter" class="w-full appearance-none bg-slate-50/70 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl pl-3.5 pr-9 py-2.5 focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 outline-none transition-all hover:bg-white">
+                                <select id="groupByFilter" class="w-full appearance-none bg-slate-50/70 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl pl-3.5 pr-9 py-2.5 focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all hover:bg-white">
                                     <option value="affiliation" data-i18n="optOrg">Organization</option>
                                     <option value="country" data-i18n="optCountry">Country</option>
                                 </select>
@@ -163,11 +163,11 @@
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div class="relative">
-                                <select id="eventFilter" class="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-xl pl-3 pr-8 py-2.5 focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 outline-none transition-all"><option value="all" data-i18n="allEvents">All Events</option></select>
+                                <select id="eventFilter" class="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-xl pl-3 pr-8 py-2.5 focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all"><option value="all" data-i18n="allEvents">All Events</option></select>
                                 <i data-lucide="chevron-down" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
                             </div>
                             <div class="relative">
-                                <select id="countryFilter" class="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-xl pl-3 pr-8 py-2.5 focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 outline-none transition-all"><option value="all" data-i18n="allCountries">All Countries</option></select>
+                                <select id="countryFilter" class="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-xl pl-3 pr-8 py-2.5 focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all"><option value="all" data-i18n="allCountries">All Countries</option></select>
                                 <i data-lucide="chevron-down" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
                             </div>
                         </div>
@@ -181,7 +181,7 @@
                 <div class="flex-1 overflow-y-auto custom-scrollbar p-5 min-h-[200px] md:min-h-0">
                     <div class="flex items-center justify-between mb-3">
                         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="interests">Interests & Tags</label>
-                        <button id="clearFiltersBtn" class="text-[11px] font-semibold text-violet-600 hover:text-violet-700 transition-colors" data-i18n="clear">Clear</button>
+                        <button id="clearFiltersBtn" class="text-[11px] font-semibold text-brand-600 hover:text-brand-700 transition-colors" data-i18n="clear">Clear</button>
                     </div>
                     <div id="selectedTagsContainer" class="flex flex-wrap gap-1.5 mb-3 empty:hidden"></div>
                     <div id="tagFilters" class="space-y-0.5"></div>
@@ -193,7 +193,7 @@
                             <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider" data-i18n="statMembers">Members</span>
                         </div>
                         <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center group hover:shadow-md transition-all">
-                            <span id="statConnections" class="block text-[22px] font-display font-bold text-violet-600 leading-none mb-1">0</span>
+                            <span id="statConnections" class="block text-[22px] font-display font-bold text-brand-600 leading-none mb-1">0</span>
                             <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider" data-i18n="statConnections">Connections</span>
                         </div>
                         <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center group hover:shadow-md transition-all">
@@ -216,7 +216,7 @@
                     </div>
                     <div class="absolute top-4 right-4 flex gap-2 z-40">
                         <div class="hidden sm:flex items-center gap-2 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-xl px-3 py-2 shadow-xl text-[11px] text-white/90 font-medium">
-                            <i data-lucide="scan-search" class="w-3.5 h-3.5 text-violet-400"></i>
+                            <i data-lucide="scan-search" class="w-3.5 h-3.5 text-amber-400"></i>
                             <span data-i18n="hoverMagnify">Hover to Magnify</span>
                         </div>
                         <button id="resetViewBtn" class="px-3.5 py-2 bg-white/85 backdrop-blur-xl text-[12px] font-semibold text-slate-700 rounded-xl shadow-lg shadow-slate-900/5 border border-white/70 hover:bg-white transition-all hover:-translate-y-0.5 ring-1 ring-slate-900/5" data-i18n="resetView">Reset View</button>
@@ -385,8 +385,8 @@ $('#statEvents').innerText = state.eventsById.size;
             Array.from(state.tagCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 50).forEach(([tag, count]) => {
                 const isSel = state.selectedTags.has(tag);
                 const row = document.createElement('div');
-                row.className = 'flex items-center justify-between px-2.5 py-1.5 hover:bg-violet-50/70 rounded-xl cursor-pointer group transition-colors';
-                row.innerHTML = `<div class="flex items-center gap-2.5"><div class="w-4 h-4 rounded-md border-2 ${isSel? 'bg-violet-600 border-violet-600' : 'border-slate-300 group-hover:border-slate-400'} flex items-center justify-center transition-all">${isSel? '<svg width="10" height="10" viewBox="0 0 24 24" stroke="white" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div><span class="text-[12.5px] text-slate-700 group-hover:text-slate-900">${escapeHtml(state.allCanonicalToDisplay.get(tag))}</span></div><span class="text-[10px] text-slate-400 font-medium tabular-nums">${count}</span>`;
+                row.className = 'flex items-center justify-between px-2.5 py-1.5 hover:bg-brand-50/70 rounded-xl cursor-pointer group transition-colors';
+                row.innerHTML = `<div class="flex items-center gap-2.5"><div class="w-4 h-4 rounded-md border-2 ${isSel? 'bg-brand-600 border-brand-600' : 'border-slate-300 group-hover:border-slate-400'} flex items-center justify-center transition-all">${isSel? '<svg width="10" height="10" viewBox="0 0 24 24" stroke="white" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div><span class="text-[12.5px] text-slate-700 group-hover:text-slate-900">${escapeHtml(state.allCanonicalToDisplay.get(tag))}</span></div><span class="text-[10px] text-slate-400 font-medium tabular-nums">${count}</span>`;
                 row.onclick = () => { isSel? state.selectedTags.delete(tag) : state.selectedTags.add(tag); onFiltersChanged(); };
                 frag.appendChild(row);
             });
@@ -396,10 +396,10 @@ $('#statEvents').innerText = state.eventsById.size;
             const selFrag = document.createDocumentFragment();
             state.selectedTags.forEach(tg => {
                 const span = document.createElement('span');
-                span.className = 'px-2.5 py-1 bg-violet-50 text-violet-700 border border-violet-200/70 rounded-full text-[11px] font-semibold flex items-center gap-1.5 hover:bg-violet-100 transition-colors';
+                span.className = 'px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-200/70 rounded-full text-[11px] font-semibold flex items-center gap-1.5 hover:bg-brand-100 transition-colors';
                 span.textContent = state.allCanonicalToDisplay.get(tg);
                 const btn = document.createElement('button');
-                btn.className = 'hover:text-violet-900 ml-1';
+                btn.className = 'hover:text-brand-900 ml-1';
                 btn.textContent = '×';
                 btn.onclick = () => { state.selectedTags.delete(tg); onFiltersChanged(); };
                 span.appendChild(btn);
@@ -521,7 +521,7 @@ $('#statEvents').innerText = state.eventsById.size;
                 ctx.lineTo(x2, y2);
 
                 if (isHighlighted) {
-                    ctx.strokeStyle = 'rgba(99, 102, 241, 0.55)';
+                    ctx.strokeStyle = 'rgba(200, 121, 26, 0.55)';
                     ctx.lineWidth = 2.5;
                 } else {
                     ctx.strokeStyle = hId ? 'rgba(148, 163, 184, 0.06)' : 'rgba(148, 163, 184, 0.18)';
@@ -561,7 +561,7 @@ $('#statEvents').innerText = state.eventsById.size;
 
             const l = t[state.lang] || t.en, frag = document.createDocumentFragment();
 
-            $('#legendContainer').innerHTML = `<div class="flex items-center gap-3 bg-slate-900/85 backdrop-blur-xl p-2.5 pr-3.5 rounded-2xl border border-white/10 shadow-2xl text-[11px] font-medium text-white/90"><div class="flex items-center gap-2"><div class="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)] ring-1 ring-white/20"></div><span>${escapeHtml(l.legendOrg)}</span></div><div class="flex items-center gap-2"><div class="w-3.5 h-3.5 rounded-full bg-white shadow-sm ring-2 ring-violet-500/50"></div><span>${escapeHtml(l.legendMember)}</span></div>${state.filteredConnections.length > 0 ? `<div class="flex items-center gap-2"><div class="w-4 h-0.5 bg-slate-400 rounded-full"></div><span>${escapeHtml(l.legendCollab)}</span></div>` : ''}</div>`;
+            $('#legendContainer').innerHTML = `<div class="flex items-center gap-3 bg-slate-900/85 backdrop-blur-xl p-2.5 pr-3.5 rounded-2xl border border-white/10 shadow-2xl text-[11px] font-medium text-white/90"><div class="flex items-center gap-2"><div class="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-brand-500 to-amber-500 shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)] ring-1 ring-white/20"></div><span>${escapeHtml(l.legendOrg)}</span></div><div class="flex items-center gap-2"><div class="w-3.5 h-3.5 rounded-full bg-white shadow-sm ring-2 ring-brand-500/50"></div><span>${escapeHtml(l.legendMember)}</span></div>${state.filteredConnections.length > 0 ? `<div class="flex items-center gap-2"><div class="w-4 h-0.5 bg-slate-400 rounded-full"></div><span>${escapeHtml(l.legendCollab)}</span></div>` : ''}</div>`;
             
             layout.clusters.forEach(cluster => {
                 const p = state.positions.get(`group-${cluster.name}`); if (!p) return;
@@ -614,7 +614,7 @@ $('#statEvents').innerText = state.eventsById.size;
                     ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase() 
                     : nameParts[0].substring(0, 2).toUpperCase();
 
-                el.innerHTML = `<div class="rounded-full bg-white flex items-center justify-center overflow-hidden cursor-pointer relative ring-2 ring-white shadow-xl" style="width: ${size}px; height: ${size}px;">${m.avatar_url? `<img src="${m.avatar_url}" alt="${escapeHtml(m.full_name)}" loading="lazy" decoding="async" class="w-full h-full object-cover">` : `<span class="text-[13px] font-bold text-violet-600">${escapeHtml(initials)}</span>`}</div><div class="absolute top-full mt-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900 text-white text-[11px] py-1.5 px-3 rounded-xl opacity-0 group-hover/bub:opacity-100 pointer-events-none transition-all duration-200 z-[100] shadow-2xl border border-white/10 translate-y-1 group-hover/bub:translate-y-0"><div class="font-semibold">${escapeHtml(m.full_name)}</div>${m.affiliation? `<div class="text-slate-300 text-[10px]">${escapeHtml(m.affiliation)}</div>` : ''}</div>`;
+                el.innerHTML = `<div class="rounded-full bg-white flex items-center justify-center overflow-hidden cursor-pointer relative ring-2 ring-white shadow-xl" style="width: ${size}px; height: ${size}px;">${m.avatar_url? `<img src="${m.avatar_url}" alt="${escapeHtml(m.full_name)}" loading="lazy" decoding="async" class="w-full h-full object-cover">` : `<span class="text-[13px] font-bold text-brand-600">${escapeHtml(initials)}</span>`}</div><div class="absolute top-full mt-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900 text-white text-[11px] py-1.5 px-3 rounded-xl opacity-0 group-hover/bub:opacity-100 pointer-events-none transition-all duration-200 z-[100] shadow-2xl border border-white/10 translate-y-1 group-hover/bub:translate-y-0"><div class="font-semibold">${escapeHtml(m.full_name)}</div>${m.affiliation? `<div class="text-slate-300 text-[10px]">${escapeHtml(m.affiliation)}</div>` : ''}</div>`;
                 
                 /* Improvement #12: Use cached avatar URL resolution */
                 if (m.avatar_url) getCachedAvatarUrl(m.avatar_url).then(u => { const img = el.querySelector('img'); if (img && u) img.src = u; });
@@ -746,7 +746,7 @@ $('#statEvents').innerText = state.eventsById.size;
                     : nameParts[0].substring(0, 2).toUpperCase();
 
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-violet-50/50 cursor-pointer transition-colors group';
+                tr.className = 'hover:bg-brand-50/50 cursor-pointer transition-colors group';
                 const memberId = m.id;
                 tr.onclick = () => openProfileModal(state.profileById.get(memberId));
 
@@ -855,7 +855,7 @@ $('#statEvents').innerText = state.eventsById.size;
 
             document.addEventListener('click', e => { if (e.target.closest('#btnProfile') || e.target.closest('#userName')) window.location.href = 'profile.html'; });
             $$('[data-role]').forEach(b => b.onclick = e => { $$('[data-role]').forEach(x => x.className = "px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 bg-white"); e.target.className = "px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all shadow-md shadow-slate-900/10 bg-slate-900 text-white ring-1 ring-slate-900"; state.roleFilter = e.target.dataset.role; onFiltersChanged(); });
-            $$('th[data-sort]').forEach(th => th.onclick = () => { const k = th.dataset.sort; state.sort.dir = (state.sort.key === k && state.sort.dir === 'asc')? 'desc' : 'asc'; state.sort.key = k; $$('th[data-sort]').forEach(h => h.className = "py-3.5 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors"); th.className = `py-3.5 px-6 text-[11px] font-bold text-violet-600 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors sort-${state.sort.dir}`; onFiltersChanged(); });
+            $$('th[data-sort]').forEach(th => th.onclick = () => { const k = th.dataset.sort; state.sort.dir = (state.sort.key === k && state.sort.dir === 'asc')? 'desc' : 'asc'; state.sort.key = k; $$('th[data-sort]').forEach(h => h.className = "py-3.5 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors"); th.className = `py-3.5 px-6 text-[11px] font-bold text-brand-600 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors sort-${state.sort.dir}`; onFiltersChanged(); });
 
             $('#groupByFilter').onchange = e => { state.groupBy = e.target.value; onFiltersChanged(); };
             $('#eventFilter').onchange = e => { state.eventFilterId = e.target.value; onFiltersChanged(); };
@@ -867,7 +867,7 @@ $('#statEvents').innerText = state.eventsById.size;
                 state.searchQuery = ''; state.groupBy = 'affiliation'; state.eventFilterId = state.countryFilterId = state.roleFilter = 'all'; state.selectedTags.clear(); state.sort = { key: "connections", dir: "desc" };
                 $('#searchInput').value = ''; $('#groupByFilter').value = 'affiliation'; $('#eventFilter').value = $('#countryFilter').value = 'all';
                 $$('[data-role]').forEach(x => x.className = "px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 bg-white"); $('[data-role="all"]').className = "px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all shadow-md shadow-slate-900/10 bg-slate-900 text-white ring-1 ring-slate-900";
-                $$('th[data-sort]').forEach(h => h.className = "py-3.5 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors"); $('th[data-sort="connections"]').className = "py-3.5 px-6 text-[11px] font-bold text-violet-600 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors sort-desc";
+                $$('th[data-sort]').forEach(h => h.className = "py-3.5 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors"); $('th[data-sort="connections"]').className = "py-3.5 px-6 text-[11px] font-bold text-brand-600 uppercase tracking-wider cursor-pointer hover:bg-slate-50/70 transition-colors sort-desc";
                 onFiltersChanged();
             };
 

@@ -487,7 +487,7 @@
           lang: "Language", recording_url: "Recording URL", create: "Create Event",
           edit_title: "Edit Event", delete: "Delete"
         },
-        speakers: { title: "Speakers", add: "+ Add Speaker", name: "Name*", affiliation: "Affiliation", link_profile: "Link Profile (Search)", primary: "Primary", remove: "Remove" },
+        speakers: { title: "Speakers", add: "+ Add Speaker", name: "Name*", affiliation: "Affiliation", link_profile: "Link Profile (Search)", no_results: "No matching profiles", primary: "Primary", remove: "Remove" },
         tags: { label: "Tags", placeholder: "earth science, agriculture...", filter: "Filter by tags..." },
         save: "Save Changes",
         access_denied: { title: "Access Denied", body: "You must be an organizer to view this page." },
@@ -512,7 +512,7 @@
           lang: "Idioma", recording_url: "URL de grabación", create: "Crear evento",
           edit_title: "Editar Evento", delete: "Eliminar"
         },
-        speakers: { title: "Ponentes", add: "+ Añadir Ponente", name: "Nombre*", affiliation: "Afiliación", link_profile: "Vincular Perfil (Buscar)", primary: "Principal", remove: "Quitar" },
+        speakers: { title: "Ponentes", add: "+ Añadir Ponente", name: "Nombre*", affiliation: "Afiliación", link_profile: "Vincular Perfil (Buscar)", no_results: "No hay perfiles coincidentes", primary: "Principal", remove: "Quitar" },
         tags: { label: "Etiquetas", placeholder: "ciencias, agricultura...", filter: "Filtrar etiquetas..." },
         save: "Guardar Cambios",
         access_denied: { title: "Acceso Denegado", body: "Debe ser un organizador para ver esta página." },
@@ -662,9 +662,11 @@
             <div class="relative">
                 <input type="text" class="speaker-profile-search input-field w-full" 
                        placeholder="${tr(t, state.language, 'speakers.link_profile')}" 
-                       list="dl-profiles" 
+                       role="combobox"
+                       aria-expanded="false"
                        autocomplete="off"
                        value="${escapeHtml(profileNameVal)}">
+                <div class="profile-combobox-list hidden" role="listbox"></div>
                 <input type="hidden" class="speaker-profile-id" value="${speaker.profile_id || ''}">
             </div>
         </div>
@@ -691,6 +693,47 @@
 
     const setupSpeakerAutofill = (containerId) => {
       const container = $(`#${containerId}`);
+      const closeLists = (except = null) => {
+        $$('.profile-combobox-list').forEach(list => {
+          if (list !== except) list.classList.add('hidden');
+        });
+        $$('.speaker-profile-search').forEach(input => {
+          if (!except || input.parentElement?.querySelector('.profile-combobox-list') !== except) {
+            input.setAttribute('aria-expanded', 'false');
+          }
+        });
+      };
+
+      const renderProfileOptions = (input) => {
+        const row = input.closest('.speaker-row');
+        const list = row.querySelector('.profile-combobox-list');
+        const term = input.value.trim().toLowerCase();
+        const matches = state.profiles
+          .filter(p => {
+            const haystack = `${p.full_name || ''} ${p.affiliation || ''}`.toLowerCase();
+            return !term || haystack.includes(term);
+          })
+          .slice(0, 8);
+
+        if (!matches.length) {
+          list.innerHTML = `<div class="profile-combobox-empty">${escapeHtml(tr(t, state.language, 'speakers.no_results'))}</div>`;
+        } else {
+          list.innerHTML = matches.map(p => `
+            <button type="button" class="profile-combobox-option" data-profile-id="${escapeHtml(p.id)}" data-profile-name="${escapeHtml(p.full_name || '')}" data-profile-affiliation="${escapeHtml(p.affiliation || '')}" role="option">
+              <span class="profile-combobox-avatar">${escapeHtml((p.full_name || '?').slice(0, 1).toUpperCase())}</span>
+              <span class="profile-combobox-copy">
+                <strong>${escapeHtml(p.full_name || '')}</strong>
+                ${p.affiliation ? `<small>${escapeHtml(p.affiliation)}</small>` : ''}
+              </span>
+            </button>
+          `).join('');
+        }
+
+        closeLists(list);
+        list.classList.remove('hidden');
+        input.setAttribute('aria-expanded', 'true');
+      };
+
       container.addEventListener('input', (e) => {
         if (e.target.matches('.speaker-profile-search')) {
           const searchVal = e.target.value;
@@ -710,7 +753,27 @@
           } else {
             idInput.value = '';
           }
+          renderProfileOptions(e.target);
         }
+      });
+
+      container.addEventListener('focusin', (e) => {
+        if (e.target.matches('.speaker-profile-search')) renderProfileOptions(e.target);
+      });
+
+      container.addEventListener('click', (e) => {
+        const option = e.target.closest('.profile-combobox-option');
+        if (!option) return;
+        const row = option.closest('.speaker-row');
+        row.querySelector('.speaker-profile-id').value = option.dataset.profileId || '';
+        row.querySelector('.speaker-name').value = option.dataset.profileName || '';
+        row.querySelector('.speaker-affiliation').value = option.dataset.profileAffiliation || '';
+        row.querySelector('.speaker-profile-search').value = option.dataset.profileName || '';
+        closeLists();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) closeLists();
       });
     };
 

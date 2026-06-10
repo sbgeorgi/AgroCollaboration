@@ -42,10 +42,10 @@ export async function loadAndApplyCopy(pageName, lang) {
 
 function getThemeClasses(color) {
     const map = {
-        purple:  { border: 'hover:border-purple-400', bar: 'bg-purple-700', text: 'group-hover:text-purple-700', badge: 'text-purple-700 bg-purple-50', ring: 'ring-purple-400', accent: 'purple' },
-        amber:   { border: 'hover:border-amber-400', bar: 'bg-amber-500', text: 'group-hover:text-amber-600', badge: 'text-amber-700 bg-amber-50', ring: 'ring-amber-400', accent: 'amber' },
-        blue:    { border: 'hover:border-blue-400', bar: 'bg-blue-600', text: 'group-hover:text-blue-600', badge: 'text-blue-700 bg-blue-50', ring: 'ring-blue-400', accent: 'blue' },
-        emerald: { border: 'hover:border-emerald-400', bar: 'bg-emerald-500', text: 'group-hover:text-emerald-600', badge: 'text-emerald-700 bg-emerald-50', ring: 'ring-emerald-400', accent: 'emerald' },
+        purple:  { border: 'hover:border-brand-400', bar: 'bg-brand-700', text: 'group-hover:text-brand-700', badge: 'text-brand-800 bg-brand-50', ring: 'ring-brand-400', accent: 'brand' },
+        amber:   { border: 'hover:border-amber-400', bar: 'bg-amber-500', text: 'group-hover:text-amber-700', badge: 'text-amber-800 bg-amber-50', ring: 'ring-amber-400', accent: 'amber' },
+        blue:    { border: 'hover:border-brand-400', bar: 'bg-brand-600', text: 'group-hover:text-brand-700', badge: 'text-brand-800 bg-brand-50', ring: 'ring-brand-400', accent: 'brand' },
+        emerald: { border: 'hover:border-emerald-500', bar: 'bg-emerald-600', text: 'group-hover:text-emerald-700', badge: 'text-emerald-800 bg-emerald-50', ring: 'ring-emerald-400', accent: 'emerald' },
         red:     { border: 'hover:border-red-400', bar: 'bg-red-600', text: 'group-hover:text-red-600', badge: 'text-red-700 bg-red-50', ring: 'ring-red-400', accent: 'red' }
     };
     return map[color] || map.purple;
@@ -63,7 +63,7 @@ export async function loadCommitteeGrid(containerId, lang) {
             const imgUrl = m.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.name || 'M')}&background=random&size=200`;
 
             return `
-            <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl ${theme.border} transition-all duration-300 min-h-[140px]">
+            <div class="group relative flex bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl ${theme.border} transition-all duration-300 min-h-[180px]">
                 <div class="w-1.5 ${theme.bar} flex-shrink-0"></div>
                 <div class="w-24 sm:w-32 h-full relative overflow-hidden flex-shrink-0 bg-gray-100">
                     <img src="${imgUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(m.name || 'M')}&background=random'">
@@ -77,7 +77,7 @@ export async function loadCommitteeGrid(containerId, lang) {
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider truncate mb-1">${m.institution || ''}</p>
                         <p class="text-xs font-medium text-slate-500 mb-2">${role}</p>
                     </div>
-                    <div class="text-sm text-slate-600 line-clamp-2 prose prose-sm leading-snug">${desc || ''}</div>
+                    <div class="text-sm text-slate-600 prose prose-sm leading-snug max-w-none">${desc || ''}</div>
                 </div>
             </div>`;
         }).join('');
@@ -146,23 +146,23 @@ const quillToolbarOptions = [
 ];
 
 const THEME_OPTIONS = [
-    { value: 'purple', label: 'Purple', dot: '#7c3aed' },
-    { value: 'amber', label: 'Amber', dot: '#f59e0b' },
-    { value: 'blue', label: 'Blue', dot: '#2563eb' },
-    { value: 'emerald', label: 'Emerald', dot: '#10b981' },
+    { value: 'purple', label: 'Botanical', dot: '#267454' },
+    { value: 'amber', label: 'Solar', dot: '#c8791a' },
+    { value: 'blue', label: 'Research', dot: '#3f825f' },
+    { value: 'emerald', label: 'Canopy', dot: '#16865d' },
     { value: 'red', label: 'Red', dot: '#dc2626' }
 ];
 
 const PAGE_META = {
-    home:      { icon: 'home', color: '#6366f1', label: 'Home' },
-    about:     { icon: 'info', color: '#8b5cf6', label: 'About' },
-    network:   { icon: 'globe', color: '#0ea5e9', label: 'Network' },
-    resources: { icon: 'book-open', color: '#f59e0b', label: 'Resources' },
+    home:      { icon: 'home', color: '#267454', label: 'Home' },
+    about:     { icon: 'info', color: '#c8791a', label: 'About' },
+    network:   { icon: 'globe', color: '#3f825f', label: 'Network' },
+    resources: { icon: 'book-open', color: '#c8791a', label: 'Resources' },
     contact:   { icon: 'mail', color: '#10b981', label: 'Contact' },
     auth:      { icon: 'lock', color: '#64748b', label: 'Auth' },
     nav:       { icon: 'menu', color: '#334155', label: 'Navigation' },
     footer:    { icon: 'layers', color: '#64748b', label: 'Footer' },
-    committee: { icon: 'users', color: '#8b5cf6', label: 'Committee' },
+    committee: { icon: 'users', color: '#267454', label: 'Committee' },
 };
 
 const COMMITTEE_KEY_PREFIXES = ['about_committee', 'about_team', 'about_members', 'committee_'];
@@ -273,24 +273,24 @@ const ADMIN_STYLES = `
 <style>
     .adm-label { display: block; font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
     .adm-input { width: 100%; padding: 7px 11px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; transition: all 0.15s; }
-    .adm-input:focus { border-color: #6366f1; background: white; box-shadow: 0 0 0 3px rgba(99,102,241,0.08); }
+    .adm-input:focus { border-color: #c8791a; background: white; box-shadow: 0 0 0 3px rgba(200,121,26,0.12); }
     
     .card-editable { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
-    .card-editable.is-editing { box-shadow: 0 0 0 2px #6366f1, 0 20px 60px -15px rgba(0,0,0,0.15); z-index: 10; }
+    .card-editable.is-editing { box-shadow: 0 0 0 2px #c8791a, 0 20px 60px -15px rgba(0,0,0,0.15); z-index: 10; }
 
     .adm-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 12px; font-weight: 700; border-radius: 10px; transition: all 0.15s; cursor: pointer; border: none; }
     .adm-btn-primary { background: #0f172a; color: white; }
-    .adm-btn-primary:hover { background: #4f46e5; }
+    .adm-btn-primary:hover { background: #124b37; }
     .adm-btn-danger { background: white; color: #dc2626; border: 1px solid #fecaca; }
     .adm-btn-danger:hover { background: #fef2f2; }
     .adm-btn-ghost { background: transparent; color: #64748b; }
     .adm-btn-ghost:hover { background: #f1f5f9; color: #334155; }
     .adm-btn-add { background: white; border: 2px dashed #cbd5e1; color: #64748b; width: 100%; padding: 24px; border-radius: 16px; font-size: 14px; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s; }
-    .adm-btn-add:hover { border-color: #6366f1; color: #4f46e5; background: #f5f3ff; }
+    .adm-btn-add:hover { border-color: #c8791a; color: #7d470f; background: #fff7e4; }
 
     .theme-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px #e2e8f0; cursor: pointer; transition: all 0.15s; }
     .theme-dot:hover { transform: scale(1.2); }
-    .theme-dot.active { box-shadow: 0 0 0 2px #4f46e5; }
+    .theme-dot.active { box-shadow: 0 0 0 2px #c8791a; }
 
     .fade-up-in { animation: fadeUpIn 0.3s cubic-bezier(0.4,0,0.2,1) both; }
     @keyframes fadeUpIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -305,15 +305,15 @@ const ADMIN_STYLES = `
 
     .copy-type-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 4px; }
     .copy-type-text { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-    .copy-type-rich { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .copy-type-rich { background: #fff7e4; color: #7d470f; border: 1px solid #fdeabf; }
     
     .page-section-header { position: sticky; top: 0; z-index: 5; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 
     /* Drag and Drop Specific Styles */
     .is-editing .drag-handle { display: none !important; }
     .card-editable.opacity-50 { z-index: 50; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
-    .drag-active-top { border-top-width: 3px !important; border-top-color: #6366f1 !important; border-top-style: solid !important; }
-    .drag-active-bottom { border-bottom-width: 3px !important; border-bottom-color: #6366f1 !important; border-bottom-style: solid !important; }
+    .drag-active-top { border-top-width: 3px !important; border-top-color: #c8791a !important; border-top-style: solid !important; }
+    .drag-active-bottom { border-bottom-width: 3px !important; border-bottom-color: #c8791a !important; border-bottom-style: solid !important; }
 </style>
 `;
 
@@ -629,7 +629,7 @@ function renderSectionCopyCard(item, idx, pageMeta) {
                 </div>
             </div>
         </div>
-        <div class="section-copy-edit hidden border-t border-indigo-100 bg-gradient-to-b from-indigo-50/40 to-white" id="copy-edit-${item.id}">
+        <div class="section-copy-edit hidden border-t border-brand-100 bg-gradient-to-b from-brand-50/40 to-white" id="copy-edit-${item.id}">
             <div class="p-5 space-y-4">
                 <div class="flex items-center gap-2 mb-1">
                     <code class="text-[11px] font-bold font-mono text-brand-700 bg-brand-50 px-2 py-0.5 rounded border border-brand-100">${item.id}</code>
@@ -680,7 +680,7 @@ function renderCopyCard(item, idx, pageMeta) {
                 <div class="flex items-center gap-1 text-xs text-brand-500 font-semibold flex-shrink-0 pt-0.5 opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="pencil" class="w-3 h-3"></i></div>
             </div>
         </div>
-        <div class="copy-card-edit hidden border-t border-indigo-100 bg-gradient-to-b from-indigo-50/30 to-white" id="copy-edit-${item.id}">
+        <div class="copy-card-edit hidden border-t border-brand-100 bg-gradient-to-b from-brand-50/30 to-white" id="copy-edit-${item.id}">
             <div class="p-4 space-y-3">
                 <div class="flex items-center gap-2 mb-1">
                     <code class="text-[11px] font-bold font-mono text-brand-700 bg-brand-50 px-2 py-0.5 rounded border border-brand-100">${item.id}</code>
@@ -847,7 +847,7 @@ function renderCommitteeCards() {
 
 function renderMemberCard(m, idx) {
     const theme = getThemeClasses(m.color_theme || 'purple');
-    const barColor = { purple: '#7c3aed', amber: '#f59e0b', blue: '#2563eb', emerald: '#10b981', red: '#dc2626' }[m.color_theme] || '#7c3aed';
+    const barColor = { purple: '#267454', amber: '#c8791a', blue: '#3f825f', emerald: '#16865d', red: '#dc2626' }[m.color_theme] || '#267454';
 
     return `
     <div class="card-editable rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden fade-up-in" style="animation-delay: ${idx * 40}ms" data-member-id="${m.id}" id="member-card-${m.id}">
@@ -882,7 +882,7 @@ function renderMemberCard(m, idx) {
         </div>
 
         <!-- EDIT MODE -->
-        <div class="member-card-edit hidden border-t border-indigo-100 bg-gradient-to-b from-indigo-50/40 to-white" id="member-edit-${m.id}">
+        <div class="member-card-edit hidden border-t border-brand-100 bg-gradient-to-b from-brand-50/40 to-white" id="member-edit-${m.id}">
             <div class="p-5 space-y-4">
                 <div class="grid grid-cols-3 gap-3">
                     <div><label class="adm-label">Full Name</label><input type="text" class="adm-input me-name" value="${escapeHtml(m.name || '')}"></div>
@@ -1119,7 +1119,7 @@ function renderOrgCards() {
 
 function renderOrgCard(o, idx) {
     const theme = getThemeClasses(o.color_theme || 'purple');
-    const barColor = { purple: '#7c3aed', amber: '#f59e0b', blue: '#2563eb', emerald: '#10b981', red: '#dc2626' }[o.color_theme] || '#7c3aed';
+    const barColor = { purple: '#267454', amber: '#c8791a', blue: '#3f825f', emerald: '#16865d', red: '#dc2626' }[o.color_theme] || '#267454';
 
     return `
     <div class="card-editable rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden fade-up-in" style="animation-delay: ${idx * 40}ms" data-org-id="${o.id}" id="org-card-${o.id}">
@@ -1153,7 +1153,7 @@ function renderOrgCard(o, idx) {
         </div>
 
         <!-- EDIT MODE -->
-        <div class="org-card-edit hidden border-t border-indigo-100 bg-gradient-to-b from-indigo-50/40 to-white" id="org-edit-${o.id}">
+        <div class="org-card-edit hidden border-t border-brand-100 bg-gradient-to-b from-brand-50/40 to-white" id="org-edit-${o.id}">
             <div class="p-5 space-y-4">
                 <div class="grid grid-cols-3 gap-3">
                     <div><label class="adm-label">Organization Name</label><input type="text" class="adm-input oe-name" value="${escapeHtml(o.name || '')}"></div>

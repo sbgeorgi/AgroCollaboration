@@ -82,7 +82,7 @@
 
             <!-- 1. Background Texture -->
             <div class="absolute inset-0 opacity-[0.03] pointer-events-none"
-              style="background-image: radial-gradient(#0369a1 1px, transparent 1px); background-size: 20px 20px;">
+              style="background-image: radial-gradient(rgba(38,116,84,0.45) 1px, transparent 1px); background-size: 22px 22px;">
             </div>
 
             <!-- 2. Right-Aligned Image (Static) -->
@@ -130,6 +130,13 @@
                     <img src="static/aal.png"
                       class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="AAL">
                     <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">AAL</span>
+                  </a>
+
+                  <a href="https://centroenergia.cl" target="_blank"
+                    class="flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:border-brand-200 hover:shadow-md transition-all group/host no-underline">
+                    <img src="static/CentroDeEnergiaUC.png"
+                      class="w-5 h-5 rounded object-contain p-[1px] bg-white border border-gray-100" alt="University of Chile Energy Center">
+                    <span class="text-[10px] font-bold text-slate-700 group-hover/host:text-brand-700">UChile</span>
                   </a>
 
                   <a href="https://redagvmx.com" target="_blank"
@@ -342,6 +349,8 @@ import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr
         },
         auth: { signin: "Sign in", signout: "Sign out", required: "Sign in to view details." },
         schedule: { title: "Upcoming Talks", empty: "No events found." },
+        calendar: { next: "Next:" },
+        event_card: { speakers_tba: "Speakers TBA", more: "more" },
         search: { placeholder: "Search talks..." },
         tabs: { description: "Description", discussion: "Discussion", files: "Files" },
         nav: { schedule: "Schedule", archive: "Archive", about: "About", network: "Network", map: "Map", admin: "Admin" },
@@ -368,8 +377,26 @@ import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr
       else { $('#view-schedule').classList.add('-translate-x-1/4', 'opacity-50'); $('#view-detail').classList.remove('translate-x-full'); }
     }
     function switchScheduleView(mode) {
-      if (mode === 'list') { show($('#schedule-list')); hide($('#schedule-calendar')); $('#btn-view-list').classList.add('bg-brand-50', 'text-brand-700'); $('#btn-view-cal').classList.remove('bg-brand-50', 'text-brand-700'); }
-      else { hide($('#schedule-list')); show($('#schedule-calendar')); $('#btn-view-cal').classList.add('bg-brand-50', 'text-brand-700'); $('#btn-view-list').classList.remove('bg-brand-50', 'text-brand-700'); }
+      const scheduleView = $('#view-schedule');
+      const listView = $('#schedule-list');
+      const calendarView = $('#schedule-calendar');
+      if (mode === 'list') {
+        scheduleView?.classList.remove('is-calendar-view');
+        show(listView);
+        hide(calendarView);
+        if (listView) listView.style.display = '';
+        if (calendarView) calendarView.style.display = 'none';
+        $('#btn-view-list').classList.add('bg-brand-50', 'text-brand-700');
+        $('#btn-view-cal').classList.remove('bg-brand-50', 'text-brand-700');
+      } else {
+        scheduleView?.classList.add('is-calendar-view');
+        hide(listView);
+        show(calendarView);
+        if (listView) listView.style.display = 'none';
+        if (calendarView) calendarView.style.display = '';
+        $('#btn-view-cal').classList.add('bg-brand-50', 'text-brand-700');
+        $('#btn-view-list').classList.remove('bg-brand-50', 'text-brand-700');
+      }
     }
 
     function handleLangSwitch() {
@@ -402,7 +429,8 @@ import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr
         banner.classList.add('cursor-pointer', 'hover:bg-amber-100');
         banner.dataset.openEvent = next.id;
 
-        textEl.innerHTML = `<span class="opacity-70 font-medium">Next:</span> ${escapeHtml(title)}`;
+        const nextLabel = localTr('calendar.next', state.language === 'es' ? 'PrÃ³ximo:' : 'Next:');
+        textEl.innerHTML = `<span class="opacity-70 font-medium">${escapeHtml(nextLabel)}</span> ${escapeHtml(title)}`;
         show(banner);
         banner.style.display = 'inline-flex';
       } else {
@@ -506,7 +534,7 @@ import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr
         })) : [];
 
         const counterHtml = extraSpeakers.length > 0
-          ? `<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mr-1 ml-2 whitespace-nowrap">+ ${extraSpeakers.length} MORE</span>`
+          ? `<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mr-1 ml-2 whitespace-nowrap">+ ${extraSpeakers.length} ${escapeHtml(localTr('event_card.more', state.language === 'es' ? 'mÃ¡s' : 'more'))}</span>`
           : '';
 
         let speakersSection = '';
@@ -525,7 +553,7 @@ import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr
                     </div>` : ''}
                 </div>`;
         } else {
-          speakersSection = `<div class="mt-auto pt-3 border-t border-gray-100 text-[11px] text-slate-400 italic">Speakers TBA</div>`;
+          speakersSection = `<div class="mt-auto pt-3 border-t border-gray-100 text-[11px] text-slate-400 italic">${escapeHtml(localTr('event_card.speakers_tba', state.language === 'es' ? 'Ponentes por anunciar' : 'Speakers TBA'))}</div>`;
         }
 
         const tags = ev.topic_tags && ev.topic_tags.length ?
@@ -579,16 +607,34 @@ import { initSharedUI, renderHeader, switchTab, $, $$, show, hide, applyI18n, tr
 
     function renderScheduleCalendar() {
       const grid = $('#calendarGrid'), m = state.calendarMonth;
+      const monthStart = new Date(m.getFullYear(), m.getMonth(), 1);
+      const startOffset = (monthStart.getDay() + 6) % 7;
+      const gridStart = new Date(m.getFullYear(), m.getMonth(), 1 - startOffset);
+      const todayKey = new Date().toISOString().slice(0, 10);
       $('#calLabel').innerText = m.toLocaleString(state.language, { month: 'long', year: 'numeric' });
-      const start = new Date(m.getFullYear(), m.getMonth(), 1).getDay();
-      const end = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
       grid.innerHTML = '';
-      for (let i = 0; i < (start + 6) % 7; i++) grid.insertAdjacentHTML('beforeend', `<div class="bg-gray-50/50 min-h-[80px]"></div>`);
-      for (let d = 1; d <= end; d++) {
-        const dateStr = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      Array.from({ length: 7 }, (_, i) => new Date(2026, 5, 1 + i))
+        .map(date => date.toLocaleDateString(state.language, { weekday: 'short' }))
+        .forEach(day => grid.insertAdjacentHTML('beforeend', `<div class="schedule-cal-weekday">${escapeHtml(day)}</div>`));
+
+      const daysInMonth = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
+      const totalCells = Math.max(35, Math.ceil((startOffset + daysInMonth) / 7) * 7);
+      grid.dataset.weeks = String(totalCells / 7);
+
+      for (let i = 0; i < totalCells; i++) {
+        const dayDate = new Date(gridStart);
+        dayDate.setDate(gridStart.getDate() + i);
+        const dateStr = `${dayDate.getFullYear()}-${String(dayDate.getMonth() + 1).padStart(2, '0')}-${String(dayDate.getDate()).padStart(2, '0')}`;
+        const isMuted = dayDate.getMonth() !== m.getMonth();
+        const isToday = dateStr === todayKey;
         const dayEvs = state.events.filter(e => e.start_time.startsWith(dateStr));
-        const evHtml = dayEvs.map(e => `<div class="text-[9px] truncate bg-brand-100 text-brand-800 px-1 rounded mb-0.5 cursor-pointer" data-open-event="${e.id}">${state.language === 'es' ? (e.title_es || e.title_en) : e.title_en}</div>`).join('');
-        grid.insertAdjacentHTML('beforeend', `<div class="bg-white p-1 min-h-[80px] border-r border-b border-gray-50"><div class="text-xs font-bold text-slate-300 mb-1">${d}</div>${evHtml}</div>`);
+        const evHtml = dayEvs.slice(0, 3).map(e => {
+          const eventTitle = state.language === 'es' ? (e.title_es || e.title_en) : e.title_en;
+          const time = fmtDateTime(e.start_time, { hour: 'numeric', minute: '2-digit' });
+          return `<button class="schedule-cal-event" data-open-event="${e.id}" title="${escapeHtml(eventTitle)}"><span>${escapeHtml(time)}</span>${escapeHtml(eventTitle)}</button>`;
+        }).join('');
+        const extra = dayEvs.length > 3 ? `<div class="schedule-cal-more">+${dayEvs.length - 3}</div>` : '';
+        grid.insertAdjacentHTML('beforeend', `<div class="schedule-cal-day ${isMuted ? 'is-muted' : ''} ${isToday ? 'is-today' : ''}"><div class="schedule-cal-date">${dayDate.getDate()}</div><div class="schedule-cal-events">${evHtml}${extra}</div></div>`);
       }
     }
 

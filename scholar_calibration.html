@@ -6,26 +6,29 @@
 <title>Pipeline Diagnostic Suite</title>
 <style>
   :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface2: #232733;
-    --border: #2e3347;
-    --text: #e2e8f0;
-    --text-dim: #8892a8;
-    --accent: #6366f1;
-    --accent-glow: rgba(99,102,241,0.25);
+    --bg: #0d1511;
+    --surface: #15201a;
+    --surface2: #1c2a22;
+    --border: #2a3a31;
+    --text: #e9f1e8;
+    --text-dim: #96a79b;
+    --accent: #c8791a;
+    --accent-glow: rgba(200,121,26,0.25);
     --green: #22c55e;
     --green-dim: rgba(34,197,94,0.15);
     --red: #ef4444;
     --red-dim: rgba(239,68,68,0.12);
     --amber: #f59e0b;
     --amber-dim: rgba(245,158,11,0.12);
-    --cyan: #06b6d4;
+    --cyan: #8fc0a8;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
     font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
-    background: var(--bg);
+    background:
+      radial-gradient(circle at top left, rgba(200, 121, 26, 0.14), transparent 30rem),
+      radial-gradient(circle at bottom right, rgba(38, 116, 84, 0.2), transparent 32rem),
+      var(--bg);
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
@@ -41,7 +44,7 @@
   .header h1 {
     font-size: 16px;
     font-weight: 700;
-    letter-spacing: -0.5px;
+    letter-spacing: 0;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -80,7 +83,7 @@
     border-color: var(--accent);
     color: white;
   }
-  .btn-primary:hover { background: #5558e6; }
+  .btn-primary:hover { background: #a86418; }
   .btn-copy { background: var(--green-dim); border-color: var(--green); color: var(--green); }
   .btn-copy:hover { background: rgba(34,197,94,0.25); }
 
@@ -105,7 +108,7 @@
   .section-title {
     font-size: 10px;
     font-weight: 700;
-    letter-spacing: 1.5px;
+    letter-spacing: 0;
     text-transform: uppercase;
     color: var(--text-dim);
     margin-bottom: 12px;
@@ -237,7 +240,7 @@
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0;
   }
   .status-idle { background: var(--surface2); color: var(--text-dim); }
   .status-running { background: var(--amber-dim); color: var(--amber); }
@@ -303,7 +306,7 @@
     font-size: 9px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0;
     color: var(--text-dim);
   }
   .stat-green .stat-value { color: var(--green); }
@@ -326,7 +329,7 @@
     font-size: 9px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0;
   }
   .sens-table td {
     padding: 7px 12px;
@@ -499,6 +502,100 @@
     border-radius: 10px;
     font-size: 10px;
     font-weight: 700;
+  }
+
+  button, input, select, textarea { min-height: 44px; }
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  .tab:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 900px) {
+    .header {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding: 16px;
+    }
+    .header h1 {
+      align-items: flex-start;
+      flex-wrap: wrap;
+      line-height: 1.35;
+    }
+    .header-actions {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    .header-actions .btn {
+      flex: 1 1 180px;
+      justify-content: center;
+    }
+    .layout {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+    .sidebar {
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .main,
+    .sidebar {
+      padding: 16px;
+    }
+    .funnel-stage {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .funnel-count,
+    .funnel-delta {
+      text-align: left;
+    }
+    .tabs {
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .tab {
+      flex: 0 0 auto;
+    }
+    .card-header {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .log-line {
+      white-space: normal;
+    }
+    .toast {
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .main,
+    .sidebar,
+    .card-body {
+      padding: 12px;
+    }
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    .sens-table {
+      min-width: 680px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 </style>
 </head>
@@ -1306,8 +1403,8 @@ window.runDiagnostics = async function() {
 function renderFunnel(data) {
   const stages = [
     { name: 'DB Profiles', count: data.profileCount, color: '#06b6d4' },
-    { name: 'Resolved (OpenAlex)', count: data.resolvedCount, color: '#6366f1' },
-    { name: 'Raw Works Fetched', count: data.rawWorkCount, color: '#8b5cf6', isWorks: true },
+    { name: 'Resolved (OpenAlex)', count: data.resolvedCount, color: '#267454' },
+    { name: 'Raw Works Fetched', count: data.rawWorkCount, color: '#c8791a', isWorks: true },
     { name: 'Pass minRel Filter', count: data.scoredWorkCount, color: '#f59e0b', isWorks: true },
     { name: 'Pass defMin Filter', count: data.filteredWorkCount, color: '#22c55e', isWorks: true },
     { name: 'Final Users', count: data.finalUserCount, color: '#22c55e' },

@@ -74,7 +74,7 @@ const MODAL_CSS = `
         transform: translateX(-50%) translateY(0);
     }
     .profile-ql-content p { margin-bottom: 0.5em; }
-    .profile-ql-content a { color: #4f46e5; text-decoration: underline; }
+    .profile-ql-content a { color: #267454; text-decoration: underline; }
     .profile-ql-content ul { list-style-type: disc; padding-left: 1.25em; margin-bottom: 0.5em; }
     .profile-ql-content ol { list-style-type: decimal; padding-left: 1.25em; margin-bottom: 0.5em; }
 `;
@@ -146,7 +146,7 @@ export function openProfileModal(member) {
     // Avatar
     const avatarHtml = member.avatar_url 
         ? `<img id="globalModalAvatarImg" src="" alt="${member.full_name || 'Profile'}" style="width:100%; height:100%; object-fit:cover;">` 
-        : `<span style="font-size:1.5rem; font-weight:bold; color:#4f46e5;">${member.full_name ? member.full_name[0].toUpperCase() : '?'}</span>`;
+        : `<span style="font-size:1.5rem; font-weight:bold; color:#267454;">${member.full_name ? member.full_name[0].toUpperCase() : '?'}</span>`;
 
     // SVG Icons
     const iconMail = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>`;
@@ -172,7 +172,7 @@ export function openProfileModal(member) {
     // Tags
     const tags = (member.fields_of_study || "").split(',').map(t => t.trim()).filter(Boolean);
     const tagsHtml = tags.length 
-        ? tags.map(t => `<span style="display:inline-flex; padding:0.25rem 0.625rem; border-radius:0.375rem; font-size:0.75rem; font-weight:500; background:#eff6ff; color:#1d4ed8; border:1px solid #dbeafe;">${t}</span>`).join(' ') 
+        ? tags.map(t => `<span style="display:inline-flex; padding:0.25rem 0.625rem; border-radius:0.375rem; font-size:0.75rem; font-weight:500; background:#e5f3ec; color:#124b37; border:1px solid #c9e4d7;">${t}</span>`).join(' ')
         : '<span style="color:#94a3b8; font-size:0.875rem; font-style:italic;">No research interests listed.</span>';
 
     // Role badge
@@ -187,7 +187,7 @@ export function openProfileModal(member) {
 
     content.innerHTML = `
         <div style="position:relative;">
-            <div style="height:8rem; background:linear-gradient(to right, #4f46e5, #6366f1);"></div>
+            <div style="height:8rem; background:linear-gradient(110deg, #124b37, #267454 58%, #c8791a);"></div>
             <div style="padding:0 1.5rem 1.5rem;">
                 <div style="display:flex; flex-wrap:wrap; align-items:flex-start; gap:1rem; margin-top:-3rem; margin-bottom:1rem;">
                     <div style="width:6rem; height:6rem; border-radius:9999px; background:white; padding:0.25rem; box-shadow:0 10px 25px -5px rgba(0,0,0,0.1); flex-shrink:0;">
@@ -198,7 +198,7 @@ export function openProfileModal(member) {
                     <div style="flex:1; padding-top:3.5rem; min-width:200px;">
                         <h2 style="font-size:1.5rem; font-weight:700; color:#0f172a; margin:0;">${member.full_name || 'Member'}</h2>
                         <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem; margin-top:0.25rem; font-size:0.875rem; color:#64748b;">
-                            ${member.username ? `<span style="color:#4f46e5;">@${member.username}</span>` : ''}
+                            ${member.username ? `<span style="color:#267454;">@${member.username}</span>` : ''}
                             ${roleBadge}
                         </div>
                     </div>
