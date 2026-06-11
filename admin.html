@@ -47,6 +47,70 @@
     }
 
     html, body { height: 100%; overflow: hidden; }
+
+
+    /* Page-local viewport containment fix.
+       The global stylesheet intentionally lets standard pages scroll, and it also has
+       fallback :has(#adminWrapper) rules with !important declarations. This admin
+       workspace is a full-height tool, so we locally re-establish a single viewport
+       and let only the intended panels scroll. */
+    html:has(#adminWrapper),
+    body:has(#adminWrapper) {
+      height: 100% !important;
+      min-height: 100% !important;
+      overflow: hidden !important;
+    }
+
+    body:has(#adminWrapper) {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    body:has(#adminWrapper) main {
+      flex: 1 1 auto !important;
+      height: auto !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+    }
+
+    body:has(#adminWrapper) main > .absolute.inset-0 {
+      position: absolute !important;
+      inset: 0 !important;
+      overflow: hidden !important;
+    }
+
+    body:has(#adminWrapper) main > .absolute.inset-0 > div,
+    body:has(#adminWrapper) #adminWrapper {
+      height: 100% !important;
+      min-height: 0 !important;
+      max-height: 100% !important;
+      overflow: hidden !important;
+    }
+
+    body:has(#adminWrapper) #adminWrapper {
+      padding-bottom: 0 !important;
+    }
+
+    body:has(#adminWrapper) .tab-pane,
+    body:has(#adminWrapper) #tab-schedule,
+    body:has(#adminWrapper) #tab-schedule > div,
+    body:has(#adminWrapper) #tab-schedule > div > div,
+    body:has(#adminWrapper) #tab-membership,
+    body:has(#adminWrapper) #tab-copy {
+      min-height: 0 !important;
+      max-height: 100% !important;
+    }
+
+    body:has(#adminWrapper) #tab-schedule {
+      height: auto !important;
+      overflow: hidden !important;
+    }
+
+    body:has(#adminWrapper) #calendar {
+      height: 100% !important;
+      min-height: 0 !important;
+    }
+
     
     /* Input Field matching styles.css via Tailwind layer for Admin Form ease */
     .input-field {
@@ -134,12 +198,12 @@
   <!-- Note: Header/Footer injected by layout.js -->
 
   <!-- ================= MAIN CONTENT ================= -->
-  <main class="flex-1 relative overflow-hidden bg-gray-50">
+  <main id="adminPageMain" class="flex-1 min-h-0 relative overflow-hidden bg-gray-50">
     <div id="flash" class="flash"></div>
 
     <!-- Scrollable Container -->
-    <div class="absolute inset-0 overflow-y-auto custom-scrollbar">
-      <div class="max-w-[1800px] mx-auto px-4 sm:px-6 py-6 flex flex-col h-full min-h-full">
+    <div class="absolute inset-0 overflow-hidden custom-scrollbar">
+      <div class="max-w-[1800px] mx-auto px-4 sm:px-6 py-6 flex flex-col h-full min-h-0 overflow-hidden">
 
         <!-- Access Denied View -->
         <div id="accessDenied" class="hidden m-auto max-w-md w-full">
@@ -160,7 +224,7 @@
         </div>
 
         <!-- Admin Wrapper -->
-        <div id="adminWrapper" class="h-full pb-6 hidden flex-col">
+        <div id="adminWrapper" class="h-full min-h-0 hidden flex-col overflow-hidden">
 
           <!-- TAB NAVIGATION -->
           <div class="flex gap-2 sm:gap-6 border-b border-gray-200 mb-6 shrink-0 overflow-x-auto no-scrollbar">
@@ -184,9 +248,9 @@
           <!-- TAB CONTENT: Schedule -->
           <div id="tab-schedule" class="tab-pane active grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
             <!-- LEFT PANEL: TOOLS & FORM -->
-            <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 overflow-hidden h-full">
+            <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 overflow-hidden h-full min-h-0">
               <div
-                class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm flex flex-col overflow-hidden h-full">
+                class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm flex flex-col overflow-hidden h-full min-h-0">
 
                 <div
                   class="p-5 border-b border-gray-100 bg-white/50 sticky top-0 z-10 flex items-center justify-between">
@@ -196,7 +260,7 @@
                   </h2>
                 </div>
 
-                <div class="overflow-y-auto custom-scrollbar p-5 flex-1">
+                <div class="overflow-y-auto custom-scrollbar p-5 flex-1 min-h-0">
                   <form id="createEventForm" class="space-y-6">
                     <!-- Banner Management Card -->
                     <div class="bg-brand-50/50 border border-brand-100 rounded-xl p-4">
@@ -300,9 +364,9 @@
             </div>
 
             <!-- RIGHT PANEL: CALENDAR -->
-            <div class="lg:col-span-8 xl:col-span-9 h-full">
+            <div class="lg:col-span-8 xl:col-span-9 h-full min-h-0">
               <div
-                class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm h-full flex flex-col overflow-hidden">
+                class="bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm h-full min-h-0 flex flex-col overflow-hidden">
                 <div
                   class="p-4 border-b border-gray-100 flex items-center justify-between gap-4 bg-white/50 sticky top-0 z-10">
                   <h2 class="font-display font-bold text-xl text-slate-800" data-i18n="calendar.title">Event Calendar
@@ -314,7 +378,7 @@
                       data-i18n-placeholder="tags.filter">
                   </div>
                 </div>
-                <div class="flex-1 p-4 bg-white/50 min-h-[500px]">
+                <div class="flex-1 min-h-0 overflow-hidden p-4 bg-white/50">
                   <div id="calendar" class="h-full"></div>
                 </div>
               </div>
@@ -323,7 +387,7 @@
 
           <!-- TAB CONTENT: Membership -->
           <div id="tab-membership"
-            class="tab-pane hidden flex-1 bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden flex-col">
+            class="tab-pane hidden flex-1 min-h-0 bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden flex-col">
             <div class="p-5 border-b border-gray-100 bg-white/50 flex items-center justify-between sticky top-0 z-10">
               <h2 class="font-display font-bold text-xl text-slate-800 flex items-center gap-2">
                 <i data-lucide="users" class="w-5 h-5 text-brand-600"></i>
@@ -335,21 +399,21 @@
                 <i data-lucide="download" class="w-4 h-4"></i> Download CSV
               </button>
             </div>
-            <div id="membershipContainer" class="p-0 overflow-y-auto custom-scrollbar flex-1 relative bg-white">
+            <div id="membershipContainer" class="p-0 overflow-y-auto custom-scrollbar flex-1 min-h-0 relative bg-white">
               <!-- Injected by membership.js -->
             </div>
           </div>
 
           <!-- TAB CONTENT: Copy Editor -->
           <div id="tab-copy"
-            class="tab-pane hidden flex-1 bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden flex-col">
+            class="tab-pane hidden flex-1 min-h-0 bg-white/90 backdrop-blur-sm rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden flex-col">
             <div class="p-5 border-b border-gray-100 bg-white/50 flex items-center justify-between sticky top-0 z-10">
               <h2 class="font-display font-bold text-xl text-slate-800 flex items-center gap-2">
                 <i data-lucide="file-text" class="w-5 h-5 text-brand-600"></i>
                 Website Copy Editor
               </h2>
             </div>
-            <div id="copyContainer" class="p-5 overflow-y-auto custom-scrollbar flex-1 relative bg-slate-50/50">
+            <div id="copyContainer" class="p-5 overflow-y-auto custom-scrollbar flex-1 min-h-0 relative bg-slate-50/50">
               <!-- Injected by copy.js -->
             </div>
           </div>

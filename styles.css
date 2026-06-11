@@ -4386,3 +4386,283 @@ body:has(#forumApp) .site-footer .footer-logos img {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ========== RESPONSIVE SAFETY PATCHES ========== */
+html,
+body {
+  max-width: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+/* The shared flash element can carry both `.flash` and `#flash` rules.
+   Without resetting `bottom`, fixed positioning stretches it into a tall bar. */
+#flash,
+#flash.flash {
+  right: auto !important;
+  bottom: auto !important;
+  width: max-content;
+  max-width: min(calc(100vw - 2rem), 520px);
+  height: auto !important;
+  min-height: 40px;
+  display: none;
+  justify-content: center;
+  pointer-events: none;
+  white-space: normal;
+  animation: none !important;
+}
+
+#flash.visible {
+  display: flex !important;
+}
+
+#flash:not(.visible) {
+  display: none !important;
+}
+
+/* Map/admin are full-feature tools, but the page itself should not create a
+   hidden nested viewport that traps scrollbars or clips content on small screens. */
+html:has(#map),
+body:has(#map),
+html:has(#adminWrapper),
+body:has(#adminWrapper),
+body:has(#forumApp) {
+  height: auto !important;
+  min-height: 100dvh;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body:has(#map) main,
+body:has(#adminWrapper) main {
+  min-height: calc(100dvh - var(--header-h) - 76px);
+  overflow: visible !important;
+}
+
+body:has(#adminWrapper) main > .absolute.inset-0 {
+  position: static !important;
+  overflow: visible !important;
+}
+
+body:has(#adminWrapper) #adminWrapper {
+  height: auto !important;
+  min-height: calc(100dvh - var(--header-h) - 100px);
+}
+
+body:has(#adminWrapper) #tab-schedule {
+  min-height: min(760px, calc(100dvh - var(--header-h) - 160px));
+}
+
+body:has(#adminWrapper) #calendar {
+  min-height: 520px;
+}
+
+body:has(#map) main > div {
+  height: auto !important;
+  min-height: min(760px, calc(100dvh - var(--header-h) - 120px));
+}
+
+body:has(#map) #map {
+  height: auto !important;
+  min-height: clamp(420px, 58vh, 760px);
+}
+
+body:has(#map) #projects-table {
+  min-width: 720px;
+}
+
+body:has(#map) #projects-table td,
+body:has(#map) #projects-table th {
+  overflow-wrap: anywhere;
+}
+
+body:has(#map) #projects-table + *,
+body:has(#map) .custom-scrollbar {
+  scrollbar-gutter: stable;
+}
+
+/* Forum: replies must always be reachable, even on short screens. */
+body:has(#forumApp) {
+  display: flex;
+  flex-direction: column;
+}
+
+body:has(#forumApp) .forum-page {
+  flex: 1 0 auto;
+  min-height: 0;
+  padding-block: clamp(0.75rem, 2vw, 1.5rem) clamp(1.5rem, 4vw, 3rem);
+}
+
+body:has(#forumApp) .forum-workspace {
+  align-items: stretch;
+}
+
+body:has(#forumApp) .forum-detail-panel,
+body:has(#forumApp) .forum-thread-detail {
+  height: auto !important;
+  max-height: none !important;
+}
+
+body:has(#forumApp) .forum-detail-panel {
+  overflow: visible !important;
+}
+
+body:has(#forumApp) .forum-thread-detail {
+  min-height: 0;
+}
+
+body:has(#forumApp) .forum-comments {
+  max-height: min(52vh, 560px);
+  min-height: 140px;
+}
+
+body:has(#forumApp) .forum-reply-card {
+  position: relative;
+  z-index: 1;
+}
+
+.forum-event-context {
+  align-items: stretch !important;
+  display: grid !important;
+  grid-template-columns: 1fr;
+}
+
+.forum-event-context-copy {
+  width: 100%;
+}
+
+.forum-event-context-copy strong {
+  max-width: none !important;
+  white-space: normal !important;
+}
+
+.forum-event-context-controls {
+  width: 100%;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+}
+
+#forumEventFilter,
+#forumSort {
+  max-width: none !important;
+}
+
+.forum-thread-card,
+.forum-thread-card-copy,
+.forum-comment,
+.forum-comment-body,
+.forum-comment-content,
+.rich-comment-content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.forum-rich-editor .ql-toolbar.ql-snow {
+  white-space: normal;
+}
+
+.forum-rich-editor .ql-editor {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1023px) {
+  body:has(#map) main > div {
+    min-height: 0;
+  }
+
+  body:has(#map) main > div > div {
+    flex: 0 0 auto !important;
+  }
+
+  body:has(#map) #map {
+    min-height: clamp(320px, 56vh, 620px);
+  }
+
+  body:has(#map) #projects-table {
+    min-width: 680px;
+  }
+
+  body:has(#adminWrapper) #tab-schedule,
+  body:has(#adminWrapper) #tab-schedule > div,
+  body:has(#adminWrapper) #tab-schedule > div > div {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  body:has(#adminWrapper) #calendar {
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 900px) {
+  body:has(#forumApp) .forum-workspace {
+    grid-template-columns: 1fr !important;
+  }
+
+  body:has(#forumApp) .forum-sidebar,
+  body:has(#forumApp) .forum-feed-panel,
+  body:has(#forumApp) .forum-detail-panel,
+  body:has(#forumApp) .forum-thread-detail {
+    height: auto !important;
+  }
+
+  body:has(#forumApp) .forum-thread-list,
+  body:has(#forumApp) .forum-comments {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body:has(#map) main,
+  body:has(#adminWrapper) main {
+    min-height: 0;
+  }
+
+  body:has(#map) #projects-table {
+    min-width: 620px;
+  }
+
+  body:has(#adminWrapper) #calendar {
+    min-height: 460px;
+  }
+
+  .forum-hero-actions,
+  .forum-composer-actions,
+  .forum-event-context-controls {
+    grid-template-columns: 1fr !important;
+    width: 100%;
+  }
+
+  .forum-composer-actions {
+    align-items: stretch;
+    display: grid;
+  }
+
+  .forum-primary-action,
+  .forum-secondary-action,
+  .forum-primary-action.small,
+  .forum-secondary-action.small {
+    width: 100%;
+  }
+
+  .forum-comment {
+    gap: 0.5rem;
+  }
+
+  .forum-comment-children {
+    margin-left: 0;
+    padding-left: 0.6rem;
+  }
+}
