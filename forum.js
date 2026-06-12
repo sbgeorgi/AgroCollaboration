@@ -95,11 +95,11 @@ function clearEditor(editor) {
 
 function parseThreadTitle(rawTitle = '') {
   const match = rawTitle.match(/^\[(Opportunity(?::\s*([^\]]+))?|Question|Resource|General|Event)\]\s*(.*)$/i);
-  if (!match) return { title: rawTitle, board: 'general', detail: '' };
+  if (!match) return { title: rawTitle, board: 'general', detail: '', hasBoardPrefix: false };
   const label = match[1].toLowerCase();
   const detail = match[2] || '';
   const board = label.startsWith('opportunity') ? 'opportunity' : label;
-  return { title: match[3] || rawTitle, board, detail };
+  return { title: match[3] || rawTitle, board, detail, hasBoardPrefix: true };
 }
 
 function buildStoredTitle(board, title, detail = '') {
@@ -111,7 +111,8 @@ function buildStoredTitle(board, title, detail = '') {
 
 function threadBoard(thread) {
   const parsed = parseThreadTitle(thread.title);
-  if (parsed.board === 'general' && thread.event_id) return 'event';
+  if (parsed.hasBoardPrefix) return parsed.board;
+  if (thread.event_id) return 'event';
   return parsed.board;
 }
 
@@ -119,6 +120,30 @@ function threadEventTitle(thread) {
   const event = getEvent(thread.event_id);
   if (!event) return 'Community forum';
   return eventTitle(event);
+}
+
+function isForumAnchorEvent(event) {
+  if (!event) return false;
+  const tags = (event.topic_tags || []).map(normalize);
+  const title = normalize(`${event.title_en || ''} ${event.title_es || ''}`);
+  const slug = normalize(event.slug || '');
+  return tags.some((tag) => ['forum', 'community', 'general'].includes(tag))
+    || ['forum', 'community-forum', 'general-forum'].includes(slug)
+    || title.includes('community forum')
+    || title.includes('foro comunitario');
+}
+
+function getForumAnchorEvent() {
+  return state.events.find(isForumAnchorEvent) || state.events[0] || null;
+}
+
+function getThreadEventIdForPost(board) {
+  if (board === 'event') return $('#forumTopicEvent').value || state.focusedEventId || null;
+  return getForumAnchorEvent()?.id || null;
+}
+
+function isEventDiscussionThread(thread) {
+  return threadBoard(thread) === 'event';
 }
 
 function formatEventOption(event) {
@@ -300,7 +325,7 @@ function renderThreads() {
             <div class="forum-card-badges">
               <span class="forum-badge ${board}">${escapeHtml(board === 'opportunity' && parsed.detail ? parsed.detail : board)}</span>
               ${thread.pinned ? '<span class="forum-badge pinned">Pinned</span>' : ''}
-              ${thread.event_id ? `<span class="forum-badge event">${escapeHtml(threadEventTitle(thread))}</span>` : ''}
+              ${isEventDiscussionThread(thread) && thread.event_id ? `<span class="forum-badge event">${escapeHtml(threadEventTitle(thread))}</span>` : ''}
             </div>
             <h3>${escapeHtml(parsed.title)}</h3>
             <p>${escapeHtml(authorName)} · ${fmtDateTime(thread.created_at)} · ${thread.comment_count || 0} replies</p>
@@ -316,7 +341,7 @@ function renderThreads() {
 async function loadEvents() {
   const { data, error } = await supabase
     .from('events')
-    .select('id, title_en, title_es, description_en, description_es, start_time, end_time, topic_tags, host_org, language, zoom_url, recording_url, event_speakers(name, affiliation, primary_speaker, profile:profiles(id, avatar_url, country))')
+    .select('id, slug, title_en, title_es, description_en, description_es, start_time, end_time, topic_tags, host_org, language, zoom_url, recording_url, event_speakers(name, affiliation, primary_speaker, profile:profiles(id, avatar_url, country))')
     .order('start_time', { ascending: false });
   if (error) {
     console.warn('Could not load events for forum', error);
@@ -484,7 +509,7 @@ async function selectThread(threadId, options = {}) {
   `;
 
   const eventLink = $('#forumEventLink');
-  if (thread.event_id) {
+  if (isEventDiscussionThread(thread) && thread.event_id) {
     eventLink.dataset.eventId = thread.event_id;
     show(eventLink);
   } else {
@@ -503,10 +528,76 @@ async function selectThread(threadId, options = {}) {
   if (!options.keepUrl) {
     const url = new URL(window.location.href);
     url.searchParams.set('thread', threadId);
-    if (thread.event_id) url.searchParams.set('event', thread.event_id);
+    if (isEventDiscussionThread(thread) && thread.event_id) url.searchParams.set('event', thread.event_id);
     else url.searchParams.delete('event');
     window.history.replaceState({ thread: threadId }, '', url);
   }
+}
+
+async function deleteCommentRows(commentRows = []) {
+  if (!commentRows.length) return { error: null };
+
+  const orderedIds = [];
+  const byParent = commentRows.reduce((acc, comment) => {
+    (acc[comment.parent_id || 'root'] ||= []).push(comment);
+    return acc;
+  }, {});
+
+  const visit = (comment) => {
+    (byParent[comment.id] || []).forEach(visit);
+    orderedIds.push(comment.id);
+  };
+  commentRows
+    .filter((comment) => !comment.parent_id || !commentRows.some((item) => item.id === comment.parent_id))
+    .forEach(visit);
+
+  const uniqueIds = [...new Set(orderedIds)];
+  if (!uniqueIds.length) return { error: null };
+
+  let result = await supabase.from('comment_likes').delete().in('comment_id', uniqueIds);
+  if (result.error) return result;
+
+  result = await supabase.from('attachments').delete().in('comment_id', uniqueIds);
+  if (result.error) return result;
+
+  for (const id of uniqueIds) {
+    result = await supabase.from('comments').delete().eq('id', id);
+    if (result.error) return result;
+  }
+
+  return { error: null };
+}
+
+async function deleteCommentBranch(commentId) {
+  const byParent = state.comments.reduce((acc, comment) => {
+    (acc[comment.parent_id || 'root'] ||= []).push(comment);
+    return acc;
+  }, {});
+  const rows = [];
+  const collect = (id) => {
+    const comment = state.comments.find((item) => String(item.id) === String(id));
+    if (!comment) return;
+    rows.push(comment);
+    (byParent[comment.id] || []).forEach((child) => collect(child.id));
+  };
+  collect(commentId);
+  return deleteCommentRows(rows);
+}
+
+async function deleteThreadWithDependencies(threadId) {
+  const { data: commentRows, error: commentsError } = await supabase
+    .from('comments')
+    .select('id, parent_id')
+    .eq('thread_id', threadId);
+  if (commentsError) return { error: commentsError };
+
+  let result = await deleteCommentRows(commentRows || []);
+  if (result.error) return result;
+
+  result = await supabase.from('attachments').delete().eq('thread_id', threadId);
+  if (result.error) return result;
+
+  return supabase.from('threads').delete().eq('id', threadId);
 }
 
 async function uploadImage(file, editor) {
@@ -538,7 +629,7 @@ async function createThread(e) {
   if (!requireMemberAction()) return;
 
   const board = $('#forumTopicBoard').value;
-  const eventId = board === 'event' ? ($('#forumTopicEvent').value || state.focusedEventId || null) : null;
+  const eventId = getThreadEventIdForPost(board);
   const title = $('#forumTopicTitle').value.trim();
   const detail = board === 'opportunity' ? $('#forumOpportunityType').value.trim() : '';
   const deadline = $('#forumOpportunityDeadline').value.trim();
@@ -549,29 +640,29 @@ async function createThread(e) {
     setFlash('Choose an event for this discussion.');
     return;
   }
+  if (!eventId) {
+    setFlash('Could not publish because the forum needs at least one event channel.');
+    return;
+  }
   if (board === 'opportunity' && deadline) {
     body = sanitizeRichText(`<p><strong>Timing:</strong> ${escapeHtml(deadline)}</p>${body}`);
   }
 
   const storedTitle = buildStoredTitle(board, title, detail);
-  const basePayload = { title: storedTitle, event_id: eventId, created_by: authState.session.user.id };
-  let { data, error } = await supabase.from('threads').insert(basePayload).select().single();
-
-  if (error && !eventId) {
-    const fallbackEvent = state.events.find((event) => (event.topic_tags || []).map(normalize).includes('forum'));
-    if (fallbackEvent) {
-      ({ data, error } = await supabase.from('threads').insert({ ...basePayload, event_id: fallbackEvent.id }).select().single());
-    }
-  }
+  const { data, error } = await supabase
+    .from('threads')
+    .insert({ title: storedTitle, event_id: eventId, created_by: authState.session.user.id })
+    .select()
+    .single();
 
   if (error) {
     console.error(error);
-    setFlash('Could not publish. If general topics require an event channel, ask an organizer to create a forum event.');
+    setFlash('Could not publish. Please try again.');
     return;
   }
 
   if (body) {
-    const commentPayload = { content: body, thread_id: data.id, created_by: authState.session.user.id, event_id: data.event_id || null };
+    const commentPayload = { content: body, thread_id: data.id, created_by: authState.session.user.id, event_id: data.event_id };
     const { error: commentError } = await supabase.from('comments').insert(commentPayload);
     if (commentError) console.warn('Thread created but first post failed', commentError);
   }
@@ -580,9 +671,12 @@ async function createThread(e) {
   $('#forumTopicTitle').value = '';
   $('#forumOpportunityDeadline').value = '';
   clearEditor(topicEditor);
-  if (eventId) {
+  if (board === 'event') {
     state.focusedEventId = eventId;
     state.selectedBoard = 'event';
+  } else {
+    state.focusedEventId = null;
+    state.selectedBoard = board;
   }
   await loadThreads();
   await selectThread(data.id);
@@ -596,11 +690,15 @@ async function createReply(e) {
   if (!thread) return;
   const content = getEditorHtml(replyEditor);
   if (!stripHtml(content).trim() && !/<img/i.test(content)) return;
+  if (!thread.event_id) {
+    setFlash('Could not post reply because this thread is missing an event channel.');
+    return;
+  }
 
   const payload = {
     content,
     thread_id: thread.id,
-    event_id: thread.event_id || null,
+    event_id: thread.event_id,
     parent_id: state.replyTargetId || null,
     created_by: authState.session.user.id
   };
@@ -633,9 +731,10 @@ async function updateThread(action) {
     ({ error } = await supabase.from('threads').update({ pinned: !thread.pinned }).eq('id', thread.id));
   } else if (action === 'delete') {
     if (!confirm('Delete this thread and its replies?')) return;
-    ({ error } = await supabase.from('threads').delete().eq('id', thread.id));
+    ({ error } = await deleteThreadWithDependencies(thread.id));
     if (!error) {
       state.selectedThreadId = null;
+      state.comments = [];
       show($('#forumEmptyThread'));
       hide($('#forumThreadDetail'));
     }
@@ -752,7 +851,12 @@ function bindEvents() {
     const deleteBtn = e.target.closest('[data-delete-comment]');
     if (deleteBtn) {
       if (!requireMemberAction() || !confirm('Delete this reply?')) return;
-      await supabase.from('comments').delete().eq('id', deleteBtn.dataset.deleteComment);
+      const { error } = await deleteCommentBranch(deleteBtn.dataset.deleteComment);
+      if (error) {
+        console.error(error);
+        setFlash('Could not delete reply.');
+        return;
+      }
       await loadComments(state.selectedThreadId);
       await loadThreads();
       return;

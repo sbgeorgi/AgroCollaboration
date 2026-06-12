@@ -708,6 +708,9 @@ async function handleDeletePoint(id) {
       const paths = pt.media_url.map(m => m.url.split('/map_media/')[1]).filter(Boolean);
       if (paths.length) await supabase.storage.from('map_media').remove(paths);
     }
+    const { error: collabError } = await supabase.from('project_collaborators').delete().eq('project_id', id);
+    if (collabError) throw collabError;
+
     const { error } = await supabase.from('map_points').delete().eq('id', id);
     if (error) throw error;
 

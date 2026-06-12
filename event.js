@@ -420,6 +420,72 @@ export function initEventLogic(deps) {
     }
   }
 
+  async function deleteCommentRows(commentRows = []) {
+    if (!commentRows.length) return { error: null };
+
+    const orderedIds = [];
+    const byParent = commentRows.reduce((acc, comment) => {
+      (acc[comment.parent_id || 'root'] ||= []).push(comment);
+      return acc;
+    }, {});
+
+    const visit = (comment) => {
+      (byParent[comment.id] || []).forEach(visit);
+      orderedIds.push(comment.id);
+    };
+    commentRows
+      .filter((comment) => !comment.parent_id || !commentRows.some((item) => item.id === comment.parent_id))
+      .forEach(visit);
+
+    const ids = [...new Set(orderedIds)];
+    if (!ids.length) return { error: null };
+
+    let result = await supabase.from('comment_likes').delete().in('comment_id', ids);
+    if (result.error) return result;
+
+    result = await supabase.from('attachments').delete().in('comment_id', ids);
+    if (result.error) return result;
+
+    for (const id of ids) {
+      result = await supabase.from('comments').delete().eq('id', id);
+      if (result.error) return result;
+    }
+
+    return { error: null };
+  }
+
+  async function deleteCommentBranch(commentId) {
+    const byParent = state.comments.reduce((acc, comment) => {
+      (acc[comment.parent_id || 'root'] ||= []).push(comment);
+      return acc;
+    }, {});
+    const rows = [];
+    const collect = (id) => {
+      const comment = state.comments.find((item) => String(item.id) === String(id));
+      if (!comment) return;
+      rows.push(comment);
+      (byParent[comment.id] || []).forEach((child) => collect(child.id));
+    };
+    collect(commentId);
+    return deleteCommentRows(rows);
+  }
+
+  async function deleteThreadWithDependencies(threadId) {
+    const { data: commentRows, error: commentsError } = await supabase
+      .from('comments')
+      .select('id, parent_id')
+      .eq('thread_id', threadId);
+    if (commentsError) return { error: commentsError };
+
+    let result = await deleteCommentRows(commentRows || []);
+    if (result.error) return result;
+
+    result = await supabase.from('attachments').delete().eq('thread_id', threadId);
+    if (result.error) return result;
+
+    return supabase.from('threads').delete().eq('id', threadId);
+  }
+
   async function threadAction(action, id) {
     if (action === 'delete' && !confirm('Delete thread?')) return;
     const t = state.threads.find(x => x.id === id);
@@ -433,9 +499,10 @@ export function initEventLogic(deps) {
     } else if (action === 'pin') {
       ({ error } = await supabase.from('threads').update({ pinned: !t.pinned }).eq('id', id));
     } else if (action === 'delete') {
-      ({ error } = await supabase.from('threads').delete().eq('id', id));
+      ({ error } = await deleteThreadWithDependencies(id));
       if (!error && String(state.selectedThreadId) === String(id)) {
         state.selectedThreadId = null;
+        state.comments = [];
         hide($('#threadDetailView')); show($('#thread-welcome'));
       }
     }
@@ -573,12 +640,12 @@ export function initEventLogic(deps) {
 
   async function loadRSVPFollow(id) {
     if (!authState.profile) return;
-    const [{ data: f }, { data: r }] = await Promise.all([
-      supabase.from('event_follows').select('id').eq('event_id', id).eq('profile_id', authState.profile.id).maybeSingle(),
-      supabase.from('event_rsvps').select('status').eq('event_id', id).eq('profile_id', authState.profile.id).maybeSingle()
+    const [{ data: follows }, { data: rsvps }] = await Promise.all([
+      supabase.from('event_follows').select('id').eq('event_id', id).eq('profile_id', authState.profile.id).order('created_at', { ascending: false }).limit(1),
+      supabase.from('event_rsvps').select('status').eq('event_id', id).eq('profile_id', authState.profile.id).order('created_at', { ascending: false }).limit(1)
     ]);
-    state.isFollowing = !!f;
-    state.rsvpStatus = r?.status || 'not_going';
+    state.isFollowing = !!follows?.length;
+    state.rsvpStatus = rsvps?.[0]?.status || 'not_going';
     if ($('#rsvpSelect')) $('#rsvpSelect').value = state.rsvpStatus;
     updateFollowUI();
   }
@@ -600,7 +667,16 @@ export function initEventLogic(deps) {
     if (!authState.profile) return;
     const previous = state.rsvpStatus || 'not_going';
     state.rsvpStatus = status;
-    const { error } = await supabase.from('event_rsvps').upsert({ event_id: eid, profile_id: authState.profile.id, status });
+    const { data: existingRows, error: lookupError } = await supabase
+      .from('event_rsvps')
+      .select('id')
+      .eq('event_id', eid)
+      .eq('profile_id', authState.profile.id);
+    const { error } = lookupError
+      ? { error: lookupError }
+      : existingRows?.length
+        ? await supabase.from('event_rsvps').update({ status }).eq('event_id', eid).eq('profile_id', authState.profile.id)
+        : await supabase.from('event_rsvps').insert({ event_id: eid, profile_id: authState.profile.id, status });
     if (error) {
       state.rsvpStatus = previous;
       if ($('#rsvpSelect')) $('#rsvpSelect').value = previous;
@@ -833,7 +909,13 @@ export function initEventLogic(deps) {
       r.querySelector('.comment-content').classList.remove('hidden');
       r.querySelector('.comment-edit-form').classList.add('hidden');
     } else if (btn.matches('[data-delete-comment]')) {
-      if (confirm('Delete comment?')) await supabase.from('comments').delete().eq('id', btn.dataset.deleteComment);
+      if (!confirm('Delete comment?')) return;
+      const { error } = await deleteCommentBranch(btn.dataset.deleteComment);
+      if (error) {
+        console.error(error);
+        setFlash('Delete failed');
+        return;
+      }
       loadCommentsForThread(state.selectedThreadId);
     }
   });
